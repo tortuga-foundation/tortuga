@@ -10,7 +10,7 @@ SRC_EXECUTABLE = Source/main.cpp
 COMPILER = g++
 PRE_PROCESSOR = -DDEBUG_MODE -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE
 FLAGS = -g -std=c++17 -pthread -Wall -Wno-narrowing -Wno-unused $(PRE_PROCESSOR)
-PATHS = -IBuild/include/ -LBuild/lib/
+PATHS = -IBuild/include -LBuild/lib
 LIBS = -lvulkan -lSDL2 -lSDL2_image
 LIBS_A := $(shell find $(OBJ_DIR)/lib/ -type f -name '*.a') $(shell find $(OBJ_DIR)/lib/ -type f -name '*.o')
 
