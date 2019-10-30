@@ -9,9 +9,9 @@ SRC_EXECUTABLE = Source/main.cpp
 #compiler options
 COMPILER = g++
 PRE_PROCESSOR = -DDEBUG_MODE -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE
-FLAGS = -g -std=c++17 -pthread -Wall -Wno-narrowing -Wno-unused -Wl --start-group $(PRE_PROCESSOR)
+FLAGS = -g -std=c++17 -pthread -Wall -Wno-narrowing -Wno-unused $(PRE_PROCESSOR)
 PATHS = -IBuild/include -LBuild/lib
-LIBS = -lvulkan -lSDL2 -lSDL2_image
+LIBS = -lvulkan -lSDL2 -lSDL2_image -ldl
 LIBS_A := $(shell find $(OBJ_DIR)/lib/ -type f -name '*.a') $(shell find $(OBJ_DIR)/lib/ -type f -name '*.o')
 
 #get a list of all cpp files excluding executable file
