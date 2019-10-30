@@ -9,10 +9,6 @@
     ".github": true,
     "Submodules": true
   },
-  "files.exclude": {
-    "Build": true,
-    ".github": true
-  },
   "files.associations": {
     "cctype": "cpp",
     "clocale": "cpp",

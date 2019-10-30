@@ -10,14 +10,16 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Updating Package List
-      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test && sudo apt-get -y update
+      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test && sudo apt -y update
+    - name: Installing Linux Build Tools
+      run: sudo apt -y install build-essential manpages-dev software-properties-common
     - name: Installing XOrg
-      run: sudo apt-get -y install libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
+      run: sudo apt -y install libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
     - name: Installing Wayland
-      run: sudo apt-get -y install libwayland-client0 libwayland-dev
+      run: sudo apt -y install libwayland-client0 libwayland-dev
     - name: Updating GCC Compiler
-      run: sudo apt-get -y install g++-9
-    - name: Get Required Dependencies
+      run: sudo apt -y install g++-9
+    - name: Building Required Dependencies
       run: make init
     - name: Build Application
       run: make
