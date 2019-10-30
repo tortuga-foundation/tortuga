@@ -14,7 +14,7 @@ jobs:
     - name: Installing XOrg
       run: sudo apt-get -y install libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
     - name: Installing Wayland
-      run: libwayland-client0 libwayland-dev
+      run: sudo apt-get -y install libwayland-client0 libwayland-dev
     - name: Updating GCC Compiler
       run: sudo apt-get -y install g++-9
     - name: Get Required Dependencies
