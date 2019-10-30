@@ -10,7 +10,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Updating Package List
-      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test && sudo apt -y update
+      run: sudo mkdir -p /etc/apt/sources.list.d/ && sudo bash -c 'echo "deb http://ppa.launchpad.net/ubuntu-toolchain-r/test/ubuntu bionic main" >> /etc/apt/sources.list.d/ubuntu-toolchain-r-ubuntu-test-bionic.list' && sudo apt -y update
     - name: Installing Linux Build Tools
       run: sudo apt -y install build-essential manpages-dev software-properties-common
     - name: Installing XOrg
@@ -18,7 +18,7 @@ jobs:
     - name: Installing Wayland
       run: sudo apt -y install libwayland-client0 libwayland-dev
     - name: Updating GCC Compiler
-      run: sudo apt -y install g++-9
+      run: sudo apt -y install g++-9 && sudo cp /usr/bin/g++-9 /usr/bin/g++
     - name: Building Required Dependencies
       run: make init
     - name: Build Application
