@@ -1,0 +1,23 @@
+name: C/C++ CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Updating Package List
+      run: sudo add-apt-repository ppa:ubuntu-toolchain-r/test && sudo apt-get -y update
+    - name: Installing XOrg
+      run: sudo apt-get -y install libxcursor-dev libxrandr-dev libxinerama-dev libxi-dev
+    - name: Installing Wayland
+      run: libwayland-client0 libwayland-dev
+    - name: Updating GCC Compiler
+      run: sudo apt-get -y install g++-9
+    - name: Get Required Dependencies
+      run: make init
+    - name: Build Application
+      run: make
