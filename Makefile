@@ -21,7 +21,7 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.o,$(SRC_FILES))
 
 #link and create executable
 all: $(OBJ_FILES)
-	$(COMPILER) -o $(OBJ_DIR)/$(TARGET) $(SRC_EXECUTABLE) $(FLAGS) $(PATHS) $(LIBS) $(LIBS_A) $(OBJ_FILES)
+	$(COMPILER) -o $(OBJ_DIR)/$(TARGET) $(SRC_EXECUTABLE) $(FLAGS) $(OBJ_FILES) $(LIBS_A) $(PATHS) $(LIBS)
 
 #create obj files
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
