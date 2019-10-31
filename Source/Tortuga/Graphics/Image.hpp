@@ -16,24 +16,23 @@ struct Image
   uint32_t Width;
   uint32_t Height;
   uint32_t Channels;
-  uint32_t ByteSize;
-  std::vector<Pixel> Pixels;
+  uint32_t TotalByteSize;
+  void *Pixels = nullptr;
 
   Image()
   {
-    Width = 1;
-    Height = 1;
-    Channels = 4;
-    ByteSize = 4;
-    Pixels = {{1, 0, 0, 1}};
   }
   Image(uint32_t width, uint32_t height)
   {
     Width = width;
     Height = height;
     Channels = 4;
-    ByteSize = width * height * Channels;
-    Pixels.resize(height * width);
+    TotalByteSize = width * height * Channels;
+    Pixels = malloc(sizeof(TotalByteSize));
+  }
+  ~Image()
+  {
+    free(Pixels);
   }
 };
 } // namespace Graphics

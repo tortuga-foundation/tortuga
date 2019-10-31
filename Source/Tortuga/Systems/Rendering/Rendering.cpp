@@ -26,6 +26,8 @@ Rendering::Rendering()
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
   //mesh material
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
+  //material albedo texture
+  DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
 
   //rendering
   {
@@ -201,7 +203,13 @@ void Rendering::Update()
         const auto lights = meshView->GetClosestLights();
         meshView->UpdateLightsBuffer(lights);
         Graphics::Vulkan::Command::Begin(meshView->RenderCommand, VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT, renderPass, 0, framebuffer);
-        Graphics::Vulkan::Command::BindPipeline(meshView->RenderCommand, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, {cameraDescriptorSet, meshView->TransformDescriptorSet, meshView->LightsDescriptorSet, meshView->MaterialDescriptorSet});
+        const auto sets = {
+            cameraDescriptorSet,
+            meshView->TransformDescriptorSet,
+            meshView->LightsDescriptorSet,
+            meshView->MaterialDescriptorSet,
+            meshView->AlbedoDescriptorSet};
+        Graphics::Vulkan::Command::BindPipeline(meshView->RenderCommand, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, sets);
         Graphics::Vulkan::Command::SetViewport(meshView->RenderCommand, viewport.x * resolutionWidth, viewport.y * resolutionHeight, viewport.z * resolutionWidth, viewport.w * resolutionHeight);
         Graphics::Vulkan::Command::BindVertexBuffer(meshView->RenderCommand, {meshView->VertexBuffer});
         Graphics::Vulkan::Command::BindIndexBuffer(meshView->RenderCommand, meshView->IndexBuffer);
@@ -220,7 +228,10 @@ void Rendering::Update()
       if (mesh->IsTransformDirty || !mesh->IsStatic)
         transferCommands.push_back(mesh->TransformTransferCommand);
       if (mesh->IsMaterialDirty)
+      {
+        transferCommands.push_back(mesh->AlbedoTransferCommand);
         transferCommands.push_back(mesh->MaterialTransferCommand);
+      }
       transferCommands.push_back(mesh->LightTransferCommand);
 
       mesh->IsMeshDirty = false;

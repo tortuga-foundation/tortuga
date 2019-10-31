@@ -90,11 +90,18 @@ private:
     Graphics::Vulkan::Buffer::Buffer LightsBuffer;
     Graphics::Vulkan::DescriptorSet::DescriptorSet LightsDescriptorSet;
     Graphics::Vulkan::Command::Command LightTransferCommand;
-    //material
+    //material general
     Graphics::Vulkan::Buffer::Buffer StagingMaterialBuffer;
     Graphics::Vulkan::Buffer::Buffer MaterialBuffer;
     Graphics::Vulkan::DescriptorSet::DescriptorSet MaterialDescriptorSet;
     Graphics::Vulkan::Command::Command MaterialTransferCommand;
+    //material albedo texture
+    Graphics::Vulkan::Buffer::Buffer StagingAlbedoImage;
+    Graphics::Vulkan::Image::Image AlbedoImage;
+    Graphics::Vulkan::ImageView::ImageView AlbedoImageView;
+    Graphics::Vulkan::Sampler::Sampler AlbedoImageSampler;
+    Graphics::Vulkan::DescriptorSet::DescriptorSet AlbedoDescriptorSet;
+    Graphics::Vulkan::Command::Command AlbedoTransferCommand;
 
     void Setup(Graphics::Vulkan::Device::Device device, std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> layouts);
     void OnDestroy();

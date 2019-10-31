@@ -25,6 +25,7 @@ layout(set = 3, binding = 0) readonly uniform Material
   float metallic;
   float roughness;
 };
+layout(set = 4, binding = 0) uniform sampler2D albedoTexture;
 
 layout(location = 0) in vec3 surfaceNormal;
 layout(location = 1) in vec3 cameraVector;

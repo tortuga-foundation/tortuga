@@ -74,8 +74,16 @@ Graphics::Image LoadImageFile(std::string filePath)
     Console::Error("Failed to load image file {0}", filePath);
     return data;
   }
-  int bpp = surface->format->BytesPerPixel;
-  
+
+  data.Width = surface->w;
+  data.Height = surface->h;
+  data.Channels = surface->format->BytesPerPixel;
+  data.TotalByteSize = data.Channels * data.Width * data.Height;
+  if (data.Pixels != nullptr)
+    free(data.Pixels);
+  data.Pixels = malloc(data.TotalByteSize);
+  memcpy(data.Pixels, surface->pixels, data.TotalByteSize);
+
   return data;
 }
 std::string GetFileContents(std::string filePath)

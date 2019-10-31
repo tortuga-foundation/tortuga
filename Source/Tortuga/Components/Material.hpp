@@ -13,6 +13,7 @@ struct Material : Core::ECS::Component
 {
 private:
   bool IsDirty = false;
+  Graphics::Image Albedo;
   glm::vec3 Color = glm::vec3(0.4, 0.4, 0.4);
   float Metalic = 0.0f;
   float Roughness = 0.3f;
@@ -52,6 +53,15 @@ public:
   void SetRoughness(float roughness)
   {
     this->Roughness = roughness;
+  }
+
+  Graphics::Image GetAlbedo()
+  {
+    return this->Albedo;
+  }
+  void SetAlbedo(Graphics::Image image)
+  {
+    this->Albedo = image;
   }
 };
 } // namespace Components
