@@ -1,4 +1,4 @@
-![Build Status](https://github.com/tortuga-foundation/tortuga-library/workflows/C/C++%20CI/badge.svg)
+![Build Status](https://github.com/tortuga-foundation/tortuga-library/workflows/Build/badge.svg)
 
 # tortuga-library
 
