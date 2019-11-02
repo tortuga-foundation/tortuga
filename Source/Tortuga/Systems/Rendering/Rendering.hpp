@@ -48,6 +48,7 @@ private:
 
   //sync
   std::vector<Graphics::Vulkan::Semaphore::Semaphore> TransferSemaphore;
+  std::vector<Graphics::Vulkan::Semaphore::Semaphore> TransferGraphicsSemaphore;
   std::vector<Graphics::Vulkan::Semaphore::Semaphore> RenderSemaphore;
   std::vector<Graphics::Vulkan::Fence::Fence> RenderFence;
 

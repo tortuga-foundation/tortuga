@@ -134,18 +134,18 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
   //material albedo
   if (this->StagingAlbedoImage.Buffer == VK_NULL_HANDLE)
   {
-    this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, 4, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    VkFormat imageFormat = VK_FORMAT_R8G8B8A8_SINT;
+    this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    VkFormat imageFormat = VK_FORMAT_R8G8B8_UINT;
     this->AlbedoImage = Graphics::Vulkan::Image::Create(device, 1, 1, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     this->AlbedoImageView = Graphics::Vulkan::ImageView::Create(device, this->AlbedoImage, VK_IMAGE_ASPECT_COLOR_BIT);
     this->AlbedoImageSampler = Graphics::Vulkan::Sampler::Create(device);
     this->AlbedoDescriptorSet = Graphics::Vulkan::DescriptorSet::Create(device, this->DescriptorPool, layouts[4]);
     Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->AlbedoDescriptorSet, {this->AlbedoImageView}, {this->AlbedoImageSampler});
-    std::vector<int8_t> tempPixels = {1, 1, 1, 1};
+    std::vector<uint8_t> tempPixels = {1, 1, 1};
     Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, tempPixels.data(), this->StagingAlbedoImage.Size);
-    this->AlbedoTransferCommand = Graphics::Vulkan::Command::Create(device, this->TransferCommandPool, Graphics::Vulkan::Command::PRIMARY);
+    this->AlbedoTransferCommand = Graphics::Vulkan::Command::Create(device, this->GraphicsCommandPool, Graphics::Vulkan::Command::PRIMARY);
     Graphics::Vulkan::Command::Begin(this->AlbedoTransferCommand, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-    Graphics::Vulkan::Command::BufferToImage(this->AlbedoTransferCommand, this->StagingAlbedoImage, this->AlbedoImage, {0, 0}, {this->AlbedoImage.Width, this->AlbedoImage.Height});
+    Graphics::Vulkan::Command::BufferToImage(this->AlbedoTransferCommand, this->StagingAlbedoImage, this->AlbedoImage);
     Graphics::Vulkan::Command::End(this->AlbedoTransferCommand);
   }
 
@@ -164,7 +164,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
     }
 
     const auto albedo = material->GetAlbedo();
-    if (albedo.Pixels != nullptr && albedo.TotalByteSize != this->StagingAlbedoImage.Size)
+    if (albedo.TotalByteSize != this->StagingAlbedoImage.Size)
     {
       //destroy old buffers
       Graphics::Vulkan::Buffer::Destroy(this->StagingAlbedoImage);
@@ -172,24 +172,16 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
       Graphics::Vulkan::Image::Destroy(this->AlbedoImage);
       //create new buffers
       this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, albedo.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-      VkFormat imageFormat;
-      if (albedo.Channels == 1)
-        imageFormat = VK_FORMAT_R8_SINT;
-      else if (albedo.Channels == 2)
-        imageFormat = VK_FORMAT_R8G8_SINT;
-      else if (albedo.Channels == 3)
-        imageFormat = VK_FORMAT_R8G8B8_SINT;
-      else if (albedo.Channels == 4)
-        imageFormat = VK_FORMAT_R8G8B8A8_SINT;
-      else
-        Console::Error("unknown image format provided to renderer");
-      this->AlbedoImage = Graphics::Vulkan::Image::Create(device, albedo.Width, albedo.Height, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+      Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, albedo.Pixels.data(), this->StagingAlbedoImage.Size);
+      this->AlbedoImage = Graphics::Vulkan::Image::Create(device, albedo.Width, albedo.Height, VK_FORMAT_R8G8B8A8_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
       this->AlbedoImageView = Graphics::Vulkan::ImageView::Create(device, this->AlbedoImage, VK_IMAGE_ASPECT_COLOR_BIT);
       //update descriptor set
       Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->AlbedoDescriptorSet, {this->AlbedoImageView}, {this->AlbedoImageSampler});
       //update transfer command
       Graphics::Vulkan::Command::Begin(this->AlbedoTransferCommand, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
-      Graphics::Vulkan::Command::BufferToImage(this->AlbedoTransferCommand, this->StagingAlbedoImage, this->AlbedoImage, {0, 0}, {this->AlbedoImage.Width, this->AlbedoImage.Height});
+      Graphics::Vulkan::Command::TransferImageLayout(this->AlbedoTransferCommand, this->AlbedoImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+      Graphics::Vulkan::Command::BufferToImage(this->AlbedoTransferCommand, this->StagingAlbedoImage, this->AlbedoImage);
+      Graphics::Vulkan::Command::TransferImageLayout(this->AlbedoTransferCommand, this->AlbedoImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
       Graphics::Vulkan::Command::End(this->AlbedoTransferCommand);
     }
   }

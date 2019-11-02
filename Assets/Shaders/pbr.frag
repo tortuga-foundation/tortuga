@@ -29,7 +29,8 @@ layout(set = 4, binding = 0) uniform sampler2D albedoTexture;
 
 layout(location = 0) in vec3 surfaceNormal;
 layout(location = 1) in vec3 cameraVector;
-layout(location = 2) in vec3 lightVectors[MAXIMUM_LIGHT_INFOS];
+layout(location = 2) in vec2 uvTexture;
+layout(location = 3) in vec3 lightVectors[MAXIMUM_LIGHT_INFOS];
 
 layout(location = 0) out vec4 outColor;
 
@@ -78,6 +79,8 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 
 void main()
 {
+  vec4 albedo = texture(albedoTexture, uvTexture);
+
   vec3 N = normalize(surfaceNormal);
   vec3 V = normalize(cameraVector);
   

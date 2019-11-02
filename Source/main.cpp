@@ -73,7 +73,7 @@ int main()
   //create a dragon
   const auto dragon = Core::Engine::CreateEntity();
   {
-    //const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/sample.jpg");
+    const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/Sample.jpg");
     const auto mesh = Utils::IO::LoadObjFile("Assets/Models/Dragon.obj");
     Core::Engine::AddComponent<Components::Mesh>(dragon, Components::Mesh(mesh));
     Components::Transform t;
@@ -81,7 +81,7 @@ int main()
     Core::Engine::AddComponent<Components::Transform>(dragon, t);
     Components::Material m;
     m.SetColor(glm::vec3(1, 0, 0));
-    //m.SetAlbedo(albedo);
+    m.SetAlbedo(Graphics::Image(albedo));
     Core::Engine::AddComponent<Components::Material>(dragon, m);
     Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(dragon);
   }

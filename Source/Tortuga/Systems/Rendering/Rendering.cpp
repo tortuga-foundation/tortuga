@@ -83,6 +83,7 @@ void Rendering::SetupSemaphores(uint32_t size)
   {
     for (uint32_t i = size; i < RenderSemaphore.size(); i++)
       Graphics::Vulkan::Semaphore::Destroy(RenderSemaphore[i]);
+    RenderSemaphore.resize(size);
   }
   for (uint32_t i = 0; i < size; i++)
   {
@@ -96,11 +97,25 @@ void Rendering::SetupSemaphores(uint32_t size)
   {
     for (uint32_t i = size; i < TransferSemaphore.size(); i++)
       Graphics::Vulkan::Semaphore::Destroy(TransferSemaphore[i]);
+    TransferSemaphore.resize(size);
   }
   for (uint32_t i = 0; i < size; i++)
   {
     if (TransferSemaphore[i].Semaphore == VK_NULL_HANDLE)
       TransferSemaphore[i] = Graphics::Vulkan::Semaphore::Create(device);
+  }
+  if (size > TransferGraphicsSemaphore.size())
+    TransferGraphicsSemaphore.resize(size);
+  else if (size < TransferGraphicsSemaphore.size())
+  {
+    for (uint32_t i = size; i < TransferGraphicsSemaphore.size(); i++)
+      Graphics::Vulkan::Semaphore::Destroy(TransferGraphicsSemaphore[i]);
+    TransferGraphicsSemaphore.resize(size);
+  }
+  for (uint32_t i = 0; i < size; i++)
+  {
+    if (TransferGraphicsSemaphore[i].Semaphore == VK_NULL_HANDLE)
+      TransferGraphicsSemaphore[i] = Graphics::Vulkan::Semaphore::Create(device);
   }
 
   if (size > RenderFence.size())
@@ -109,6 +124,7 @@ void Rendering::SetupSemaphores(uint32_t size)
   {
     for (uint32_t i = size; i < RenderFence.size(); i++)
       Graphics::Vulkan::Fence::Destroy(RenderFence[i]);
+    RenderFence.resize(size);
   }
   for (uint32_t i = 0; i < size; i++)
   {
@@ -143,6 +159,7 @@ void Rendering::Update()
   for (uint32_t cameraIndex = 0; cameraIndex < cameras.size(); cameraIndex++)
   {
     std::vector<Graphics::Vulkan::Command::Command> transferCommands;
+    std::vector<Graphics::Vulkan::Command::Command> transferGraphicsCommands;
     std::vector<Graphics::Vulkan::Command::Command> drawCommands;
     const auto camera = cameras[cameraIndex];
     const auto cameraTransform = Core::Engine::GetComponent<Components::Transform>(camera->Root);
@@ -229,8 +246,8 @@ void Rendering::Update()
         transferCommands.push_back(mesh->TransformTransferCommand);
       if (mesh->IsMaterialDirty)
       {
-        transferCommands.push_back(mesh->AlbedoTransferCommand);
         transferCommands.push_back(mesh->MaterialTransferCommand);
+        transferGraphicsCommands.push_back(mesh->AlbedoTransferCommand);
       }
       transferCommands.push_back(mesh->LightTransferCommand);
 
@@ -238,9 +255,17 @@ void Rendering::Update()
       mesh->IsTransformDirty = false;
       mesh->IsMaterialDirty = false;
     }
+    std::vector<Graphics::Vulkan::Semaphore::Semaphore> renderWaitSemaphores;
     if (transferCommands.size() > 0)
+    {
       Graphics::Vulkan::Command::Submit(transferCommands, device.Queues.Transfer[0], {}, {TransferSemaphore[cameraIndex]});
-
+      renderWaitSemaphores.push_back(TransferSemaphore[cameraIndex]);
+    }
+    if (transferGraphicsCommands.size() > 0)
+    {
+      Graphics::Vulkan::Command::Submit(transferGraphicsCommands, device.Queues.Graphics[0], {}, {TransferGraphicsSemaphore[cameraIndex]});
+      renderWaitSemaphores.push_back(TransferGraphicsSemaphore[cameraIndex]);
+    }
     Graphics::Vulkan::Command::ExecuteCommands(RenderCommand, drawCommands);
     Graphics::Vulkan::Command::EndRenderPass(RenderCommand);
     if (camera->GetPresentToScreen())
@@ -251,10 +276,7 @@ void Rendering::Update()
       Graphics::Vulkan::Command::TransferImageLayout(RenderCommand, swapchainImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
     }
     Graphics::Vulkan::Command::End(RenderCommand);
-    if (transferCommands.size() > 0)
-      Graphics::Vulkan::Command::Submit({RenderCommand}, device.Queues.Graphics[0], {TransferSemaphore[cameraIndex]}, {RenderSemaphore[cameraIndex]}, RenderFence[cameraIndex]);
-    else
-      Graphics::Vulkan::Command::Submit({RenderCommand}, device.Queues.Graphics[0], {}, {RenderSemaphore[cameraIndex]}, RenderFence[cameraIndex]);
+    Graphics::Vulkan::Command::Submit({RenderCommand}, device.Queues.Graphics[0], renderWaitSemaphores, {RenderSemaphore[cameraIndex]}, RenderFence[cameraIndex]);
 
     camera->SetIsDirty(false);
   }

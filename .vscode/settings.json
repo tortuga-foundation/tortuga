@@ -80,6 +80,13 @@
     "typeinfo": "cpp",
     "valarray": "cpp",
     "variant": "cpp",
-    "*.ipp": "cpp"
+    "*.ipp": "cpp",
+    "csetjmp": "cpp",
+    "any": "cpp",
+    "hash_map": "cpp",
+    "charconv": "cpp",
+    "cuchar": "cpp",
+    "forward_list": "cpp",
+    "scoped_allocator": "cpp"
   }
 }

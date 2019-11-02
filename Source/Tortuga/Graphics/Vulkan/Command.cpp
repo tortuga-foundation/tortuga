@@ -322,7 +322,7 @@ void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayo
   }
   vkCmdPipelineBarrier(data.Command, source, destination, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 }
-void BufferToImage(Command data, Buffer::Buffer buffer, Image::Image image, glm::vec2 offset, glm::vec2 size)
+void BufferToImage(Command data, Buffer::Buffer buffer, Image::Image image)
 {
   auto imageLayers = VkImageSubresourceLayers();
   {
@@ -337,8 +337,8 @@ void BufferToImage(Command data, Buffer::Buffer buffer, Image::Image image, glm:
     regionInfo.bufferRowLength = 0;
     regionInfo.bufferImageHeight = 0;
     regionInfo.imageSubresource = imageLayers;
-    regionInfo.imageOffset = {offset.x, offset.y, 0};
-    regionInfo.imageExtent = {size.x, size.y, 1};
+    regionInfo.imageOffset = {0, 0, 0};
+    regionInfo.imageExtent = {image.Width, image.Height, 1};
   }
   vkCmdCopyBufferToImage(data.Command, buffer.Buffer, image.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &regionInfo);
 }

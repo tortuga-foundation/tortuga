@@ -10,7 +10,6 @@
 #include <cstring>
 
 #include "../Core/Console.hpp"
-#include "../Graphics/Image.hpp"
 
 namespace Tortuga
 {
@@ -33,8 +32,17 @@ struct OBJ
   std::vector<Index> Indices;
 };
 
+struct ImageFile
+{
+  uint32_t Width;
+  uint32_t Height;
+  uint32_t Channels;
+  uint32_t TotalByteSize;
+  std::vector<uint8_t> Pixels;
+};
+
 OBJ LoadObjFile(std::string filePath);
-Graphics::Image LoadImageFile(std::string filePath);
+ImageFile LoadImageFile(std::string filePath);
 std::string GetFileContents(std::string filePath);
 void SetFileContents(std::string filePath, std::string data);
 void SetFileContents(std::string filePath, const char *data, uint32_t size);

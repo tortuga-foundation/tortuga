@@ -4,6 +4,7 @@
 #include <glm/glm.hpp>
 
 #include "../Core/ECS/Entity.hpp"
+#include "../Graphics/Image.hpp"
 
 namespace Tortuga
 {

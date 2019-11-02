@@ -7,6 +7,7 @@
                 "${workspaceFolder}/Build/include/"
             ],
             "defines": [
+                "DEBUG_MODE",
                 "GLM_FORCE_RADIANS",
                 "GLM_FORCE_DEPTH_ZERO_TO_ONE"
             ],

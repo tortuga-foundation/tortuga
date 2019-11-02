@@ -60,6 +60,32 @@ Instance Create()
   if (deviceCount <= 0)
     Console::Fatal("Failed to locate any graphics device");
 
+  auto debugReportInfo = VkDebugReportCallbackCreateInfoEXT();
+  {
+    debugReportInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
+#ifdef DEBUG_MODE
+    debugReportInfo.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+#else
+    debugReportInfo.flags = VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
+#endif
+    debugReportInfo.pfnCallback = ErrorCheck::DebugReportCallback;
+  }
+  ErrorCheck::CreateDebugReportCallback(data.Instance, &debugReportInfo, nullptr, &data.DebugCallbackReport);
+
+  auto debugMessageInfo = VkDebugUtilsMessengerCreateInfoEXT();
+  {
+    debugMessageInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+#ifdef DEBUG_MODE
+    debugMessageInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT;
+    debugMessageInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+#else
+    debugMessageInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    debugMessageInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+#endif
+    debugMessageInfo.pfnUserCallback = ErrorCheck::DebugUtilCallback;
+  }
+  ErrorCheck::CreateDebugUtilsMessengerEXT(data.Instance, &debugMessageInfo, nullptr, &data.DebugUtilsMessenger);
+
   //create helper window surface
   VkSurfaceKHR helperSurface = VK_NULL_HANDLE;
   if (!SDL_Vulkan_CreateSurface(helperWindow, data.Instance, &helperSurface))
@@ -84,6 +110,9 @@ void Destroy(Instance data)
 
   for (uint32_t i = 0; i < data.Devices.size(); i++)
     Device::Destroy(data.Devices[i]);
+
+  ErrorCheck::DestroyDebugReportCallbackEXT(data.Instance, data.DebugCallbackReport, nullptr);
+  ErrorCheck::DestroyDebugUtilsMessengerEXT(data.Instance, data.DebugUtilsMessenger, nullptr);
 
   vkDestroyInstance(data.Instance, nullptr);
   SDL_Quit();

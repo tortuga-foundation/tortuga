@@ -34,7 +34,8 @@ layout(location = 2) in vec3 inNormal;
 
 layout(location = 0) out vec3 surfaceNormal;
 layout(location = 1) out vec3 cameraVector;
-layout(location = 2) out vec3 lightVectors[MAXIMUM_LIGHT_INFOS];
+layout(location = 2) out vec2 uvTexture;
+layout(location = 3) out vec3 lightVectors[MAXIMUM_LIGHT_INFOS];
 
 void main()
 {

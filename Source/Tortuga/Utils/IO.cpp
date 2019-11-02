@@ -65,9 +65,9 @@ OBJ LoadObjFile(std::string filePath)
   }
   return data;
 }
-Graphics::Image LoadImageFile(std::string filePath)
+ImageFile LoadImageFile(std::string filePath)
 {
-  Graphics::Image data = {};
+  ImageFile data = {};
   SDL_Surface *surface = IMG_Load_RW(SDL_RWFromFile(filePath.c_str(), "rb"), 1);
   if (surface == nullptr)
   {
@@ -79,11 +79,9 @@ Graphics::Image LoadImageFile(std::string filePath)
   data.Height = surface->h;
   data.Channels = surface->format->BytesPerPixel;
   data.TotalByteSize = data.Channels * data.Width * data.Height;
-  if (data.Pixels != nullptr)
-    free(data.Pixels);
-  data.Pixels = malloc(data.TotalByteSize);
-  memcpy(data.Pixels, surface->pixels, data.TotalByteSize);
-
+  data.Pixels.resize(data.TotalByteSize);
+  memcpy(data.Pixels.data(), surface->pixels, data.TotalByteSize);
+  SDL_FreeSurface(surface);
   return data;
 }
 std::string GetFileContents(std::string filePath)
