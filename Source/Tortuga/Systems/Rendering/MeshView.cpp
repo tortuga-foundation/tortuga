@@ -173,7 +173,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
       //create new buffers
       this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, albedo.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
       Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, albedo.Pixels.data(), this->StagingAlbedoImage.Size);
-      this->AlbedoImage = Graphics::Vulkan::Image::Create(device, albedo.Width, albedo.Height, VK_FORMAT_R8G8B8A8_UINT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+      this->AlbedoImage = Graphics::Vulkan::Image::Create(device, albedo.Width, albedo.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
       this->AlbedoImageView = Graphics::Vulkan::ImageView::Create(device, this->AlbedoImage, VK_IMAGE_ASPECT_COLOR_BIT);
       //update descriptor set
       Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->AlbedoDescriptorSet, {this->AlbedoImageView}, {this->AlbedoImageSampler});

@@ -27,7 +27,7 @@ Rendering::Rendering()
   //mesh material
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
   //material albedo texture
-  DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
+  DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
 
   //rendering
   {
