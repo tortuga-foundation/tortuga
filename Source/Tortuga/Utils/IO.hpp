@@ -36,8 +36,9 @@ struct ImageFile
 {
   uint32_t Width;
   uint32_t Height;
-  uint32_t Channels;
+  uint32_t BytesPerPixel;
   uint32_t TotalByteSize;
+  uint32_t Pitch;
   std::vector<uint8_t> Pixels;
 };
 

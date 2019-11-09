@@ -42,6 +42,7 @@ void main()
   vec4 worldPosition = model * vec4(inPosition, 1.);
   surfaceNormal = (model * vec4(inNormal, 0.)).xyz;
   cameraVector = (inverse(view) * vec4(0., 0., 0., 1.)).xyz - worldPosition.xyz;
+  uvTexture = inTexture;
 
   for (uint i = 0; i < lightsAmount; i++)
     lightVectors[i] = lights[i].position.xyz - worldPosition.xyz;

@@ -39,31 +39,39 @@ struct Image
     this->Height = image.Height;
     this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
     this->Pixels.resize(this->Width * this->Height);
-    for (uint32_t i = 0; i < this->Pixels.size(); i++)
+    const float MAX_COLOR = 256.0f;
+    for (uint32_t x = 0; x < this->Width; x++)
     {
-      this->Pixels[i].a = 1;
-      uint32_t j = i * image.Channels;
-      if (image.Channels == 1)
+      for (uint32_t y = 0; y < this->Height; y++)
       {
-        this->Pixels[i].r = image.Pixels[i + 0] / 255;
-      }
-      else if (image.Channels == 2)
-      {
-        this->Pixels[i].r = image.Pixels[i + 0] / 255;
-        this->Pixels[i].g = image.Pixels[i + 1] / 255;
-      }
-      else if (image.Channels == 3)
-      {
-        this->Pixels[i].r = image.Pixels[i + 0] / 255;
-        this->Pixels[i].g = image.Pixels[i + 1] / 255;
-        this->Pixels[i].b = image.Pixels[i + 2] / 255;
-      }
-      else if (image.Channels == 4)
-      {
-        this->Pixels[i].r = image.Pixels[i + 0] / 255;
-        this->Pixels[i].g = image.Pixels[i + 1] / 255;
-        this->Pixels[i].b = image.Pixels[i + 2] / 255;
-        this->Pixels[i].a = image.Pixels[i + 1] / 255;
+        uint32_t i = y * this->Width + x;
+        uint32_t j = y * image.Pitch + x * image.BytesPerPixel;
+        this->Pixels[i].r = 0;
+        this->Pixels[i].g = 0;
+        this->Pixels[i].b = 0;
+        this->Pixels[i].a = 1;
+        if (image.BytesPerPixel == 1)
+        {
+          this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
+        }
+        else if (image.BytesPerPixel == 2)
+        {
+          this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
+          this->Pixels[i].g = (float)image.Pixels[j + 1] / MAX_COLOR;
+        }
+        else if (image.BytesPerPixel == 3)
+        {
+          this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
+          this->Pixels[i].g = (float)image.Pixels[j + 1] / MAX_COLOR;
+          this->Pixels[i].b = (float)image.Pixels[j + 2] / MAX_COLOR;
+        }
+        else if (image.BytesPerPixel == 4)
+        {
+          this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
+          this->Pixels[i].g = (float)image.Pixels[j + 1] / MAX_COLOR;
+          this->Pixels[i].b = (float)image.Pixels[j + 2] / MAX_COLOR;
+          this->Pixels[i].a = (float)image.Pixels[j + 1] / MAX_COLOR;
+        }
       }
     }
   }

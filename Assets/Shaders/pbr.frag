@@ -21,7 +21,7 @@ layout(set = 2, binding = 0) readonly uniform LightInfoStruct
 
 layout(set = 3, binding = 0) readonly uniform Material
 {
-  vec4 albedo;
+  vec4 albedoColor;
   float metallic;
   float roughness;
 };

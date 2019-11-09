@@ -77,8 +77,9 @@ ImageFile LoadImageFile(std::string filePath)
 
   data.Width = surface->w;
   data.Height = surface->h;
-  data.Channels = surface->format->BytesPerPixel;
-  data.TotalByteSize = data.Channels * data.Width * data.Height;
+  data.BytesPerPixel = surface->format->BytesPerPixel;
+  data.TotalByteSize = data.BytesPerPixel * data.Width * data.Height;
+  data.Pitch = surface->pitch;
   data.Pixels.resize(data.TotalByteSize);
   memcpy(data.Pixels.data(), surface->pixels, data.TotalByteSize);
   SDL_FreeSurface(surface);

@@ -89,6 +89,7 @@ int main()
   //create a monkey
   const auto monkey = Core::Engine::CreateEntity();
   {
+    const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/Sample.jpg");
     const auto mesh = Utils::IO::LoadObjFile("Assets/Models/Monkey.obj");
     Core::Engine::AddComponent<Components::Mesh>(monkey, Components::Mesh(mesh));
     Components::Transform t;
@@ -97,6 +98,7 @@ int main()
     Core::Engine::AddComponent<Components::Transform>(monkey, t);
     Components::Material m;
     m.SetColor(glm::vec3(0, 0, 1));
+    m.SetAlbedo(Graphics::Image(albedo));
     Core::Engine::AddComponent<Components::Material>(monkey, m);
     Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(monkey);
   }
