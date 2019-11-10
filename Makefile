@@ -37,8 +37,14 @@ comp:
 	gcc -c -o $(OUT_DIR)/lib/xdg-decoration.a $(OUT_DIR)/lib/xdg-decoration.c -I$(OUT_DIR)/include
 	
 init:
-	mkdir -p $(OUT_DIR)
+	#Check Prerequisites
+	git --version
+	cmake --version
+	g++ --version
+	make --version
+	python --version
 	#init
+	mkdir -p $(OUT_DIR)
 	git submodule init
 	git submodule update --recursive --init
 	#vulkan headers
@@ -56,6 +62,7 @@ init:
 	rm -rf Submodules/Vulkan-Loader/build
 	#SDL2
 	mkdir -p Submodules/SDL/Build
+	cd Submodules/SDL && autoreconf -f -i
 	cd Submodules/SDL/Build && sh ../autogen.sh && sh ../configure --prefix=$(PWD)/$(OUT_DIR)
 	make -j4 -C Submodules/SDL/Build
 	make install -C Submodules/SDL/Build
