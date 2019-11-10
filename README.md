@@ -24,6 +24,7 @@ Please make sure you are using the correct version of the software. Tortuga has 
 * `gcc/g++` version `9.2.0`
 * `GNU Make` version `4.2.1`
 * `GNU bash` version `5.0.11`
+* `Python` version `3.7.4`
 
 ## Building the library
 

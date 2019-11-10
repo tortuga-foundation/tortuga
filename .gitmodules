@@ -16,3 +16,6 @@
 [submodule "Submodules/SDL_image"]
 	path = Submodules/SDL_image
 	url = https://github.com/SDL-mirror/SDL_image.git
+[submodule "Submodules/Vulkan-ValidationLayers"]
+	path = Submodules/Vulkan-ValidationLayers
+	url = https://github.com/KhronosGroup/Vulkan-ValidationLayers.git
