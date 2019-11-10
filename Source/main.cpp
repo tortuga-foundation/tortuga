@@ -87,42 +87,44 @@ int main()
   //}
 
   //create a monkey
-  //const auto monkey = Core::Engine::CreateEntity();
-  //{
-  //  const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/Sample.jpg");
-  //  const auto mesh = Utils::IO::LoadObjFile("Assets/Models/Monkey.obj");
-  //  Core::Engine::AddComponent<Components::Mesh>(monkey, Components::Mesh(mesh));
-  //  Components::Transform t;
-  //  t.SetPosition(glm::vec3(0, 0, -3));
-  //  t.SetScale(glm::vec3(2, 2, 2));
-  //  Core::Engine::AddComponent<Components::Transform>(monkey, t);
-  //  Components::Material m;
-  //  m.SetColor(glm::vec3(0, 0, 1));
-  //  m.SetAlbedo(Graphics::Image(albedo));
-  //  Core::Engine::AddComponent<Components::Material>(monkey, m);
-  //  Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(monkey);
-  //}
-
-  //create a sphere
-  const auto sphere = Core::Engine::CreateEntity();
+  const auto monkey = Core::Engine::CreateEntity();
   {
     const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/Bricks/Color.jpg");
     const auto normal = Utils::IO::LoadImageFile("Assets/Textures/Bricks/Normal.jpg");
-    const auto mesh = Utils::IO::LoadObjFile("Assets/Models/Sphere.obj");
-    Core::Engine::AddComponent<Components::Mesh>(sphere, Components::Mesh(mesh));
+    const auto mesh = Utils::IO::LoadObjFile("Assets/Models/Monkey.obj");
+    Core::Engine::AddComponent<Components::Mesh>(monkey, Components::Mesh(mesh));
     Components::Transform t;
     t.SetPosition(glm::vec3(0, 0, -3));
-    t.SetScale(glm::vec3(3, 3, 3));
-    Core::Engine::AddComponent<Components::Transform>(sphere, t);
+    t.SetScale(glm::vec3(2, 2, 2));
+    Core::Engine::AddComponent<Components::Transform>(monkey, t);
     Components::Material m;
-    m.SetColor(glm::vec3(1, 1, 1));
-    m.SetRoughness(9.);
-    m.SetMetalic(0);
+    m.SetColor(glm::vec3(0, 0, 1));
     m.SetAlbedo(Graphics::Image(albedo));
     m.SetNormal(Graphics::Image(normal));
-    Core::Engine::AddComponent<Components::Material>(sphere, m);
-    Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(sphere);
+    Core::Engine::AddComponent<Components::Material>(monkey, m);
+    Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(monkey);
   }
+
+  //create a sphere
+  //const auto sphere = Core::Engine::CreateEntity();
+  //{
+  //  const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/Bricks/Color.jpg");
+  //  const auto normal = Utils::IO::LoadImageFile("Assets/Textures/Bricks/Normal.jpg");
+  //  const auto mesh = Utils::IO::LoadObjFile("Assets/Models/Sphere.obj");
+  //  Core::Engine::AddComponent<Components::Mesh>(sphere, Components::Mesh(mesh));
+  //  Components::Transform t;
+  //  t.SetPosition(glm::vec3(0, 0, -3));
+  //  t.SetScale(glm::vec3(3, 3, 3));
+  //  Core::Engine::AddComponent<Components::Transform>(sphere, t);
+  //  Components::Material m;
+  //  m.SetColor(glm::vec3(1, 1, 1));
+  //  m.SetRoughness(9.);
+  //  m.SetMetalic(0);
+  //  m.SetAlbedo(Graphics::Image(albedo));
+  //  m.SetNormal(Graphics::Image(normal));
+  //  Core::Engine::AddComponent<Components::Material>(sphere, m);
+  //  Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(sphere);
+  //}
  
   //add a rendering system to the engine
   Core::Engine::AddSystem<Systems::Rendering>();
