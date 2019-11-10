@@ -71,9 +71,6 @@ init:
 	rm -rf Submodules/glslang/build
 	#vulkan validation layers
 	mkdir -p Submodules/Vulkan-ValidationLayers/build
-	echo 'set(GLSLANG_INSTALL_DIR "$(PWD)/$(OBJ_DIR)" CACHE STRING "" FORCE)' > $(PWD)/Submodules/Vulkan-ValidationLayers/build/helper.cmake
-	echo 'set(VULKAN_HEADERS_INSTALL_DIR "$(PWD)/$(OBJ_DIR)" CACHE STRING "" FORCE)' >> $(PWD)/Submodules/Vulkan-ValidationLayers/build/helper.cmake
-	cd Submodules/Vulkan-ValidationLayers/build && cmake -C helper.cmake -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OBJ_DIR) ..
-	cd Submodules/Vulkan-ValidationLayers/build && cmake -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OBJ_DIR) .
+	cd Submodules/Vulkan-ValidationLayers/build && cmake -DGLSLANG_INSTALL_DIR=$(PWD)/$(OBJ_DIR) -DVULKAN_HEADERS_INSTALL_DIR=$(PWD)/$(OBJ_DIR) -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OBJ_DIR) ..
 	make install -C Submodules/Vulkan-ValidationLayers/build
 	rm -rf Submodules/Vulkan-ValidationLayers/build
