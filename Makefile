@@ -74,7 +74,7 @@ init:
 	mkdir -p Submodules/Vulkan-ValidationLayers/build
 	cd Submodules/Vulkan-ValidationLayers/build && python ../scripts/update_deps.py
 	cp -r Submodules/Vulkan-ValidationLayers/build/glslang/build/install/* $(PWD)/$(OUT_DIR)/ 
-	cd Submodules/Vulkan-ValidationLayers/build && cmake -C helper.cmake -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OUT_DIR) ..
+	cd Submodules/Vulkan-ValidationLayers/build && cmake -C -DGLSLANG_INSTALL_DIR=$(PWD)/$(OUT_DIR) -DVULKAN_HEADERS_INSTALL_DIR=$(PWD)/$(OUT_DIR) -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OUT_DIR) ..
 	make -j4 -C Submodules/Vulkan-ValidationLayers/build
 	make install -C Submodules/Vulkan-ValidationLayers/build
 	rm -rf Submodules/Vulkan-ValidationLayers/build
