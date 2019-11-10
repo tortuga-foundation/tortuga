@@ -42,7 +42,6 @@ init:
 	cmake --version
 	g++ --version
 	make --version
-	python --version
 	#init
 	mkdir -p $(OUT_DIR)
 	git submodule init
