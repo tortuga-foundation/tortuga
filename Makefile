@@ -42,6 +42,7 @@ init:
 	cmake --version
 	g++ --version
 	make --version
+	autoconf --version
 	#init
 	mkdir -p $(OUT_DIR)
 	git submodule init
