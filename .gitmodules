@@ -1,9 +1,6 @@
 [submodule "Submodules/glm"]
 	path = Submodules/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Submodules/glslang"]
-	path = Submodules/glslang
-	url = https://github.com/KhronosGroup/glslang.git
 [submodule "Submodules/Vulkan-Headers"]
 	path = Submodules/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git

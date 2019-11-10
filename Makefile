@@ -69,16 +69,12 @@ init:
 	make -j4 -C Submodules/SDL_image
 	make install -C Submodules/SDL_image
 	#glm
-	ln -f -s ../../Submodules/glm/glm $(OUT_DIR)/include/glm
-	#glslang
-	mkdir -p Submodules/glslang/build
-	cd Submodules/glslang/build && cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OUT_DIR) ..
-	make -j4 -C Submodules/glslang/build
-	make install -C Submodules/glslang/build
-	rm -rf Submodules/glslang/build
+	ln -f -s ../../Submodules/glm/glm $(PWD)/$(OUT_DIR)/include/glm
 	#vulkan validation layers
 	mkdir -p Submodules/Vulkan-ValidationLayers/build
-	cd Submodules/Vulkan-ValidationLayers/build && cmake -DGLSLANG_INSTALL_DIR=$(PWD)/$(OUT_DIR) -DVULKAN_HEADERS_INSTALL_DIR=$(PWD)/$(OUT_DIR) -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OUT_DIR) ..
-	make -j4
+	cd Submodules/Vulkan-ValidationLayers/build && python ../scripts/update_deps.py
+	cp -r Submodules/Vulkan-ValidationLayers/build/glslang/build/install/* $(PWD)/$(OUT_DIR)/ 
+	cd Submodules/Vulkan-ValidationLayers/build && cmake -C helper.cmake -DCMAKE_INSTALL_PREFIX=$(PWD)/$(OUT_DIR) ..
+	make -j4 -C Submodules/Vulkan-ValidationLayers/build
 	make install -C Submodules/Vulkan-ValidationLayers/build
 	rm -rf Submodules/Vulkan-ValidationLayers/build
