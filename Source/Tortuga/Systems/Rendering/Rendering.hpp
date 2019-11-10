@@ -103,6 +103,13 @@ private:
     Graphics::Vulkan::Sampler::Sampler AlbedoImageSampler;
     Graphics::Vulkan::DescriptorSet::DescriptorSet AlbedoDescriptorSet;
     Graphics::Vulkan::Command::Command AlbedoTransferCommand;
+    //material normal texture
+    Graphics::Vulkan::Buffer::Buffer StagingNormalImage;
+    Graphics::Vulkan::Image::Image NormalImage;
+    Graphics::Vulkan::ImageView::ImageView NormalImageView;
+    Graphics::Vulkan::Sampler::Sampler NormalImageSampler;
+    Graphics::Vulkan::DescriptorSet::DescriptorSet NormalDescriptorSet;
+    Graphics::Vulkan::Command::Command NormalTransferCommand;
 
     void Setup(Graphics::Vulkan::Device::Device device, std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> layouts);
     void OnDestroy();

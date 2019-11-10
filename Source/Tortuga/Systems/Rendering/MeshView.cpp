@@ -30,7 +30,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
   }
   //setup descriptor pools
   if (this->DescriptorPool.Pool == VK_NULL_HANDLE)
-    this->DescriptorPool = Graphics::Vulkan::DescriptorPool::Create(device, layouts, 4);
+    this->DescriptorPool = Graphics::Vulkan::DescriptorPool::Create(device, layouts, layouts.size());
 
   if (this->TransformDescriptorSet.set == VK_NULL_HANDLE)
   {
@@ -132,21 +132,38 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
   }
 
   //material albedo
+  glm::vec4 tempPixels = glm::vec4(1, 0, 0, 1);
   if (this->StagingAlbedoImage.Buffer == VK_NULL_HANDLE)
   {
-    this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, 3, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
-    VkFormat imageFormat = VK_FORMAT_R8G8B8_UINT;
-    this->AlbedoImage = Graphics::Vulkan::Image::Create(device, 1, 1, imageFormat, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, sizeof(glm::vec4), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    this->AlbedoImage = Graphics::Vulkan::Image::Create(device, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
     this->AlbedoImageView = Graphics::Vulkan::ImageView::Create(device, this->AlbedoImage, VK_IMAGE_ASPECT_COLOR_BIT);
     this->AlbedoImageSampler = Graphics::Vulkan::Sampler::Create(device);
     this->AlbedoDescriptorSet = Graphics::Vulkan::DescriptorSet::Create(device, this->DescriptorPool, layouts[4]);
     Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->AlbedoDescriptorSet, {this->AlbedoImageView}, {this->AlbedoImageSampler});
-    std::vector<uint8_t> tempPixels = {1, 1, 1};
-    Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, tempPixels.data(), this->StagingAlbedoImage.Size);
+    Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, &tempPixels, this->StagingAlbedoImage.Size);
     this->AlbedoTransferCommand = Graphics::Vulkan::Command::Create(device, this->GraphicsCommandPool, Graphics::Vulkan::Command::PRIMARY);
     Graphics::Vulkan::Command::Begin(this->AlbedoTransferCommand, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+    Graphics::Vulkan::Command::TransferImageLayout(this->AlbedoTransferCommand, this->AlbedoImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     Graphics::Vulkan::Command::BufferToImage(this->AlbedoTransferCommand, this->StagingAlbedoImage, this->AlbedoImage);
+    Graphics::Vulkan::Command::TransferImageLayout(this->AlbedoTransferCommand, this->AlbedoImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     Graphics::Vulkan::Command::End(this->AlbedoTransferCommand);
+  }
+  if (this->StagingNormalImage.Buffer == VK_NULL_HANDLE)
+  {
+    this->StagingNormalImage = Graphics::Vulkan::Buffer::CreateHost(device, sizeof(glm::vec4), VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+    this->NormalImage = Graphics::Vulkan::Image::Create(device, 1, 1, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+    this->NormalImageView = Graphics::Vulkan::ImageView::Create(device, this->NormalImage, VK_IMAGE_ASPECT_COLOR_BIT);
+    this->NormalImageSampler = Graphics::Vulkan::Sampler::Create(device);
+    this->NormalDescriptorSet = Graphics::Vulkan::DescriptorSet::Create(device, this->DescriptorPool, layouts[5]);
+    Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->NormalDescriptorSet, {this->NormalImageView}, {this->NormalImageSampler});
+    Graphics::Vulkan::Buffer::SetData(this->StagingNormalImage, &tempPixels, this->StagingNormalImage.Size);
+    this->NormalTransferCommand = Graphics::Vulkan::Command::Create(device, this->GraphicsCommandPool, Graphics::Vulkan::Command::PRIMARY);
+    Graphics::Vulkan::Command::Begin(this->NormalTransferCommand, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+    Graphics::Vulkan::Command::TransferImageLayout(this->NormalTransferCommand, this->NormalImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    Graphics::Vulkan::Command::BufferToImage(this->NormalTransferCommand, this->StagingNormalImage, this->NormalImage);
+    Graphics::Vulkan::Command::TransferImageLayout(this->NormalTransferCommand, this->NormalImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    Graphics::Vulkan::Command::End(this->NormalTransferCommand);
   }
 
   if (material != nullptr)
@@ -184,6 +201,32 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
       Graphics::Vulkan::Command::TransferImageLayout(this->AlbedoTransferCommand, this->AlbedoImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
       Graphics::Vulkan::Command::End(this->AlbedoTransferCommand);
     }
+    else
+      Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, albedo.Pixels.data(), this->StagingAlbedoImage.Size);
+    
+    const auto normal = material->GetNormal();
+    if (normal.TotalByteSize != this->StagingNormalImage.Size)
+    {
+      //destroy old buffers
+      Graphics::Vulkan::Buffer::Destroy(this->StagingNormalImage);
+      Graphics::Vulkan::ImageView::Destroy(this->NormalImageView);
+      Graphics::Vulkan::Image::Destroy(this->NormalImage);
+      //create new buffers
+      this->StagingNormalImage = Graphics::Vulkan::Buffer::CreateHost(device, normal.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
+      Graphics::Vulkan::Buffer::SetData(this->StagingNormalImage, normal.Pixels.data(), this->StagingNormalImage.Size);
+      this->NormalImage = Graphics::Vulkan::Image::Create(device, normal.Width, normal.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT);
+      this->NormalImageView = Graphics::Vulkan::ImageView::Create(device, this->NormalImage, VK_IMAGE_ASPECT_COLOR_BIT);
+      //update descriptor set
+      Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->NormalDescriptorSet, {this->NormalImageView}, {this->NormalImageSampler});
+      //update transfer command
+      Graphics::Vulkan::Command::Begin(this->NormalTransferCommand, VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT);
+      Graphics::Vulkan::Command::TransferImageLayout(this->NormalTransferCommand, this->NormalImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+      Graphics::Vulkan::Command::BufferToImage(this->NormalTransferCommand, this->StagingNormalImage, this->NormalImage);
+      Graphics::Vulkan::Command::TransferImageLayout(this->NormalTransferCommand, this->NormalImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+      Graphics::Vulkan::Command::End(this->NormalTransferCommand);
+    }
+    else
+      Graphics::Vulkan::Buffer::SetData(this->StagingNormalImage, normal.Pixels.data(), this->StagingNormalImage.Size);
   }
 }
 void Rendering::MeshView::OnDestroy()

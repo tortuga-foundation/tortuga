@@ -19,12 +19,33 @@ struct Image
   uint32_t TotalByteSize;
   std::vector<glm::vec4> Pixels;
 
+  static Image Blue()
+  {
+    auto data = Image();
+    data.Width = 1;
+    data.Height = 1;
+    data.TotalByteSize = data.Width * data.Height * sizeof(glm::vec4);
+    data.Pixels.resize(data.Width * data.Height);
+    data.Pixels[0] = glm::vec4(0, 0, 1, 1);
+    return data;
+  }
+  static Image White()
+  {
+    auto data = Image();
+    data.Width = 1;
+    data.Height = 1;
+    data.TotalByteSize = data.Width * data.Height * sizeof(glm::vec4);
+    data.Pixels.resize(data.Width * data.Height);
+    data.Pixels[0] = glm::vec4(1, 1, 1, 1);
+    return data;
+  }
   Image()
   {
     this->Width = 1;
     this->Height = 1;
     this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
     this->Pixels.resize(this->Width * this->Height);
+    this->Pixels[0] = glm::vec4(0, 0, 0, 1);
   }
   Image(uint32_t width, uint32_t height)
   {
@@ -32,6 +53,7 @@ struct Image
     this->Height = height;
     this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
     this->Pixels.resize(this->Width * this->Height);
+    this->Pixels[0] = glm::vec4(0, 0, 0, 1);
   }
   Image(Utils::IO::ImageFile image)
   {

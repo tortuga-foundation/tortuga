@@ -31,18 +31,25 @@ layout(set = 2, binding = 0) readonly uniform LightInfoStruct
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexture;
 layout(location = 2) in vec3 inNormal;
+layout(location = 3) in vec3 inTangent;
+layout(location = 4) in vec3 inBiTangent;
 
 layout(location = 0) out vec3 surfaceNormal;
 layout(location = 1) out vec3 cameraVector;
 layout(location = 2) out vec2 uvTexture;
-layout(location = 3) out vec3 lightVectors[MAXIMUM_LIGHT_INFOS];
+layout(location = 3) out mat3 TBN;
+layout(location = 6) out vec3 lightVectors[MAXIMUM_LIGHT_INFOS];
 
 void main()
 {
   vec4 worldPosition = model * vec4(inPosition, 1.);
-  surfaceNormal = (model * vec4(inNormal, 0.)).xyz;
   cameraVector = (inverse(view) * vec4(0., 0., 0., 1.)).xyz - worldPosition.xyz;
   uvTexture = inTexture;
+  surfaceNormal = normalize(model * vec4(inNormal, 0.)).xyz;
+  //TBN
+  vec3 surfaceTangent = normalize(model * vec4(inTangent, 0.)).xyz;
+  vec3 SurfaceBiTangent = normalize(model * vec4(inBiTangent, 0.)).xyz;
+  TBN = mat3(surfaceTangent, SurfaceBiTangent, surfaceNormal);
 
   for (uint i = 0; i < lightsAmount; i++)
     lightVectors[i] = lights[i].position.xyz - worldPosition.xyz;

@@ -14,7 +14,8 @@ struct Material : Core::ECS::Component
 {
 private:
   bool IsDirty = false;
-  Graphics::Image Albedo;
+  Graphics::Image Albedo = Graphics::Image::White();
+  Graphics::Image Normal = Graphics::Image::Blue();
   glm::vec3 Color = glm::vec3(0.4, 0.4, 0.4);
   float Metalic = 0.0f;
   float Roughness = 0.3f;
@@ -63,6 +64,14 @@ public:
   void SetAlbedo(Graphics::Image image)
   {
     this->Albedo = image;
+  }
+  Graphics::Image GetNormal()
+  {
+    return this->Normal;
+  }
+  void SetNormal(Graphics::Image image)
+  {
+    this->Normal = image;
   }
 };
 } // namespace Components

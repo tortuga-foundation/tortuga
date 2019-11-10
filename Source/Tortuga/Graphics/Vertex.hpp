@@ -11,9 +11,11 @@ namespace Graphics
 {
 struct Vertex
 {
-  glm::vec3 Position;
-  glm::vec2 Texture;
-  glm::vec3 Normal;
+  glm::vec3 Position = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec2 Texture = glm::vec2(0.0f, 0.0f);
+  glm::vec3 Normal = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 Tangent = glm::vec3(0.0f, 0.0f, 0.0f);
+  glm::vec3 BiTangent = glm::vec3(0.0f, 0.0f, 0.0f);
 
   static std::vector<VkVertexInputBindingDescription> GetBindingDescription()
   {
@@ -29,7 +31,7 @@ struct Vertex
 
   static std::vector<VkVertexInputAttributeDescription> GetAttributeDescriptions()
   {
-    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(3);
+    std::vector<VkVertexInputAttributeDescription> attributeDescriptions(5);
 
     //position
     attributeDescriptions[0].binding = 0;
@@ -48,6 +50,18 @@ struct Vertex
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32B32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(Vertex, Vertex::Normal);
+
+    //tangent
+    attributeDescriptions[3].binding = 0;
+    attributeDescriptions[3].location = 3;
+    attributeDescriptions[3].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[3].offset = offsetof(Vertex, Vertex::Tangent);
+
+    //bi-tangent
+    attributeDescriptions[4].binding = 0;
+    attributeDescriptions[4].location = 4;
+    attributeDescriptions[4].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[4].offset = offsetof(Vertex, Vertex::BiTangent);
 
     return attributeDescriptions;
   }
