@@ -61,13 +61,13 @@ init:
 	rm -rf Submodules/Vulkan-Loader/build
 	#SDL2
 	mkdir -p Submodules/SDL/Build
-	cd Submodules/SDL/Build && sh ../autogen.sh && sh ../configure --prefix=$(PWD)/$(OUT_DIR)
+	cd Submodules/SDL/Build && sh ../autogen.sh && ../configure --prefix=$(PWD)/$(OUT_DIR)
 	make -j4 -C Submodules/SDL/Build
 	make install -C Submodules/SDL/Build
 	rm -r -f Submodules/SDL_image/Build
 	#SDL2 Image
 	mkdir -p Submodules/SDL_image/Build
-	cd Submodules/SDL_image/Build && sh ../autogen.sh && sh ../configure --prefix=$(PWD)/$(OUT_DIR)
+	cd Submodules/SDL_image/Build && sh ../autogen.sh && ../configure --prefix=$(PWD)/$(OUT_DIR)
 	make -j4 -C Submodules/SDL_image/Build
 	make install -C Submodules/SDL_image/Build
 	rm -r -f Submodules/SDL_image/Build
