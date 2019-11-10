@@ -33,7 +33,7 @@ Please make sure you are using the correct version of the software. Tortuga has 
 1. Download the project `git clone git@gitlab.com:zeeshan5951/tortuga-library.git`
 2. Change Directory `cd tortuga-library`
 3. Setup required dependencies `make init`
-4. Build project `make`
+4. Build project `make -j4`
 5. Run the application `LD_LIBRARY_PATH=$PWD/Build/lib ./Build/tortuga`
 
 ##### Visual Studio Code
