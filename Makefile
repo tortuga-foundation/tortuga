@@ -69,6 +69,8 @@ init:
 	rm -r -f Submodules/SDL_image/Build
 	#SDL2 Image
 	mkdir -p Submodules/SDL_image/Build
+	export CPPFLAGS="-I$(PWD)/$(OUT_DIR)/include"
+	export LDFLAGS="-L$(PWD)/$(OUT_DIR)/lib"
 	cd Submodules/SDL_image && autoreconf -f -i
 	cd Submodules/SDL_image/Build && sh ../autogen.sh && sh ../configure --prefix=$(PWD)/$(OUT_DIR)
 	make -j4 -C Submodules/SDL_image/Build
