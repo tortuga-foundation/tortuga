@@ -209,7 +209,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
       //create new buffers
       this->StagingAlbedoImage = Graphics::Vulkan::Buffer::CreateHost(device, albedo.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
       Graphics::Vulkan::Buffer::SetData(this->StagingAlbedoImage, albedo.Pixels.data(), this->StagingAlbedoImage.Size);
-      this->AlbedoImage = Graphics::Vulkan::Image::Create(device, albedo.Width, albedo.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 3);
+      this->AlbedoImage = Graphics::Vulkan::Image::Create(device, albedo.Width, albedo.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 10);
       this->AlbedoImageView = Graphics::Vulkan::ImageView::Create(device, this->AlbedoImage, VK_IMAGE_ASPECT_COLOR_BIT);
       //update descriptor set
       Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->AlbedoDescriptorSet, {this->AlbedoImageView}, {this->AlbedoImageSampler});
@@ -234,7 +234,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
       //create new buffers
       this->StagingNormalImage = Graphics::Vulkan::Buffer::CreateHost(device, normal.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
       Graphics::Vulkan::Buffer::SetData(this->StagingNormalImage, normal.Pixels.data(), this->StagingNormalImage.Size);
-      this->NormalImage = Graphics::Vulkan::Image::Create(device, normal.Width, normal.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 3);
+      this->NormalImage = Graphics::Vulkan::Image::Create(device, normal.Width, normal.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 10);
       this->NormalImageView = Graphics::Vulkan::ImageView::Create(device, this->NormalImage, VK_IMAGE_ASPECT_COLOR_BIT);
       //update descriptor set
       Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->NormalDescriptorSet, {this->NormalImageView}, {this->NormalImageSampler});
@@ -259,7 +259,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
       //create new buffers
       this->StagingDetail1Image = Graphics::Vulkan::Buffer::CreateHost(device, detail1.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);
       Graphics::Vulkan::Buffer::SetData(this->StagingDetail1Image, detail1.Pixels.data(), this->StagingDetail1Image.Size);
-      this->Detail1Image = Graphics::Vulkan::Image::Create(device, detail1.Width, detail1.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 3);
+      this->Detail1Image = Graphics::Vulkan::Image::Create(device, detail1.Width, detail1.Height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, 10);
       this->Detail1ImageView = Graphics::Vulkan::ImageView::Create(device, this->Detail1Image, VK_IMAGE_ASPECT_COLOR_BIT);
       //update descriptor set
       Graphics::Vulkan::DescriptorSet::UpdateDescriptorSet(this->Detail1DescriptorSet, {this->Detail1ImageView}, {this->Detail1ImageSampler});

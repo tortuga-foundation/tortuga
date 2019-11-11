@@ -178,6 +178,7 @@ Image::Image GetImage(Swapchain data, uint32_t index)
   image.Height = data.Extent.height;
   image.Image = data.Images[index];
   image.Memory = VK_NULL_HANDLE;
+  image.MipMapLevel = 1;
   return image;
 }
 void PresentImage(Swapchain data, uint32_t imageIndex, VkQueue Queue, std::vector<Semaphore::Semaphore> waitSemaphores)

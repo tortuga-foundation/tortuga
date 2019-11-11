@@ -28,9 +28,9 @@ Sampler Create(Device::Device device)
     createInfo.compareEnable = VK_FALSE;
     createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    createInfo.mipLodBias = 0.0f;
-    createInfo.minLod = 2.0f;
-    createInfo.maxLod = 2.0f;
+    createInfo.mipLodBias = 5.0f;
+    createInfo.minLod = 5.0f;
+    createInfo.maxLod = 10.0f;
   }
 
   ErrorCheck::Callback(vkCreateSampler(device.Device, &createInfo, nullptr, &data.Sampler));

@@ -53,7 +53,7 @@ void SetViewport(Command data, uint32_t x, uint32_t y, uint32_t width, uint32_t 
 void Compute(Command data, uint32_t x, uint32_t y, uint32_t z);
 void ExecuteCommands(Command data, std::vector<Command> commands);
 void Submit(std::vector<Command> data, VkQueue queue, std::vector<Semaphore::Semaphore> wait = {}, std::vector<Semaphore::Semaphore> signal = {}, Fence::Fence fence = {VK_NULL_HANDLE, VK_NULL_HANDLE});
-void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevel = 1);
+void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout);
 void BufferToImage(Command data, Buffer::Buffer buffer, Image::Image image);
 void CopyImage(Command data, Image::Image source, Image::Image destination);
 void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport = glm::vec4(0, 0, 1, 1));

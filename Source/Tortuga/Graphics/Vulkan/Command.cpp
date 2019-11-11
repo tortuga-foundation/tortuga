@@ -219,13 +219,8 @@ void Submit(std::vector<Command> data, VkQueue queue, std::vector<Semaphore::Sem
   }
   ErrorCheck::Callback(vkQueueSubmit(queue, 1, &submitInfo, fence.Fence));
 }
-void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevel)
+void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout)
 {
-  if (mipLevel <= 0)
-  {
-    Console::Error("Mip Level cannot be 0");
-    mipLevel = 1;
-  }
   //aspect flags
   VkImageAspectFlags aspect = 0;
   if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
@@ -319,7 +314,7 @@ void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayo
     barrier.image = image.Image;
     barrier.subresourceRange.aspectMask = aspect;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = mipLevel;
+    barrier.subresourceRange.levelCount = image.MipMapLevel;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
     barrier.srcAccessMask = sourceAccess;

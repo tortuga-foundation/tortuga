@@ -26,7 +26,6 @@ Image::Image(Utils::IO::ImageFile image)
     this->Height = image.Height;
     this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
     this->Pixels.resize(this->Width * this->Height);
-    const float MAX_COLOR = 256.0f;
     for (uint32_t x = 0; x < this->Width; x++)
     {
         for (uint32_t y = 0; y < this->Height; y++)
@@ -39,25 +38,25 @@ Image::Image(Utils::IO::ImageFile image)
             this->Pixels[i].a = 1;
             if (image.BytesPerPixel == 1)
             {
-                this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
+                this->Pixels[i].r = (float)image.Pixels[j + 0];
             }
             else if (image.BytesPerPixel == 2)
             {
-                this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
-                this->Pixels[i].g = (float)image.Pixels[j + 1] / MAX_COLOR;
+                this->Pixels[i].r = (float)image.Pixels[j + 0];
+                this->Pixels[i].g = (float)image.Pixels[j + 1];
             }
             else if (image.BytesPerPixel == 3)
             {
-                this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
-                this->Pixels[i].g = (float)image.Pixels[j + 1] / MAX_COLOR;
-                this->Pixels[i].b = (float)image.Pixels[j + 2] / MAX_COLOR;
+                this->Pixels[i].r = (float)image.Pixels[j + 0];
+                this->Pixels[i].g = (float)image.Pixels[j + 1];
+                this->Pixels[i].b = (float)image.Pixels[j + 2];
             }
             else if (image.BytesPerPixel == 4)
             {
-                this->Pixels[i].r = (float)image.Pixels[j + 0] / MAX_COLOR;
-                this->Pixels[i].g = (float)image.Pixels[j + 1] / MAX_COLOR;
-                this->Pixels[i].b = (float)image.Pixels[j + 2] / MAX_COLOR;
-                this->Pixels[i].a = (float)image.Pixels[j + 1] / MAX_COLOR;
+                this->Pixels[i].r = (float)image.Pixels[j + 0];
+                this->Pixels[i].g = (float)image.Pixels[j + 1];
+                this->Pixels[i].b = (float)image.Pixels[j + 2];
+                this->Pixels[i].a = (float)image.Pixels[j + 1];
             }
         }
     }

@@ -56,7 +56,7 @@ void main()
   float materialReflection = detail1.g;
   float materialAmbientOclusion = detail1.b;
 
-  vec3 ambient = vec3(0.001);
+  vec3 ambient = vec3(0.005);
   vec3 diffuse = vec3(0.);
   vec3 specular = vec3(0.);
   for (int i = 0; i < lightsAmount; i++) {

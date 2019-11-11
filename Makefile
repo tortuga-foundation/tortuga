@@ -11,7 +11,7 @@ COMPILER = g++
 PRE_PROCESSOR = -DDEBUG_MODE -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE
 FLAGS = -g -std=c++17 -pthread -Wall -Wno-narrowing -Wno-unused $(PRE_PROCESSOR) -fPIC
 PATHS = -IBuild/include -LBuild/lib
-LIBS = -lvulkan -lSDL2 -lSDL2_image -ldl
+LIBS = -lvulkan -lSDL2 -lSDL2_image -ldl -lVkLayer_khronos_validation
 
 #get a list of all cpp files excluding executable file
 SRC_FILES := $(shell find $(SRC_DIR)/ -type f -name '*.cpp' ! -path '$(SRC_EXECUTABLE)')

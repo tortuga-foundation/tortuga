@@ -43,3 +43,5 @@ Please make sure you are using the correct version of the software. Tortuga has 
 2. Open project with vs code
 3. Run 'init' task to get and build submodules
 4. Launch project
+
+NOTE: instead of deleting the build folder please use `make clean` to do a clean build
