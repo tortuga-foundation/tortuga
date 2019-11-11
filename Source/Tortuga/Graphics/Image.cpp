@@ -110,6 +110,7 @@ void Image::CopyChannel(Image sourceImage, ChannelType source, ChannelType desti
                 this->Pixels[i].g = val;
             else if (destination == CHANNEL_B)
                 this->Pixels[i].b = val;
+            else
             {
                 Console::Error("passed unknown argument");
                 return;
