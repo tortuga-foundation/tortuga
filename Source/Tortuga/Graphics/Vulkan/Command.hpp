@@ -56,7 +56,8 @@ void Submit(std::vector<Command> data, VkQueue queue, std::vector<Semaphore::Sem
 void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevel = 1);
 void BufferToImage(Command data, Buffer::Buffer buffer, Image::Image image);
 void CopyImage(Command data, Image::Image source, Image::Image destination);
-void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport = glm::vec4(0, 0, 1, 1), uint32_t srcMipLevel = 0, uint32_t destMipLevel = 0);
+void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport = glm::vec4(0, 0, 1, 1));
+void CreateMipMap(Command data, Image::Image image);
 } // namespace Command
 } // namespace Vulkan
 } // namespace Graphics

@@ -22,6 +22,7 @@ struct Image
   VkFormat Format;
   uint32_t Width;
   uint32_t Height;
+  uint32_t MipMapLevel;
 };
 
 //depth buffer helpers
@@ -29,7 +30,7 @@ VkFormat FindSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<
 VkFormat FindDepthFormat(VkPhysicalDevice device);
 bool HasStencilComponent(VkFormat format);
 
-Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat imageFormat, VkImageUsageFlags usageFlags);
+Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat imageFormat, VkImageUsageFlags usageFlags, uint32_t mipLevels = 1);
 void Destroy(Image data);
 } // namespace Image
 } // namespace Vulkan

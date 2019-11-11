@@ -372,13 +372,13 @@ void CopyImage(Command data, Image::Image source, Image::Image destination)
   }
   vkCmdCopyImage(data.Command, source.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, destination.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyInfo);
 }
-void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport, uint32_t srcMipLevel, uint32_t destMipLevel)
+void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport)
 {
   auto blitInfo = VkImageBlit();
   {
     blitInfo.srcSubresource = VkImageSubresourceLayers();
     blitInfo.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    blitInfo.srcSubresource.mipLevel = srcMipLevel;
+    blitInfo.srcSubresource.mipLevel = 0;
     blitInfo.srcSubresource.baseArrayLayer = 0;
     blitInfo.srcSubresource.layerCount = 1;
     blitInfo.srcOffsets[0] = {viewport.x * source.Width, viewport.y * source.Height, 0};
@@ -386,13 +386,52 @@ void BlitImage(Command data, Image::Image source, Image::Image destination, glm:
 
     blitInfo.dstSubresource = VkImageSubresourceLayers();
     blitInfo.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    blitInfo.dstSubresource.mipLevel = destMipLevel;
+    blitInfo.dstSubresource.mipLevel = 0;
     blitInfo.dstSubresource.baseArrayLayer = 0;
     blitInfo.dstSubresource.layerCount = 1;
     blitInfo.dstOffsets[0] = {viewport.x * destination.Width, viewport.y * destination.Height, 0};
     blitInfo.dstOffsets[1] = {viewport.z * destination.Width, viewport.w * destination.Height, 1};
   }
   vkCmdBlitImage(data.Command, source.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, destination.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitInfo, VK_FILTER_LINEAR);
+}
+
+void CreateMipMap(Command data, Image::Image image)
+{
+  for (uint32_t i = 0; i < image.MipMapLevel; i++)
+  {
+    float sourceWidth = image.Width;
+    float sourceHeight = image.Height;
+    if (i > 0)
+    {
+      const float iTimes2 = i * 2;
+      sourceWidth /= iTimes2;
+      sourceHeight /= iTimes2;
+    }
+
+    const float devideRatio = ((i + 1) * 2);
+    const float destinationWidth = image.Width / devideRatio;
+    const float destinationHeight = image.Height / devideRatio;
+
+    auto blitInfo = VkImageBlit();
+    {
+      blitInfo.srcSubresource = VkImageSubresourceLayers();
+      blitInfo.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      blitInfo.srcSubresource.mipLevel = i;
+      blitInfo.srcSubresource.baseArrayLayer = 0;
+      blitInfo.srcSubresource.layerCount = 1;
+      blitInfo.srcOffsets[0] = {0, 0, 0};
+      blitInfo.srcOffsets[1] = {sourceWidth, sourceHeight, 1};
+
+      blitInfo.dstSubresource = VkImageSubresourceLayers();
+      blitInfo.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+      blitInfo.dstSubresource.mipLevel = i + 1;
+      blitInfo.dstSubresource.baseArrayLayer = 0;
+      blitInfo.dstSubresource.layerCount = 1;
+      blitInfo.dstOffsets[0] = {0, 0, 0};
+      blitInfo.dstOffsets[1] = {destinationWidth, destinationHeight, 1};
+    }
+    vkCmdBlitImage(data.Command, image.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blitInfo, VK_FILTER_LINEAR);
+  }
 }
 } // namespace Command
 } // namespace Vulkan

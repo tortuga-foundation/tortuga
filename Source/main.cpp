@@ -72,7 +72,7 @@ int main()
     Core::Engine::AddComponent<Components::Light>(light, l);
   }
 
-  //create a sphere
+  //create a plane
   const auto sphere = Core::Engine::CreateEntity();
   {
     const auto albedo = Utils::IO::LoadImageFile("Assets/Textures/Bricks/Color.jpg");

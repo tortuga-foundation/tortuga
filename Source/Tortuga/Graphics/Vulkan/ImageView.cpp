@@ -28,7 +28,7 @@ ImageView Create(Device::Device device, Image::Image image, VkImageAspectFlags a
     //subresource
     createInfo.subresourceRange.aspectMask = aspectFlags;
     createInfo.subresourceRange.baseMipLevel = 0;
-    createInfo.subresourceRange.levelCount = 1;
+    createInfo.subresourceRange.levelCount = image.MipMapLevel;
     createInfo.subresourceRange.baseArrayLayer = 0;
     createInfo.subresourceRange.layerCount = 1;
   }
