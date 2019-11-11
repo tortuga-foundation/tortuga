@@ -20,12 +20,12 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OUT_DIR)/%.o,$(SRC_FILES))
 
 #link and create executable
 all: $(OBJ_FILES)
-	#test
-	$(COMPILER) -o $(OUT_DIR)/$(TARGET) $(SRC_EXECUTABLE) $(FLAGS) $(OBJ_FILES) $(PATHS) $(LIBS)
 	#static library
-	ar rcs $(OUT_DIR)/$(TARGET)-static.a $(OBJ_FILES)
+	ar rcs $(OUT_DIR)/lib/lib$(TARGET).a $(OBJ_FILES)
 	#shared library
-	$(COMPILER) -shared $(FLAGS) $(OBJ_FILES) -o $(OUT_DIR)/$(TARGET)-shared.so $(PATHS) $(LIBS)
+	$(COMPILER) -shared $(FLAGS) $(OBJ_FILES) -o $(OUT_DIR)/lib/lib$(TARGET).so $(PATHS) $(LIBS)
+	#compile test application
+	$(COMPILER) -o $(OUT_DIR)/$(TARGET) $(SRC_EXECUTABLE) $(FLAGS) $(PATHS) $(LIBS) -ltortuga
 
 #create obj files
 $(OUT_DIR)/%.o: $(SRC_DIR)/%.cpp
