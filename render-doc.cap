@@ -1,0 +1,33 @@
+{
+    "rdocCaptureSettings": 1,
+    "settings": {
+        "autoStart": false,
+        "commandLine": "",
+        "environment": [
+            {
+                "separator": "Platform style",
+                "type": "Set",
+                "value": "/home/zeeshan/Documents/Projects/tortuga-library/Build/lib",
+                "variable": "LD_LIBRARY_PATH"
+            }
+        ],
+        "executable": "/home/zeeshan/Documents/Projects/tortuga-library/Build/tortuga",
+        "inject": false,
+        "numQueuedFrames": 0,
+        "options": {
+            "allowFullscreen": true,
+            "allowVSync": true,
+            "apiValidation": false,
+            "captureAllCmdLists": false,
+            "captureCallstacks": false,
+            "captureCallstacksOnlyDraws": false,
+            "debugOutputMute": true,
+            "delayForDebugger": 0,
+            "hookIntoChildren": false,
+            "refAllResources": false,
+            "verifyBufferAccess": false
+        },
+        "queuedFrameCap": 0,
+        "workingDir": "/home/zeeshan/Documents/Projects/tortuga-library"
+    }
+}
