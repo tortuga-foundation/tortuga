@@ -231,6 +231,7 @@ void Rendering::MeshView::Setup(Graphics::Vulkan::Device::Device device, std::ve
 }
 void Rendering::MeshView::OnDestroy()
 {
+  Graphics::Vulkan::Fence::WaitForFences(Rendering::Instance->RenderFence);
   Graphics::Vulkan::Buffer::Destroy(this->StagingMaterialBuffer);
   Graphics::Vulkan::Buffer::Destroy(this->MaterialBuffer);
   Graphics::Vulkan::Buffer::Destroy(this->StagingVertexBuffer);

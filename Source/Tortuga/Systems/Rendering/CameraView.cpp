@@ -32,6 +32,7 @@ void Rendering::CameraView::Setup(Graphics::Vulkan::Device::Device device, Graph
 }
 void Rendering::CameraView::OnDestroy()
 {
+  Graphics::Vulkan::Fence::WaitForFences(Rendering::Instance->RenderFence);
   Graphics::CameraRender::Destroy(this->Render);
   Graphics::Vulkan::DescriptorPool::Destroy(this->DescriptorPool);
   Graphics::Vulkan::Buffer::Destroy(this->StagingCameraMatrix);

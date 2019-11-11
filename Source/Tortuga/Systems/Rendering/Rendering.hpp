@@ -50,7 +50,6 @@ private:
   std::vector<Graphics::Vulkan::Semaphore::Semaphore> TransferSemaphore;
   std::vector<Graphics::Vulkan::Semaphore::Semaphore> TransferGraphicsSemaphore;
   std::vector<Graphics::Vulkan::Semaphore::Semaphore> RenderSemaphore;
-  std::vector<Graphics::Vulkan::Fence::Fence> RenderFence;
 
   struct LightInfoStruct
   {
@@ -131,17 +130,17 @@ private:
     void OnDestroy();
   };
 
-
   struct LightView : public Core::ECS::Component
   {
     Graphics::CameraRender::CameraRender Render;
-    
   };
 
   void SetupSemaphores(uint32_t size);
 
 public:
+  static Rendering *Instance;
   static uint32_t LightsPerMesh;
+  std::vector<Graphics::Vulkan::Fence::Fence> RenderFence;
 
   Rendering();
   ~Rendering();

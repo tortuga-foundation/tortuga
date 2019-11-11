@@ -134,8 +134,6 @@ int main()
   //main loop
   while (!ShouldClose)
     Core::Engine::IterateSystems();
-  //make sure we are done rendering before destroying everything
-  Core::Engine::GetSystem<Systems::Rendering>()->WaitForDevice();
 
   //auto destroys everything
   Core::Engine::Destroy();

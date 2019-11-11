@@ -5,8 +5,10 @@ namespace Tortuga
 namespace Systems
 {
 uint32_t Rendering::LightsPerMesh = 3;
+Rendering *Rendering::Instance = nullptr;
 Rendering::Rendering()
 {
+  Rendering::Instance = this;
   //vulkan instance & display surface
   VulkanInstance = Graphics::Vulkan::Instance::Create();
   const auto device = VulkanInstance.Devices[0];
