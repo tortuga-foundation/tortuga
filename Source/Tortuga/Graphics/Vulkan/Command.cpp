@@ -219,8 +219,13 @@ void Submit(std::vector<Command> data, VkQueue queue, std::vector<Semaphore::Sem
   }
   ErrorCheck::Callback(vkQueueSubmit(queue, 1, &submitInfo, fence.Fence));
 }
-void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout)
+void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayout, VkImageLayout newLayout, uint32_t mipLevel)
 {
+  if (mipLevel <= 0)
+  {
+    Console::Error("Mip Level cannot be 0");
+    mipLevel = 1;
+  }
   //aspect flags
   VkImageAspectFlags aspect = 0;
   if (newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL)
@@ -314,7 +319,7 @@ void TransferImageLayout(Command data, Image::Image image, VkImageLayout oldLayo
     barrier.image = image.Image;
     barrier.subresourceRange.aspectMask = aspect;
     barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.levelCount = mipLevel;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
     barrier.srcAccessMask = sourceAccess;
@@ -367,22 +372,23 @@ void CopyImage(Command data, Image::Image source, Image::Image destination)
   }
   vkCmdCopyImage(data.Command, source.Image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, destination.Image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copyInfo);
 }
-void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport)
+void BlitImage(Command data, Image::Image source, Image::Image destination, glm::vec4 viewport, uint32_t srcMipLevel, uint32_t destMipLevel)
 {
-  auto subResource = VkImageSubresourceLayers();
-  {
-    subResource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-    subResource.mipLevel = 0;
-    subResource.baseArrayLayer = 0;
-    subResource.layerCount = 1;
-  }
-
   auto blitInfo = VkImageBlit();
   {
-    blitInfo.srcSubresource = subResource;
+    blitInfo.srcSubresource = VkImageSubresourceLayers();
+    blitInfo.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blitInfo.srcSubresource.mipLevel = srcMipLevel;
+    blitInfo.srcSubresource.baseArrayLayer = 0;
+    blitInfo.srcSubresource.layerCount = 1;
     blitInfo.srcOffsets[0] = {viewport.x * source.Width, viewport.y * source.Height, 0};
     blitInfo.srcOffsets[1] = {viewport.z * source.Width, viewport.w * source.Height, 1};
-    blitInfo.dstSubresource = subResource;
+
+    blitInfo.dstSubresource = VkImageSubresourceLayers();
+    blitInfo.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    blitInfo.dstSubresource.mipLevel = destMipLevel;
+    blitInfo.dstSubresource.baseArrayLayer = 0;
+    blitInfo.dstSubresource.layerCount = 1;
     blitInfo.dstOffsets[0] = {viewport.x * destination.Width, viewport.y * destination.Height, 0};
     blitInfo.dstOffsets[1] = {viewport.z * destination.Width, viewport.w * destination.Height, 1};
   }
