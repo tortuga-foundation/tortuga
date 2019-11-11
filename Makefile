@@ -9,10 +9,9 @@ SRC_EXECUTABLE = Source/main.cpp
 #compiler options
 COMPILER = g++
 PRE_PROCESSOR = -DDEBUG_MODE -DGLM_FORCE_RADIANS -DGLM_FORCE_DEPTH_ZERO_TO_ONE
-FLAGS = -g -std=c++17 -pthread -Wall -Wno-narrowing -Wno-unused $(PRE_PROCESSOR)
+FLAGS = -g -std=c++17 -pthread -Wall -Wno-narrowing -Wno-unused $(PRE_PROCESSOR) -fPIC
 PATHS = -IBuild/include -LBuild/lib
 LIBS = -lvulkan -lSDL2 -lSDL2_image -ldl
-LIBS_A := $(shell find $(OUT_DIR)/lib/ -type f -name '*.a') $(shell find $(OUT_DIR)/lib/ -type f -name '*.o')
 
 #get a list of all cpp files excluding executable file
 SRC_FILES := $(shell find $(SRC_DIR)/ -type f -name '*.cpp' ! -path '$(SRC_EXECUTABLE)')
@@ -21,7 +20,12 @@ OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OUT_DIR)/%.o,$(SRC_FILES))
 
 #link and create executable
 all: $(OBJ_FILES)
-	$(COMPILER) -o $(OUT_DIR)/$(TARGET) $(SRC_EXECUTABLE) $(FLAGS) $(OBJ_FILES) $(LIBS_A) $(PATHS) $(LIBS)
+	#test
+	$(COMPILER) -o $(OUT_DIR)/$(TARGET) $(SRC_EXECUTABLE) $(FLAGS) $(OBJ_FILES) $(PATHS) $(LIBS)
+	#static library
+	ar rcs $(OUT_DIR)/$(TARGET)-static.a $(OBJ_FILES)
+	#shared library
+	$(COMPILER) -shared $(FLAGS) $(OBJ_FILES) -o $(OUT_DIR)/$(TARGET)-shared.so $(PATHS) $(LIBS)
 
 #create obj files
 $(OUT_DIR)/%.o: $(SRC_DIR)/%.cpp
