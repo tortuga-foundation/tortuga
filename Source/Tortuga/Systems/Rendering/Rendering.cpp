@@ -23,7 +23,7 @@ Rendering::Rendering()
   //view matrix & projection matrix
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
   //model matrix
-  DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
+  DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
   //light infos
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
   //mesh material
@@ -31,6 +31,8 @@ Rendering::Rendering()
   //material albedo texture
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
   //material normal texture
+  DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
+  //detail1 texture
   DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
 
   //rendering
@@ -230,7 +232,8 @@ void Rendering::Update()
             meshView->LightsDescriptorSet,
             meshView->MaterialDescriptorSet,
             meshView->AlbedoDescriptorSet,
-            meshView->NormalDescriptorSet};
+            meshView->NormalDescriptorSet,
+            meshView->Detail1DescriptorSet};
         Graphics::Vulkan::Command::BindPipeline(meshView->RenderCommand, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline, sets);
         Graphics::Vulkan::Command::SetViewport(meshView->RenderCommand, viewport.x * resolutionWidth, viewport.y * resolutionHeight, viewport.z * resolutionWidth, viewport.w * resolutionHeight);
         Graphics::Vulkan::Command::BindVertexBuffer(meshView->RenderCommand, {meshView->VertexBuffer});
@@ -254,6 +257,7 @@ void Rendering::Update()
         transferCommands.push_back(mesh->MaterialTransferCommand);
         transferGraphicsCommands.push_back(mesh->AlbedoTransferCommand);
         transferGraphicsCommands.push_back(mesh->NormalTransferCommand);
+        transferGraphicsCommands.push_back(mesh->Detail1TransferCommand);
       }
       transferCommands.push_back(mesh->LightTransferCommand);
 

@@ -27,6 +27,7 @@ layout(set = 3, binding = 0) readonly uniform Material
 };
 layout(set = 4, binding = 0) uniform sampler2D albedoTexture;
 layout(set = 5, binding = 0) uniform sampler2D normalTexture;
+layout(set = 6, binding = 0) uniform sampler2D detailTexture1;
 
 layout(location = 0) in vec3 surfaceNormal;
 layout(location = 1) in vec3 cameraVector;
@@ -46,12 +47,34 @@ void main()
   normal = (normal * 2.) - vec3(1.);
   vec3 N = normalize(TBN * normal);
 
+  //compute camera vector
+  vec3 C = normalize(cameraVector);
+
+  //compute specular, reflection & ambient oclusion
+  vec3 detail1 = texture(detailTexture1, uvTexture).rgb;
+  float materialSpecular = detail1.r;
+  float materialReflection = detail1.g;
+  float materialAmbientOclusion = detail1.b;
+
+  vec3 ambient = vec3(0.001);
   vec3 diffuse = vec3(0.);
+  vec3 specular = vec3(0.);
   for (int i = 0; i < lightsAmount; i++) {
+    //normalized light
     vec3 L = normalize(lightVectors[i]).xyz;
+
+    //diffuse calculations
     float diffuseAmount = max(dot(N, L), 0.) * lights[i].intensity;
     diffuse += lights[i].color.rgb * diffuseAmount;
+
+    //specular calculations
+    vec3 R = reflect(L, N);
+    float specularAmount = max(dot(R, -C), 0.);
+    specular += lights[i].color.rgb * specularAmount * lights[i].intensity;
   }
 
-  outColor = vec4(albedo.rgb * (diffuse + vec3(0.0001)), 1.);
+  vec3 color = albedo.rgb * (diffuse + ambient); //apply ambient
+  color += specular * materialSpecular; //apply specular
+  color *= materialAmbientOclusion; //apply AO
+  outColor = vec4(color, 1.);
 }

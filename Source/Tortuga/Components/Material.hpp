@@ -16,6 +16,7 @@ private:
   bool IsDirty = false;
   Graphics::Image Albedo = Graphics::Image::White();
   Graphics::Image Normal = Graphics::Image::Blue();
+  Graphics::Image Detail1 = Graphics::Image::White();
   glm::vec3 Color = glm::vec3(0.4, 0.4, 0.4);
   float Metalic = 0.0f;
   float Roughness = 0.3f;
@@ -37,6 +38,7 @@ public:
   void SetColor(glm::vec3 color)
   {
     this->Color = color;
+    this->IsDirty = true;
   }
 
   float GetMetalic()
@@ -46,6 +48,7 @@ public:
   void SetMetalic(float metalic)
   {
     this->Metalic = metalic;
+    this->IsDirty = true;
   }
 
   float GetRoughness()
@@ -55,6 +58,7 @@ public:
   void SetRoughness(float roughness)
   {
     this->Roughness = roughness;
+    this->IsDirty = true;
   }
 
   Graphics::Image GetAlbedo()
@@ -64,6 +68,7 @@ public:
   void SetAlbedo(Graphics::Image image)
   {
     this->Albedo = image;
+    this->IsDirty = true;
   }
   Graphics::Image GetNormal()
   {
@@ -72,6 +77,16 @@ public:
   void SetNormal(Graphics::Image image)
   {
     this->Normal = image;
+    this->IsDirty = true;
+  }
+  Graphics::Image GetDetail1()
+  {
+    return this->Detail1;
+  }
+  void SetDetail1(Graphics::Image image)
+  {
+    this->Detail1 = image;
+    this->IsDirty = true;
   }
 };
 } // namespace Components

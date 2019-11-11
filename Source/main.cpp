@@ -80,7 +80,7 @@ int main()
     const auto specular = Graphics::Image(Utils::IO::LoadImageFile("Assets/Textures/Bricks/Gloss.jpg"));
     const auto reflection = Graphics::Image(Utils::IO::LoadImageFile("Assets/Textures/Bricks/Reflection.jpg"));
     const auto ambientOcclusion = Graphics::Image(Utils::IO::LoadImageFile("Assets/Textures/Bricks/AmbientOcclusion.jpg"));
-    
+
     //copy specular, reflection and ambient occlusion to 1 image texture
     auto detailTexture = Graphics::Image(specular.Width, specular.Height);
     detailTexture.CopyChannel(specular, Graphics::Image::CHANNEL_R, Graphics::Image::CHANNEL_R);
@@ -99,6 +99,7 @@ int main()
     m.SetMetalic(0);
     m.SetAlbedo(Graphics::Image(albedo));
     m.SetNormal(Graphics::Image(normal));
+    m.SetDetail1(Graphics::Image(detailTexture));
     Core::Engine::AddComponent<Components::Material>(sphere, m);
     Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(sphere);
   }

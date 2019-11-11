@@ -109,6 +109,13 @@ private:
     Graphics::Vulkan::Sampler::Sampler NormalImageSampler;
     Graphics::Vulkan::DescriptorSet::DescriptorSet NormalDescriptorSet;
     Graphics::Vulkan::Command::Command NormalTransferCommand;
+    //material detail texture
+    Graphics::Vulkan::Buffer::Buffer StagingDetail1Image;
+    Graphics::Vulkan::Image::Image Detail1Image;
+    Graphics::Vulkan::ImageView::ImageView Detail1ImageView;
+    Graphics::Vulkan::Sampler::Sampler Detail1ImageSampler;
+    Graphics::Vulkan::DescriptorSet::DescriptorSet Detail1DescriptorSet;
+    Graphics::Vulkan::Command::Command Detail1TransferCommand;
 
     void Setup(Graphics::Vulkan::Device::Device device, std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> layouts);
     void OnDestroy();
