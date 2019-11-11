@@ -31,10 +31,6 @@ $(OUT_DIR)/%.o: $(SRC_DIR)/%.cpp
 clean:
 	rm -rf $(OUT_DIR)/Tortuga
 	rm -f $(OUT_DIR)/tortuga
-
-comp:
-	gcc -c -o $(OUT_DIR)/lib/xdg-shell.a $(OUT_DIR)/lib/xdg-shell.c -I$(OUT_DIR)/include
-	gcc -c -o $(OUT_DIR)/lib/xdg-decoration.a $(OUT_DIR)/lib/xdg-decoration.c -I$(OUT_DIR)/include
 	
 init:
 	#Check Prerequisites
