@@ -11,12 +11,11 @@ CameraRender Create(Vulkan::Device::Device device, Vulkan::RenderPass::RenderPas
   auto data = CameraRender();
   data.Width = width;
   data.Height = height;
-  data.ColorImage = Vulkan::Image::Create(device, width, height, VK_FORMAT_R32G32B32A32_SFLOAT, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
+  data.ColorImage = Vulkan::Image::Create(device, width, height, VK_FORMAT_R8G8B8A8_UNORM, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
   data.ColorImageView = Vulkan::ImageView::Create(device, data.ColorImage, VK_IMAGE_ASPECT_COLOR_BIT);
   data.DepthImage = Vulkan::Image::Create(device, width, height, VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT);
   data.DepthImageView = Vulkan::ImageView::Create(device, data.DepthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
   data.Framebuffer = Vulkan::Framebuffer::Create(device, width, height, renderPass, {data.ColorImageView, data.DepthImageView});
-
   return data;
 }
 void Destroy(CameraRender data)

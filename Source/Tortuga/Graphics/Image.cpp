@@ -8,23 +8,23 @@ Image::Image()
 {
     this->Width = 1;
     this->Height = 1;
-    this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
+    this->TotalByteSize = this->Width * this->Height * sizeof(Pixel);
     this->Pixels.resize(this->Width * this->Height);
-    this->Pixels[0] = glm::vec4(0, 0, 0, 1);
+    this->Pixels[0] = Pixel(0, 0, 0, 1);
 }
 Image::Image(uint32_t width, uint32_t height)
 {
     this->Width = width;
     this->Height = height;
-    this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
+    this->TotalByteSize = this->Width * this->Height * sizeof(Pixel);
     this->Pixels.resize(this->Width * this->Height);
-    this->Pixels[0] = glm::vec4(0, 0, 0, 1);
+    this->Pixels[0] = Pixel(0, 0, 0, 1);
 }
 Image::Image(Utils::IO::ImageFile image)
 {
     this->Width = image.Width;
     this->Height = image.Height;
-    this->TotalByteSize = this->Width * this->Height * sizeof(glm::vec4);
+    this->TotalByteSize = this->Width * this->Height * sizeof(Pixel);
     this->Pixels.resize(this->Width * this->Height);
     for (uint32_t x = 0; x < this->Width; x++)
     {
@@ -56,7 +56,7 @@ Image::Image(Utils::IO::ImageFile image)
                 this->Pixels[i].r = (float)image.Pixels[j + 0];
                 this->Pixels[i].g = (float)image.Pixels[j + 1];
                 this->Pixels[i].b = (float)image.Pixels[j + 2];
-                this->Pixels[i].a = (float)image.Pixels[j + 1];
+                this->Pixels[i].a = (float)image.Pixels[j + 3];
             }
         }
     }
@@ -67,9 +67,9 @@ Image Image::Blue()
     auto data = Image();
     data.Width = 1;
     data.Height = 1;
-    data.TotalByteSize = data.Width * data.Height * sizeof(glm::vec4);
+    data.TotalByteSize = data.Width * data.Height * sizeof(Pixel);
     data.Pixels.resize(data.Width * data.Height);
-    data.Pixels[0] = glm::vec4(0, 0, 1, 1);
+    data.Pixels[0] = Pixel(0, 0, 1, 1);
     return data;
 }
 Image Image::White()
@@ -77,9 +77,9 @@ Image Image::White()
     auto data = Image();
     data.Width = 1;
     data.Height = 1;
-    data.TotalByteSize = data.Width * data.Height * sizeof(glm::vec4);
+    data.TotalByteSize = data.Width * data.Height * sizeof(Pixel);
     data.Pixels.resize(data.Width * data.Height);
-    data.Pixels[0] = glm::vec4(1, 1, 1, 1);
+    data.Pixels[0] = Pixel(1, 1, 1, 1);
     return data;
 }
 
@@ -97,6 +97,8 @@ void Image::CopyChannel(Image sourceImage, ChannelType source, ChannelType desti
                 val = sourceImage.Pixels[i].g;
             else if (source == CHANNEL_B)
                 val = sourceImage.Pixels[i].b;
+            else if (source == CHANNEL_A)
+                val = sourceImage.Pixels[i].a;
             else
             {
                 Console::Error("passed unknown argument");
@@ -109,6 +111,8 @@ void Image::CopyChannel(Image sourceImage, ChannelType source, ChannelType desti
                 this->Pixels[i].g = val;
             else if (destination == CHANNEL_B)
                 this->Pixels[i].b = val;
+            else if (destination == CHANNEL_A)
+                this->Pixels[i].a = val;
             else
             {
                 Console::Error("passed unknown argument");
