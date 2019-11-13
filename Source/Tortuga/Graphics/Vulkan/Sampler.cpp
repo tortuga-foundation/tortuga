@@ -8,7 +8,7 @@ namespace Vulkan
 {
 namespace Sampler
 {
-Sampler Create(Device::Device device)
+Sampler Create(Device::Device device, uint32_t mipMapLevels)
 {
   Sampler data = {};
   data.Device = device.Device;
@@ -28,9 +28,9 @@ Sampler Create(Device::Device device)
     createInfo.compareEnable = VK_FALSE;
     createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     createInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    createInfo.mipLodBias = 5.0f;
-    createInfo.minLod = 5.0f;
-    createInfo.maxLod = 10.0f;
+    createInfo.mipLodBias = 0.0f;
+    createInfo.minLod = 0;
+    createInfo.maxLod = mipMapLevels;
   }
 
   ErrorCheck::Callback(vkCreateSampler(device.Device, &createInfo, nullptr, &data.Sampler));

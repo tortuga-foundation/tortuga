@@ -20,7 +20,7 @@ struct Sampler
   VkDevice Device = VK_NULL_HANDLE;
   VkSampler Sampler = VK_NULL_HANDLE;
 };
-Sampler Create(Device::Device device);
+Sampler Create(Device::Device device, uint32_t mipMapLevels = 1);
 void Destroy(Sampler data);
 } // namespace Sampler
 } // namespace Vulkan

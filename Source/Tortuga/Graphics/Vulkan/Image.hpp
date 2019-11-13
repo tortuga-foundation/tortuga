@@ -30,7 +30,7 @@ VkFormat FindSupportedFormat(VkPhysicalDevice physicalDevice, const std::vector<
 VkFormat FindDepthFormat(VkPhysicalDevice device);
 bool HasStencilComponent(VkFormat format);
 
-Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat imageFormat, VkImageUsageFlags usageFlags, uint32_t mipLevels = 1);
+Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat imageFormat, VkImageUsageFlags usageFlags, uint32_t mipMapLevels = 1);
 void Destroy(Image data);
 } // namespace Image
 } // namespace Vulkan

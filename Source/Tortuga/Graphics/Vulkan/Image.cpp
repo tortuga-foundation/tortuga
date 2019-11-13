@@ -41,14 +41,14 @@ bool HasStencilComponent(VkFormat format)
   return format == VK_FORMAT_D32_SFLOAT_S8_UINT || format == VK_FORMAT_D24_UNORM_S8_UINT;
 }
 
-Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat imageFormat, VkImageUsageFlags usageFlags, uint32_t mipLevels)
+Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat imageFormat, VkImageUsageFlags usageFlags, uint32_t mipMapLevels)
 {
   Image data = {};
   data.Device = device.Device;
   data.Width = width;
   data.Height = height;
   data.Format = imageFormat;
-  data.MipMapLevel = mipLevels;
+  data.MipMapLevel = mipMapLevels;
 
   //Image handle
   VkImageCreateInfo imageInfo = {};
@@ -59,7 +59,7 @@ Image Create(Device::Device device, uint32_t width, uint32_t height, VkFormat im
     imageInfo.imageType = VK_IMAGE_TYPE_2D;
     imageInfo.format = imageFormat;
     imageInfo.extent = {width, height, 1};
-    imageInfo.mipLevels = mipLevels;
+    imageInfo.mipLevels = mipMapLevels;
     imageInfo.arrayLayers = 1;
     imageInfo.samples = VK_SAMPLE_COUNT_1_BIT;
     imageInfo.tiling = VK_IMAGE_TILING_OPTIMAL;

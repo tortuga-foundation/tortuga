@@ -40,10 +40,10 @@ layout(location = 0) out vec4 outColor;
 void main()
 {
   //image color
-  vec4 albedo = texture(albedoTexture, uvTexture);
+  vec4 albedo = texture(albedoTexture, uvTexture, 5.0);
   
   //compute normal
-  vec3 normal = texture(normalTexture, uvTexture).xyz;
+  vec3 normal = texture(normalTexture, uvTexture, 5.0).xyz;
   normal = (normal * 2.) - vec3(1.);
   vec3 N = normalize(TBN * normal);
 
@@ -51,7 +51,7 @@ void main()
   vec3 C = normalize(cameraVector);
 
   //compute specular, reflection & ambient oclusion
-  vec3 detail1 = texture(detailTexture1, uvTexture).rgb;
+  vec3 detail1 = texture(detailTexture1, uvTexture, 5.0).rgb;
   float materialSpecular = detail1.r;
   float materialReflection = detail1.g;
   float materialAmbientOclusion = detail1.b;

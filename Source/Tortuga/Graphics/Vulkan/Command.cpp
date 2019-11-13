@@ -146,7 +146,7 @@ void BindVertexBuffer(Command data, std::vector<Buffer::Buffer> buffers, uint32_
 }
 void BindIndexBuffer(Command data, Buffer::Buffer buffer, uint32_t offset)
 {
-  vkCmdBindIndexBuffer(data.Command, buffer.Buffer, offset, VK_INDEX_TYPE_UINT32);
+  vkCmdBindIndexBuffer(data.Command, buffer.Buffer, offset, VK_INDEX_TYPE_UINT8_EXT);
 }
 void DrawIndexed(Command data, uint32_t indexCount, uint32_t instanceCount, uint32_t indexOffset, uint32_t vertexOffset, uint32_t instanceOffset)
 {

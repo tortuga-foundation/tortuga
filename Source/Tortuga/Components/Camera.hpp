@@ -6,6 +6,10 @@
 #include <glm/glm.hpp>
 
 #include "../Core/Engine.hpp"
+#include "../Graphics/Vulkan/Image.hpp"
+#include "../Graphics/Vulkan/ImageView.hpp"
+#include "../Graphics/Vulkan/RenderPass.hpp"
+#include "../Graphics/Vulkan/Framebuffer.hpp"
 
 namespace Tortuga
 {
@@ -14,81 +18,38 @@ namespace Components
 struct Camera : public Core::ECS::Component
 {
 private:
-  bool IsDirty = false;
   glm::vec4 Viewport = {0, 0, 1, 1};
   uint32_t ResolutionWidth = 1920;
   uint32_t ResolutionHeight = 1080;
   float FieldOfView = 45;
   float NearClipPlane = 0.001f;
   float FarClipPlane = 1000.0f;
-  bool PresentToScreen = true;
+  Graphics::Vulkan::Image::Image ColorImage;
+  Graphics::Vulkan::ImageView::ImageView ColorImageView;
+  Graphics::Vulkan::Image::Image DepthImage;
+  Graphics::Vulkan::ImageView::ImageView DepthImageView;
+  Graphics::Vulkan::Framebuffer::Framebuffer Framebuffer;
+  Graphics::Vulkan::RenderPass::RenderPass RenderPass;
 
 public:
-  glm::vec4 GetViewport()
-  {
-    return this->Viewport;
-  }
-  void SetViewport(glm::vec4 viewport)
-  {
-    this->Viewport = viewport;
-  }
-  uint32_t GetResolutionWidth()
-  {
-    return this->ResolutionWidth;
-  }
-  uint32_t GetResolutionHeight()
-  {
-    return this->ResolutionHeight;
-  }
-  void SetResolution(uint32_t width, uint32_t height)
-  {
-    this->ResolutionWidth = width;
-    this->ResolutionHeight = height;
-    IsDirty = true;
-  }
-  float GetFieldOfView()
-  {
-    return this->FieldOfView;
-  }
-  void SetFieldOfView(float f)
-  {
-    this->FieldOfView = f;
-    IsDirty = true;
-  }
-  float GetNearClipPlane()
-  {
-    return this->NearClipPlane;
-  }
-  void SetNearClipPlay(float f)
-  {
-    this->NearClipPlane = f;
-    IsDirty = true;
-  }
-  float GetFarClipPlane()
-  {
-    return this->FarClipPlane;
-  }
-  void SetFarClipPlane(float f)
-  {
-    this->FarClipPlane = f;
-    IsDirty = true;
-  }
-  bool GetPresentToScreen()
-  {
-    return this->PresentToScreen;
-  }
-  void SetPresentToScreen(bool presentToScreen)
-  {
-    this->PresentToScreen = presentToScreen;
-  }
-  bool GetIsDirty()
-  {
-    return this->IsDirty;
-  }
-  void SetIsDirty(bool isDirty)
-  {
-    this->IsDirty = isDirty;
-  }
+  Camera();
+  Camera(uint32_t resolutionWidth, uint32_t resolutionHeight);
+
+  void OnCreate();
+  void OnDestroy();
+
+  glm::vec4 GetViewport();
+  void SetViewport(glm::vec4 viewport);
+  uint32_t GetResolutionWidth();
+  uint32_t GetResolutionHeight();
+  float GetFieldOfView();
+  void SetFieldOfView(float f);
+  float GetNearClipPlane();
+  void SetNearClipPlay(float f);
+  float GetFarClipPlane();
+  void SetFarClipPlane(float f);
+  bool GetPresentToScreen();
+  void SetPresentToScreen(bool presentToScreen);
 };
 } // namespace Components
 } // namespace Tortuga

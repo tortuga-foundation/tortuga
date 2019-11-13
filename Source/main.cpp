@@ -94,12 +94,6 @@ int main()
     t.SetScale(glm::vec3(3, 3, 3));
     Core::Engine::AddComponent<Components::Transform>(sphere, t);
     Components::Material m;
-    m.SetColor(glm::vec3(1, 1, 1));
-    m.SetRoughness(9.);
-    m.SetMetalic(0);
-    m.SetAlbedo(Graphics::Image(albedo));
-    m.SetNormal(Graphics::Image(normal));
-    m.SetDetail1(Graphics::Image(detailTexture));
     Core::Engine::AddComponent<Components::Material>(sphere, m);
     Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(sphere);
   }
@@ -110,7 +104,7 @@ int main()
   Core::Engine::AddSystem<ModelRotationSystem>();
 
   //main loop
-  while (!ShouldClose)
+  //while (!ShouldClose)
     Core::Engine::IterateSystems();
 
   //auto destroys everything

@@ -14,6 +14,9 @@ struct Engine
   std::unordered_map<std::type_index, ECS::System *> Systems;
   std::vector<ECS::Entity *> entities;
   std::unordered_map<std::type_index, std::vector<ECS::Component *>> Components;
+  Graphics::Vulkan::Instance::Instance VulkanInstance;
+  uint32_t RenderingDevice;
+  std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> DescriptorLayouts;
 
   Engine() {}
   ~Engine()
@@ -23,18 +26,51 @@ struct Engine
 
     for (auto i = Systems.begin(); i != Systems.end(); ++i)
       delete i->second;
+
+    //destroy all descriptor layouts
+    for (const auto layout : this->DescriptorLayouts)
+      Graphics::Vulkan::DescriptorLayout::Destroy(layout);
+    //descriptor vulkan instance
+    Graphics::Vulkan::Instance::Destroy(this->VulkanInstance);
   }
 };
 Engine *engine = nullptr;
 void Create()
 {
   engine = new Engine();
+  //start up vulkan
+  engine->VulkanInstance = Graphics::Vulkan::Instance::Create();
+  //select a gpu
+  engine->RenderingDevice = 0;
+  //setup descriptor layouts
+  const auto device = GetPrimaryVulkanDevice();
+  //model, view, projection, matrix
+  engine->DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_VERTEX_BIT, VK_SHADER_STAGE_VERTEX_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
+  //light infos
+  engine->DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER}));
+  //material albedo, normal, detail1 texture
+  engine->DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, {VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT, VK_SHADER_STAGE_FRAGMENT_BIT}, {VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE}));
 }
 void Destroy()
 {
   delete engine;
 }
-
+uint32_t GetPrimaryVulkanDeviceIndex()
+{
+  return engine->RenderingDevice;
+}
+Graphics::Vulkan::Device::Device GetPrimaryVulkanDevice()
+{
+  return engine->VulkanInstance.Devices[engine->RenderingDevice];
+}
+Graphics::Vulkan::Instance::Instance GetVulkanInstance()
+{
+  return engine->VulkanInstance;
+}
+std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> GetVulkanDescriptorLayouts()
+{
+  return engine->DescriptorLayouts;
+}
 //systems
 void AddSystem(std::type_index type, ECS::System *data)
 {

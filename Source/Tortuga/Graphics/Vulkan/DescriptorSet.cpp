@@ -8,24 +8,25 @@ namespace Vulkan
 {
 namespace DescriptorSet
 {
-DescriptorSet Create(Device::Device device, DescriptorPool::DescriptorPool pool, DescriptorLayout::DescriptorLayout layout)
+DescriptorSet Create(Device::Device device, DescriptorPool::DescriptorPool pool, DescriptorLayout::DescriptorLayout layout, uint32_t setArrayCount)
 {
   DescriptorSet data = {};
   data.Device = device.Device;
   data.Pool = pool;
   data.Layout = layout;
+  data.SetArrayCount = setArrayCount;
 
   VkDescriptorSetAllocateInfo info = {};
   {
     info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     info.descriptorPool = pool.Pool,
-    info.descriptorSetCount = 1;
+    info.descriptorSetCount = setArrayCount;
     info.pSetLayouts = &layout.Layouts;
   }
   ErrorCheck::Callback(vkAllocateDescriptorSets(device.Device, &info, &data.set));
   return data;
 }
-void UpdateDescriptorSet(DescriptorSet data, std::vector<Buffer::Buffer> content)
+void UpdateDescriptorSet(DescriptorSet data, std::vector<Buffer::Buffer> content, uint32_t setArrayIndex)
 {
   if (data.Layout.BindingsAmount != content.size())
   {
@@ -47,8 +48,8 @@ void UpdateDescriptorSet(DescriptorSet data, std::vector<Buffer::Buffer> content
     writeInfos[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeInfos[i].dstSet = data.set;
     writeInfos[i].dstBinding = i;
-    writeInfos[i].dstArrayElement = 0;
-    writeInfos[i].descriptorCount = 1;
+    writeInfos[i].dstArrayElement = setArrayIndex;
+    writeInfos[i].descriptorCount = data.SetArrayCount;
     writeInfos[i].descriptorType = data.Layout.Types[i];
 
     writeInfos[i].pBufferInfo = &(bufferInfos[i]);
@@ -58,13 +59,8 @@ void UpdateDescriptorSet(DescriptorSet data, std::vector<Buffer::Buffer> content
   vkUpdateDescriptorSets(data.Device, writeInfos.size(), writeInfos.data(), 0, 0);
 }
 
-void UpdateDescriptorSet(DescriptorSet data, std::vector<ImageView::ImageView> content, std::vector<Sampler::Sampler> samplers)
+void UpdateDescriptorSet(DescriptorSet data, std::vector<ImageView::ImageView> content, Sampler::Sampler sampler, uint32_t setArrayIndex)
 {
-  if (content.size() != samplers.size())
-  {
-    Console::Error("content size does not match sampler size");
-    return;
-  }
   if (data.Layout.BindingsAmount != content.size())
   {
     Console::Error("provided Content does not match this descriptor set size");
@@ -79,14 +75,14 @@ void UpdateDescriptorSet(DescriptorSet data, std::vector<ImageView::ImageView> c
       imageInfo[i] = {};
       imageInfo[i].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
       imageInfo[i].imageView = content[i].View;
-      imageInfo[i].sampler = samplers[i].Sampler;
+      imageInfo[i].sampler = sampler.Sampler;
     }
 
     writeInfos[i].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeInfos[i].dstSet = data.set;
     writeInfos[i].dstBinding = i;
-    writeInfos[i].dstArrayElement = 0;
-    writeInfos[i].descriptorCount = 1;
+    writeInfos[i].dstArrayElement = setArrayIndex;
+    writeInfos[i].descriptorCount = data.SetArrayCount;
     writeInfos[i].descriptorType = data.Layout.Types[i];
 
     writeInfos[i].pBufferInfo = VK_NULL_HANDLE;

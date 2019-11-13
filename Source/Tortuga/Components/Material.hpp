@@ -3,8 +3,18 @@
 
 #include <glm/glm.hpp>
 
+#include "../Core/Engine.hpp"
 #include "../Core/ECS/Entity.hpp"
+
 #include "../Graphics/Image.hpp"
+#include "../Graphics/Vulkan/Buffer.hpp"
+#include "../Graphics/Vulkan/Image.hpp"
+#include "../Graphics/Vulkan/ImageView.hpp"
+#include "../Graphics/Vulkan/Sampler.hpp"
+#include "../Graphics/Vulkan/DescriptorPool.hpp"
+#include "../Graphics/Vulkan/DescriptorSet.hpp"
+#include "../Graphics/Vulkan/CommandPool.hpp"
+#include "../Graphics/Vulkan/Command.hpp"
 
 namespace Tortuga
 {
@@ -13,81 +23,63 @@ namespace Components
 struct Material : Core::ECS::Component
 {
 private:
-  bool IsDirty = false;
-  Graphics::Image Albedo = Graphics::Image::White();
+  Graphics::Image BaseColor = Graphics::Image::White();
   Graphics::Image Normal = Graphics::Image::Blue();
   Graphics::Image Detail1 = Graphics::Image::White();
-  glm::vec3 Color = glm::vec3(0.4, 0.4, 0.4);
-  float Metalic = 0.0f;
-  float Roughness = 0.3f;
+
+  //pipeline
+  std::string VertexShaderPath;
+  std::string FragmentShaderPath;
+  bool shouldCompileShaders = false;
+  Graphics::Vulkan::Shader::Shader VertexShader;
+  Graphics::Vulkan::Shader::Shader FragmentShader;
+
+  //vulkan buffers
+  Graphics::Vulkan::Sampler::Sampler BaseSampler;
+  //color
+  Graphics::Vulkan::Buffer::Buffer ColorStagingBuffer;
+  Graphics::Vulkan::Image::Image ColorImage;
+  Graphics::Vulkan::ImageView::ImageView ColorImageView;
+  //normal
+  Graphics::Vulkan::Buffer::Buffer NormalStagingBuffer;
+  Graphics::Vulkan::Image::Image NormalImage;
+  Graphics::Vulkan::ImageView::ImageView NormalImageView;
+  //detail1
+  Graphics::Vulkan::Buffer::Buffer Detail1StagingBuffer;
+  Graphics::Vulkan::Image::Image Detail1Image;
+  Graphics::Vulkan::ImageView::ImageView Detail1ImageView;
+  //transfer
+  Graphics::Vulkan::CommandPool::CommandPool TransferCommandPool;
+  Graphics::Vulkan::Command::Command ColorTransferCommand;
+  Graphics::Vulkan::Command::Command NormalTransferCommand;
+  Graphics::Vulkan::Command::Command Detail1TransferCommand;
+  //descriptor sets
+  Graphics::Vulkan::DescriptorPool::DescriptorPool DescriptorPool;
+  Graphics::Vulkan::DescriptorSet::DescriptorSet DescriptorSet;
 
 public:
-  bool GetIsDirty()
-  {
-    return this->IsDirty;
-  }
-  void SetIsDirty(bool isDirty)
-  {
-    this->IsDirty = isDirty;
-  }
+  Material();
+  Material(std::string vertex, std::string fragment);
+  Material(Graphics::Vulkan::Shader::Shader vertex, Graphics::Vulkan::Shader::Shader fragment);
 
-  glm::vec3 GetColor()
-  {
-    return this->Color;
-  }
-  void SetColor(glm::vec3 color)
-  {
-    this->Color = color;
-    this->IsDirty = true;
-  }
+  void OnCreate();
+  void OnDestroy();
 
-  float GetMetalic()
-  {
-    return this->Metalic;
-  }
-  void SetMetalic(float metalic)
-  {
-    this->Metalic = metalic;
-    this->IsDirty = true;
-  }
+  //variables
+  Graphics::Pixel GetBaseColor();
+  void SetBaseColor(Graphics::Pixel color);
+  float GetMetalic();
+  void SetMetalic(float metalic);
+  float GetRoughness();
+  void SetRoughness(float roughness);
 
-  float GetRoughness()
-  {
-    return this->Roughness;
-  }
-  void SetRoughness(float roughness)
-  {
-    this->Roughness = roughness;
-    this->IsDirty = true;
-  }
-
-  Graphics::Image GetAlbedo()
-  {
-    return this->Albedo;
-  }
-  void SetAlbedo(Graphics::Image image)
-  {
-    this->Albedo = image;
-    this->IsDirty = true;
-  }
-  Graphics::Image GetNormal()
-  {
-    return this->Normal;
-  }
-  void SetNormal(Graphics::Image image)
-  {
-    this->Normal = image;
-    this->IsDirty = true;
-  }
-  Graphics::Image GetDetail1()
-  {
-    return this->Detail1;
-  }
-  void SetDetail1(Graphics::Image image)
-  {
-    this->Detail1 = image;
-    this->IsDirty = true;
-  }
+  //images
+  Graphics::Image GetColorTexture();
+  void SetColorTexture(Graphics::Image image);
+  Graphics::Image GetNormalTexture();
+  void SetNormalTexture(Graphics::Image image);
+  Graphics::Image GetDetail1Texture();
+  void SetDetail1Texture(Graphics::Image image);
 };
 } // namespace Components
 } // namespace Tortuga

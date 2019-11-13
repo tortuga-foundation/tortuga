@@ -9,6 +9,10 @@
 #include "../Graphics/Vertex.hpp"
 #include "../Utils/IO.hpp"
 
+#include "../Graphics/Vulkan/Buffer.hpp"
+#include "../Graphics/Vulkan/CommandPool.hpp"
+#include "../Graphics/Vulkan/Command.hpp"
+
 namespace Tortuga
 {
 namespace Components
@@ -17,99 +21,39 @@ struct Mesh : public Core::ECS::Component
 {
 private:
   std::vector<Graphics::Vertex> Vertices;
-  std::vector<uint32_t> Indices;
-  bool IsVerticesDirty = false;
-  bool IsIndicesDirty = false;
+  std::vector<uint8_t> Indices;
+  int8_t ShouldReCreateBuffers = -1;
+
+  //vulkan buffers
+  Graphics::Vulkan::Buffer::Buffer VertexStagingBuffer;
+  Graphics::Vulkan::Buffer::Buffer VertexBuffer;
+  Graphics::Vulkan::Buffer::Buffer IndexStagingBuffer;
+  Graphics::Vulkan::Buffer::Buffer IndexBuffer;
+  //vulkan transfer
+  Graphics::Vulkan::CommandPool::CommandPool TransferCommandPool;
+  Graphics::Vulkan::Command::Command TransferVertexCommand;
+  Graphics::Vulkan::Command::Command TransferIndexCommand;
 
 public:
-  std::vector<Graphics::Vertex> GetVertices()
+  enum BufferCreationType
   {
-    return this->Vertices;
-  }
-  std::vector<uint32_t> GetIndices()
-  {
-    return this->Indices;
-  }
-  void SetVertices(std::vector<Graphics::Vertex> vertices)
-  {
-    this->Vertices = vertices;
-    this->IsVerticesDirty = true;
-  }
-  void SetIndices(std::vector<uint32_t> indices)
-  {
-    this->Indices = indices;
-    this->IsIndicesDirty = true;
-  }
-  bool GetIsVerticesDirty()
-  {
-    return this->IsVerticesDirty;
-  }
-  bool GetIsIndicesDirty()
-  {
-    return this->IsIndicesDirty;
-  }
-  void SetDirty(bool vertices, bool indices)
-  {
-    this->IsVerticesDirty = vertices;
-    this->IsIndicesDirty = indices;
-  }
+    BUFFER_CREATION_ALL = 0,
+    BUFFER_CREATION_VERTEX = 1,
+    BUFFER_CREATION_INDEX = 2
+  };
 
-  Mesh()
-  {
-  }
-  Mesh(Utils::IO::OBJ obj)
-  {
-    this->IsVerticesDirty = true;
-    this->IsIndicesDirty = true;
-    this->Vertices.resize(obj.Positions.size());
-    this->Indices.resize(obj.Indices.size());
-    for (uint32_t i = 0; i < obj.Indices.size(); i++)
-    {
-      this->Indices[i] = obj.Indices[i].Position;
-      this->Vertices[obj.Indices[i].Position].Position = obj.Positions[obj.Indices[i].Position];
-      this->Vertices[obj.Indices[i].Position].Texture = obj.Textures[obj.Indices[i].Texture];
-      this->Vertices[obj.Indices[i].Position].Normal = obj.Normals[obj.Indices[i].Normal];
-    }
-    //compute tangent & bi tangents
-    for (uint32_t i = 0; i < this->Indices.size(); i += 3)
-    {
-      const auto v0 = this->Vertices[this->Indices[i + 0]];
-      const auto v1 = this->Vertices[this->Indices[i + 1]];
-      const auto v2 = this->Vertices[this->Indices[i + 2]];
+  void OnCreate();
+  void OnDestroy();
+  void _ReCreateBuffers(); //un-safe internal function
+  void UpdateBuffers(BufferCreationType type);
 
-      const auto edge1 = v1.Position - v0.Position;
-      const auto edge2 = v2.Position - v0.Position;
+  std::vector<Graphics::Vertex> GetVertices();
+  std::vector<uint8_t> GetIndices();
+  void SetVertices(std::vector<Graphics::Vertex> vertices);
+  void SetIndices(std::vector<uint8_t> indices);
 
-      const float deltaU1 = v1.Texture.x - v0.Texture.x;
-      const float deltaV1 = v1.Texture.y - v0.Texture.y;
-      const float deltaU2 = v2.Texture.x - v0.Texture.x;
-      const float deltaV2 = v2.Texture.y - v0.Texture.y;
-
-      const float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
-      glm::vec3 tangent, bitangent;
-      tangent.x = f * (deltaV2 * edge1.x - deltaV1 * edge2.x);
-      tangent.y = f * (deltaV2 * edge1.y - deltaV1 * edge2.y);
-      tangent.z = f * (deltaV2 * edge1.z - deltaV1 * edge2.z);
-
-      bitangent.x = f * (-deltaU2 * edge1.x - deltaU1 * edge2.x);
-      bitangent.y = f * (-deltaU2 * edge1.y - deltaU1 * edge2.y);
-      bitangent.z = f * (-deltaU2 * edge1.z - deltaU1 * edge2.z);
-
-      this->Vertices[this->Indices[i + 0]].Tangent += tangent;
-      this->Vertices[this->Indices[i + 1]].Tangent += tangent;
-      this->Vertices[this->Indices[i + 2]].Tangent += tangent;
-
-      this->Vertices[this->Indices[i + 0]].BiTangent += bitangent;
-      this->Vertices[this->Indices[i + 1]].BiTangent += bitangent;
-      this->Vertices[this->Indices[i + 2]].BiTangent += bitangent;
-    }
-    //normalize tangents
-    for (uint32_t i = 0; i < this->Vertices.size(); i++)
-    {
-      this->Vertices[i].Tangent = glm::normalize(this->Vertices[i].Tangent);
-      this->Vertices[i].BiTangent = glm::normalize(this->Vertices[i].BiTangent);
-    }
-  }
+  Mesh();
+  Mesh(Utils::IO::OBJ obj);
 };
 } // namespace Components
 } // namespace Tortuga

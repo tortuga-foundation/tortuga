@@ -3,7 +3,11 @@
 
 #include <glm/glm.hpp>
 
+#include "../Core/Engine.hpp"
 #include "../Core/ECS/Entity.hpp"
+#include "../Graphics/Vulkan/Buffer.hpp"
+#include "../Graphics/Vulkan/CommandPool.hpp"
+#include "../Graphics/Vulkan/Command.hpp"
 
 namespace Tortuga
 {
@@ -11,8 +15,8 @@ namespace Components
 {
 enum LightType
 {
-  POINT,
-  DIRECTIONAL
+  POINT = 0,
+  DIRECTIONAL = 1
 };
 struct Light : Core::ECS::Component
 {
@@ -22,42 +26,28 @@ private:
   float Intensity = 1.0f;
   float Range = 10.0f;
 
+  //vulkan buffers
+  Graphics::Vulkan::Buffer::Buffer LightStagingBuffer;
+  Graphics::Vulkan::Buffer::Buffer LightBuffer;
+  
+  //transfer
+  Graphics::Vulkan::CommandPool::CommandPool TransferCommandPool;
+  Graphics::Vulkan::Command::Command TransferCommand;
+
 public:
-  LightType GetType()
-  {
-    return this->Type;
-  }
-  void SetType(LightType type)
-  {
-    this->Type = type;
-  }
+  Light();
 
-  glm::vec4 GetColor()
-  {
-    return this->Color;
-  }
-  void SetColor(glm::vec4 color)
-  {
-    this->Color = color;
-  }
+  void OnCreate();
+  void OnDestroy();
 
-  float GetIntensity()
-  {
-    return this->Intensity;
-  }
-  void SetIntensity(float intensity)
-  {
-    this->Intensity = intensity;
-  }
-
-  float GetRange()
-  {
-    return this->Range;
-  }
-  void SetRange(float range)
-  {
-    this->Range = range;
-  }
+  LightType GetType();
+  void SetType(LightType type);
+  glm::vec4 GetColor();
+  void SetColor(glm::vec4 color);
+  float GetIntensity();
+  void SetIntensity(float intensity);
+  float GetRange();
+  void SetRange(float range);
 };
 } // namespace Components
 } // namespace Tortuga

@@ -22,15 +22,16 @@ namespace DescriptorSet
 {
 struct DescriptorSet
 {
+  uint32_t SetArrayCount;
   VkDevice Device = VK_NULL_HANDLE;
   VkDescriptorSet set = VK_NULL_HANDLE;
   DescriptorPool::DescriptorPool Pool;
   DescriptorLayout::DescriptorLayout Layout;
 };
 
-DescriptorSet Create(Device::Device device, DescriptorPool::DescriptorPool pool, DescriptorLayout::DescriptorLayout layout);
-void UpdateDescriptorSet(DescriptorSet data, std::vector<Buffer::Buffer> content);
-void UpdateDescriptorSet(DescriptorSet data, std::vector<ImageView::ImageView> content, std::vector<Sampler::Sampler> samplers);
+DescriptorSet Create(Device::Device device, DescriptorPool::DescriptorPool pool, DescriptorLayout::DescriptorLayout layout, uint32_t setArrayCount = 1);
+void UpdateDescriptorSet(DescriptorSet data, std::vector<Buffer::Buffer> content, uint32_t setArrayIndex = 0);
+void UpdateDescriptorSet(DescriptorSet data, std::vector<ImageView::ImageView> content, Sampler::Sampler sampler, uint32_t setArrayIndex = 0);
 } // namespace DescriptorSet
 } // namespace Vulkan
 } // namespace Graphics

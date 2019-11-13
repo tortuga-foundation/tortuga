@@ -5,6 +5,9 @@
 #include <vector>
 #include "./ECS/System.hpp"
 #include "./ECS/Entity.hpp"
+#include "../Graphics/Vulkan/Device.hpp"
+#include "../Graphics/Vulkan/Instance.hpp"
+#include "../Graphics/Vulkan/DescriptorLayout.hpp"
 
 namespace Tortuga
 {
@@ -14,6 +17,10 @@ namespace Engine
 {
 void Create();
 void Destroy();
+uint32_t GetPrimaryVulkanDeviceIndex();
+Graphics::Vulkan::Device::Device GetPrimaryVulkanDevice();
+Graphics::Vulkan::Instance::Instance GetVulkanInstance();
+std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> GetVulkanDescriptorLayouts();
 //systems
 void AddSystem(std::type_index type, ECS::System *data);
 void RemoveSystem(std::type_index type);
