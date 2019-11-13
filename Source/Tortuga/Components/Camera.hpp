@@ -4,12 +4,17 @@
 #include <vector>
 #include <cstring>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "../Core/Engine.hpp"
+
 #include "../Graphics/Vulkan/Image.hpp"
 #include "../Graphics/Vulkan/ImageView.hpp"
 #include "../Graphics/Vulkan/RenderPass.hpp"
 #include "../Graphics/Vulkan/Framebuffer.hpp"
+#include "../Graphics/Vulkan/Buffer.hpp"
+#include "../Graphics/Vulkan/CommandPool.hpp"
+#include "../Graphics/Vulkan/Command.hpp"
 
 namespace Tortuga
 {
@@ -24,12 +29,20 @@ private:
   float FieldOfView = 45;
   float NearClipPlane = 0.001f;
   float FarClipPlane = 1000.0f;
+  
+  //vulkan rendering objects
   Graphics::Vulkan::Image::Image ColorImage;
   Graphics::Vulkan::ImageView::ImageView ColorImageView;
   Graphics::Vulkan::Image::Image DepthImage;
   Graphics::Vulkan::ImageView::ImageView DepthImageView;
   Graphics::Vulkan::Framebuffer::Framebuffer Framebuffer;
   Graphics::Vulkan::RenderPass::RenderPass RenderPass;
+
+  //perspective buffers
+  Graphics::Vulkan::Buffer::Buffer PerspectiveStagingBuffer;
+  Graphics::Vulkan::Buffer::Buffer PerspectiveBuffer;
+  Graphics::Vulkan::CommandPool::CommandPool TransferCommandPool;
+  Graphics::Vulkan::Command::Command TransferCommand;
 
 public:
   Camera();

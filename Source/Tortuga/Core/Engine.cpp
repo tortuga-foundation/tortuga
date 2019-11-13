@@ -21,6 +21,9 @@ struct Engine
   Engine() {}
   ~Engine()
   {
+    for (const auto device : this->VulkanInstance.Devices)
+      Graphics::Vulkan::Device::WaitForDevice(device);
+
     for (const auto entity : entities)
       delete entity;
 
