@@ -1,12 +1,14 @@
 {
   "search.exclude": {
-    "Build": true,
     ".github": true,
+    ".vscode": true,
+    "Build": true,
     "Submodules": true
   },
   "files.watcherExclude": {
-    "Build/**": true,
+    ".vscode": true,
     ".github": true,
+    "Build": true,
     "Submodules": true
   },
   "files.associations": {
