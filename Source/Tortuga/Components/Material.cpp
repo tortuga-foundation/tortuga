@@ -36,12 +36,25 @@ void Material::OnCreate()
     this->DescriptorLayouts.push_back(Graphics::Vulkan::DescriptorLayout::Create(device, VK_SHADER_STAGE_FRAGMENT_BIT, VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 3));
 
     //compile shaders
-    const auto vertexCode = Graphics::Vulkan::Shader::GetFullShaderCode(this->VertexShaderPath);
-    const auto vertexCompiled = Graphics::Vulkan::Shader::CompileShader(vertexCode.code, vertexCode.location, vertexCode.type);
-    this->VertexShader = Graphics::Vulkan::Shader::Create(device, vertexCompiled, VK_SHADER_STAGE_VERTEX_BIT);
-    const auto fragmentCode = Graphics::Vulkan::Shader::GetFullShaderCode(this->FragmentShaderPath);
-    const auto fragmentCompiled = Graphics::Vulkan::Shader::CompileShader(fragmentCode.code, fragmentCode.location, fragmentCode.type);
-    this->FragmentShader = Graphics::Vulkan::Shader::Create(device, fragmentCompiled, VK_SHADER_STAGE_FRAGMENT_BIT);
+    if (shouldCompileShaders)
+    {
+        const auto vertexCode = Graphics::Vulkan::Shader::GetFullShaderCode(this->VertexShaderPath);
+        const auto vertexCompiled = Graphics::Vulkan::Shader::CompileShader(vertexCode.code, vertexCode.location, vertexCode.type);
+        this->VertexShader = Graphics::Vulkan::Shader::Create(device, vertexCompiled, VK_SHADER_STAGE_VERTEX_BIT);
+        const auto fragmentCode = Graphics::Vulkan::Shader::GetFullShaderCode(this->FragmentShaderPath);
+        const auto fragmentCompiled = Graphics::Vulkan::Shader::CompileShader(fragmentCode.code, fragmentCode.location, fragmentCode.type);
+        this->FragmentShader = Graphics::Vulkan::Shader::Create(device, fragmentCompiled, VK_SHADER_STAGE_FRAGMENT_BIT);
+    }
+    if (this->VertexShader.Shader == VK_NULL_HANDLE)
+    {
+        Console::Error("no vertex shader provided to the material");
+        return;
+    }
+    if (this->FragmentShader.Shader == VK_NULL_HANDLE)
+    {
+        Console::Error("no fragment shader provided to the material");
+        return;
+    }
     this->Pipeline = Graphics::Vulkan::Pipeline::CreateGraphicsPipeline(device, {this->VertexShader, this->FragmentShader}, Core::Engine::GetVulkanRenderPass(), Graphics::Vertex::GetBindingDescription(), Graphics::Vertex::GetAttributeDescriptions(), this->DescriptorLayouts);
 
     //base color

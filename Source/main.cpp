@@ -93,7 +93,7 @@ int main()
     t.SetPosition(glm::vec3(0, 0, -3));
     t.SetScale(glm::vec3(3, 3, 3));
     Core::Engine::AddComponent<Components::Transform>(sphere, t);
-    Components::Material m;
+    Components::Material m = Components::Material("Simple.vert", "Simple.frag");
     Core::Engine::AddComponent<Components::Material>(sphere, m);
     Core::Engine::AddComponent<ModelRotationSystem::RotationComponent>(sphere);
   }
