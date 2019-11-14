@@ -36,7 +36,6 @@ private:
   Graphics::Vulkan::Image::Image DepthImage;
   Graphics::Vulkan::ImageView::ImageView DepthImageView;
   Graphics::Vulkan::Framebuffer::Framebuffer Framebuffer;
-  Graphics::Vulkan::RenderPass::RenderPass RenderPass;
 
   //perspective buffers
   Graphics::Vulkan::Buffer::Buffer PerspectiveStagingBuffer;

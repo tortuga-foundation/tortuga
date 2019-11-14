@@ -23,6 +23,7 @@ struct DescriptorLayout
 };
 
 DescriptorLayout Create(Device::Device device, std::vector<VkShaderStageFlags> shaderStages, std::vector<VkDescriptorType> types);
+DescriptorLayout Create(Device::Device device, VkShaderStageFlags shaderStage, VkDescriptorType type, uint32_t amount);
 void Destroy(DescriptorLayout data);
 } // namespace DescriptorLayout
 } // namespace Vulkan

@@ -7,7 +7,7 @@
 #include "./ECS/Entity.hpp"
 #include "../Graphics/Vulkan/Device.hpp"
 #include "../Graphics/Vulkan/Instance.hpp"
-#include "../Graphics/Vulkan/DescriptorLayout.hpp"
+#include "../Graphics/Vulkan/RenderPass.hpp"
 
 namespace Tortuga
 {
@@ -20,7 +20,7 @@ void Destroy();
 uint32_t GetPrimaryVulkanDeviceIndex();
 Graphics::Vulkan::Device::Device GetPrimaryVulkanDevice();
 Graphics::Vulkan::Instance::Instance GetVulkanInstance();
-std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> GetVulkanDescriptorLayouts();
+Graphics::Vulkan::RenderPass::RenderPass GetVulkanRenderPass();
 //systems
 void AddSystem(std::type_index type, ECS::System *data);
 void RemoveSystem(std::type_index type);

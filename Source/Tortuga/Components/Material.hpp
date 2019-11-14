@@ -6,11 +6,13 @@
 #include "../Core/Engine.hpp"
 #include "../Core/ECS/Entity.hpp"
 
+#include "../Graphics/Vertex.hpp"
 #include "../Graphics/Image.hpp"
 #include "../Graphics/Vulkan/Buffer.hpp"
 #include "../Graphics/Vulkan/Image.hpp"
 #include "../Graphics/Vulkan/ImageView.hpp"
 #include "../Graphics/Vulkan/Sampler.hpp"
+#include "../Graphics/Vulkan/DescriptorLayout.hpp"
 #include "../Graphics/Vulkan/DescriptorPool.hpp"
 #include "../Graphics/Vulkan/DescriptorSet.hpp"
 #include "../Graphics/Vulkan/CommandPool.hpp"
@@ -27,12 +29,16 @@ private:
   Graphics::Image Normal = Graphics::Image::Blue();
   Graphics::Image Detail1 = Graphics::Image::White();
 
+  //descriptor layouts
+  std::vector<Graphics::Vulkan::DescriptorLayout::DescriptorLayout> DescriptorLayouts;
+
   //pipeline
   std::string VertexShaderPath;
   std::string FragmentShaderPath;
   bool shouldCompileShaders = false;
   Graphics::Vulkan::Shader::Shader VertexShader;
   Graphics::Vulkan::Shader::Shader FragmentShader;
+  Graphics::Vulkan::Pipeline::Pipeline Pipeline;
 
   //vulkan buffers
   Graphics::Vulkan::Sampler::Sampler BaseSampler;

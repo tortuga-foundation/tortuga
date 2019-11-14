@@ -58,6 +58,17 @@ DescriptorLayout Create(Device::Device device, std::vector<VkShaderStageFlags> s
   ErrorCheck::Callback(vkCreateDescriptorSetLayout(device.Device, &createInfo, nullptr, &data.Layouts));
   return data;
 }
+DescriptorLayout Create(Device::Device device, VkShaderStageFlags shaderStage, VkDescriptorType type, uint32_t amount)
+{
+  std::vector<VkShaderStageFlags> stages(amount);
+  std::vector<VkDescriptorType> types(amount);
+  for (uint32_t i = 0; i < amount; i++)
+  {
+    stages[i] = shaderStage;
+    types[i] = type;
+  }
+  return Create(device, stages, types);
+}
 void Destroy(DescriptorLayout data)
 {
   if (data.Layouts == VK_NULL_HANDLE)
