@@ -55,7 +55,7 @@ void Material::OnCreate()
         Console::Error("no fragment shader provided to the material");
         return;
     }
-    this->Pipeline = Graphics::Vulkan::Pipeline::Create(device, {this->VertexShader, this->FragmentShader}, Core::Engine::GetVulkanRenderPass(), Graphics::Vertex::GetBindingDescription(), Graphics::Vertex::GetAttributeDescriptions(), this->DescriptorLayouts);
+    this->Pipeline = Graphics::Vulkan::Pipeline::Create(device, Core::Engine::GetVulkanRenderPass(), {this->VertexShader, this->FragmentShader}, this->DescriptorLayouts);
 
     //base color
     this->ColorStagingBuffer = Graphics::Vulkan::Buffer::CreateHost(device, this->BaseColor.TotalByteSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT);

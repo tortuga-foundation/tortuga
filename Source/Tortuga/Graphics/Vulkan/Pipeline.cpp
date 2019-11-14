@@ -24,14 +24,14 @@ Pipeline Create(
     Device::Device device,
     RenderPass::RenderPass renderPass,
     std::vector<Shader::Shader> shaders,
-    std::vector<VkVertexInputBindingDescription> vertexBindings,
-    std::vector<VkVertexInputAttributeDescription> vertexAttributes,
     std::vector<DescriptorLayout::DescriptorLayout> descriptorLayouts)
 {
   auto data = Pipeline();
   data.Device = device.Device;
   data.RenderPass = renderPass.RenderPass;
 
+  const auto vertexBindings = Graphics::Vertex::GetBindingDescription();
+  const auto vertexAttributes = Graphics::Vertex::GetAttributeDescriptions();
   auto vertexInputInfo = VkPipelineVertexInputStateCreateInfo();
   {
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;

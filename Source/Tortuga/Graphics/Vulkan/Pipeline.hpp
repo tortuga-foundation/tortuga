@@ -29,8 +29,6 @@ Pipeline Create(
   Device::Device device,
   RenderPass::RenderPass renderPass,
   std::vector<Shader::Shader> shaders,
-  std::vector<VkVertexInputBindingDescription> vertexBindings,
-  std::vector<VkVertexInputAttributeDescription> vertexAttributes,
   std::vector<DescriptorLayout::DescriptorLayout> descriptorLayouts
 );
 void Destroy(Pipeline data);
