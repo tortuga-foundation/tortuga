@@ -66,6 +66,8 @@ namespace Tortuga
                 }
                 else
                     throw new PlatformNotSupportedException("Only X11 and WIN32 are supported");
+                if (err != VkResult.Success)
+                    throw new Exception("failed to create display surface");
             }
             unsafe ~Window()
             {
