@@ -9,6 +9,7 @@ namespace Tortuga.Graphics
     public class VulkanInstance
     {
         public VkInstance Instance => _instance;
+        public List<Device> Devices => _devices;
         private PFN_vkDebugReportCallbackEXT _debugCallbackFunc;
         VkDebugReportCallbackEXT _debugReportCallbackHandle;
         private VkInstance _instance;
