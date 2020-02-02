@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Tortuga.Graphics
 {
-    internal class Window
+    public class Window
     {
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
@@ -86,5 +86,8 @@ namespace Tortuga.Graphics
                 return version;
             }
         }
+
+        public bool Exists => _windowHandle.Exists;
+        public Veldrid.InputSnapshot PumpEvents() => _windowHandle.PumpEvents();
     }
 }
