@@ -6,7 +6,7 @@ using static Vulkan.VulkanNative;
 using static Veldrid.Sdl2.Sdl2Native;
 using System.Diagnostics;
 
-namespace Tortuga.Graphics.API
+namespace Tortuga.Graphics
 {
     internal class Window
     {
