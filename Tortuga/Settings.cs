@@ -1,9 +1,18 @@
-using Veldrid;
 
 namespace Tortuga
 {
     public static class Settings
     {
-        public static GraphicsBackend GraphicsAPI = GraphicsBackend.Vulkan;
+        public static class Vulkan
+        {
+            public enum DebugType
+            {
+                None,
+                Info,
+                Debug
+            };
+
+            public static DebugType DebugLevel = DebugType.Info;
+        }
     }
 }
