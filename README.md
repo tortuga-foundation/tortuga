@@ -2,6 +2,8 @@
 
 This is a game engine library built using vulkan and SDL
 
+![.NET Core](https://github.com/tortuga-foundation/tortuga/workflows/.NET%20Core/badge.svg?branch=master)
+
 ## Prerequisites
 
 * Dot Net Core 3.0
