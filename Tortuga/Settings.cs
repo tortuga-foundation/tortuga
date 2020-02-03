@@ -8,11 +8,11 @@ namespace Tortuga
             public enum DebugType
             {
                 None,
-                Info,
-                Debug
+                ErrorAndWarnings,
+                Full
             };
 
-            public static DebugType DebugLevel = DebugType.Info;
+            public static DebugType DebugLevel = DebugType.Full;
         }
     }
 }

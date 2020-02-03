@@ -10,6 +10,8 @@ namespace Tortuga.Graphics
 {
     public class Window
     {
+        internal VkSurfaceKHR Surface => _surface;
+
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
 
@@ -77,7 +79,7 @@ namespace Tortuga.Graphics
             vkDestroySurfaceKHR(Engine.Instance.Vulkan.Handle, this._surface, null);
         }
 
-        private unsafe SDL_version SDLVersion
+        internal static unsafe SDL_version SDLVersion
         {
             get
             {
