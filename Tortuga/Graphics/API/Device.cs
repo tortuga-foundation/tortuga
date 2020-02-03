@@ -26,6 +26,17 @@ namespace Tortuga.Graphics.API
         public VkPhysicalDeviceMemoryProperties MemoryProperties => _memoryProperties;
         public VkPhysicalDeviceFeatures Feature => _features;
         public List<QueueFamily> QueueFamilyProperties => _queueFamilyProperties;
+        public QueueFamily GraphicsQueueFamily
+        {
+            get
+            {
+                foreach (var q in _queueFamilyProperties)
+                    if (q.IsGraphics)
+                        return q;
+
+                throw new Exception("failed to find graphics queue in this device");
+            }
+        }
 
         private VkPhysicalDevice _physicalDevice;
         private VkDevice _logicalDevice;
@@ -117,6 +128,128 @@ namespace Tortuga.Graphics.API
                     vkGetDeviceQueue(_logicalDevice, _queueFamilyProperties[i].Index, j, &queue);
                     _queueFamilyProperties[i].Queues.Add(queue);
                 }
+            }
+        }
+
+        unsafe ~Device()
+        {
+            vkDestroyDevice(_logicalDevice, null);
+        }
+
+        public void WaitForQueue(VkQueue queue)
+        {
+            if (vkQueueWaitIdle(queue) != VkResult.Success)
+                throw new Exception("failed to wait on device queue");
+        }
+
+        public unsafe VkFormat FindDepthFormat
+        {
+            get
+            {
+                var candidates = new List<VkFormat>(){
+                    VkFormat.D32Sfloat, VkFormat.D32SfloatS8Uint, VkFormat.D24UnormS8Uint
+                };
+                var tiling = VkImageTiling.Optimal;
+                var features = VkFormatFeatureFlags.DepthStencilAttachment;
+
+                foreach (var format in candidates)
+                {
+                    VkFormatProperties formatProperties;
+                    vkGetPhysicalDeviceFormatProperties(_physicalDevice, format, &formatProperties);
+
+                    if (tiling == VkImageTiling.Linear && (formatProperties.linearTilingFeatures & features) == features)
+                        return format;
+                    else if (tiling == VkImageTiling.Optimal && (formatProperties.optimalTilingFeatures & features) == features)
+                        return format;
+                }
+                throw new Exception("failed to find any depth format supported by this device");
+            }
+        }
+
+        public uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
+        {
+            for (uint i = 0; i < _memoryProperties.memoryTypeCount; i++)
+            {
+                if ((typeFilter & (i >> 1)) != 0)
+                {
+                    if ((GetMemoryType(i).propertyFlags & properties) == properties)
+                        return i;
+                }
+            }
+
+            throw new Exception("failed to find suitable memory type on device");
+        }
+
+        private VkMemoryType GetMemoryType(uint i)
+        {
+            switch (i)
+            {
+                case 0:
+                    return _memoryProperties.memoryTypes_0;
+                case 1:
+                    return _memoryProperties.memoryTypes_1;
+                case 2:
+                    return _memoryProperties.memoryTypes_2;
+                case 3:
+                    return _memoryProperties.memoryTypes_3;
+                case 4:
+                    return _memoryProperties.memoryTypes_4;
+                case 5:
+                    return _memoryProperties.memoryTypes_5;
+                case 6:
+                    return _memoryProperties.memoryTypes_6;
+                case 7:
+                    return _memoryProperties.memoryTypes_7;
+                case 8:
+                    return _memoryProperties.memoryTypes_8;
+                case 9:
+                    return _memoryProperties.memoryTypes_9;
+                case 10:
+                    return _memoryProperties.memoryTypes_10;
+                case 11:
+                    return _memoryProperties.memoryTypes_11;
+                case 12:
+                    return _memoryProperties.memoryTypes_12;
+                case 13:
+                    return _memoryProperties.memoryTypes_13;
+                case 14:
+                    return _memoryProperties.memoryTypes_14;
+                case 15:
+                    return _memoryProperties.memoryTypes_15;
+                case 16:
+                    return _memoryProperties.memoryTypes_16;
+                case 17:
+                    return _memoryProperties.memoryTypes_17;
+                case 18:
+                    return _memoryProperties.memoryTypes_18;
+                case 19:
+                    return _memoryProperties.memoryTypes_19;
+                case 20:
+                    return _memoryProperties.memoryTypes_20;
+                case 21:
+                    return _memoryProperties.memoryTypes_21;
+                case 22:
+                    return _memoryProperties.memoryTypes_22;
+                case 23:
+                    return _memoryProperties.memoryTypes_23;
+                case 24:
+                    return _memoryProperties.memoryTypes_24;
+                case 25:
+                    return _memoryProperties.memoryTypes_25;
+                case 26:
+                    return _memoryProperties.memoryTypes_26;
+                case 27:
+                    return _memoryProperties.memoryTypes_27;
+                case 28:
+                    return _memoryProperties.memoryTypes_28;
+                case 29:
+                    return _memoryProperties.memoryTypes_29;
+                case 30:
+                    return _memoryProperties.memoryTypes_30;
+                case 31:
+                    return _memoryProperties.memoryTypes_31;
+                default:
+                    throw new NotSupportedException("this type of memory is not supported");
             }
         }
     }

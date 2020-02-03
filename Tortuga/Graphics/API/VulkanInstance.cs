@@ -87,7 +87,7 @@ namespace Tortuga.Graphics.API
                     flags = VkDebugReportFlagsEXT.WarningEXT | VkDebugReportFlagsEXT.ErrorEXT;
                 else if (Settings.Vulkan.DebugLevel == Settings.Vulkan.DebugType.Full)
                     flags = VkDebugReportFlagsEXT.WarningEXT | VkDebugReportFlagsEXT.ErrorEXT |
-                    VkDebugReportFlagsEXT.DebugEXT | VkDebugReportFlagsEXT.PerformanceWarningEXT | VkDebugReportFlagsEXT.WarningEXT;
+                    VkDebugReportFlagsEXT.DebugEXT | VkDebugReportFlagsEXT.PerformanceWarningEXT | VkDebugReportFlagsEXT.InformationEXT;
                 if (CreateDebugReportCallback(flags) != VkResult.Success)
                     Console.WriteLine("could not enable vulkan validation layer");
             }
@@ -104,10 +104,11 @@ namespace Tortuga.Graphics.API
             for (int i = 0; i < deviceCount; i++)
                 this._devices[i] = new Device(physicalDevices[i]);
         }
-        ~VulkanInstance()
+        unsafe ~VulkanInstance()
         {
             if (Settings.Vulkan.DebugLevel != Settings.Vulkan.DebugType.None)
                 DestroyDebugReportCallback();
+            vkDestroyInstance(_instanceHandle, null);
         }
 
         private unsafe uint DebugCallback(

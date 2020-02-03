@@ -10,6 +10,7 @@ namespace Tortuga.Graphics
 {
     public class Window
     {
+        internal Sdl2Window SdlHandle => _windowHandle;
         internal VkSurfaceKHR Surface => _surface;
 
         private Sdl2Window _windowHandle;
