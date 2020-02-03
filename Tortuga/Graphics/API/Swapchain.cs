@@ -151,12 +151,12 @@ namespace Tortuga.Graphics.API
                     width = Convert.ToUInt32(window.SdlHandle.Width),
                     height = Convert.ToUInt32(window.SdlHandle.Height)
                 };
-                actualExtent.width = Math.Clamp(
+                actualExtent.width = Clamp(
                     actualExtent.width,
                     surfaceCapabilities.minImageExtent.width,
                     surfaceCapabilities.maxImageExtent.width
                 );
-                actualExtent.height = Math.Clamp(
+                actualExtent.height = Clamp(
                     actualExtent.height,
                     surfaceCapabilities.minImageExtent.height,
                     surfaceCapabilities.maxImageExtent.height
@@ -224,6 +224,13 @@ namespace Tortuga.Graphics.API
             command.TransferImageLayout(_depthImage, VkImageLayout.Undefined, VkImageLayout.DepthStencilAttachmentOptimal);
             command.End();
             _device.WaitForQueue(_device.GraphicsQueueFamily.Queues[0]);
+        }
+
+        public T Clamp<T>(T val, T min, T max) where T : IComparable<T>
+        {
+            if (val.CompareTo(min) < 0) return min;
+            else if (val.CompareTo(max) > 0) return max;
+            else return val;
         }
     }
 }

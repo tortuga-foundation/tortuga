@@ -1,24 +1,35 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "shell",
-            "args": [
-                "build",
-                // Ask dotnet build to generate full paths for file names.
-                "/property:GenerateFullPaths=true",
-                // Do not generate summary otherwise it leads to duplicate errors in Problems panel
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "group": "build",
-            "presentation": {
-                "reveal": "silent"
-            },
-            "problemMatcher": "$msCompile"
-        }
-    ]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/Tortuga.Test/Tortuga.Test.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "restore",
+      "command": "restore",
+      "type": "shell",
+      "args": ["${workspaceFolder}/tortuga.sln"]
+    },
+    {
+      "label": "clean",
+      "command": "rm",
+      "type": "shell",
+      "args": [
+        "-r",
+        "${workspaceFolder}/Tortuga.Test/obj",
+        "${workspaceFolder}/Tortuga.Test/bin",
+        "${workspaceFolder}/Tortuga/obj",
+        "${workspaceFolder}/Tortuga/bin"
+      ]
+    }
+  ]
 }
