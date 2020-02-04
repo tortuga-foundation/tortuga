@@ -17,6 +17,7 @@ namespace Tortuga.Graphics
         private VkSurfaceKHR _surface;
         private API.Swapchain _swapchain;
         private API.Semaphore _presentSync;
+        private API.Fence _swapchainInUseFence;
 
         public unsafe Window(
             string title,
@@ -76,6 +77,7 @@ namespace Tortuga.Graphics
 
             this._surface = surface;
             this._swapchain = new API.Swapchain(this);
+            this._swapchainInUseFence = new API.Fence(true);
             this._presentSync = new API.Semaphore();
         }
 
@@ -95,23 +97,27 @@ namespace Tortuga.Graphics
         }
 
         public bool Exists => _windowHandle.Exists;
+
         public unsafe Veldrid.InputSnapshot PumpEvents()
         {
+            _swapchainInUseFence.Wait();
             uint nextImageIndex;
-            if (vkAcquireNextImageKHR(
+            var swapchainResponse = vkAcquireNextImageKHR(
                 Engine.Instance.MainDevice.LogicalDevice,
                 this._swapchain.Handle,
                 ulong.MaxValue,
                 _presentSync.Handle,
-                VkFence.Null,
+                _swapchainInUseFence.Handle,
                 &nextImageIndex
-            ) != VkResult.Success)
+            );
+            if (swapchainResponse == VkResult.ErrorOutOfDateKHR)
+                _swapchain = new API.Swapchain(this, _swapchain);
+            else if (swapchainResponse != VkResult.Success)
                 throw new Exception("failed to acquire next swapchain image");
 
             var swapchains = new API.NativeList<VkSwapchainKHR>();
-            swapchains.Add(_swapchain.Handle);
-
             var imageIndices = new API.NativeList<uint>();
+            swapchains.Add(_swapchain.Handle);
             imageIndices.Add(nextImageIndex);
 
             var waitSemaphores = new API.NativeList<VkSemaphore>();
@@ -124,7 +130,8 @@ namespace Tortuga.Graphics
             presentInfo.waitSemaphoreCount = waitSemaphores.Count;
             presentInfo.pWaitSemaphores = (VkSemaphore*)waitSemaphores.Data.ToPointer();
 
-            if (vkQueuePresentKHR(_swapchain.DevicePresentQueueFamily.Queues[0], &presentInfo) != VkResult.Success)
+            var presentResponse = vkQueuePresentKHR(_swapchain.DevicePresentQueueFamily.Queues[0], &presentInfo);
+            if (presentResponse != VkResult.Success && presentResponse != VkResult.ErrorOutOfDateKHR)
                 throw new Exception("failed to present swapchain image");
 
             return _windowHandle.PumpEvents();

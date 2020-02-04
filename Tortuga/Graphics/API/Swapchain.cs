@@ -26,7 +26,7 @@ namespace Tortuga.Graphics.API
         private Image _depthImage;
         private ImageView _depthImageView;
 
-        public unsafe Swapchain(Window window)
+        public unsafe Swapchain(Window window, Swapchain oldSwapchain = null)
         {
             _window = window;
             //get device presentation queue
@@ -183,6 +183,8 @@ namespace Tortuga.Graphics.API
             swapchainInfo.preTransform = surfaceCapabilities.currentTransform;
             swapchainInfo.presentMode = _presentMode;
             swapchainInfo.clipped = true;
+            if (oldSwapchain != null)
+                swapchainInfo.oldSwapchain = oldSwapchain.Handle;
 
             VkSwapchainKHR swapchain;
             if (vkCreateSwapchainKHR(Engine.Instance.MainDevice.LogicalDevice, &swapchainInfo, null, &swapchain) != VkResult.Success)
