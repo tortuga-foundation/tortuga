@@ -98,6 +98,10 @@ namespace Tortuga.Graphics.API
             {
                 if (commands.Length == 0)
                     return;
+                if (signalSemaphores == null)
+                    signalSemaphores = new Semaphore[0];
+                if (waitSemaphores == null)
+                    waitSemaphores = new Semaphore[0];
 
                 //get command buffers
                 var uintCmdsLength = Convert.ToUInt32(commands.Length);
