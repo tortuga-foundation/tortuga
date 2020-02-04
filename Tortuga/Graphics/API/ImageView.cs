@@ -6,16 +6,12 @@ namespace Tortuga.Graphics.API
 {
     internal class ImageView
     {
-        public Device DeviceUsed => _device;
         public VkImageView Handle => _imageViewHandle;
 
         private VkImageView _imageViewHandle;
-        private Device _device;
 
-        public unsafe ImageView(Device device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevel = 1)
+        public unsafe ImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevel = 1)
         {
-            this._device = device;
-
             var imageViewInfo = VkImageViewCreateInfo.New();
             imageViewInfo.image = image;
             imageViewInfo.viewType = VkImageViewType.Image2D;
@@ -39,18 +35,18 @@ namespace Tortuga.Graphics.API
             };
 
             VkImageView imageView;
-            if (vkCreateImageView(_device.LogicalDevice, &imageViewInfo, null, &imageView) != VkResult.Success)
+            if (vkCreateImageView(Engine.Instance.MainDevice.LogicalDevice, &imageViewInfo, null, &imageView) != VkResult.Success)
                 throw new Exception("failed to create image view");
             _imageViewHandle = imageView;
         }
 
-        public unsafe ImageView(Image image, VkImageAspectFlags aspectFlags) : this(image.DeviceUsed, image.ImageHandle, image.Format, aspectFlags, image.MipLevel)
+        public unsafe ImageView(Image image, VkImageAspectFlags aspectFlags) : this(image.ImageHandle, image.Format, aspectFlags, image.MipLevel)
         {
         }
 
         unsafe ~ImageView()
         {
-            vkDestroyImageView(_device.LogicalDevice, _imageViewHandle, null);
+            vkDestroyImageView(Engine.Instance.MainDevice.LogicalDevice, _imageViewHandle, null);
         }
     }
 }

@@ -15,6 +15,8 @@ namespace Tortuga.Graphics
 
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
+        private API.Swapchain _swapchain;
+        private API.Semaphore _presentSync;
 
         public unsafe Window(
             string title,
@@ -73,6 +75,8 @@ namespace Tortuga.Graphics
                 throw new Exception("failed to create window surface");
 
             this._surface = surface;
+            this._swapchain = new API.Swapchain(this);
+            this._presentSync = new API.Semaphore();
         }
 
         unsafe ~Window()
@@ -91,6 +95,39 @@ namespace Tortuga.Graphics
         }
 
         public bool Exists => _windowHandle.Exists;
-        public Veldrid.InputSnapshot PumpEvents() => _windowHandle.PumpEvents();
+        public unsafe Veldrid.InputSnapshot PumpEvents()
+        {
+            uint nextImageIndex;
+            if (vkAcquireNextImageKHR(
+                Engine.Instance.MainDevice.LogicalDevice,
+                this._swapchain.Handle,
+                ulong.MaxValue,
+                _presentSync.Handle,
+                VkFence.Null,
+                &nextImageIndex
+            ) != VkResult.Success)
+                throw new Exception("failed to acquire next swapchain image");
+
+            var swapchains = new API.NativeList<VkSwapchainKHR>();
+            swapchains.Add(_swapchain.Handle);
+
+            var imageIndices = new API.NativeList<uint>();
+            imageIndices.Add(nextImageIndex);
+
+            var waitSemaphores = new API.NativeList<VkSemaphore>();
+            waitSemaphores.Add(_presentSync.Handle);
+
+            var presentInfo = VkPresentInfoKHR.New();
+            presentInfo.swapchainCount = swapchains.Count;
+            presentInfo.pSwapchains = (VkSwapchainKHR*)swapchains.Data.ToPointer();
+            presentInfo.pImageIndices = (uint*)imageIndices.Data.ToPointer();
+            presentInfo.waitSemaphoreCount = waitSemaphores.Count;
+            presentInfo.pWaitSemaphores = (VkSemaphore*)waitSemaphores.Data.ToPointer();
+
+            if (vkQueuePresentKHR(_swapchain.DevicePresentQueueFamily.Queues[0], &presentInfo) != VkResult.Success)
+                throw new Exception("failed to present swapchain image");
+
+            return _windowHandle.PumpEvents();
+        }
     }
 }

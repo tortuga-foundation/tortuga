@@ -10,17 +10,16 @@ namespace Tortuga.Graphics.API
         public VkDeviceMemory Memory => _deviceMemory;
         public VkFormat Format => _format;
         public uint MipLevel => _mipLevel;
-        public Device DeviceUsed => _device;
 
-        private Device _device;
         private VkImage _imageHandle;
         private VkDeviceMemory _deviceMemory;
         private VkFormat _format;
         private uint _mipLevel;
 
-        public unsafe Image(Device device, uint width, uint height, VkFormat format, VkImageUsageFlags usageFlags, uint mipMapLevel = 1)
+        public Image()
+        { }
+        public unsafe Image(uint width, uint height, VkFormat format, VkImageUsageFlags usageFlags, uint mipMapLevel = 1)
         {
-            this._device = device;
             this._format = format;
             this._mipLevel = mipMapLevel;
 
@@ -42,30 +41,40 @@ namespace Tortuga.Graphics.API
             imageInfo.initialLayout = VkImageLayout.Undefined;
 
             VkImage image;
-            if (vkCreateImage(device.LogicalDevice, &imageInfo, null, &image) != VkResult.Success)
+            if (vkCreateImage(Engine.Instance.MainDevice.LogicalDevice, &imageInfo, null, &image) != VkResult.Success)
                 throw new Exception("failed to create image");
             _imageHandle = image;
 
             //memory
             VkMemoryRequirements memoryRequirements;
-            vkGetImageMemoryRequirements(device.LogicalDevice, _imageHandle, out memoryRequirements);
+            vkGetImageMemoryRequirements(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, out memoryRequirements);
 
             var allocateInfo = VkMemoryAllocateInfo.New();
-            allocateInfo.memoryTypeIndex = device.FindMemoryType(memoryRequirements.memoryTypeBits, VkMemoryPropertyFlags.DeviceLocal);
+            allocateInfo.memoryTypeIndex = Engine.Instance.MainDevice.FindMemoryType(memoryRequirements.memoryTypeBits, VkMemoryPropertyFlags.DeviceLocal);
             allocateInfo.allocationSize = memoryRequirements.size;
 
             VkDeviceMemory deviceMemory;
-            if (vkAllocateMemory(device.LogicalDevice, &allocateInfo, null, &deviceMemory) != VkResult.Success)
+            if (vkAllocateMemory(Engine.Instance.MainDevice.LogicalDevice, &allocateInfo, null, &deviceMemory) != VkResult.Success)
                 throw new Exception("failed to allocate image memory on device");
             _deviceMemory = deviceMemory;
-            if (vkBindImageMemory(device.LogicalDevice, _imageHandle, _deviceMemory, 0) != VkResult.Success)
+            if (vkBindImageMemory(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, _deviceMemory, 0) != VkResult.Success)
                 throw new Exception("failed to bind image to device memory");
         }
-
         unsafe ~Image()
         {
-            vkDestroyImage(_device.LogicalDevice, _imageHandle, null);
-            vkFreeMemory(_device.LogicalDevice, _deviceMemory, null);
+            vkDestroyImage(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, null);
+            if (_deviceMemory != VkDeviceMemory.Null)
+                vkFreeMemory(Engine.Instance.MainDevice.LogicalDevice, _deviceMemory, null);
+        }
+        public static Image GetImageObject(VkImage image, VkFormat format, VkDeviceMemory memory, uint mipLevel = 1)
+        {
+            return new Image
+            {
+                _deviceMemory = memory,
+                _format = format,
+                _imageHandle = image,
+                _mipLevel = mipLevel
+            };
         }
 
         public bool HasStencilComponent => _format == VkFormat.D32SfloatS8Uint || Format == VkFormat.D24UnormS8Uint;

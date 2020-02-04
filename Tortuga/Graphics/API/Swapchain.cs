@@ -7,7 +7,9 @@ namespace Tortuga.Graphics.API
 {
     internal class Swapchain
     {
-        protected Device _device;
+        public Device.QueueFamily DevicePresentQueueFamily => _presentQueueFamily;
+        public VkSwapchainKHR Handle => _swapchain;
+
         protected Window _window;
         private Device.QueueFamily _presentQueueFamily;
         private bool[] _queuesSupportingPresentation;
@@ -19,22 +21,21 @@ namespace Tortuga.Graphics.API
         private VkExtent2D _extent;
         private VkSwapchainKHR _swapchain;
         private uint _imagesCount;
-        private NativeList<VkImage> _images;
+        private List<Image> _images;
         private List<ImageView> _imageViews;
         private Image _depthImage;
         private ImageView _depthImageView;
 
-        public unsafe Swapchain(Device device, Window window)
+        public unsafe Swapchain(Window window)
         {
-            _device = device;
             _window = window;
             //get device presentation queue
-            _queuesSupportingPresentation = new bool[device.QueueFamilyProperties.Count];
-            for (int i = 0; i < device.QueueFamilyProperties.Count; i++)
+            _queuesSupportingPresentation = new bool[Engine.Instance.MainDevice.QueueFamilyProperties.Count];
+            for (int i = 0; i < Engine.Instance.MainDevice.QueueFamilyProperties.Count; i++)
             {
                 VkBool32 isSupported = false;
                 if (vkGetPhysicalDeviceSurfaceSupportKHR(
-                    device.PhysicalDevice,
+                    Engine.Instance.MainDevice.PhysicalDevice,
                     0,
                     window.Surface,
                     &isSupported) != VkResult.Success
@@ -51,12 +52,12 @@ namespace Tortuga.Graphics.API
             );
             if (familySupportingPresentation == -1)
                 throw new NotSupportedException("device does not support presentation");
-            _presentQueueFamily = device.QueueFamilyProperties[familySupportingPresentation];
+            _presentQueueFamily = Engine.Instance.MainDevice.QueueFamilyProperties[familySupportingPresentation];
 
             //get surface capabilities
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
             if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-                device.PhysicalDevice,
+                Engine.Instance.MainDevice.PhysicalDevice,
                 window.Surface,
                 out surfaceCapabilities) != VkResult.Success
             )
@@ -66,7 +67,7 @@ namespace Tortuga.Graphics.API
             //get surface format support
             uint surfaceFormatCount;
             if (vkGetPhysicalDeviceSurfaceFormatsKHR(
-                device.PhysicalDevice,
+                Engine.Instance.MainDevice.PhysicalDevice,
                 window.Surface,
                 &surfaceFormatCount,
                 null) != VkResult.Success
@@ -75,7 +76,7 @@ namespace Tortuga.Graphics.API
             var surfaceSupportedFormats = new NativeList<VkSurfaceFormatKHR>(surfaceFormatCount);
             surfaceSupportedFormats.Count = surfaceFormatCount;
             if (vkGetPhysicalDeviceSurfaceFormatsKHR(
-                device.PhysicalDevice,
+                Engine.Instance.MainDevice.PhysicalDevice,
                 window.Surface,
                 &surfaceFormatCount,
                 (VkSurfaceFormatKHR*)surfaceSupportedFormats.Data.ToPointer()) != VkResult.Success
@@ -86,7 +87,7 @@ namespace Tortuga.Graphics.API
             //get present mode support
             uint presentModeCount;
             if (vkGetPhysicalDeviceSurfacePresentModesKHR(
-                device.PhysicalDevice,
+                Engine.Instance.MainDevice.PhysicalDevice,
                 window.Surface,
                 &presentModeCount,
                 null
@@ -95,7 +96,7 @@ namespace Tortuga.Graphics.API
             var surfaceSupportedPresentModes = new NativeList<VkPresentModeKHR>(presentModeCount);
             surfaceSupportedPresentModes.Count = presentModeCount;
             if (vkGetPhysicalDeviceSurfacePresentModesKHR(
-                device.PhysicalDevice,
+                Engine.Instance.MainDevice.PhysicalDevice,
                 window.Surface,
                 &presentModeCount,
                 (VkPresentModeKHR*)surfaceSupportedPresentModes.Data.ToPointer()
@@ -184,7 +185,7 @@ namespace Tortuga.Graphics.API
             swapchainInfo.clipped = true;
 
             VkSwapchainKHR swapchain;
-            if (vkCreateSwapchainKHR(device.LogicalDevice, &swapchainInfo, null, &swapchain) != VkResult.Success)
+            if (vkCreateSwapchainKHR(Engine.Instance.MainDevice.LogicalDevice, &swapchainInfo, null, &swapchain) != VkResult.Success)
                 throw new Exception("failed to create swapchain");
             _swapchain = swapchain;
 
@@ -193,37 +194,46 @@ namespace Tortuga.Graphics.API
 
         unsafe ~Swapchain()
         {
-            vkDestroySwapchainKHR(_device.LogicalDevice, _swapchain, null);
+            vkDestroySwapchainKHR(Engine.Instance.MainDevice.LogicalDevice, _swapchain, null);
         }
 
         private unsafe void SetupSwapchainImages()
         {
             //get swapchain images
             uint imagesCount = 0;
-            if (vkGetSwapchainImagesKHR(_device.LogicalDevice, _swapchain, &imagesCount, null) != VkResult.Success)
+            if (vkGetSwapchainImagesKHR(Engine.Instance.MainDevice.LogicalDevice, _swapchain, &imagesCount, null) != VkResult.Success)
                 throw new Exception("failed to get swapchain images");
-            _images = new NativeList<VkImage>(imagesCount);
-            _images.Count = imagesCount;
-            if (vkGetSwapchainImagesKHR(_device.LogicalDevice, _swapchain, &imagesCount, (VkImage*)_images.Data.ToPointer()) != VkResult.Success)
+            var images = new NativeList<VkImage>(imagesCount);
+            images.Count = imagesCount;
+            if (vkGetSwapchainImagesKHR(Engine.Instance.MainDevice.LogicalDevice, _swapchain, &imagesCount, (VkImage*)images.Data.ToPointer()) != VkResult.Success)
                 throw new Exception("failed to get swapchain images");
+            _images = new List<Image>();
+            foreach (var image in images)
+                _images.Add(Image.GetImageObject(image, _format.format, VkDeviceMemory.Null));
 
             //get swapchain image views
             _imageViews = new List<ImageView>(Convert.ToInt32(_images.Count));
             for (int i = 0; i < _imageViews.Count; i++)
-                _imageViews[i] = new ImageView(_device, _images[i], _format.format, VkImageAspectFlags.Color);
+                _imageViews[i] = new ImageView(_images[i], VkImageAspectFlags.Color);
 
             //get swapchaing depth image & depth image view
-            var depthFormat = _device.FindDepthFormat;
-            _depthImage = new Image(_device, _extent.width, _extent.height, depthFormat, VkImageUsageFlags.DepthStencilAttachment);
+            var depthFormat = Engine.Instance.MainDevice.FindDepthFormat;
+            _depthImage = new Image(_extent.width, _extent.height, depthFormat, VkImageUsageFlags.DepthStencilAttachment);
             _depthImageView = new ImageView(_depthImage, VkImageAspectFlags.Depth);
 
             //initialize depth image
-            var commandPool = new CommandPool(_device, _device.GraphicsQueueFamily);
+            var creationFence = new Fence();
+            var commandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
             var command = commandPool.AllocateCommands()[0];
             command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             command.TransferImageLayout(_depthImage, VkImageLayout.Undefined, VkImageLayout.DepthStencilAttachmentOptimal);
+            foreach (var image in _images)
+                command.TransferImageLayout(image, VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR);
             command.End();
-            _device.WaitForQueue(_device.GraphicsQueueFamily.Queues[0]);
+            command.Submit(Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0], new CommandPool.Command[]{
+                command
+            }, new Semaphore[0], new Semaphore[0], creationFence);
+            creationFence.Wait();
         }
 
         public T Clamp<T>(T val, T min, T max) where T : IComparable<T>

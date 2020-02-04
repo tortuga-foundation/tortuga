@@ -6,7 +6,8 @@ namespace Tortuga.Test
     {
         static void Main(string[] args)
         {
-            new Engine().Run();
+            var engine = new Engine();
+            engine.Run();
         }
     }
 }

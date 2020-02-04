@@ -8,17 +8,14 @@ namespace Tortuga.Graphics.API
     internal class CommandPool
     {
         public VkCommandPool Handle => _commandPool;
-        public Device DeviceInUse => _device;
         public Device.QueueFamily QueueFamily => _queueFamily;
 
         private VkCommandPool _commandPool;
-        private Device _device;
         private Device.QueueFamily _queueFamily;
         private List<VkCommandBuffer> _commandBuffers;
 
-        public unsafe CommandPool(Device device, Device.QueueFamily queueFamily)
+        public unsafe CommandPool(Device.QueueFamily queueFamily)
         {
-            this._device = device;
             this._queueFamily = queueFamily;
             this._commandBuffers = new List<VkCommandBuffer>();
 
@@ -27,14 +24,14 @@ namespace Tortuga.Graphics.API
             createInfo.queueFamilyIndex = queueFamily.Index;
 
             VkCommandPool commandPool;
-            if (vkCreateCommandPool(device.LogicalDevice, &createInfo, null, &commandPool) != VkResult.Success)
+            if (vkCreateCommandPool(Engine.Instance.MainDevice.LogicalDevice, &createInfo, null, &commandPool) != VkResult.Success)
                 throw new Exception("failed to create command pool on device");
             _commandPool = commandPool;
         }
 
         unsafe ~CommandPool()
         {
-            vkDestroyCommandPool(_device.LogicalDevice, _commandPool, null);
+            vkDestroyCommandPool(Engine.Instance.MainDevice.LogicalDevice, _commandPool, null);
         }
 
         public unsafe List<Command> AllocateCommands(VkCommandBufferLevel level = VkCommandBufferLevel.Primary, uint amount = 1)
@@ -47,7 +44,7 @@ namespace Tortuga.Graphics.API
             var commandbuffers = new NativeList<VkCommandBuffer>(commandInfo.commandBufferCount);
             commandbuffers.Count = commandInfo.commandBufferCount;
             if (vkAllocateCommandBuffers(
-                _device.LogicalDevice,
+                Engine.Instance.MainDevice.LogicalDevice,
                 &commandInfo,
                 (VkCommandBuffer*)commandbuffers.Data.ToPointer()
             ) != VkResult.Success)
@@ -95,6 +92,50 @@ namespace Tortuga.Graphics.API
             {
                 if (vkEndCommandBuffer(_handle) != VkResult.Success)
                     throw new Exception("failed to end command buffer");
+            }
+
+            public unsafe void Submit(VkQueue queue, Command[] commands, Semaphore[] signalSemaphores = null, Semaphore[] waitSemaphores = null, Fence fence = null, VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe)
+            {
+                if (commands.Length == 0)
+                    return;
+
+                //get command buffers
+                var uintCmdsLength = Convert.ToUInt32(commands.Length);
+                var cmds = new NativeList<VkCommandBuffer>(uintCmdsLength);
+                cmds.Count = uintCmdsLength;
+                for (uint i = 0; i < uintCmdsLength; i++)
+                    cmds[i] = commands[i].Handle;
+
+                //get signal seamphores
+                var uintSignalSemLength = Convert.ToUInt32(signalSemaphores.Length);
+                var signalSem = new NativeList<VkSemaphore>(uintSignalSemLength);
+                signalSem.Count = uintSignalSemLength;
+                for (uint i = 0; i < uintSignalSemLength; i++)
+                    signalSem[i] = signalSemaphores[i].Handle;
+
+                //get wait semaphores
+                var uintWaitSemLength = Convert.ToUInt32(waitSemaphores.Length);
+                var WaitSem = new NativeList<VkSemaphore>(uintWaitSemLength);
+                WaitSem.Count = uintWaitSemLength;
+                for (uint i = 0; i < uintWaitSemLength; i++)
+                    WaitSem[i] = waitSemaphores[i].Handle;
+
+
+                var submitInfo = VkSubmitInfo.New();
+                submitInfo.signalSemaphoreCount = uintSignalSemLength;
+                submitInfo.pSignalSemaphores = (VkSemaphore*)signalSem.Data.ToPointer();
+                submitInfo.waitSemaphoreCount = uintWaitSemLength;
+                submitInfo.pWaitSemaphores = (VkSemaphore*)WaitSem.Data.ToPointer();
+                submitInfo.commandBufferCount = uintCmdsLength;
+                submitInfo.pCommandBuffers = (VkCommandBuffer*)cmds.Data.ToPointer();
+                submitInfo.pWaitDstStageMask = &waitStageMask;
+
+                VkFence waitFence = VkFence.Null;
+                if (fence != null)
+                    waitFence = fence.Handle;
+
+                if (vkQueueSubmit(queue, 1, &submitInfo, waitFence) != VkResult.Success)
+                    throw new Exception("failed to submit commands to queue");
             }
 
             public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout)

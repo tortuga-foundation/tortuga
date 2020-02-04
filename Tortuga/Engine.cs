@@ -7,6 +7,7 @@ namespace Tortuga
     {
         public static Engine Instance => _instance;
         internal VulkanInstance Vulkan => _vulkan;
+        internal Device MainDevice => _vulkan.Devices[0];
         public Window MainWindow => _mainWindow;
 
         private static Engine _instance;
@@ -20,7 +21,6 @@ namespace Tortuga
             Engine._instance = this;
             this._vulkan = new VulkanInstance();
             _mainWindow = new Window("tortuga", 50, 50, 1920, 1080, Veldrid.Sdl2.SDL_WindowFlags.AllowHighDpi, true);
-            var swapchain = new Swapchain(this._vulkan.Devices[0], _mainWindow);
         }
 
         public void Run()
