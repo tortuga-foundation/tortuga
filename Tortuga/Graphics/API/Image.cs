@@ -16,8 +16,7 @@ namespace Tortuga.Graphics.API
         private VkFormat _format;
         private uint _mipLevel;
 
-        public Image()
-        { }
+        private Image() { }
         public unsafe Image(uint width, uint height, VkFormat format, VkImageUsageFlags usageFlags, uint mipMapLevel = 1)
         {
             this._format = format;
@@ -68,7 +67,7 @@ namespace Tortuga.Graphics.API
         }
         public static Image GetImageObject(VkImage image, VkFormat format, VkDeviceMemory memory, uint mipLevel = 1)
         {
-            return new Image
+            return new Image()
             {
                 _deviceMemory = memory,
                 _format = format,

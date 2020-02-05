@@ -97,6 +97,31 @@ namespace Tortuga.Graphics
         }
 
         public bool Exists => _windowHandle.Exists;
+        public bool Resizeable
+        {
+            get => _windowHandle.Resizable;
+            set => _windowHandle.Resizable = value;
+        }
+        public string Title
+        {
+            get => _windowHandle.Title;
+            set => _windowHandle.Title = value;
+        }
+        public bool Visible
+        {
+            get => _windowHandle.Visible;
+            set => _windowHandle.Visible = value;
+        }
+        public int Width
+        {
+            get => _windowHandle.Width;
+            set => _windowHandle.Width = value;
+        }
+        public int height
+        {
+            get => _windowHandle.Height;
+            set => _windowHandle.Height = value;
+        }
 
         public unsafe Veldrid.InputSnapshot PumpEvents()
         {
