@@ -17,7 +17,8 @@
       "label": "restore",
       "command": "restore",
       "type": "shell",
-      "args": ["${workspaceFolder}/tortuga.sln"]
+      "args": ["${workspaceFolder}/tortuga.sln"],
+      "problemMatcher": []
     },
     {
       "label": "clean",
@@ -29,7 +30,8 @@
         "${workspaceFolder}/Tortuga.Test/bin",
         "${workspaceFolder}/Tortuga/obj",
         "${workspaceFolder}/Tortuga/bin"
-      ]
+      ],
+      "problemMatcher": []
     }
   ]
 }
