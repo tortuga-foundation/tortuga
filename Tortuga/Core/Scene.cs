@@ -44,8 +44,8 @@ namespace Tortuga.Core
 
                 _components[comp.Key].Add(e.Components[comp.Key]);
             }
-            e.OnComponentAdded += OnComponentAdded;
-            e.OnComponentAdded += OnComponentRemoved;
+            e.OnComponentAdded = OnComponentAdded;
+            e.OnComponentRemoved = OnComponentRemoved;
         }
         public void RemoveEntity(Entity e)
         {
@@ -55,8 +55,8 @@ namespace Tortuga.Core
                     continue;
                 _components[comp.Key].Remove(e.Components[comp.Key]);
             }
-            e.OnComponentAdded -= OnComponentAdded;
-            e.OnComponentAdded -= OnComponentRemoved;
+            e.OnComponentAdded = OnComponentAdded;
+            e.OnComponentRemoved = OnComponentRemoved;
             _entities.Remove(e);
         }
         public void AddSystem<T>() where T : BaseSystem, new()

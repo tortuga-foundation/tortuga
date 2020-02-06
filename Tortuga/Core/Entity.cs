@@ -5,8 +5,8 @@ namespace Tortuga.Core
 {
     public class Entity
     {
-        public Action<Entity, BaseComponent> OnComponentAdded;
-        public Action<Entity, BaseComponent> OnComponentRemoved;
+        internal Action<Entity, BaseComponent> OnComponentAdded;
+        internal Action<Entity, BaseComponent> OnComponentRemoved;
 
         public Dictionary<Type, BaseComponent> Components => _components;
         private Dictionary<Type, BaseComponent> _components;
@@ -22,7 +22,7 @@ namespace Tortuga.Core
                 return;
             var newComp = BaseComponent.Create<T>(this);
             _components.Add(typeof(T), newComp);
-            OnComponentAdded.Invoke(this, newComp);
+            OnComponentAdded?.Invoke(this, newComp);
             newComp.OnEnable();
         }
 
@@ -31,7 +31,7 @@ namespace Tortuga.Core
             if (_components.ContainsKey(typeof(T)))
             {
                 _components[typeof(T)].OnDisable();
-                OnComponentRemoved.Invoke(this, _components[typeof(T)]);
+                OnComponentRemoved?.Invoke(this, _components[typeof(T)]);
                 _components.Remove(typeof(T));
             }
         }
