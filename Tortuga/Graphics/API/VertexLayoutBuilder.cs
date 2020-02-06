@@ -42,7 +42,6 @@ namespace Tortuga.Graphics.API
                 return size;
             }
         }
-
         public static NativeList<VkVertexInputBindingDescription> BindingDescriptions
         {
             get
@@ -79,5 +78,7 @@ namespace Tortuga.Graphics.API
                 return attributeDescriptions;
             }
         }
+
+        private VertexLayoutBuilder() { }
     }
 }

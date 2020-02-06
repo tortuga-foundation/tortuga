@@ -11,9 +11,9 @@
       "preLaunchTask": "build",
       "program": "${workspaceFolder}/Tortuga.Test/bin/Debug/netcoreapp3.0/Tortuga.Test.dll",
       "args": [],
-      "cwd": "${workspaceFolder}/Tortuga.Test",
+      "cwd": "${workspaceFolder}",
       "console": "internalConsole",
-      "stopAtEntry": false
+      "stopAtEntry": false,
     }
   ]
 }
