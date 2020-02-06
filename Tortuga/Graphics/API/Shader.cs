@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using Vulkan;
 using static Vulkan.VulkanNative;
 
@@ -6,9 +7,10 @@ namespace Tortuga.Graphics.API
 {
     internal class Shader
     {
+        public VkShaderModule Handle => _shader;
         private VkShaderModule _shader;
 
-        public unsafe Shader(byte[] byteCode)
+        private unsafe void SetupShader(byte[] byteCode)
         {
             fixed (byte* byteCodePtr = byteCode)
             {
@@ -28,6 +30,15 @@ namespace Tortuga.Graphics.API
             }
         }
 
+        public Shader(string file)
+        {
+            if (File.Exists(file) == false)
+                throw new FileNotFoundException("could not find the shader file");
+            var byteCode = File.ReadAllBytes(file);
+            SetupShader(byteCode);
+        }
+        public unsafe Shader(byte[] byteCode)
+            => SetupShader(byteCode);
         unsafe ~Shader()
         {
             vkDestroyShaderModule(
@@ -35,6 +46,14 @@ namespace Tortuga.Graphics.API
                 _shader,
                 null
             );
+        }
+
+        public static byte[] Compile(string file)
+        {
+            if (File.Exists(file) == false)
+                throw new FileNotFoundException("failed to find shader file");
+
+            return File.ReadAllBytes(file);
         }
     }
 }

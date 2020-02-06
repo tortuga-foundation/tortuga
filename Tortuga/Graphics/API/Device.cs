@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Veldrid.Sdl2;
 using Vulkan;
 using static Vulkan.VulkanNative;
-using static Veldrid.Sdl2.Sdl2Native;
 
 
 namespace Tortuga.Graphics.API
