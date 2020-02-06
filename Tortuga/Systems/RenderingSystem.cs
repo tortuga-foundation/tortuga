@@ -4,6 +4,7 @@ namespace Tortuga.Systems
     {
         public override void Update()
         {
+            var components = MyScene.GetComponents<Components.Camera>();
         }
     }
 }
