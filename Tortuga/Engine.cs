@@ -15,6 +15,8 @@ namespace Tortuga
         private VulkanInstance _vulkan;
         private Window _mainWindow;
 
+        private Core.Scene _activeScene;
+
         public Engine()
         {
             if (Engine._instance != null)
@@ -29,7 +31,30 @@ namespace Tortuga
             while (this._mainWindow.Exists)
             {
                 this._mainWindow.PumpEvents();
+
+                if (_activeScene != null)
+                {
+                    foreach (var system in _activeScene.Systems.Values)
+                    {
+                        system.Update();
+                    }
+                    foreach (var entity in _activeScene.Entities)
+                    {
+                        foreach (var component in entity.Components)
+                            component.Value.Update();
+                    }
+                }
             }
+        }
+
+        public void LoadScene(Core.Scene scene)
+        {
+            _activeScene = scene;
+        }
+
+        public void UnloadScene(Core.Scene scene)
+        {
+            _activeScene = new Core.Scene();
         }
     }
 }
