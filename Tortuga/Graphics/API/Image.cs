@@ -67,7 +67,8 @@ namespace Tortuga.Graphics.API
         }
         unsafe ~Image()
         {
-            vkDestroyImage(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, null);
+            if (_imageHandle != VkImage.Null)
+                vkDestroyImage(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, null);
             if (_deviceMemory != VkDeviceMemory.Null)
                 vkFreeMemory(Engine.Instance.MainDevice.LogicalDevice, _deviceMemory, null);
         }

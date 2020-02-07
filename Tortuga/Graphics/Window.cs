@@ -13,10 +13,13 @@ namespace Tortuga.Graphics
         internal Sdl2Window SdlHandle => _windowHandle;
         internal VkSurfaceKHR Surface => _surface;
         internal API.Swapchain Swapchain => _swapchain;
+        internal API.Image SwapchainImage => _swapchain.Images[Convert.ToInt32(_swapchainImageIndex)];
 
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
         private API.Swapchain _swapchain;
+        private uint _swapchainImageIndex;
+        private API.Fence _swapchianFence;
 
         public unsafe Window(
             string title,
@@ -76,6 +79,7 @@ namespace Tortuga.Graphics
 
             this._surface = surface;
             this._swapchain = new API.Swapchain(this);
+            this._swapchianFence = new API.Fence();
         }
 
         unsafe ~Window()
@@ -121,16 +125,41 @@ namespace Tortuga.Graphics
         }
 
         public void RecreateSwapchain()
-        {
-            _swapchain = new API.Swapchain(this);
-        }
+            => _swapchain = new API.Swapchain(this);
 
         public unsafe Veldrid.InputSnapshot PumpEvents()
+            => _windowHandle.PumpEvents();
+
+        public unsafe void AcquireSwapchainImage()
+        {
+            _swapchianFence.Reset();
+            uint imageIndex;
+            var acquireResponse = vkAcquireNextImageKHR(
+                Engine.Instance.MainDevice.LogicalDevice.Handle,
+                _swapchain.Handle,
+                ulong.MaxValue,
+                VkSemaphore.Null,
+                _swapchianFence.Handle,
+                &imageIndex
+            );
+            if (acquireResponse == VkResult.ErrorOutOfDateKHR)
+            {
+                RecreateSwapchain();
+                AcquireSwapchainImage();
+            }
+            else if (acquireResponse != VkResult.Success)
+                throw new Exception("failed to get next swapchain image");
+            else
+                _swapchianFence.Wait();
+            _swapchainImageIndex = imageIndex;
+        }
+
+        public unsafe void Present()
         {
             var swapchains = new API.NativeList<VkSwapchainKHR>();
             var imageIndices = new API.NativeList<uint>();
             swapchains.Add(_swapchain.Handle);
-            imageIndices.Add(Convert.ToUInt32(_swapchain.SwapchainImageIndex));
+            imageIndices.Add(_swapchainImageIndex);
 
             var waitSemaphores = new API.NativeList<VkSemaphore>();
 
@@ -144,9 +173,6 @@ namespace Tortuga.Graphics
             var presentResponse = vkQueuePresentKHR(_swapchain.DevicePresentQueueFamily.Queues[0], &presentInfo);
             if (presentResponse != VkResult.Success && presentResponse != VkResult.ErrorOutOfDateKHR)
                 throw new Exception("failed to present swapchain image");
-            _swapchain.AcquireSwapchainImage();
-
-            return _windowHandle.PumpEvents();
         }
     }
 }

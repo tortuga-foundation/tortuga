@@ -76,71 +76,31 @@ namespace Tortuga.Graphics.API
                 this._queueFamily = queueFamily;
             }
 
-            public unsafe void Begin(VkCommandBufferUsageFlags usage)
+            public unsafe void Begin(VkCommandBufferUsageFlags usage, Framebuffer framebuffer = null, uint subpass = 0)
             {
-                if (_level == VkCommandBufferLevel.Secondary)
-                    throw new Exception("secondary command must use the other begin function");
-
+                var inheritanceInfo = VkCommandBufferInheritanceInfo.New();
                 var beginInfo = VkCommandBufferBeginInfo.New();
                 beginInfo.flags = usage;
+                if (_level == VkCommandBufferLevel.Secondary)
+                {
+                    if (framebuffer == null)
+                        throw new Exception("secondary command buffer requires a framebuffer");
+
+                    inheritanceInfo.renderPass = Engine.Instance.MainRenderPass.Handle;
+                    inheritanceInfo.subpass = subpass;
+                    inheritanceInfo.framebuffer = framebuffer.Handle;
+                    beginInfo.pInheritanceInfo = &inheritanceInfo;
+                }
 
                 if (vkBeginCommandBuffer(_handle, &beginInfo) != VkResult.Success)
                     throw new Exception("failed to begin command buffer recording");
             }
-
             public void End()
             {
                 if (vkEndCommandBuffer(_handle) != VkResult.Success)
                     throw new Exception("failed to end command buffer");
             }
 
-            public static unsafe void Submit(VkQueue queue, Command[] commands, Semaphore[] signalSemaphores = null, Semaphore[] waitSemaphores = null, Fence fence = null, VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe)
-            {
-                if (commands.Length == 0)
-                    return;
-                if (signalSemaphores == null)
-                    signalSemaphores = new Semaphore[0];
-                if (waitSemaphores == null)
-                    waitSemaphores = new Semaphore[0];
-
-                //get command buffers
-                var uintCmdsLength = Convert.ToUInt32(commands.Length);
-                var cmds = new NativeList<VkCommandBuffer>(uintCmdsLength);
-                cmds.Count = uintCmdsLength;
-                for (uint i = 0; i < uintCmdsLength; i++)
-                    cmds[i] = commands[i].Handle;
-
-                //get signal seamphores
-                var uintSignalSemLength = Convert.ToUInt32(signalSemaphores.Length);
-                var signalSem = new NativeList<VkSemaphore>(uintSignalSemLength);
-                signalSem.Count = uintSignalSemLength;
-                for (uint i = 0; i < uintSignalSemLength; i++)
-                    signalSem[i] = signalSemaphores[i].Handle;
-
-                //get wait semaphores
-                var uintWaitSemLength = Convert.ToUInt32(waitSemaphores.Length);
-                var WaitSem = new NativeList<VkSemaphore>(uintWaitSemLength);
-                WaitSem.Count = uintWaitSemLength;
-                for (uint i = 0; i < uintWaitSemLength; i++)
-                    WaitSem[i] = waitSemaphores[i].Handle;
-
-
-                var submitInfo = VkSubmitInfo.New();
-                submitInfo.signalSemaphoreCount = uintSignalSemLength;
-                submitInfo.pSignalSemaphores = (VkSemaphore*)signalSem.Data.ToPointer();
-                submitInfo.waitSemaphoreCount = uintWaitSemLength;
-                submitInfo.pWaitSemaphores = (VkSemaphore*)WaitSem.Data.ToPointer();
-                submitInfo.commandBufferCount = uintCmdsLength;
-                submitInfo.pCommandBuffers = (VkCommandBuffer*)cmds.Data.ToPointer();
-                submitInfo.pWaitDstStageMask = &waitStageMask;
-
-                VkFence waitFence = VkFence.Null;
-                if (fence != null)
-                    waitFence = fence.Handle;
-
-                if (vkQueueSubmit(queue, 1, &submitInfo, waitFence) != VkResult.Success)
-                    throw new Exception("failed to submit commands to queue");
-            }
             public unsafe void BeginRenderPass(RenderPass renderPass, Framebuffer framebuffer)
             {
                 var clearValues = new NativeList<VkClearValue>();
@@ -179,9 +139,16 @@ namespace Tortuga.Graphics.API
             {
                 vkCmdEndRenderPass(_handle);
             }
-
+            public void BindPipeline(Pipeline pipeline, VkPipelineBindPoint bindPoint = VkPipelineBindPoint.Graphics)
+            {
+                vkCmdBindPipeline(_handle, bindPoint, pipeline.Handle);
+            }
             public unsafe void BlitImage(Image source, Image destination)
             {
+                if (source.ImageHandle == VkImage.Null)
+                    return;
+                if (destination.ImageHandle == VkImage.Null)
+                    return;
                 var regionInfo = new VkImageBlit
                 {
                     srcOffsets_0 = new VkOffset3D
@@ -322,6 +289,104 @@ namespace Tortuga.Graphics.API
                     barrier.dstAccessMask = destinationAccess;
                 }
                 vkCmdPipelineBarrier(_handle, source, destination, 0, 0, null, 0, null, 1, &barrier);
+            }
+            public unsafe void SetViewport(int x, int y, uint width, uint height)
+            {
+                var scissor = new VkRect2D
+                {
+                    offset = {
+                        x = x,
+                        y = y
+                    },
+                    extent = {
+                        width = width,
+                        height = height
+                    }
+                };
+                vkCmdSetScissor(_handle, 0, 1, &scissor);
+
+                var viewport = new VkViewport
+                {
+                    x = x,
+                    y = y,
+                    width = width,
+                    height = height,
+                    minDepth = 0,
+                    maxDepth = 1
+                };
+                vkCmdSetViewport(_handle, 0, 1, &viewport);
+            }
+            public unsafe void Draw()
+            {
+                vkCmdDraw(_handle, 3, 1, 0, 0);
+            }
+            public unsafe void ExecuteCommands(Command[] commands)
+            {
+                var cmds = new NativeList<VkCommandBuffer>();
+                foreach (var c in commands)
+                    cmds.Add(c.Handle);
+
+                vkCmdExecuteCommands(_handle, cmds.Count, (VkCommandBuffer*)cmds.Data.ToPointer());
+            }
+            public unsafe void Submit(
+                VkQueue queue,
+                Semaphore[] signalSemaphores = null,
+                Semaphore[] waitSemaphores = null,
+                Fence fence = null,
+                VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe
+            ) => Command.Submit(queue, new Command[] { this }, signalSemaphores, waitSemaphores, fence, waitStageMask);
+            public static unsafe void Submit(
+                VkQueue queue,
+                Command[] commands,
+                Semaphore[] signalSemaphores = null,
+                Semaphore[] waitSemaphores = null,
+                Fence fence = null,
+                VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe)
+            {
+                if (commands.Length == 0)
+                    return;
+                if (signalSemaphores == null)
+                    signalSemaphores = new Semaphore[0];
+                if (waitSemaphores == null)
+                    waitSemaphores = new Semaphore[0];
+
+                //get command buffers
+                var uintCmdsLength = Convert.ToUInt32(commands.Length);
+                var cmds = new NativeList<VkCommandBuffer>(uintCmdsLength);
+                cmds.Count = uintCmdsLength;
+                for (uint i = 0; i < uintCmdsLength; i++)
+                    cmds[i] = commands[i].Handle;
+
+                //get signal seamphores
+                var uintSignalSemLength = Convert.ToUInt32(signalSemaphores.Length);
+                var signalSem = new NativeList<VkSemaphore>(uintSignalSemLength);
+                signalSem.Count = uintSignalSemLength;
+                for (uint i = 0; i < uintSignalSemLength; i++)
+                    signalSem[i] = signalSemaphores[i].Handle;
+
+                //get wait semaphores
+                var uintWaitSemLength = Convert.ToUInt32(waitSemaphores.Length);
+                var WaitSem = new NativeList<VkSemaphore>(uintWaitSemLength);
+                WaitSem.Count = uintWaitSemLength;
+                for (uint i = 0; i < uintWaitSemLength; i++)
+                    WaitSem[i] = waitSemaphores[i].Handle;
+
+
+                var submitInfo = VkSubmitInfo.New();
+                submitInfo.signalSemaphoreCount = uintSignalSemLength;
+                submitInfo.pSignalSemaphores = (VkSemaphore*)signalSem.Data.ToPointer();
+                submitInfo.waitSemaphoreCount = uintWaitSemLength;
+                submitInfo.pWaitSemaphores = (VkSemaphore*)WaitSem.Data.ToPointer();
+                submitInfo.commandBufferCount = uintCmdsLength;
+                submitInfo.pCommandBuffers = (VkCommandBuffer*)cmds.Data.ToPointer();
+                submitInfo.pWaitDstStageMask = &waitStageMask;
+
+                VkFence waitFence = VkFence.Null;
+                if (fence != null)
+                    waitFence = fence.Handle;
+
+                if (vkQueueSubmit(queue, 1, &submitInfo, waitFence) != VkResult.Success)
+                    throw new Exception("failed to submit commands to queue");
             }
         }
     }

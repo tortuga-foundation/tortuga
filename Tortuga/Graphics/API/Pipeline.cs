@@ -6,19 +6,21 @@ namespace Tortuga.Graphics.API
 {
     internal class Pipeline
     {
-        VkPipelineLayout _layout;
-        VkPipeline _pipeline;
+        public VkPipeline Handle => _pipeline;
+        public VkPipelineLayout Layout => _layout;
+        private VkPipelineLayout _layout;
+        private VkPipeline _pipeline;
 
-        public unsafe Pipeline(DescriptorSetLayout[] layouts, RenderPass renderPass, Shader vertex, Shader fragment)
+        public unsafe Pipeline(DescriptorSetLayout[] layouts, Shader vertex, Shader fragment)
         {
             var bindingDescriptions = VertexLayoutBuilder.BindingDescriptions;
             var attributeDescriptions = VertexLayoutBuilder.AttributeDescriptions;
 
             var vertexInputInfo = VkPipelineVertexInputStateCreateInfo.New();
-            vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.Count;
-            vertexInputInfo.pVertexBindingDescriptions = (VkVertexInputBindingDescription*)bindingDescriptions.Data.ToPointer();
-            vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.Count;
-            vertexInputInfo.pVertexAttributeDescriptions = (VkVertexInputAttributeDescription*)attributeDescriptions.Data.ToPointer();
+            vertexInputInfo.vertexBindingDescriptionCount = 0;//bindingDescriptions.Count;
+            vertexInputInfo.pVertexBindingDescriptions = null;//(VkVertexInputBindingDescription*)bindingDescriptions.Data.ToPointer();
+            vertexInputInfo.vertexAttributeDescriptionCount = 0;//attributeDescriptions.Count;
+            vertexInputInfo.pVertexAttributeDescriptions = null;//(VkVertexInputAttributeDescription*)attributeDescriptions.Data.ToPointer();
 
             var inputAssemble = VkPipelineInputAssemblyStateCreateInfo.New();
             inputAssemble.topology = VkPrimitiveTopology.TriangleList;
@@ -141,7 +143,7 @@ namespace Tortuga.Graphics.API
             pipelineInfo.pColorBlendState = &colorBlending;
             pipelineInfo.pDynamicState = &dynamicState;
             pipelineInfo.layout = _layout;
-            pipelineInfo.renderPass = renderPass.Handle;
+            pipelineInfo.renderPass = Engine.Instance.MainRenderPass.Handle;
             pipelineInfo.subpass = 0;
             pipelineInfo.basePipelineHandle = VkPipeline.Null;
             pipelineInfo.basePipelineIndex = -1;

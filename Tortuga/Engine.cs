@@ -34,7 +34,7 @@ namespace Tortuga
             while (this._mainWindow.Exists)
             {
                 this._mainWindow.PumpEvents();
-
+                this._mainWindow.AcquireSwapchainImage();
                 if (_activeScene != null)
                 {
                     foreach (var system in _activeScene.Systems.Values)
@@ -47,6 +47,7 @@ namespace Tortuga
                             component.Value.Update();
                     }
                 }
+                this._mainWindow.Present();
             }
         }
 
