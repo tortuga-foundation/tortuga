@@ -48,5 +48,16 @@ namespace Tortuga.Graphics.API
             ) != VkResult.Success)
                 throw new Exception("failed to wait on a fence");
         }
+
+        public unsafe void Reset()
+        {
+            VkFence fence = _fence;
+            if (vkResetFences(
+                Engine.Instance.MainDevice.LogicalDevice,
+                1,
+                &fence
+            ) != VkResult.Success)
+                throw new Exception("failed to reset fence");
+        }
     }
 }

@@ -16,14 +16,15 @@ namespace Tortuga.Core
             _components = new Dictionary<Type, BaseComponent>();
         }
 
-        public void AddComponent<T>() where T : BaseComponent, new()
+        public T AddComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
-                return;
+                return null;
             var newComp = BaseComponent.Create<T>(this);
             _components.Add(typeof(T), newComp);
             OnComponentAdded?.Invoke(this, newComp);
             newComp.OnEnable();
+            return newComp;
         }
 
         public void RemoveComponent<T>() where T : BaseComponent, new()
@@ -39,7 +40,7 @@ namespace Tortuga.Core
         public T GetComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)) == false)
-                return default(T);
+                return null;
 
             _components.TryGetValue(typeof(T), out BaseComponent val);
             return val as T;

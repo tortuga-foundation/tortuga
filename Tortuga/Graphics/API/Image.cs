@@ -10,15 +10,21 @@ namespace Tortuga.Graphics.API
         public VkDeviceMemory Memory => _deviceMemory;
         public VkFormat Format => _format;
         public uint MipLevel => _mipLevel;
+        public int Width => _width;
+        public int Height => _height;
 
         private VkImage _imageHandle;
         private VkDeviceMemory _deviceMemory;
         private VkFormat _format;
         private uint _mipLevel;
+        private int _width;
+        private int _height;
 
         private Image() { }
         public unsafe Image(uint width, uint height, VkFormat format, VkImageUsageFlags usageFlags, uint mipMapLevel = 1)
         {
+            this._width = Convert.ToInt32(width);
+            this._height = Convert.ToInt32(height);
             this._format = format;
             this._mipLevel = mipMapLevel;
 
@@ -65,10 +71,12 @@ namespace Tortuga.Graphics.API
             if (_deviceMemory != VkDeviceMemory.Null)
                 vkFreeMemory(Engine.Instance.MainDevice.LogicalDevice, _deviceMemory, null);
         }
-        public static Image GetImageObject(VkImage image, VkFormat format, VkDeviceMemory memory, uint mipLevel = 1)
+        public static Image GetImageObject(VkImage image, VkFormat format, VkDeviceMemory memory, int width, int height, uint mipLevel = 1)
         {
             return new Image()
             {
+                _width = width,
+                _height = height,
                 _deviceMemory = memory,
                 _format = format,
                 _imageHandle = image,

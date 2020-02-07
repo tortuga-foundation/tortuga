@@ -9,6 +9,8 @@ namespace Tortuga.Graphics.API
     {
         public Device.QueueFamily DevicePresentQueueFamily => _presentQueueFamily;
         public VkSwapchainKHR Handle => _swapchain;
+        public int SwapchainImageIndex => _lastAcquiredSwapchainImage;
+        public Image SwapchainImage => _images[_lastAcquiredSwapchainImage];
 
         protected Window _window;
         private Device.QueueFamily _presentQueueFamily;
@@ -25,6 +27,8 @@ namespace Tortuga.Graphics.API
         private List<ImageView> _imageViews;
         private Image _depthImage;
         private ImageView _depthImageView;
+        private int _lastAcquiredSwapchainImage = 0;
+        private Fence _acquireWaitFence;
 
         public unsafe Swapchain(Window window, Swapchain oldSwapchain = null)
         {
@@ -191,6 +195,7 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to create swapchain");
             _swapchain = swapchain;
 
+            _acquireWaitFence = new Fence();
             SetupSwapchainImages();
         }
 
@@ -211,7 +216,7 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to get swapchain images");
             _images = new List<Image>();
             foreach (var image in images)
-                _images.Add(Image.GetImageObject(image, _format.format, VkDeviceMemory.Null));
+                _images.Add(Image.GetImageObject(image, _format.format, VkDeviceMemory.Null, _window.Width, _window.height));
 
             //get swapchain image views
             _imageViews = new List<ImageView>(Convert.ToInt32(_images.Count));
@@ -232,10 +237,17 @@ namespace Tortuga.Graphics.API
             foreach (var image in _images)
                 command.TransferImageLayout(image, VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR);
             command.End();
-            command.Submit(Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0], new CommandPool.Command[]{
+            CommandPool.Command.Submit(
+                Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],
+                new CommandPool.Command[]{
                 command
-            }, new Semaphore[0], new Semaphore[0], creationFence);
+                },
+                new Semaphore[0],
+                new Semaphore[0],
+                creationFence
+            );
             creationFence.Wait();
+            AcquireSwapchainImage();
         }
 
         public T Clamp<T>(T val, T min, T max) where T : IComparable<T>
@@ -243,6 +255,27 @@ namespace Tortuga.Graphics.API
             if (val.CompareTo(min) < 0) return min;
             else if (val.CompareTo(max) > 0) return max;
             else return val;
+        }
+
+        public unsafe void AcquireSwapchainImage()
+        {
+            _acquireWaitFence.Reset();
+            uint imageIndex = 0;
+            var swapchainResponse = vkAcquireNextImageKHR(
+                Engine.Instance.MainDevice.LogicalDevice,
+                this._swapchain.Handle,
+                ulong.MaxValue,
+                VkSemaphore.Null,
+                _acquireWaitFence.Handle,
+                &imageIndex
+            );
+            if (swapchainResponse == VkResult.ErrorOutOfDateKHR)
+            {
+                Engine.Instance.MainWindow.RecreateSwapchain();
+                return;
+            }
+            _acquireWaitFence.Wait();
+            _lastAcquiredSwapchainImage = Convert.ToInt32(imageIndex);
         }
     }
 }

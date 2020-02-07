@@ -12,12 +12,11 @@ namespace Tortuga.Graphics
     {
         internal Sdl2Window SdlHandle => _windowHandle;
         internal VkSurfaceKHR Surface => _surface;
+        internal API.Swapchain Swapchain => _swapchain;
 
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
         private API.Swapchain _swapchain;
-        private API.Semaphore _presentSync;
-        private API.Fence _swapchainInUseFence;
 
         public unsafe Window(
             string title,
@@ -77,8 +76,6 @@ namespace Tortuga.Graphics
 
             this._surface = surface;
             this._swapchain = new API.Swapchain(this);
-            this._swapchainInUseFence = new API.Fence(true);
-            this._presentSync = new API.Semaphore();
         }
 
         unsafe ~Window()
@@ -123,30 +120,19 @@ namespace Tortuga.Graphics
             set => _windowHandle.Height = value;
         }
 
+        public void RecreateSwapchain()
+        {
+            _swapchain = new API.Swapchain(this);
+        }
+
         public unsafe Veldrid.InputSnapshot PumpEvents()
         {
-            _swapchainInUseFence.Wait();
-            uint nextImageIndex;
-            var swapchainResponse = vkAcquireNextImageKHR(
-                Engine.Instance.MainDevice.LogicalDevice,
-                this._swapchain.Handle,
-                ulong.MaxValue,
-                _presentSync.Handle,
-                _swapchainInUseFence.Handle,
-                &nextImageIndex
-            );
-            if (swapchainResponse == VkResult.ErrorOutOfDateKHR)
-                _swapchain = new API.Swapchain(this, _swapchain);
-            else if (swapchainResponse != VkResult.Success)
-                throw new Exception("failed to acquire next swapchain image");
-
             var swapchains = new API.NativeList<VkSwapchainKHR>();
             var imageIndices = new API.NativeList<uint>();
             swapchains.Add(_swapchain.Handle);
-            imageIndices.Add(nextImageIndex);
+            imageIndices.Add(Convert.ToUInt32(_swapchain.SwapchainImageIndex));
 
             var waitSemaphores = new API.NativeList<VkSemaphore>();
-            waitSemaphores.Add(_presentSync.Handle);
 
             var presentInfo = VkPresentInfoKHR.New();
             presentInfo.swapchainCount = swapchains.Count;
@@ -158,6 +144,7 @@ namespace Tortuga.Graphics
             var presentResponse = vkQueuePresentKHR(_swapchain.DevicePresentQueueFamily.Queues[0], &presentInfo);
             if (presentResponse != VkResult.Success && presentResponse != VkResult.ErrorOutOfDateKHR)
                 throw new Exception("failed to present swapchain image");
+            _swapchain.AcquireSwapchainImage();
 
             return _windowHandle.PumpEvents();
         }

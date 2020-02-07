@@ -94,7 +94,7 @@ namespace Tortuga.Graphics.API
                     throw new Exception("failed to end command buffer");
             }
 
-            public unsafe void Submit(VkQueue queue, Command[] commands, Semaphore[] signalSemaphores = null, Semaphore[] waitSemaphores = null, Fence fence = null, VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe)
+            public static unsafe void Submit(VkQueue queue, Command[] commands, Semaphore[] signalSemaphores = null, Semaphore[] waitSemaphores = null, Fence fence = null, VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe)
             {
                 if (commands.Length == 0)
                     return;
@@ -141,7 +141,90 @@ namespace Tortuga.Graphics.API
                 if (vkQueueSubmit(queue, 1, &submitInfo, waitFence) != VkResult.Success)
                     throw new Exception("failed to submit commands to queue");
             }
+            public unsafe void BeginRenderPass(RenderPass renderPass, Framebuffer framebuffer)
+            {
+                var clearValues = new NativeList<VkClearValue>();
+                clearValues.Add(new VkClearValue
+                {
+                    color = new VkClearColorValue(0, 0, 0, 0),
 
+                });
+                clearValues.Add(new VkClearValue
+                {
+                    depthStencil = new VkClearDepthStencilValue(0, 0)
+                });
+
+                var renderPassBeginInfo = VkRenderPassBeginInfo.New();
+                renderPassBeginInfo.clearValueCount = clearValues.Count;
+                renderPassBeginInfo.pClearValues = (VkClearValue*)clearValues.Data.ToPointer();
+                renderPassBeginInfo.framebuffer = framebuffer.Handle;
+                renderPassBeginInfo.renderPass = renderPass.Handle;
+                renderPassBeginInfo.renderArea = new VkRect2D
+                {
+                    offset = new VkOffset2D
+                    {
+                        x = 0,
+                        y = 0
+                    },
+                    extent = new VkExtent2D
+                    {
+                        width = framebuffer.Width,
+                        height = framebuffer.Height
+                    }
+                };
+
+                vkCmdBeginRenderPass(this._handle, &renderPassBeginInfo, VkSubpassContents.SecondaryCommandBuffers);
+            }
+            public void EndRenderPass()
+            {
+                vkCmdEndRenderPass(_handle);
+            }
+
+            public unsafe void BlitImage(Image source, Image destination)
+            {
+                var regionInfo = new VkImageBlit
+                {
+                    srcOffsets_0 = new VkOffset3D
+                    {
+                        x = 0,
+                        y = 0,
+                        z = 0
+                    },
+                    srcOffsets_1 = new VkOffset3D
+                    {
+                        x = source.Width,
+                        y = source.Height,
+                        z = 1
+                    },
+                    srcSubresource = new VkImageSubresourceLayers
+                    {
+                        aspectMask = VkImageAspectFlags.Color,
+                        mipLevel = 0,
+                        baseArrayLayer = 0,
+                        layerCount = 1
+                    },
+                    dstOffsets_0 = new VkOffset3D
+                    {
+                        x = 0,
+                        y = 0,
+                        z = 0
+                    },
+                    dstOffsets_1 = new VkOffset3D
+                    {
+                        x = destination.Width,
+                        y = destination.Height,
+                        z = 1
+                    },
+                    dstSubresource = new VkImageSubresourceLayers
+                    {
+                        aspectMask = VkImageAspectFlags.Color,
+                        mipLevel = 0,
+                        baseArrayLayer = 0,
+                        layerCount = 1
+                    }
+                };
+                vkCmdBlitImage(_handle, source.ImageHandle, VkImageLayout.TransferSrcOptimal, destination.ImageHandle, VkImageLayout.TransferDstOptimal, 1, &regionInfo, VkFilter.Linear);
+            }
             public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout)
             {
                 //aspect flags

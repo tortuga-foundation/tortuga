@@ -35,6 +35,17 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to find graphics queue in this device");
             }
         }
+        public QueueFamily TransferQueueFamily
+        {
+            get
+            {
+                foreach (var q in _queueFamilyProperties)
+                    if (q.IsTransfer)
+                        return q;
+
+                throw new Exception("failed to find graphics queue in this device");
+            }
+        }
 
         private VkPhysicalDevice _physicalDevice;
         private VkDevice _logicalDevice;

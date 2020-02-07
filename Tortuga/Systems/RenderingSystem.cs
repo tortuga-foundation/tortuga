@@ -2,9 +2,22 @@ namespace Tortuga.Systems
 {
     public class RenderingSystem : Core.BaseSystem
     {
+        public RenderingSystem()
+        {
+
+        }
+        ~RenderingSystem()
+        {
+
+        }
+
         public override void Update()
         {
-            var components = MyScene.GetComponents<Components.Camera>();
+            var cameras = MyScene.GetComponents<Components.Camera>();
+            foreach (var camera in cameras)
+            {
+                
+            }
         }
     }
 }

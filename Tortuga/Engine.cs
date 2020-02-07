@@ -10,10 +10,12 @@ namespace Tortuga
         internal VulkanInstance Vulkan => _vulkan;
         internal Device MainDevice => _vulkan.Devices[0];
         public Window MainWindow => _mainWindow;
+        internal RenderPass MainRenderPass => _mainRenderPass;
 
         private static Engine _instance;
         private VulkanInstance _vulkan;
         private Window _mainWindow;
+        private RenderPass _mainRenderPass;
 
         private Core.Scene _activeScene;
 
@@ -24,6 +26,7 @@ namespace Tortuga
             Engine._instance = this;
             this._vulkan = new VulkanInstance();
             _mainWindow = new Window("tortuga", 50, 50, 1920, 1080, Veldrid.Sdl2.SDL_WindowFlags.Resizable, true);
+            _mainRenderPass = new RenderPass();
         }
 
         public void Run()

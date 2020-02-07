@@ -6,14 +6,25 @@ namespace Tortuga.Graphics.API
 {
     internal class Framebuffer
     {
-        Image _colorImage;
-        ImageView _colorImageView;
-        Image _depthImage;
-        ImageView _depthImageView;
-        VkFramebuffer _frameBuffer;
+        public VkFramebuffer Handle => _frameBuffer;
+        public Image ColorImage => _colorImage;
+        public Image DepthImage => _depthImage;
+        public ImageView ColorImageView => _colorImageView;
+        public ImageView DepthImageView => _depthImageView;
+        public uint Width => _width;
+        public uint Height => _height;
+
+        private Image _colorImage;
+        private ImageView _colorImageView;
+        private Image _depthImage;
+        private ImageView _depthImageView;
+        private VkFramebuffer _frameBuffer;
+        private uint _width, _height;
 
         public unsafe Framebuffer(RenderPass renderPass, uint width, uint height)
         {
+            _width = width;
+            _height = height;
             _colorImage = new Image(
                 width, height,
                 VkFormat.R8g8b8a8Unorm,

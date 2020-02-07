@@ -323,11 +323,8 @@ namespace Tortuga.Graphics.API
 #if DEBUG
         ~NativeList()
         {
-            if (_dataPtr != null)
-            {
-                Debug.WriteLine($"A NativeList<{typeof(T).Name}> was not properly disposed.");
-                Dispose();
-            }
+            //if (_dataPtr != null)
+            //    Dispose();
         }
 #endif
 
