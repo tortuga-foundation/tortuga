@@ -37,9 +37,8 @@ namespace Tortuga.Systems
             var cameras = MyScene.GetComponents<Components.Camera>();
             foreach (var camera in cameras)
             {
-                //begin render pass for this camera with viewport
+                //begin render pass for this camera
                 _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
-                _renderCommand.SetViewport(0, 0, camera.Framebuffer.Width, camera.Framebuffer.Height);
 
                 //build render command for each mesh
                 var secondaryCommandsWaiters = new List<Task<CommandPool.Command>>();
@@ -61,11 +60,15 @@ namespace Tortuga.Systems
                 _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.ColorAttachmentOptimal, VkImageLayout.TransferSrcOptimal);
                 _renderCommand.BlitImage(
                     camera.Framebuffer.ColorImage.ImageHandle,
-                    0, 0,
-                    1920, 1080,
+                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
+                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
+                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
+                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.height)),
                     Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
-                    0, 0,
-                    1920, 1080
+                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.x)),
+                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.height * camera.Viewport.y)),
+                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.width)),
+                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.height * camera.Viewport.height))
                 );
                 _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);
             }
@@ -87,7 +90,11 @@ namespace Tortuga.Systems
         private async Task<CommandPool.Command> ProcessMeshCommands(Components.Mesh mesh, Components.Camera camera)
         {
             mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
-            mesh.RenderCommand.SetViewport(0, 0, camera.Framebuffer.Width, camera.Framebuffer.Height);
+            mesh.RenderCommand.SetViewport(
+                System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
+                System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.width)));
             mesh.RenderCommand.BindPipeline(mesh.ActiveMaterial.ActivePipeline);
             mesh.RenderCommand.Draw();
             mesh.RenderCommand.End();
