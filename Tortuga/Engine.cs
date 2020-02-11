@@ -25,7 +25,14 @@ namespace Tortuga
                 throw new System.Exception("only 1 engine can be active at once");
             Engine._instance = this;
             this._vulkan = new VulkanInstance();
-            _mainWindow = new Window("tortuga", 50, 50, 1920, 1080, Veldrid.Sdl2.SDL_WindowFlags.Resizable, true);
+            Veldrid.Sdl2.SDL_WindowFlags windowFlags = Veldrid.Sdl2.SDL_WindowFlags.AllowHighDpi;
+            if (Settings.Window.Type == Settings.Window.WindowType.ResizeableWindow)
+                windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Resizable;
+            else if (Settings.Window.Type == Settings.Window.WindowType.Fullscreen)
+                windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Fullscreen;
+            else if (Settings.Window.Type == Settings.Window.WindowType.Borderless)
+                windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Borderless;
+            _mainWindow = new Window("tortuga", 50, 50, 1920, 1080, windowFlags, true);
             _mainRenderPass = new RenderPass();
         }
 

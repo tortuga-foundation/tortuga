@@ -143,24 +143,36 @@ namespace Tortuga.Graphics.API
             {
                 vkCmdBindPipeline(_handle, bindPoint, pipeline.Handle);
             }
-            public unsafe void BlitImage(Image source, Image destination)
+            public unsafe void BlitImage(
+                VkImage source,
+                int sourceX,
+                int sourceY,
+                int sourceWidth,
+                int sourceHeight,
+                VkImage destination,
+                int destinationX,
+                int destinationY,
+                int destinationWidth,
+                int destinationHeight
+                )
             {
-                if (source.ImageHandle == VkImage.Null)
+                if (source == VkImage.Null)
                     return;
-                if (destination.ImageHandle == VkImage.Null)
+                if (destination == VkImage.Null)
                     return;
+
                 var regionInfo = new VkImageBlit
                 {
                     srcOffsets_0 = new VkOffset3D
                     {
-                        x = 0,
-                        y = 0,
+                        x = sourceX,
+                        y = sourceY,
                         z = 0
                     },
                     srcOffsets_1 = new VkOffset3D
                     {
-                        x = source.Width,
-                        y = source.Height,
+                        x = sourceWidth,
+                        y = sourceHeight,
                         z = 1
                     },
                     srcSubresource = new VkImageSubresourceLayers
@@ -172,14 +184,14 @@ namespace Tortuga.Graphics.API
                     },
                     dstOffsets_0 = new VkOffset3D
                     {
-                        x = 0,
-                        y = 0,
+                        x = destinationX,
+                        y = destinationY,
                         z = 0
                     },
                     dstOffsets_1 = new VkOffset3D
                     {
-                        x = destination.Width,
-                        y = destination.Height,
+                        x = destinationWidth,
+                        y = destinationHeight,
                         z = 1
                     },
                     dstSubresource = new VkImageSubresourceLayers
@@ -190,16 +202,17 @@ namespace Tortuga.Graphics.API
                         layerCount = 1
                     }
                 };
-                vkCmdBlitImage(_handle, source.ImageHandle, VkImageLayout.TransferSrcOptimal, destination.ImageHandle, VkImageLayout.TransferDstOptimal, 1, &regionInfo, VkFilter.Linear);
+                vkCmdBlitImage(_handle, source, VkImageLayout.TransferSrcOptimal, destination, VkImageLayout.TransferDstOptimal, 1, &regionInfo, VkFilter.Linear);
             }
-            public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout)
+
+            public unsafe void TransferImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint mipLevel = 1)
             {
                 //aspect flags
                 VkImageAspectFlags aspect = 0;
                 if (newLayout == VkImageLayout.DepthStencilAttachmentOptimal)
                 {
                     aspect = VkImageAspectFlags.Depth;
-                    if (image.HasStencilComponent)
+                    if (Image.HasStencil(format))
                         aspect |= VkImageAspectFlags.Stencil;
                 }
                 else
@@ -279,10 +292,10 @@ namespace Tortuga.Graphics.API
                     barrier.newLayout = newLayout;
                     barrier.srcQueueFamilyIndex = QueueFamilyIgnored;
                     barrier.dstQueueFamilyIndex = QueueFamilyIgnored;
-                    barrier.image = image.ImageHandle;
+                    barrier.image = image;
                     barrier.subresourceRange.aspectMask = aspect;
                     barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = image.MipLevel;
+                    barrier.subresourceRange.levelCount = mipLevel;
                     barrier.subresourceRange.baseArrayLayer = 0;
                     barrier.subresourceRange.layerCount = 1;
                     barrier.srcAccessMask = sourceAccess;
@@ -290,6 +303,9 @@ namespace Tortuga.Graphics.API
                 }
                 vkCmdPipelineBarrier(_handle, source, destination, 0, 0, null, 0, null, 1, &barrier);
             }
+            public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout)
+                => TransferImageLayout(image.ImageHandle, image.Format, oldLayout, newLayout, image.MipLevel);
+
             public unsafe void SetViewport(int x, int y, uint width, uint height)
             {
                 var scissor = new VkRect2D

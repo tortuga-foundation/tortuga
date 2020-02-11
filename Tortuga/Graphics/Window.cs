@@ -13,7 +13,7 @@ namespace Tortuga.Graphics
         internal Sdl2Window SdlHandle => _windowHandle;
         internal VkSurfaceKHR Surface => _surface;
         internal API.Swapchain Swapchain => _swapchain;
-        internal API.Image SwapchainImage => _swapchain.Images[Convert.ToInt32(_swapchainImageIndex)];
+        public uint SwapchainAcquiredImage => _swapchainImageIndex;
 
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
@@ -124,9 +124,6 @@ namespace Tortuga.Graphics
             set => _windowHandle.Height = value;
         }
 
-        public void RecreateSwapchain()
-            => _swapchain = new API.Swapchain(this);
-
         public unsafe Veldrid.InputSnapshot PumpEvents()
             => _windowHandle.PumpEvents();
 
@@ -144,8 +141,9 @@ namespace Tortuga.Graphics
             );
             if (acquireResponse == VkResult.ErrorOutOfDateKHR)
             {
-                RecreateSwapchain();
+                _swapchain = new API.Swapchain(this);
                 AcquireSwapchainImage();
+                return;
             }
             else if (acquireResponse != VkResult.Success)
                 throw new Exception("failed to get next swapchain image");

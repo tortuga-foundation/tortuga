@@ -9,7 +9,8 @@ namespace Tortuga.Graphics.API
     {
         public Device.QueueFamily DevicePresentQueueFamily => _presentQueueFamily;
         public VkSwapchainKHR Handle => _swapchain;
-        public List<Image> Images => _images;
+        public NativeList<VkImage> Images => _images;
+        public VkFormat ImagesFormat => _format.format;
 
         private Device.QueueFamily _presentQueueFamily;
         private bool[] _queuesSupportingPresentation;
@@ -21,13 +22,15 @@ namespace Tortuga.Graphics.API
         private VkExtent2D _extent;
         private VkSwapchainKHR _swapchain;
         private uint _imagesCount;
-        private List<Image> _images;
+        private NativeList<VkImage> _images;
         private List<ImageView> _imageViews;
         private Image _depthImage;
         private ImageView _depthImageView;
+        private Window _window;
 
         public unsafe Swapchain(Window window)
         {
+            _window = window;
             //get device presentation queue
             _queuesSupportingPresentation = new bool[Engine.Instance.MainDevice.QueueFamilyProperties.Count];
             for (int i = 0; i < Engine.Instance.MainDevice.QueueFamilyProperties.Count; i++)
@@ -206,14 +209,14 @@ namespace Tortuga.Graphics.API
             images.Count = imagesCount;
             if (vkGetSwapchainImagesKHR(Engine.Instance.MainDevice.LogicalDevice, _swapchain, &imagesCount, (VkImage*)images.Data.ToPointer()) != VkResult.Success)
                 throw new Exception("failed to get swapchain images");
-            _images = new List<Image>();
+            _images = new NativeList<VkImage>();
             foreach (var image in images)
-                _images.Add(Image.GetImageObject(image, _format.format, VkDeviceMemory.Null, width, height));
+                _images.Add(image);
 
             //get swapchain image views
             _imageViews = new List<ImageView>(Convert.ToInt32(_images.Count));
             for (int i = 0; i < _imageViews.Count; i++)
-                _imageViews[i] = new ImageView(_images[i], VkImageAspectFlags.Color);
+                _imageViews[i] = new ImageView(_images[i], _format.format, VkImageAspectFlags.Color);
 
             //get swapchaing depth image & depth image view
             var depthFormat = Engine.Instance.MainDevice.FindDepthFormat;
@@ -227,7 +230,7 @@ namespace Tortuga.Graphics.API
             command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             command.TransferImageLayout(_depthImage, VkImageLayout.Undefined, VkImageLayout.DepthStencilAttachmentOptimal);
             foreach (var image in _images)
-                command.TransferImageLayout(image, VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR);
+                command.TransferImageLayout(image, _format.format, VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR);
             command.End();
             CommandPool.Command.Submit(
                 Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],

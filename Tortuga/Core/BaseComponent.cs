@@ -1,14 +1,14 @@
 
 namespace Tortuga.Core
 {
-    public abstract class BaseComponent
+    public class BaseComponent
     {
         public Entity MyEntity => _myEntity;
         private Entity _myEntity;
 
-        public abstract void Update();
-        public abstract void OnEnable();
-        public abstract void OnDisable();
+        public virtual void Update() { }
+        public virtual void OnEnable() { }
+        public virtual void OnDisable() { }
 
         public static T Create<T>(Entity e) where T : BaseComponent, new()
         {

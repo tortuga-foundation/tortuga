@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Tortuga.Test
+﻿namespace Tortuga.Test
 {
     class Program
     {
@@ -11,9 +9,17 @@ namespace Tortuga.Test
             //create new scene
             var scene = new Core.Scene();
 
+            //camera
             var camera = new Core.Entity();
             camera.AddComponent<Components.Camera>();
             scene.AddEntity(camera);
+
+            //entity
+            var triangle = new Core.Entity();
+            triangle.AddComponent<Components.Mesh>();
+            scene.AddEntity(triangle);
+
+            scene.AddSystem<Systems.RenderingSystem>();
 
             engine.LoadScene(scene);
             engine.Run();

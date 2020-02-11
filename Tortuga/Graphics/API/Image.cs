@@ -67,10 +67,8 @@ namespace Tortuga.Graphics.API
         }
         unsafe ~Image()
         {
-            if (_imageHandle != VkImage.Null)
-                vkDestroyImage(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, null);
-            if (_deviceMemory != VkDeviceMemory.Null)
-                vkFreeMemory(Engine.Instance.MainDevice.LogicalDevice, _deviceMemory, null);
+            vkDestroyImage(Engine.Instance.MainDevice.LogicalDevice, _imageHandle, null);
+            vkFreeMemory(Engine.Instance.MainDevice.LogicalDevice, _deviceMemory, null);
         }
         public static Image GetImageObject(VkImage image, VkFormat format, VkDeviceMemory memory, int width, int height, uint mipLevel = 1)
         {
@@ -85,6 +83,7 @@ namespace Tortuga.Graphics.API
             };
         }
 
-        public bool HasStencilComponent => _format == VkFormat.D32SfloatS8Uint || Format == VkFormat.D24UnormS8Uint;
+        public bool HasStencilComponent => _format == VkFormat.D32SfloatS8Uint || _format == VkFormat.D24UnormS8Uint;
+        public static bool HasStencil(VkFormat format) => format == VkFormat.D32SfloatS8Uint || format == VkFormat.D24UnormS8Uint;
     }
 }
