@@ -11,8 +11,14 @@ namespace Tortuga
                 ErrorAndWarnings,
                 Full
             };
+            public enum FrontFaceType
+            {
+                Clockwise,
+                CounterClockwise
+            };
 
             public static DebugType DebugLevel = DebugType.Full;
+            public static FrontFaceType FrontFace = FrontFaceType.Clockwise;
         }
         public static class Window
         {
