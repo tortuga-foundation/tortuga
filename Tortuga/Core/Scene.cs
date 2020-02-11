@@ -59,17 +59,26 @@ namespace Tortuga.Core
             e.OnComponentRemoved = OnComponentRemoved;
             _entities.Remove(e);
         }
-        public void AddSystem<T>() where T : BaseSystem, new()
+        public T AddSystem<T>() where T : BaseSystem, new()
         {
             if (_systems.ContainsKey(typeof(T)))
-                return;
-            _systems.Add(typeof(T), BaseSystem.Create<T>(this));
+                return null;
+            var newSystem = BaseSystem.Create<T>(this);
+            _systems.Add(typeof(T), newSystem);
+            return newSystem;
         }
         public void RemoveSystem<T>() where T : BaseSystem, new()
         {
             if (_systems.ContainsKey(typeof(T)) == false)
                 return;
             _systems.Remove(typeof(T));
+        }
+        public T GetSystem<T>() where T : BaseSystem, new()
+        {
+            if (_systems.ContainsKey(typeof(T)) == false)
+                return null;
+
+            return _systems[typeof(T)] as T;
         }
 
         public T[] GetComponents<T>() where T : BaseComponent, new()

@@ -20,6 +20,8 @@
             scene.AddEntity(triangle);
 
             scene.AddSystem<Systems.RenderingSystem>();
+            var acr = scene.AddSystem<Systems.AutoCameraResolution>();
+            acr.Scale = 0.5f; //camera should render with 50% of the window resolution
 
             engine.LoadScene(scene);
             engine.Run();
