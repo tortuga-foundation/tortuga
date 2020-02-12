@@ -1,5 +1,5 @@
+using System;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using Vulkan;
 using static Vulkan.VulkanNative;
 
@@ -80,8 +80,12 @@ namespace Tortuga.Graphics.API
             VkMemoryPropertyFlags.DeviceLocal
         );
 
-        public unsafe void SetData<T>(T data)
+        public unsafe void SetData<T>(T[] data) where T : struct
         {
+            var source = new NativeList<T>();
+            foreach (var t in data)
+                source.Add(t);
+            source.Count = Convert.ToUInt32(data.Length);
             void* mappedMemory;
             if (vkMapMemory(
                 Engine.Instance.MainDevice.LogicalDevice,
@@ -92,15 +96,18 @@ namespace Tortuga.Graphics.API
                 (void**)&mappedMemory
             ) != VkResult.Success)
                 throw new System.Exception("failed to map vulkan memory");
-            Unsafe.Copy<T>(mappedMemory, ref data);
+            System.Buffer.MemoryCopy(source.Data.ToPointer(), mappedMemory, _size, _size);
             vkUnmapMemory(
                 Engine.Instance.MainDevice.LogicalDevice,
                 _deviceMemory
             );
         }
-        public unsafe T GetData<T>() where T : new()
+        public unsafe T[] GetData<T>() where T : struct
         {
-            T data = new T();
+            uint tSize = Convert.ToUInt32(Unsafe.SizeOf<T>());
+            var destination = new NativeList<T>(tSize);
+            destination.Count = _size / tSize;
+
             void* mappedMemory;
             if (vkMapMemory(
                 Engine.Instance.MainDevice.LogicalDevice,
@@ -111,53 +118,15 @@ namespace Tortuga.Graphics.API
                 (void**)&mappedMemory
             ) != VkResult.Success)
                 throw new System.Exception("failed to map vulkan memory");
-            Unsafe.Copy<T>(ref data, mappedMemory);
+            System.Buffer.MemoryCopy(mappedMemory, destination.Data.ToPointer(), _size, _size);
             vkUnmapMemory(
                 Engine.Instance.MainDevice.LogicalDevice,
                 _deviceMemory
             );
+            var data = new T[destination.Count];
+            for (int i = 0; i < destination.Count; i++)
+                data[i] = destination[i];
             return data;
-        }
-
-        public async Task SetDataWithStaging<T>(T data)
-        {
-            await Task.Run(() =>
-            {
-                var copyWaitFence = new Fence();
-                var staging = Buffer.CreateHost(this._size, VkBufferUsageFlags.TransferSrc);
-                staging.SetData(data);
-                var copyPool = new CommandPool(
-                    Engine.Instance.MainDevice.TransferQueueFamily
-                );
-                var copyCommand = copyPool.AllocateCommands()[0];
-                copyCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-                copyCommand.CopyBuffer(staging, this);
-                copyCommand.End();
-                copyCommand.Submit(
-                    Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
-                    null, null, copyWaitFence
-                );
-                copyWaitFence.Wait();
-            });
-        }
-        public async Task<T> GetDataWithStaging<T>() where T : new()
-        {
-            var copyWaitFence = new Fence();
-            var staging = Buffer.CreateHost(this._size, VkBufferUsageFlags.TransferSrc);
-            var copyPool = new CommandPool(
-                Engine.Instance.MainDevice.TransferQueueFamily
-            );
-            var copyCommand = copyPool.AllocateCommands()[0];
-            copyCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            copyCommand.CopyBuffer(this, staging);
-            copyCommand.End();
-            copyCommand.Submit(
-                Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
-                null, null, copyWaitFence
-            );
-            copyWaitFence.Wait();
-
-            return await Task.FromResult(staging.GetData<T>());
         }
     }
 }

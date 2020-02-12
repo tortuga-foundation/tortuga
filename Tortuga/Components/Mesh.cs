@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Vulkan;
 using Tortuga.Graphics;
 using Tortuga.Graphics.API;
+using System.Runtime.CompilerServices;
 
 namespace Tortuga.Components
 {
@@ -27,39 +28,21 @@ namespace Tortuga.Components
                 _material = new Material("Assets/Shaders/Simple.vert.spv", "Assets/Shaders/Simple.frag.spv");
             _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
             _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
-            await SetVertices(new Vertex[]{
-                new Vertex{
-                    Position = new Math.Vector3(0, 1, 0),
-                },
-                new Vertex{
-                    Position = new Math.Vector3(-1, 0, 0),
-                },
-                new Vertex{
-                    Position = new Math.Vector3(1, 0, 0),
-                }
-            });
-            await SetInices(new uint[] { 0, 1, 2 });
-        }
 
-        public async Task SetVertices(Vertex[] vertices)
-        {
-            unsafe
-            {
-                _vertexBuffer = Graphics.API.Buffer.CreateDevice(
-                    Convert.ToUInt32(sizeof(Vertex) * vertices.Length),
-                    VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst
-                );
-            }
-            await _vertexBuffer.SetDataWithStaging(vertices);
-        }
-        public async Task SetInices(uint[] indices)
-        {
-            _indexBuffer = Graphics.API.Buffer.CreateDevice(
-                Convert.ToUInt32(sizeof(uint) * indices.Length),
-                VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
+            _vertexBuffer = Graphics.API.Buffer.CreateHost(
+                Convert.ToUInt32(Unsafe.SizeOf<Vertex>()) * 3,
+                VkBufferUsageFlags.VertexBuffer
             );
-            _indicesCount = Convert.ToUInt32(indices.Length);
-            await _indexBuffer.SetDataWithStaging(indices);
+            _indexBuffer = Graphics.API.Buffer.CreateHost(
+                sizeof(uint) * 3,
+                VkBufferUsageFlags.IndexBuffer
+            );
+            _vertexBuffer.SetData(new Vertex[]{
+                new Vertex(){ Position = new Math.Vector3(0, -0.5f, 0) },
+                new Vertex(){ Position = new Math.Vector3(-0.5f, 0, 0) },
+                new Vertex(){ Position = new Math.Vector3(0.5f, 0, 0) }
+            });
+            _indexBuffer.SetData(new uint[] { 0, 2, 1 });
         }
     }
 }
