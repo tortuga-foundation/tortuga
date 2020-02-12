@@ -32,7 +32,7 @@ namespace Tortuga
                 windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Fullscreen;
             else if (Settings.Window.Type == Settings.Window.WindowType.Borderless)
                 windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Borderless;
-            _mainWindow = new Window("tortuga", 50, 50, 1920, 1080, windowFlags, true);
+            _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, windowFlags, true);
             _mainRenderPass = new RenderPass();
         }
 

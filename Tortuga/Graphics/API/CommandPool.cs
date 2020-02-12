@@ -101,6 +101,21 @@ namespace Tortuga.Graphics.API
                     throw new Exception("failed to end command buffer");
             }
 
+            public unsafe void CopyBuffer(Buffer source, Buffer destination)
+            {
+                if (source.Size != destination.Size)
+                    return;
+
+                var bufferCopy = new VkBufferCopy()
+                {
+                    dstOffset = 0,
+                    srcOffset = 0,
+                    size = source.Size
+                };
+
+                vkCmdCopyBuffer(_handle, source.Handle, destination.Handle, 1, &bufferCopy);
+            }
+
             public unsafe void BeginRenderPass(RenderPass renderPass, Framebuffer framebuffer)
             {
                 var clearValues = new NativeList<VkClearValue>();

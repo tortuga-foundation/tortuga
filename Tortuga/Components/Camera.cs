@@ -15,11 +15,11 @@ namespace Tortuga.Components
             width = 1,
             height = 1
         };
-        public Tortuga.Math.Int2D Resolution
+        public Tortuga.Math.IntVector2D Resolution
         {
             get
             {
-                return new Math.Int2D
+                return new Math.IntVector2D
                 {
                     x = Convert.ToInt32(_framebuffer.Width),
                     y = Convert.ToInt32(_framebuffer.Height)

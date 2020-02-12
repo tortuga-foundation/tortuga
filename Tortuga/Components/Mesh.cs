@@ -12,6 +12,8 @@ namespace Tortuga.Components
         private Material _material;
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
+        private Buffer _vertexBuffer;
+        private Buffer _indexBuffer;
 
         public override void OnEnable()
         {
