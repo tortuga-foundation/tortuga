@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Vulkan;
 using static Vulkan.VulkanNative;
@@ -127,6 +128,50 @@ namespace Tortuga.Graphics.API
             for (int i = 0; i < destination.Count; i++)
                 data[i] = destination[i];
             return data;
+        }
+
+        public async Task SetDataWithStaging<T>(T[] data) where T : struct
+        {
+            await Task.Run(() =>
+            {
+                //setup staging buffer
+                var staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
+                staging.SetData(data);
+
+                //setup transfer command
+                var fence = new Fence();
+                var pool = new CommandPool(Engine.Instance.MainDevice.TransferQueueFamily);
+                var command = pool.AllocateCommands()[0];
+                command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+                command.CopyBuffer(staging, this);
+                command.End();
+                command.Submit(
+                    Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
+                    null, null,
+                    fence
+                );
+                fence.Wait();
+            });
+        }
+        public async Task<T[]> GetDataWithStaging<T>() where T : struct
+        {
+            //setup staging buffer
+            var staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
+
+            //setup transfer command
+            var fence = new Fence();
+            var pool = new CommandPool(Engine.Instance.MainDevice.TransferQueueFamily);
+            var command = pool.AllocateCommands()[0];
+            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+            command.CopyBuffer(this, staging);
+            command.End();
+            command.Submit(
+                Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
+                null, null,
+                fence
+            );
+            fence.Wait();
+            return await Task.FromResult(staging.GetData<T>());
         }
     }
 }

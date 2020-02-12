@@ -29,20 +29,20 @@ namespace Tortuga.Components
             _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
             _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
 
-            _vertexBuffer = Graphics.API.Buffer.CreateHost(
+            _vertexBuffer = Graphics.API.Buffer.CreateDevice(
                 Convert.ToUInt32(Unsafe.SizeOf<Vertex>()) * 3,
-                VkBufferUsageFlags.VertexBuffer
+                VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst
             );
-            _indexBuffer = Graphics.API.Buffer.CreateHost(
+            _indexBuffer = Graphics.API.Buffer.CreateDevice(
                 sizeof(uint) * 3,
-                VkBufferUsageFlags.IndexBuffer
+                VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
             );
-            _vertexBuffer.SetData(new Vertex[]{
+            await _vertexBuffer.SetDataWithStaging(new Vertex[]{
                 new Vertex(){ Position = new Math.Vector3(0, -0.5f, 0) },
                 new Vertex(){ Position = new Math.Vector3(-0.5f, 0, 0) },
                 new Vertex(){ Position = new Math.Vector3(0.5f, 0, 0) }
             });
-            _indexBuffer.SetData(new uint[] { 0, 2, 1 });
+            await _indexBuffer.SetDataWithStaging(new uint[] { 0, 2, 1 });
         }
     }
 }
