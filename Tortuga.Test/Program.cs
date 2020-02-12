@@ -1,8 +1,10 @@
-﻿namespace Tortuga.Test
+﻿using System.Threading.Tasks;
+
+namespace Tortuga.Test
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             var engine = new Engine();
 
@@ -11,12 +13,12 @@
 
             //camera
             var camera = new Core.Entity();
-            camera.AddComponent<Components.Camera>();
+            await camera.AddComponent<Components.Camera>();
             scene.AddEntity(camera);
 
             //entity
             var triangle = new Core.Entity();
-            triangle.AddComponent<Components.Mesh>();
+            await triangle.AddComponent<Components.Mesh>();
             scene.AddEntity(triangle);
 
             scene.AddSystem<Systems.RenderingSystem>();

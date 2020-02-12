@@ -347,9 +347,25 @@ namespace Tortuga.Graphics.API
                 };
                 vkCmdSetViewport(_handle, 0, 1, &viewport);
             }
-            public unsafe void Draw()
+            public unsafe void BindVertexBuffer(Buffer vertexBuffer)
             {
-                vkCmdDraw(_handle, 3, 1, 0, 0);
+                ulong offset = 0;
+                var buffer = vertexBuffer.Handle;
+                vkCmdBindVertexBuffers(_handle, 0, 1, &buffer, &offset);
+            }
+            public unsafe void BindIndexBuffer(Buffer indexBuffer)
+            {
+                ulong offset = 0;
+                var buffer = indexBuffer.Handle;
+                vkCmdBindIndexBuffer(_handle, buffer, offset, VkIndexType.Uint32);
+            }
+            public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1)
+            {
+                vkCmdDrawIndexed(_handle, indexCount, instanceCount, 0, 0, 0);
+            }
+            public unsafe void Draw(uint vertexCount)
+            {
+                vkCmdDraw(_handle, vertexCount, 1, 0, 0);
             }
             public unsafe void ExecuteCommands(Command[] commands)
             {

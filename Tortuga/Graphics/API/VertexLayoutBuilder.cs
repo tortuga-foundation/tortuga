@@ -1,5 +1,17 @@
 using Vulkan;
 
+namespace Tortuga.Graphics
+{
+    [System.Serializable]
+    public struct Vertex
+    {
+        public Tortuga.Math.Vector3 Position;
+        public Tortuga.Math.Vector2 TextureCoordinates;
+        public Tortuga.Math.Vector3 Normals;
+        public Tortuga.Math.Vector3 Tangents;
+    }
+}
+
 namespace Tortuga.Graphics.API
 {
     internal class VertexLayoutBuilder

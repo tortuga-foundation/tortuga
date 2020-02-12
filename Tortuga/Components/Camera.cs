@@ -1,7 +1,6 @@
-using Vulkan;
-using Tortuga.Graphics;
 using Tortuga.Graphics.API;
 using System;
+using System.Threading.Tasks;
 
 namespace Tortuga.Components
 {
@@ -36,12 +35,15 @@ namespace Tortuga.Components
 
         private Framebuffer _framebuffer;
 
-        public override void OnEnable()
+        public override async Task OnEnable()
         {
-            _framebuffer = new Framebuffer(
+            await Task.Run(() =>
+            {
+                _framebuffer = new Framebuffer(
                 Engine.Instance.MainRenderPass,
                 1920, 1080
             );
+            });
         }
     }
 }

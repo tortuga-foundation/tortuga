@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Tortuga.Core
 {
@@ -16,22 +17,22 @@ namespace Tortuga.Core
             _components = new Dictionary<Type, BaseComponent>();
         }
 
-        public T AddComponent<T>() where T : BaseComponent, new()
+        public async Task<T> AddComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
                 return null;
             var newComp = BaseComponent.Create<T>(this);
             _components.Add(typeof(T), newComp);
             OnComponentAdded?.Invoke(this, newComp);
-            newComp.OnEnable();
+            await newComp.OnEnable();
             return newComp;
         }
 
-        public void RemoveComponent<T>() where T : BaseComponent, new()
+        public async Task RemoveComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
             {
-                _components[typeof(T)].OnDisable();
+                await _components[typeof(T)].OnDisable();
                 OnComponentRemoved?.Invoke(this, _components[typeof(T)]);
                 _components.Remove(typeof(T));
             }

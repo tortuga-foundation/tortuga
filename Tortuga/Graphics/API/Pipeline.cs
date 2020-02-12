@@ -17,10 +17,10 @@ namespace Tortuga.Graphics.API
             var attributeDescriptions = VertexLayoutBuilder.AttributeDescriptions;
 
             var vertexInputInfo = VkPipelineVertexInputStateCreateInfo.New();
-            vertexInputInfo.vertexBindingDescriptionCount = 0;//bindingDescriptions.Count;
-            vertexInputInfo.pVertexBindingDescriptions = null;//(VkVertexInputBindingDescription*)bindingDescriptions.Data.ToPointer();
-            vertexInputInfo.vertexAttributeDescriptionCount = 0;//attributeDescriptions.Count;
-            vertexInputInfo.pVertexAttributeDescriptions = null;//(VkVertexInputAttributeDescription*)attributeDescriptions.Data.ToPointer();
+            vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.Count;
+            vertexInputInfo.pVertexBindingDescriptions = (VkVertexInputBindingDescription*)bindingDescriptions.Data.ToPointer();
+            vertexInputInfo.vertexAttributeDescriptionCount = attributeDescriptions.Count;
+            vertexInputInfo.pVertexAttributeDescriptions = (VkVertexInputAttributeDescription*)attributeDescriptions.Data.ToPointer();
 
             var inputAssemble = VkPipelineInputAssemblyStateCreateInfo.New();
             inputAssemble.topology = VkPrimitiveTopology.TriangleList;

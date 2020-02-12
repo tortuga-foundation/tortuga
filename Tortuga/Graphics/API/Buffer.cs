@@ -80,7 +80,7 @@ namespace Tortuga.Graphics.API
             VkMemoryPropertyFlags.DeviceLocal
         );
 
-        unsafe void SetData<T>(T data) where T : struct
+        public unsafe void SetData<T>(T data)
         {
             void* mappedMemory;
             if (vkMapMemory(
@@ -98,7 +98,7 @@ namespace Tortuga.Graphics.API
                 _deviceMemory
             );
         }
-        unsafe T GetData<T>() where T : struct
+        public unsafe T GetData<T>() where T : new()
         {
             T data = new T();
             void* mappedMemory;
@@ -119,7 +119,7 @@ namespace Tortuga.Graphics.API
             return data;
         }
 
-        public async Task SetDataWithStaging<T>(T data) where T : struct
+        public async Task SetDataWithStaging<T>(T data)
         {
             await Task.Run(() =>
             {
@@ -140,7 +140,7 @@ namespace Tortuga.Graphics.API
                 copyWaitFence.Wait();
             });
         }
-        public async Task<T> GetDataWithStaging<T>() where T : struct
+        public async Task<T> GetDataWithStaging<T>() where T : new()
         {
             var copyWaitFence = new Fence();
             var staging = Buffer.CreateHost(this._size, VkBufferUsageFlags.TransferSrc);

@@ -96,7 +96,9 @@ namespace Tortuga.Systems
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.width)));
             mesh.RenderCommand.BindPipeline(mesh.ActiveMaterial.ActivePipeline);
-            mesh.RenderCommand.Draw();
+            mesh.RenderCommand.BindVertexBuffer(mesh.VertexBuffer);
+            mesh.RenderCommand.BindIndexBuffer(mesh.IndexBuffer);
+            mesh.RenderCommand.DrawIndexed(mesh.IndicesCount);
             mesh.RenderCommand.End();
             return await Task.FromResult(mesh.RenderCommand);
         }

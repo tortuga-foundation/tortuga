@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 
 namespace Tortuga.Core
 {
@@ -7,8 +8,8 @@ namespace Tortuga.Core
         private Entity _myEntity;
 
         public virtual void Update() { }
-        public virtual void OnEnable() { }
-        public virtual void OnDisable() { }
+        public virtual async Task OnEnable() { await Task.Run(() => { }); }
+        public virtual async Task OnDisable() { await Task.Run(() => { }); }
 
         public static T Create<T>(Entity e) where T : BaseComponent, new()
         {
