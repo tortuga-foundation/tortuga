@@ -1,4 +1,4 @@
-namespace Tortuga.Math
+namespace Tortuga
 {
     public struct Rect
     {

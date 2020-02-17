@@ -13,12 +13,13 @@ namespace Tortuga
             };
             public enum FrontFaceType
             {
+                None,
                 Clockwise,
                 CounterClockwise
             };
 
             public static DebugType DebugLevel = DebugType.Full;
-            public static FrontFaceType FrontFace = FrontFaceType.Clockwise;
+            public static FrontFaceType FrontFace = FrontFaceType.None;
         }
         public static class Window
         {

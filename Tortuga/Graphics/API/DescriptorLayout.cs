@@ -22,16 +22,19 @@ struct PipelineLayout {
 
 namespace Tortuga.Graphics.API
 {
+    public struct DescriptorSetCreateInfo
+    {
+        public VkDescriptorType type;
+        public VkShaderStageFlags stage;
+    };
+
     internal class DescriptorSetLayout
     {
         public VkDescriptorSetLayout Handle => _layout;
-        private VkDescriptorSetLayout _layout;
+        public DescriptorSetCreateInfo[] CreateInfoUsed => _createInfo;
 
-        public struct CreateInfo
-        {
-            public VkDescriptorType type;
-            public VkShaderStageFlags stage;
-        };
+        private VkDescriptorSetLayout _layout;
+        private DescriptorSetCreateInfo[] _createInfo;
 
 
         private unsafe void SetupDescriptorSetLayout(NativeList<VkDescriptorSetLayoutBinding> bindings)
@@ -51,8 +54,9 @@ namespace Tortuga.Graphics.API
             _layout = layout;
         }
 
-        public DescriptorSetLayout(CreateInfo[] createInfo)
+        public DescriptorSetLayout(DescriptorSetCreateInfo[] createInfo)
         {
+            this._createInfo = createInfo;
             var bindings = new NativeList<VkDescriptorSetLayoutBinding>();
             for (uint i = 0; i < createInfo.Length; i++)
             {

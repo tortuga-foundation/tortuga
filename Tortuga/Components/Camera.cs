@@ -1,24 +1,40 @@
 using Tortuga.Graphics.API;
 using System;
 using System.Threading.Tasks;
+using System.Numerics;
+using System.Runtime.CompilerServices;
+using Vulkan;
 
 namespace Tortuga.Components
 {
     public class Camera : Core.BaseComponent
     {
+        internal struct CameraShaderInfo
+        {
+            public Matrix4x4 View;
+            public Matrix4x4 Projection;
+        };
+
+        public enum ProjectionType
+        {
+            Perspective,
+            Orthographic
+        }
+
         internal Framebuffer Framebuffer => _framebuffer;
-        public Tortuga.Math.Rect Viewport = new Math.Rect
+        internal DescriptorSetPool.DescriptorSet CameraDescriptorSet => _cameraDescriptorSet;
+        public Tortuga.Rect Viewport = new Rect
         {
             x = 0,
             y = 0,
             width = 1,
             height = 1
         };
-        public Tortuga.Math.IntVector2D Resolution
+        public Tortuga.IntVector2D Resolution
         {
             get
             {
-                return new Math.IntVector2D
+                return new IntVector2D
                 {
                     x = Convert.ToInt32(_framebuffer.Width),
                     y = Convert.ToInt32(_framebuffer.Height)
@@ -32,18 +48,94 @@ namespace Tortuga.Components
                 );
             }
         }
+        public float NearClipPlane = 0.01f;
+        public float FarClipPlane = 100.0f;
+        public ProjectionType Projection = ProjectionType.Perspective;
+        public float FieldOfView = 60.0f;
+        public bool IsStatic
+        {
+            get
+            {
+                var transform = MyEntity.GetComponent<Transform>();
+                if (transform == null)
+                    return false;
+
+                return transform.IsStatic;
+            }
+        }
 
         private Framebuffer _framebuffer;
+        private DescriptorSetPool _cameraDescriptorPool;
+        private DescriptorSetPool.DescriptorSet _cameraDescriptorSet;
+        private Tortuga.Graphics.API.Buffer _cameraBuffer;
 
         public override async Task OnEnable()
         {
             await Task.Run(() =>
             {
                 _framebuffer = new Framebuffer(
-                Engine.Instance.MainRenderPass,
-                1920, 1080
-            );
+                    Engine.Instance.MainRenderPass,
+                    1920, 1080
+                );
+                _cameraBuffer = Tortuga.Graphics.API.Buffer.CreateDevice(
+                    Convert.ToUInt32(Unsafe.SizeOf<CameraShaderInfo>()),
+                    VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
+                );
+                _cameraDescriptorPool = new DescriptorSetPool(Engine.Instance.CameraDescriptorLayout);
+                _cameraDescriptorSet = _cameraDescriptorPool.AllocateDescriptorSet();
+                _cameraDescriptorSet.BuffersUpdate(new Tortuga.Graphics.API.Buffer[]{
+                    _cameraBuffer
+                });
             });
+        }
+
+        public float ToRadians(float degree)
+        {
+            return (degree / 360) * MathF.PI;
+        }
+
+        public Matrix4x4 ProjectionMatrix
+        {
+            get
+            {
+                if (this.Projection == ProjectionType.Perspective)
+                    return Matrix4x4.CreatePerspectiveFieldOfView(ToRadians(FieldOfView), Resolution.x / Resolution.y, NearClipPlane, FarClipPlane);
+                else if (this.Projection == ProjectionType.Orthographic)
+                    return Matrix4x4.CreateOrthographic(Resolution.x, Resolution.y, NearClipPlane, FarClipPlane);
+
+                throw new NotSupportedException("This type of projection is not supported by the camera");
+            }
+        }
+        public Matrix4x4 ViewMatrix
+        {
+            get
+            {
+                var transform = MyEntity.GetComponent<Transform>();
+                if (transform == null)
+                    return Matrix4x4.Identity;
+
+                var mat = Matrix4x4.Identity;
+                mat *= Matrix4x4.CreateScale(transform.Scale);
+                mat *= Matrix4x4.CreateFromQuaternion(transform.Rotation);
+                mat *= Matrix4x4.CreateTranslation(transform.Position);
+                return mat;
+            }
+        }
+
+        public async Task UpdateCameraBuffers()
+        {
+            if (IsStatic)
+                return;
+            await _cameraBuffer.SetDataWithStaging(
+                new CameraShaderInfo[]
+                {
+                    new CameraShaderInfo
+                    {
+                        Projection = ProjectionMatrix,
+                        View = ViewMatrix
+                    }
+                }
+            );
         }
     }
 }

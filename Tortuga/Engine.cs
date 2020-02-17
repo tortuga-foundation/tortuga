@@ -1,6 +1,6 @@
-using System;
 using Tortuga.Graphics;
 using Tortuga.Graphics.API;
+using Vulkan;
 
 namespace Tortuga
 {
@@ -11,11 +11,13 @@ namespace Tortuga
         internal Device MainDevice => _vulkan.Devices[0];
         public Window MainWindow => _mainWindow;
         internal RenderPass MainRenderPass => _mainRenderPass;
+        internal DescriptorSetLayout CameraDescriptorLayout => _cameraDescriptorLayout;
 
         private static Engine _instance;
         private VulkanInstance _vulkan;
         private Window _mainWindow;
         private RenderPass _mainRenderPass;
+        private DescriptorSetLayout _cameraDescriptorLayout;
 
         private Core.Scene _activeScene;
 
@@ -34,6 +36,14 @@ namespace Tortuga
                 windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Borderless;
             _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, windowFlags, true);
             _mainRenderPass = new RenderPass();
+            _cameraDescriptorLayout = new DescriptorSetLayout(new DescriptorSetCreateInfo[]
+            {
+                new DescriptorSetCreateInfo
+                {
+                    stage = VkShaderStageFlags.All,
+                    type = VkDescriptorType.UniformBuffer
+                }
+            });
         }
 
         public void Run()

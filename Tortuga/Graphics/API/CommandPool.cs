@@ -154,9 +154,27 @@ namespace Tortuga.Graphics.API
             {
                 vkCmdEndRenderPass(_handle);
             }
-            public void BindPipeline(Pipeline pipeline, VkPipelineBindPoint bindPoint = VkPipelineBindPoint.Graphics)
+            public unsafe void BindPipeline(Pipeline pipeline, VkPipelineBindPoint bindPoint = VkPipelineBindPoint.Graphics, DescriptorSetPool.DescriptorSet[] descriptorSets = null)
             {
+                var sets = new NativeList<VkDescriptorSet>();
+                if (descriptorSets != null)
+                {
+                    foreach (var set in descriptorSets)
+                        sets.Add(set.Handle);
+                }
+
                 vkCmdBindPipeline(_handle, bindPoint, pipeline.Handle);
+                if (sets.Count > 0)
+                    vkCmdBindDescriptorSets(
+                        _handle,
+                        bindPoint,
+                        pipeline.Layout,
+                        0,
+                        sets.Count,
+                        (VkDescriptorSet*)sets.Data.ToPointer(),
+                        0,
+                        null
+                    );
             }
             public unsafe void BlitImage(
                 VkImage source,

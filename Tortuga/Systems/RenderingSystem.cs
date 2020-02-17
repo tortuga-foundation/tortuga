@@ -1,7 +1,7 @@
 using Vulkan;
 using Tortuga.Graphics.API;
 using System.Collections.Generic;
-using System.Threading;
+using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Tortuga.Systems
@@ -19,7 +19,7 @@ namespace Tortuga.Systems
             _renderWaitFence = new Fence(true);
         }
 
-        public override void Update()
+        public override async void Update()
         {
             //if previous frame has not finished rendering wait for it to finish before rendering next frame
             _renderWaitFence.Wait();
@@ -37,6 +37,7 @@ namespace Tortuga.Systems
             var cameras = MyScene.GetComponents<Components.Camera>();
             foreach (var camera in cameras)
             {
+                await camera.UpdateCameraBuffers();
                 //begin render pass for this camera
                 _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
 
@@ -95,7 +96,19 @@ namespace Tortuga.Systems
                 System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.width)));
-            mesh.RenderCommand.BindPipeline(mesh.ActiveMaterial.ActivePipeline);
+
+            var descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
+            descriptorSets.Add(camera.CameraDescriptorSet);
+            foreach (var d in mesh.ActiveMaterial.DescriptorSets)
+                descriptorSets.Add(d);
+            mesh.ActiveMaterial.ReCompilePipeline();
+            mesh.RenderCommand.BindPipeline(
+                mesh.ActiveMaterial.ActivePipeline,
+                VkPipelineBindPoint.Graphics,
+                descriptorSets.ToArray()
+            );
+            if (mesh.IsStatic == false)
+                await mesh.ActiveMaterial.UpdateModel(mesh.ModelMatrix);
             mesh.RenderCommand.BindVertexBuffer(mesh.VertexBuffer);
             mesh.RenderCommand.BindIndexBuffer(mesh.IndexBuffer);
             mesh.RenderCommand.DrawIndexed(mesh.IndicesCount);

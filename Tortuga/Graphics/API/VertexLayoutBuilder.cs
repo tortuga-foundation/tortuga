@@ -1,14 +1,15 @@
 using Vulkan;
+using System.Numerics;
 
 namespace Tortuga.Graphics
 {
     [System.Serializable]
     public struct Vertex
     {
-        public Tortuga.Math.Vector3 Position;
-        public Tortuga.Math.Vector2 TextureCoordinates;
-        public Tortuga.Math.Vector3 Normals;
-        public Tortuga.Math.Vector3 Tangents;
+        public Vector3 Position;
+        public Vector2 TextureCoordinates;
+        public Vector3 Normals;
+        public Vector3 Tangents;
     }
 }
 

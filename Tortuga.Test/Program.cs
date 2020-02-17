@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Tortuga.Test
 {
@@ -18,8 +19,16 @@ namespace Tortuga.Test
 
             //entity
             var triangle = new Core.Entity();
-            await triangle.AddComponent<Components.Mesh>();
+            var transform = await triangle.AddComponent<Components.Transform>();
+            transform.Position = new Vector3(0, 0, -5);
+            var mesh = await triangle.AddComponent<Components.Mesh>();
             scene.AddEntity(triangle);
+            await mesh.SetVertices(new Graphics.Vertex[]{
+                new Graphics.Vertex(){ Position = new Vector3(0, -0.5f, 0) },
+                new Graphics.Vertex(){ Position = new Vector3(0.5f, 0, 0) },
+                new Graphics.Vertex(){ Position = new Vector3(-0.5f, 0, 0) }
+            });
+            await mesh.SetIndices(new uint[] { 0, 1, 2 });
 
             scene.AddSystem<Systems.RenderingSystem>();
             var acr = scene.AddSystem<Systems.AutoCameraResolution>();

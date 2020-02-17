@@ -17,7 +17,7 @@ namespace Tortuga.Systems
         {
             var cameras = MyScene.GetComponents<Components.Camera>();
             foreach (var camera in cameras)
-                camera.Resolution = new Math.IntVector2D
+                camera.Resolution = new IntVector2D
                 {
                     x = System.Convert.ToInt32(Engine.Instance.MainWindow.Width * Scale),
                     y = System.Convert.ToInt32(Engine.Instance.MainWindow.height * Scale)

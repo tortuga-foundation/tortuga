@@ -45,6 +45,8 @@ namespace Tortuga.Graphics.API
                 rasterizer.frontFace = VkFrontFace.Clockwise;
             else if (Settings.Vulkan.FrontFace == Settings.Vulkan.FrontFaceType.CounterClockwise)
                 rasterizer.frontFace = VkFrontFace.CounterClockwise;
+            else if (Settings.Vulkan.FrontFace == Settings.Vulkan.FrontFaceType.None)
+                rasterizer.cullMode = VkCullModeFlags.None;
             rasterizer.depthBiasEnable = VkBool32.False;
 
             var multisampling = VkPipelineMultisampleStateCreateInfo.New();
@@ -70,7 +72,7 @@ namespace Tortuga.Graphics.API
             var depthStencil = VkPipelineDepthStencilStateCreateInfo.New();
             depthStencil.depthTestEnable = VkBool32.True;
             depthStencil.depthWriteEnable = VkBool32.True;
-            depthStencil.depthCompareOp = VkCompareOp.LessOrEqual;
+            depthStencil.depthCompareOp = VkCompareOp.GreaterOrEqual;
             depthStencil.depthBoundsTestEnable = VkBool32.False;
             depthStencil.minDepthBounds = 0.0f;
             depthStencil.maxDepthBounds = 1.0f;
