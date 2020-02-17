@@ -18,8 +18,8 @@ namespace Tortuga
                 CounterClockwise
             };
 
-            public static DebugType DebugLevel = DebugType.Full;
-            public static FrontFaceType FrontFace = FrontFaceType.None;
+            public static DebugType DebugLevel = DebugType.ErrorAndWarnings;
+            public static FrontFaceType FrontFace = FrontFaceType.CounterClockwise;
         }
         public static class Window
         {

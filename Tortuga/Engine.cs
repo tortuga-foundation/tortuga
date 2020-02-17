@@ -1,6 +1,7 @@
 using Tortuga.Graphics;
 using Tortuga.Graphics.API;
 using Vulkan;
+using System.Threading.Tasks;
 
 namespace Tortuga
 {
@@ -46,7 +47,7 @@ namespace Tortuga
             });
         }
 
-        public void Run()
+        public async Task Run()
         {
             while (this._mainWindow.Exists)
             {
@@ -56,7 +57,7 @@ namespace Tortuga
                 {
                     foreach (var system in _activeScene.Systems.Values)
                     {
-                        system.Update();
+                        await system.Update();
                     }
                     foreach (var entity in _activeScene.Entities)
                     {

@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Tortuga.Systems
 {
     public class AutoCameraResolution : Core.BaseSystem
@@ -24,6 +26,9 @@ namespace Tortuga.Systems
                 };
         }
 
-        public override void Update() { }
+        public override async Task Update()
+        {
+            await Task.Run(() => { });
+        }
     }
 }

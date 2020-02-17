@@ -28,14 +28,14 @@ namespace Tortuga.Test
                 new Graphics.Vertex(){ Position = new Vector3(0.5f, 0, 0) },
                 new Graphics.Vertex(){ Position = new Vector3(-0.5f, 0, 0) }
             });
-            await mesh.SetIndices(new uint[] { 0, 1, 2 });
+            await mesh.SetIndices(new uint[] { 0, 2, 1 });
 
             scene.AddSystem<Systems.RenderingSystem>();
             var acr = scene.AddSystem<Systems.AutoCameraResolution>();
             acr.Scale = 0.5f; //camera should render with 50% of the window resolution
 
             engine.LoadScene(scene);
-            engine.Run();
+            await engine.Run();
         }
     }
 }

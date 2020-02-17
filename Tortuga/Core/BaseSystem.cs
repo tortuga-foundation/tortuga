@@ -1,3 +1,5 @@
+using System.Threading.Tasks;
+
 namespace Tortuga.Core
 {
     public abstract class BaseSystem
@@ -6,7 +8,7 @@ namespace Tortuga.Core
         private Scene _scene;
 
         public BaseSystem() { }
-        public abstract void Update();
+        public abstract Task Update();
 
         public static T Create<T>(Scene scene) where T : BaseSystem, new()
         {

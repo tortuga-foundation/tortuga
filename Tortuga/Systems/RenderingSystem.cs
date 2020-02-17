@@ -19,7 +19,7 @@ namespace Tortuga.Systems
             _renderWaitFence = new Fence(true);
         }
 
-        public override async void Update()
+        public override async Task Update()
         {
             //if previous frame has not finished rendering wait for it to finish before rendering next frame
             _renderWaitFence.Wait();

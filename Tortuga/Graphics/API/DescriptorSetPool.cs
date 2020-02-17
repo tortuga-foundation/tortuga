@@ -123,15 +123,14 @@ namespace Tortuga.Graphics.API
                     var bindings = _pool._descriptorSetLayout.CreateInfoUsed[i];
                     fixed (VkDescriptorBufferInfo* buff = &bufferInfo[i])
                     {
-                        writeInfos.Add(new VkWriteDescriptorSet
-                        {
-                            dstSet = _descriptorSet,
-                            dstBinding = i,
-                            dstArrayElement = arrayIndex,
-                            descriptorCount = _arrayCount,
-                            descriptorType = bindings.type,
-                            pBufferInfo = buff
-                        });
+                        var info = VkWriteDescriptorSet.New();
+                        info.dstSet = _descriptorSet;
+                        info.dstBinding = i;
+                        info.dstArrayElement = arrayIndex;
+                        info.descriptorCount = _arrayCount;
+                        info.descriptorType = bindings.type;
+                        info.pBufferInfo = buff;
+                        writeInfos.Add(info);
                     }
                 }
                 vkUpdateDescriptorSets(
