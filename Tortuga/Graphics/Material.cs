@@ -67,6 +67,13 @@ namespace Tortuga.Graphics
             await _setBuffers[0].SetDataWithStaging(new Matrix4x4[] { model });
         }
 
+        public void UpdateShaders(string vertex, string fragment)
+        {
+            _vertex = new Shader(vertex);
+            _fragment = new Shader(fragment);
+            _isDirty = true;
+        }
+
         public void AddDescriptorSet<T>(DescriptorSetCreateInfo[] createInfo)
         {
             var layout = new DescriptorSetLayout(createInfo);

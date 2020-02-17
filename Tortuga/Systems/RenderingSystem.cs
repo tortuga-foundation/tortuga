@@ -95,7 +95,8 @@ namespace Tortuga.Systems
                 System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
                 System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.width)));
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.width))
+            );
 
             var descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
             descriptorSets.Add(camera.CameraDescriptorSet);

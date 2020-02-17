@@ -25,7 +25,6 @@ namespace Tortuga.Systems
                     y = System.Convert.ToInt32(Engine.Instance.MainWindow.height * Scale)
                 };
         }
-
         public override async Task Update()
         {
             await Task.Run(() => { });
