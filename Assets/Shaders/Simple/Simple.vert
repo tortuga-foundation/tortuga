@@ -15,7 +15,10 @@ layout(location = 1) in vec2 inTexture;
 layout(location = 2) in vec3 inNormal;
 layout(location = 3) in vec3 inTangent;
 
+layout(location = 0) out vec3 outNormal;
+
 void main() {
+    outNormal = inNormal;
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;
 }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
+using Tortuga.Utils;
 
 namespace Tortuga.Test
 {
@@ -17,20 +18,21 @@ namespace Tortuga.Test
             await camera.AddComponent<Components.Camera>();
             scene.AddEntity(camera);
 
+            //load obj model
+            var cube = new OBJLoader("Assets/Models/Cube.obj");
+
             //entity
             var triangle = new Core.Entity();
             var transform = await triangle.AddComponent<Components.Transform>();
-            transform.Position = new Vector3(0, 0, -5);
+            transform.Position = new Vector3(0, 0, -10);
+            transform.IsStatic = false;
             var mesh = await triangle.AddComponent<Components.Mesh>();
             scene.AddEntity(triangle);
-            await mesh.SetVertices(new Graphics.Vertex[]{
-                new Graphics.Vertex(){ Position = new Vector3(0, -0.5f, 0) },
-                new Graphics.Vertex(){ Position = new Vector3(0.5f, 0, 0) },
-                new Graphics.Vertex(){ Position = new Vector3(-0.5f, 0, 0) }
-            });
-            await mesh.SetIndices(new uint[] { 0, 2, 1 });
+            await mesh.SetVertices(cube.ToGraphicsVertices);
+            await mesh.SetIndices(cube.ToGraphicsIndex);
 
             scene.AddSystem<Systems.RenderingSystem>();
+            scene.AddSystem<AutoRotator>();
             var acr = scene.AddSystem<Systems.AutoCameraResolution>();
             acr.Scale = 0.5f; //camera should render with 50% of the window resolution
 

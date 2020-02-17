@@ -11,8 +11,10 @@ layout(set=1,binding=0) readonly uniform MESH_MVP
     mat4 model;
 };
 
+layout(location = 0) in vec3 inNormal;
+
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(1.0, 0.0, 0.0, 1.0);
+    outColor = vec4(1.0);
 }
