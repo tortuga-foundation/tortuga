@@ -36,7 +36,7 @@ namespace Tortuga.Graphics
             _setBuffers = new List<Buffer>();
 
             //descriptor sets
-            AddDescriptorSet<Matrix4x4>(new DescriptorSetCreateInfo[]{
+            AddBuffersToDescriptorSets<Matrix4x4>(new DescriptorSetCreateInfo[]{
                 new DescriptorSetCreateInfo
                 {
                     stage = VkShaderStageFlags.All,
@@ -74,21 +74,35 @@ namespace Tortuga.Graphics
             _isDirty = true;
         }
 
-        public void AddDescriptorSet<T>(DescriptorSetCreateInfo[] createInfo)
+        public List<int> AddBuffersToDescriptorSets<T>(DescriptorSetCreateInfo[] createInfo)
         {
             var layout = new DescriptorSetLayout(createInfo);
             var pool = new DescriptorSetPool(layout);
             var set = pool.AllocateDescriptorSet();
-            var buffer = Buffer.CreateDevice(
-                System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
-                VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
-            );
-            set.BuffersUpdate(new Buffer[] { buffer });
+            var buffers = new List<Buffer>();
+            var rtn = new List<int>();
+            foreach (var info in createInfo)
+            {
+                if (info.type != VkDescriptorType.UniformBuffer)
+                    throw new System.NotSupportedException("only uniform buffers are supported by this method");
+
+                var buffer = Buffer.CreateDevice(
+                    System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
+                    VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
+                );
+                buffers.Add(buffer);
+                _setBuffers.Add(buffer);
+                rtn.Add(_setBuffers.Count - 1);
+            }
+            set.BuffersUpdate(buffers.ToArray());
             _layouts.Add(layout);
             _setPool.Add(pool);
             _descriptorSets.Add(set);
-            _setBuffers.Add(buffer);
             _isDirty = true;
+            return rtn;
         }
+
+        public async Task UpdateData<T>(int i, T[] data) where T : struct
+            => await _setBuffers[i].SetDataWithStaging<T>(data);
     }
 }

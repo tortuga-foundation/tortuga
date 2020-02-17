@@ -10,7 +10,11 @@ namespace Tortuga.Components
 {
     public class Mesh : Core.BaseComponent
     {
-        public Material ActiveMaterial => _material;
+        public Material ActiveMaterial
+        {
+            set { _material = value; }
+            get { return _material; }
+        }
         internal CommandPool.Command RenderCommand => _renderCommand;
         internal Graphics.API.Buffer VertexBuffer => _vertexBuffer;
         internal Graphics.API.Buffer IndexBuffer => _indexBuffer;
@@ -39,7 +43,7 @@ namespace Tortuga.Components
             await Task.Run(() =>
             {
                 if (_material == null)
-                    _material = new Material("Assets/Shaders/Simple.vert", "Assets/Shaders/Simple.frag");
+                    _material = Tortuga.Global.Instance.Materials["Simple"];
                 _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
             });
@@ -61,7 +65,6 @@ namespace Tortuga.Components
             _indicesCount = Convert.ToUInt32(indices.Length);
             await _indexBuffer.SetDataWithStaging(indices);
         }
-
         public Matrix4x4 ModelMatrix
         {
             get

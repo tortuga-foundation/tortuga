@@ -1,4 +1,6 @@
+using System;
 using System.Threading.Tasks;
+using Tortuga.Input;
 
 namespace Tortuga.Systems
 {
@@ -9,10 +11,25 @@ namespace Tortuga.Systems
         public AutoCameraResolution()
         {
             Engine.Instance.MainWindow.SdlHandle.Resized += OnWindowResized;
+            Input.Input.OnKeyDown += OnKeyDown;
+            Input.Input.OnKeyUp += OnKeyUp;
         }
+
+        private void OnKeyUp(KeyCode obj)
+        {
+            Console.WriteLine("UP: " + obj);
+        }
+
         ~AutoCameraResolution()
         {
             Engine.Instance.MainWindow.SdlHandle.Resized -= OnWindowResized;
+            Input.Input.OnKeyDown -= OnKeyDown;
+            Input.Input.OnKeyUp -= OnKeyUp;
+        }
+
+        private void OnKeyDown(KeyCode obj)
+        {
+            Console.WriteLine("DOWN: " + obj);
         }
 
         public void OnWindowResized()
