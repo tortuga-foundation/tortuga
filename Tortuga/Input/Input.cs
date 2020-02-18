@@ -19,7 +19,6 @@ namespace Tortuga.Input
         public static float WheelDelta => _wheelDelta;
 
 
-
         private static Vector2 _mousePosition = Vector2.Zero;
         private static float _wheelDelta = 0.0f;
         private static Dictionary<KeyCode, bool> _isKeyPressed = new Dictionary<KeyCode, bool>();

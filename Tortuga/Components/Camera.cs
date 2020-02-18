@@ -114,11 +114,7 @@ namespace Tortuga.Components
                 if (transform == null)
                     return Matrix4x4.Identity;
 
-                var mat = Matrix4x4.Identity;
-                mat *= Matrix4x4.CreateScale(transform.Scale);
-                mat *= Matrix4x4.CreateFromQuaternion(transform.Rotation);
-                mat *= Matrix4x4.CreateTranslation(transform.Position);
-                return mat;
+                return transform.ToMatrix;
             }
         }
 
