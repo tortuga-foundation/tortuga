@@ -105,7 +105,7 @@ namespace Tortuga.Utils
                     {
                         Position = Vertices[index.Vertex],
                         TextureCoordinates = Textures[index.Texture],
-                        Normals = Normals[index.Normal]
+                        Normal = Normals[index.Normal]
                     });
                 }
                 return output.ToArray();

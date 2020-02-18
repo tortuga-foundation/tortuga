@@ -108,6 +108,8 @@ namespace Tortuga.Systems
                 VkPipelineBindPoint.Graphics,
                 descriptorSets.ToArray()
             );
+            if (mesh.IsVerticesDirty)
+                await mesh.ComputeTangents();
             if (mesh.IsStatic == false)
                 await mesh.ActiveMaterial.UpdateModel(mesh.ModelMatrix);
             mesh.RenderCommand.BindVertexBuffer(mesh.VertexBuffer);

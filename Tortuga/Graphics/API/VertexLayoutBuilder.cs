@@ -8,8 +8,9 @@ namespace Tortuga.Graphics
     {
         public Vector3 Position;
         public Vector2 TextureCoordinates;
-        public Vector3 Normals;
-        public Vector3 Tangents;
+        public Vector3 Normal;
+        public Vector3 Tangent;
+        public Vector3 BiTangent;
     }
 }
 
@@ -40,6 +41,11 @@ namespace Tortuga.Graphics.API
                 Size = sizeof(float) * 3
             },
             //tangent
+            new VertexElement{
+                Format = VkFormat.R32g32b32Sfloat,
+                Size = sizeof(float) * 3
+            },
+            //bi-tangent
             new VertexElement{
                 Format = VkFormat.R32g32b32Sfloat,
                 Size = sizeof(float) * 3
