@@ -91,7 +91,10 @@ namespace Tortuga.Components
         public async Task ComputeTangents()
         {
             if (DisableTangents)
+            {
+                _verticesDirty = false;
                 return;
+            }
             //compute tangent & bi tangents
             for (uint i = 0; i < _indices.Length; i += 3)
             {
