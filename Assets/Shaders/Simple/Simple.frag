@@ -30,9 +30,16 @@ layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
 };
 
 layout(location = 0) in vec3 inNormal;
+layout(location = 1) in vec3 inLightVector[10];
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(1.0);
+    vec3 unitNormal = normalize(inNormal);
+    vec3 unitLightVector = normalize(inLightVector[0]);
+    
+    float nDot1 = dot(unitNormal, unitLightVector);
+    float brightness = max(nDot1, 0.);
+
+    outColor = vec4(brightness, brightness, brightness, 1.0);
 }

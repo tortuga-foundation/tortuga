@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
+using System.Drawing;
 using Tortuga.Utils;
 
 namespace Tortuga.Test
@@ -20,6 +21,16 @@ namespace Tortuga.Test
 
             //load obj model
             var cube = new OBJLoader("Assets/Models/Monkey.obj");
+
+            //light
+            var light = new Core.Entity();
+            var lTransform = await light.AddComponent<Components.Transform>();
+            lTransform.Position = new Vector3(0, 5, -10);
+            var lComp = await light.AddComponent<Components.Light>();
+            lComp.Intensity = 1.0f;
+            lComp.Range = 1.0f;
+            lComp.Type = Components.Light.LightType.Point;
+            lComp.Color = Color.White;
 
             //entity
             var triangle = new Core.Entity();

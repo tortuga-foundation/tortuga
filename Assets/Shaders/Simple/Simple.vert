@@ -2,12 +2,12 @@
 
 struct LightInfo
 {
-    vec4 Position;
-    vec4 Forward;
-    vec4 Color;
-    int Type;
-    float Intensity;
-    float Range;
+    vec4 position;
+    vec4 forward;
+    vec4 color;
+    int type;
+    float intensity;
+    float range;
 };
 
 layout(set=0,binding=0) readonly uniform CAMERA_MVP
@@ -35,9 +35,13 @@ layout(location = 3) in vec3 inTangent;
 layout(location = 4) in vec3 inBiTangent;
 
 layout(location = 0) out vec3 outNormal;
+layout(location = 1) out vec3 outLightVector[10];
 
 void main() {
-    outNormal = inNormal;
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;
+
+    outNormal = (model * vec4(inNormal, 0.)).xyz;
+    for (int i = 0; i < lightsCount; i++)
+        outLightVector[i] = lights[i].position.xyz - worldPosition.xyz;
 }
