@@ -11,6 +11,50 @@ namespace Tortuga.Graphics
         public Vector3 Normal;
         public Vector3 Tangent;
         public Vector3 BiTangent;
+
+        public static Vertex[] ComputeTangents(Vertex[] vertices, uint[] indices)
+        {
+            //compute tangent & bi tangents
+            for (uint i = 0; i < indices.Length; i += 3)
+            {
+                var v0 = vertices[indices[i + 0]];
+                var v1 = vertices[indices[i + 1]];
+                var v2 = vertices[indices[i + 2]];
+
+                var edge1 = v1.Position - v0.Position;
+                var edge2 = v2.Position - v0.Position;
+
+                float deltaU1 = v1.TextureCoordinates.X - v0.TextureCoordinates.X;
+                float deltaV1 = v1.TextureCoordinates.Y - v0.TextureCoordinates.Y;
+                float deltaU2 = v2.TextureCoordinates.X - v0.TextureCoordinates.X;
+                float deltaV2 = v2.TextureCoordinates.Y - v0.TextureCoordinates.Y;
+
+                float f = 1.0f / (deltaU1 * deltaV2 - deltaU2 * deltaV1);
+                Vector3 tangent, bitangent;
+                tangent.X = f * (deltaV2 * edge1.X - deltaV1 * edge2.X);
+                tangent.Y = f * (deltaV2 * edge1.Y - deltaV1 * edge2.Y);
+                tangent.Z = f * (deltaV2 * edge1.Z - deltaV1 * edge2.Z);
+
+                bitangent.X = f * (-deltaU2 * edge1.X - deltaU1 * edge2.X);
+                bitangent.Y = f * (-deltaU2 * edge1.Y - deltaU1 * edge2.Y);
+                bitangent.Z = f * (-deltaU2 * edge1.Z - deltaU1 * edge2.Z);
+
+                vertices[indices[i + 0]].Tangent += tangent;
+                vertices[indices[i + 1]].Tangent += tangent;
+                vertices[indices[i + 2]].Tangent += tangent;
+
+                vertices[indices[i + 0]].BiTangent += bitangent;
+                vertices[indices[i + 1]].BiTangent += bitangent;
+                vertices[indices[i + 2]].BiTangent += bitangent;
+            }
+            //normalize tangents
+            for (uint i = 0; i < vertices.Length; i++)
+            {
+                vertices[i].Tangent = Vector3.Normalize(vertices[i].Tangent);
+                vertices[i].BiTangent = Vector3.Normalize(vertices[i].BiTangent);
+            }
+            return vertices;
+        }
     }
 }
 

@@ -35,8 +35,17 @@ namespace Tortuga.Graphics
             _descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
             _setBuffers = new List<Buffer>();
 
-            //descriptor sets
+            //model matrix
             AddBuffersToDescriptorSets<Matrix4x4>(new DescriptorSetCreateInfo[]{
+                new DescriptorSetCreateInfo
+                {
+                    stage = VkShaderStageFlags.All,
+                    type = VkDescriptorType.UniformBuffer
+                }
+            });
+
+            //lighting
+            AddBuffersToDescriptorSets<Systems.RenderingSystem.LightShaderInfo>(new DescriptorSetCreateInfo[]{
                 new DescriptorSetCreateInfo
                 {
                     stage = VkShaderStageFlags.All,
@@ -60,11 +69,16 @@ namespace Tortuga.Graphics
                 _vertex,
                 _fragment
             );
+            _isDirty = false;
         }
 
         public async Task UpdateModel(Matrix4x4 model)
         {
             await _setBuffers[0].SetDataWithStaging(new Matrix4x4[] { model });
+        }
+        internal async Task UpdateLightingInfo(Systems.RenderingSystem.LightShaderInfo info)
+        {
+            await _setBuffers[1].SetDataWithStaging(new Systems.RenderingSystem.LightShaderInfo[] { info });
         }
 
         public void UpdateShaders(string vertex, string fragment)

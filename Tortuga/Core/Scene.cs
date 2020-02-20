@@ -83,6 +83,9 @@ namespace Tortuga.Core
 
         public T[] GetComponents<T>() where T : BaseComponent, new()
         {
+            if (_components.ContainsKey(typeof(T)) == false)
+                return new T[] { };
+
             var compArray = _components[typeof(T)].ToArray();
             var rtn = new List<T>();
             foreach (var t in compArray)

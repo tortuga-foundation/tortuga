@@ -20,6 +20,7 @@ namespace Tortuga.Utils
         public List<Vector2> Textures;
         public List<Vector3> Normals;
         public List<Index> Indices;
+        private uint[] _graphicsIndices;
 
         public OBJLoader(string file)
         {
@@ -92,8 +93,11 @@ namespace Tortuga.Utils
                     }
                 }
             }
-        }
 
+            _graphicsIndices = new uint[Indices.Count];
+            for (uint i = 0; i < Indices.Count; i++)
+                _graphicsIndices[i] = i;
+        }
         public Vertex[] ToGraphicsVertices
         {
             get
@@ -108,18 +112,9 @@ namespace Tortuga.Utils
                         Normal = Normals[index.Normal]
                     });
                 }
-                return output.ToArray();
+                return Vertex.ComputeTangents(output.ToArray(), ToGraphicsIndex);
             }
         }
-        public uint[] ToGraphicsIndex
-        {
-            get
-            {
-                var output = new uint[Indices.Count];
-                for (uint i = 0; i < Indices.Count; i++)
-                    output[i] = i;
-                return output;
-            }
-        }
+        public uint[] ToGraphicsIndex => _graphicsIndices;
     }
 }
