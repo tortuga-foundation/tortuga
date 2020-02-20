@@ -31,6 +31,7 @@ namespace Tortuga.Test
             lComp.Range = 1.0f;
             lComp.Type = Components.Light.LightType.Point;
             lComp.Color = Color.White;
+            scene.AddEntity(light);
 
             //entity
             var triangle = new Core.Entity();

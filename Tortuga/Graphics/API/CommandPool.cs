@@ -126,7 +126,7 @@ namespace Tortuga.Graphics.API
                 });
                 clearValues.Add(new VkClearValue
                 {
-                    depthStencil = new VkClearDepthStencilValue(0, 0)
+                    depthStencil = new VkClearDepthStencilValue(1, 1)
                 });
 
                 var renderPassBeginInfo = VkRenderPassBeginInfo.New();

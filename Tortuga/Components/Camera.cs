@@ -110,11 +110,14 @@ namespace Tortuga.Components
         {
             get
             {
-                var transform = MyEntity.GetComponent<Transform>();
-                if (transform == null)
-                    return Matrix4x4.Identity;
+                var viewMatrix = Matrix4x4.Identity;
 
-                return transform.ToMatrix;
+                var transform = MyEntity.GetComponent<Transform>();
+                if (transform != null)
+                    viewMatrix = transform.ToMatrix;
+
+                viewMatrix.M22 *= -1;
+                return viewMatrix;
             }
         }
 
