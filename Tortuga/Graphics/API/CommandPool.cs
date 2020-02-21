@@ -240,6 +240,42 @@ namespace Tortuga.Graphics.API
                 vkCmdBlitImage(_handle, source, VkImageLayout.TransferSrcOptimal, destination, VkImageLayout.TransferDstOptimal, 1, &regionInfo, VkFilter.Linear);
             }
 
+            public unsafe void BufferToImage(Buffer buffer, Image image)
+            {
+                var region = new VkBufferImageCopy();
+                region.bufferOffset = 0;
+                region.bufferRowLength = Convert.ToUInt32(image.Width);
+                region.bufferImageHeight = Convert.ToUInt32(image.Height);
+                region.imageOffset = new VkOffset3D
+                {
+                    x = 0,
+                    y = 0,
+                    z = 0
+                };
+                region.imageExtent = new VkExtent3D
+                {
+                    width = Convert.ToUInt32(image.Width),
+                    height = Convert.ToUInt32(image.Height),
+                    depth = 1
+                };
+                region.imageSubresource = new VkImageSubresourceLayers
+                {
+                    aspectMask = VkImageAspectFlags.Color,
+                    mipLevel = 0,
+                    baseArrayLayer = 0,
+                    layerCount = 1
+                };
+
+                vkCmdCopyBufferToImage(
+                    _handle,
+                    buffer.Handle,
+                    image.ImageHandle,
+                    VkImageLayout.TransferDstOptimal,
+                    1,
+                    &region
+                );
+            }
+
             public unsafe void TransferImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint mipLevel = 1)
             {
                 //aspect flags

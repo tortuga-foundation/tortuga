@@ -135,8 +135,11 @@ namespace Tortuga.Systems
         private MeshCommands ProcessMeshCommands(Components.Mesh mesh, Components.Camera camera, Components.Light[] allLights)
         {
             var transferCommands = new List<BufferTransferObject>();
-            var lights = GetClosestLights(mesh, allLights);
-            transferCommands.Add(mesh.ActiveMaterial.LightingTransferObject(lights));
+            if (mesh.ActiveMaterial.UsingLighting)
+            {
+                var lights = GetClosestLights(mesh, allLights);
+                transferCommands.Add(mesh.ActiveMaterial.LightingTransferObject(lights));
+            }
             mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             mesh.RenderCommand.SetViewport(
                 System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),

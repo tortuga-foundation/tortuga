@@ -42,6 +42,10 @@ namespace Tortuga.Test
             scene.AddEntity(triangle);
             await mesh.SetVertices(cube.ToGraphicsVertices);
             await mesh.SetIndices(cube.ToGraphicsIndex);
+            
+            var sample = new Utils.ImageLoader("Assets/Images/Sample.jpg");
+            var index = mesh.ActiveMaterial.CreateSampledImage(sample.Width, sample.Height);
+            await mesh.ActiveMaterial.UpdateSampledImage(index[0], sample.Pixels);
 
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<AutoRotator>();

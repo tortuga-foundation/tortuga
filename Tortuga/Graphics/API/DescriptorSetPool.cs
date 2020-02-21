@@ -109,6 +109,9 @@ namespace Tortuga.Graphics.API
 
             public unsafe void BuffersUpdate(Buffer[] buffers, uint arrayIndex = 0)
             {
+                if (buffers.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
+                    throw new Exception("provided incorrect number of buffers");
+
                 var bufferInfo = new NativeList<VkDescriptorBufferInfo>();
                 var writeInfos = new NativeList<VkWriteDescriptorSet>();
                 for (uint i = 0; i < _pool._descriptorSetLayout.CreateInfoUsed.Length; i++)
@@ -130,6 +133,46 @@ namespace Tortuga.Graphics.API
                         info.descriptorCount = _arrayCount;
                         info.descriptorType = bindings.type;
                         info.pBufferInfo = buff;
+                        writeInfos.Add(info);
+                    }
+                }
+                vkUpdateDescriptorSets(
+                    Engine.Instance.MainDevice.LogicalDevice,
+                    writeInfos.Count,
+                    (VkWriteDescriptorSet*)writeInfos.Data.ToPointer(),
+                    0,
+                    null
+                );
+            }
+
+            public unsafe void SampledImageUpdate(ImageView[] view, Sampler[] sampler, uint arrayIndex = 0)
+            {
+                if (view.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
+                    throw new Exception("provided incorrect number of image views");
+                if (sampler.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
+                    throw new Exception("provided incorrect number of samplers");
+
+                var imageInfo = new NativeList<VkDescriptorImageInfo>();
+                var writeInfos = new NativeList<VkWriteDescriptorSet>();
+                for (uint i = 0; i < _pool._descriptorSetLayout.CreateInfoUsed.Length; i++)
+                {
+                    imageInfo.Add(new VkDescriptorImageInfo
+                    {
+                        imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+                        imageView = view[i].Handle,
+                        sampler = sampler[i].Handle
+                    });
+
+                    var bindings = _pool._descriptorSetLayout.CreateInfoUsed[i];
+                    fixed (VkDescriptorImageInfo* img = &imageInfo[i])
+                    {
+                        var info = VkWriteDescriptorSet.New();
+                        info.dstSet = _descriptorSet;
+                        info.dstBinding = i;
+                        info.dstArrayElement = arrayIndex;
+                        info.descriptorCount = _arrayCount;
+                        info.descriptorType = bindings.type;
+                        info.pImageInfo = img;
                         writeInfos.Add(info);
                     }
                 }
