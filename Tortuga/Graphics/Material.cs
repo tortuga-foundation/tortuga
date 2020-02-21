@@ -141,7 +141,7 @@ namespace Tortuga.Graphics
             var samplers = new List<Sampler>();
             foreach (var info in createInfo)
             {
-                if (info.type != VkDescriptorType.SampledImage)
+                if (info.type != VkDescriptorType.CombinedImageSampler)
                     throw new System.NotSupportedException("only sampled images are supported by this method");
 
                 var image = new Tortuga.Graphics.API.Image(
@@ -199,7 +199,7 @@ namespace Tortuga.Graphics
             for (int i = 0; i < info.Length; i++)
                 info[i] = new DescriptorSetCreateInfo
                 {
-                    type = VkDescriptorType.SampledImage,
+                    type = VkDescriptorType.CombinedImageSampler,
                     stage = VkShaderStageFlags.Fragment
                 };
             return AddImageToDescriptorSets(info, width, height).ToArray();
