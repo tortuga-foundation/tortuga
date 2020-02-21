@@ -7,7 +7,7 @@ namespace Tortuga.Core
         public Entity MyEntity => _myEntity;
         private Entity _myEntity;
 
-        public virtual void Update() { }
+        public virtual async Task Update() { await Task.Run(() => { }); }
         public virtual async Task OnEnable() { await Task.Run(() => { }); }
         public virtual async Task OnDisable() { await Task.Run(() => { }); }
 

@@ -2,6 +2,7 @@ using Tortuga.Graphics;
 using Tortuga.Graphics.API;
 using Vulkan;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Tortuga
 {
@@ -50,27 +51,31 @@ namespace Tortuga
             Input.Input.Initialize();
         }
 
-        public async Task Run()
+        public Task Run()
         {
-            while (this._mainWindow.Exists)
+            return Task.Run(() =>
             {
-                var events = this._mainWindow.PumpEvents();
-                Input.Input.ProcessEvents(events);
-                this._mainWindow.AcquireSwapchainImage();
-                if (_activeScene != null)
+                while (this._mainWindow.Exists)
                 {
-                    foreach (var system in _activeScene.Systems.Values)
+                    var events = this._mainWindow.PumpEvents();
+                    Input.Input.ProcessEvents(events);
+                    this._mainWindow.AcquireSwapchainImage();
+                    if (_activeScene != null)
                     {
-                        await system.Update();
+                        var tasks = new List<Task>();
+                        foreach (var system in _activeScene.Systems.Values)
+                            tasks.Add(system.Update());
+
+                        foreach (var entity in _activeScene.Entities)
+                        {
+                            foreach (var component in entity.Components)
+                                tasks.Add(component.Value.Update());
+                        }
+                        Task.WaitAll(tasks.ToArray());
                     }
-                    foreach (var entity in _activeScene.Entities)
-                    {
-                        foreach (var component in entity.Components)
-                            component.Value.Update();
-                    }
+                    this._mainWindow.Present();
                 }
-                this._mainWindow.Present();
-            }
+            });
         }
 
         public void LoadScene(Core.Scene scene)

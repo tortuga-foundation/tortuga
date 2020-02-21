@@ -6,6 +6,13 @@ using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
+    internal struct BufferTransferObject
+    {
+        public CommandPool commandPool;
+        public CommandPool.Command TransferCommand;
+        public Buffer StagingBuffer;
+    };
+
     internal class Buffer
     {
         public VkBuffer Handle => _buffer;
@@ -172,6 +179,26 @@ namespace Tortuga.Graphics.API
             );
             fence.Wait();
             return await Task.FromResult(staging.GetData<T>());
+        }
+
+        internal BufferTransferObject SetDataGetTransferObject<T>(T[] data) where T : struct
+        {
+            //setup staging buffer
+            var staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
+            staging.SetData(data);
+
+            //setup transfer command
+            var pool = new CommandPool(Engine.Instance.MainDevice.TransferQueueFamily);
+            var command = pool.AllocateCommands()[0];
+            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+            command.CopyBuffer(staging, this);
+            command.End();
+            return new BufferTransferObject
+            {
+                commandPool = pool,
+                StagingBuffer = staging,
+                TransferCommand = command
+            };
         }
     }
 }

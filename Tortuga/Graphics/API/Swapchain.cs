@@ -170,7 +170,7 @@ namespace Tortuga.Graphics.API
             _imagesCount = surfaceCapabilities.minImageCount + 1;
             if (surfaceCapabilities.maxImageCount > 0)
                 if (_imagesCount > surfaceCapabilities.maxImageCount)
-                    _imagesCount = surfaceCapabilities.maxImageCount;
+                    _imagesCount = Math.Min(surfaceCapabilities.maxImageCount, 2);
 
             var swapchainInfo = VkSwapchainCreateInfoKHR.New();
             swapchainInfo.compositeAlpha = VkCompositeAlphaFlagsKHR.OpaqueKHR;

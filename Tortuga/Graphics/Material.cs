@@ -80,6 +80,14 @@ namespace Tortuga.Graphics
         {
             await _setBuffers[1].SetDataWithStaging(new Systems.RenderingSystem.LightShaderInfo[] { info });
         }
+        internal BufferTransferObject ModelTransferObject(Matrix4x4 model)
+        {
+            return _setBuffers[0].SetDataGetTransferObject(new Matrix4x4[] { model });
+        }
+        internal BufferTransferObject LightingTransferObject(Systems.RenderingSystem.LightShaderInfo info)
+        {
+            return _setBuffers[1].SetDataGetTransferObject(new Systems.RenderingSystem.LightShaderInfo[] { info });
+        }
 
         public void UpdateShaders(string vertex, string fragment)
         {

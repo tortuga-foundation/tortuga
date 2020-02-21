@@ -54,7 +54,7 @@ namespace Tortuga.Graphics.API
             foreach (var cm in commandbuffers)
             {
                 _commandBuffers.Add(cm);
-                response.Add(new Command(cm, level, _queueFamily));
+                response.Add(new Command(this, cm, level, _queueFamily));
             }
             return response;
         }
@@ -68,9 +68,11 @@ namespace Tortuga.Graphics.API
             private VkCommandBuffer _handle;
             private VkCommandBufferLevel _level;
             private Device.QueueFamily _queueFamily;
+            private CommandPool _pool;
 
-            public Command(VkCommandBuffer handle, VkCommandBufferLevel level, Device.QueueFamily queueFamily)
+            public Command(CommandPool pool, VkCommandBuffer handle, VkCommandBufferLevel level, Device.QueueFamily queueFamily)
             {
+                this._pool = pool;
                 this._handle = handle;
                 this._level = level;
                 this._queueFamily = queueFamily;
