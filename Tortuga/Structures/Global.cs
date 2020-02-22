@@ -31,8 +31,9 @@ namespace Tortuga
                     )
                 );
                 var albedoIndex = Materials["Simple"].CreateSampledImage(1, 1);
-                Materials["Simple"].UpdateSampledImage(albedoIndex[0], new Color[] { Color.LightSlateGray });
+                var t = Materials["Simple"].UpdateSampledImage(albedoIndex[0], new Color[] { Color.LightSlateGray });
                 MaterialSets.Add("Simple_Albedo", albedoIndex[0]);
+                t.Wait();
             }
 
             //user interface material
@@ -46,8 +47,29 @@ namespace Tortuga
                     )
                 );
                 var albedoIndex = Materials["UserInterface"].CreateSampledImage(1, 1);
-                Materials["UserInterface"].UpdateSampledImage(albedoIndex[0], new Color[] { Color.LightSlateGray });
+                var t = Materials["UserInterface"].UpdateSampledImage(albedoIndex[0], new Color[] { Color.LightSlateGray });
                 MaterialSets.Add("UserInterface_Albedo", albedoIndex[0]);
+                t.Wait();
+            }
+
+            //pbr
+            {
+                Materials.Add(
+                    "PBR",
+                    new Material(
+                        "Assets/Shaders/PBR/PBR.vert",
+                        "Assets/Shaders/PBR/PBR.frag"
+                    )
+                );
+                var materialInfo = Materials["PBR"].CreateUniformData<Graphics.PBR>();
+                var t = Materials["PBR"].UpdateUniformData(materialInfo[0], new Graphics.PBR[]{
+                    new PBR{
+                        Metallic = 0,
+                        Rougness = 0.5f
+                    }
+                });
+                MaterialSets.Add("PBR_MATERIAL_INFO", materialInfo[0]);
+                t.Wait();
             }
 
 

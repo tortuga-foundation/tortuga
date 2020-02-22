@@ -45,7 +45,7 @@ namespace Tortuga.Components
             await Task.Run(() =>
             {
                 if (_material == null)
-                    _material = Tortuga.Global.Instance.Materials["Simple"];
+                    _material = Tortuga.Global.Instance.Materials["PBR"];
                 _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
             });
