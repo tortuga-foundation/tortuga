@@ -8,6 +8,15 @@ using System.Drawing;
 
 namespace Tortuga.Graphics
 {
+    public struct DescriptorSetObject
+    {
+        internal DescriptorSetPool.DescriptorSet set;
+        internal uint binding;
+        internal Buffer buffer;
+        internal API.Image image;
+        internal ImageView imageView;
+        internal Sampler sampler;
+    }
     public class Material
     {
         public Matrix4x4 Model;
@@ -17,6 +26,7 @@ namespace Tortuga.Graphics
         internal Pipeline ActivePipeline => _pipeline;
         internal List<DescriptorSetPool.DescriptorSet> DescriptorSets => _descriptorSets;
         internal bool UsingLighting => _usingLighting;
+        internal List<Tortuga.Graphics.API.Image> SetImages => _setImages;
 
         private Shader _vertex;
         private Shader _fragment;
@@ -103,15 +113,16 @@ namespace Tortuga.Graphics
             _isDirty = true;
         }
 
-        private List<int> AddBuffersToDescriptorSets<T>(DescriptorSetCreateInfo[] createInfo)
+        private List<DescriptorSetObject> AddBuffersToDescriptorSets<T>(DescriptorSetCreateInfo[] createInfo)
         {
             var layout = new DescriptorSetLayout(createInfo);
             var pool = new DescriptorSetPool(layout);
             var set = pool.AllocateDescriptorSet();
             var buffers = new List<Buffer>();
-            var rtn = new List<int>();
-            foreach (var info in createInfo)
+            var rtn = new List<DescriptorSetObject>();
+            for (int i = 0; i < createInfo.Length; i++)
             {
+                var info = createInfo[i];
                 if (info.type != VkDescriptorType.UniformBuffer)
                     throw new System.NotSupportedException("only uniform buffers are supported by this method");
 
@@ -119,9 +130,15 @@ namespace Tortuga.Graphics
                     System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
                     VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
                 );
+                buffer.ReservedDescriptorSet = System.Convert.ToUInt32(_descriptorSets.Count);
                 buffers.Add(buffer);
                 _setBuffers.Add(buffer);
-                rtn.Add(_setBuffers.Count - 1);
+                rtn.Add(new DescriptorSetObject
+                {
+                    set = set,
+                    binding = System.Convert.ToUInt32(i),
+                    buffer = buffer
+                });
             }
             set.BuffersUpdate(buffers.ToArray());
             _layouts.Add(layout);
@@ -131,16 +148,17 @@ namespace Tortuga.Graphics
             return rtn;
         }
 
-        private List<int> AddImageToDescriptorSets(DescriptorSetCreateInfo[] createInfo, uint imageWidth, uint imageHeight)
+        private List<DescriptorSetObject> AddImageToDescriptorSets(DescriptorSetCreateInfo[] createInfo, uint imageWidth, uint imageHeight)
         {
-            var rtn = new List<int>();
+            var rtn = new List<DescriptorSetObject>();
             var layout = new DescriptorSetLayout(createInfo);
             var pool = new DescriptorSetPool(layout);
             var set = pool.AllocateDescriptorSet();
             var imageViews = new List<ImageView>();
             var samplers = new List<Sampler>();
-            foreach (var info in createInfo)
+            for (int i = 0; i < createInfo.Length; i++)
             {
+                var info = createInfo[i];
                 if (info.type != VkDescriptorType.CombinedImageSampler)
                     throw new System.NotSupportedException("only sampled images are supported by this method");
 
@@ -151,6 +169,7 @@ namespace Tortuga.Graphics
                     VkImageUsageFlags.Sampled | VkImageUsageFlags.TransferDst,
                     1
                 );
+                image.ReservedDescriptorSet = System.Convert.ToUInt32(_descriptorSets.Count);
                 var imageView = new ImageView(
                     image,
                     VkImageAspectFlags.Color
@@ -161,7 +180,14 @@ namespace Tortuga.Graphics
                 _setSamplers.Add(sampler);
                 imageViews.Add(imageView);
                 samplers.Add(sampler);
-                rtn.Add(_setImages.Count - 1);
+                rtn.Add(new DescriptorSetObject
+                {
+                    set = set,
+                    binding = System.Convert.ToUInt32(i),
+                    image = image,
+                    imageView = imageView,
+                    sampler = sampler
+                });
             }
             set.SampledImageUpdate(imageViews.ToArray(), samplers.ToArray());
             _layouts.Add(layout);
@@ -171,7 +197,7 @@ namespace Tortuga.Graphics
             return rtn;
         }
 
-        public int[] CreateUniformData<T>(int bindings = 1)
+        public DescriptorSetObject[] CreateUniformData<T>(int bindings = 1)
         {
             var info = new DescriptorSetCreateInfo[bindings];
             for (int i = 0; i < info.Length; i++)
@@ -182,15 +208,16 @@ namespace Tortuga.Graphics
                 };
             return AddBuffersToDescriptorSets<T>(info).ToArray();
         }
-        public void UpdateUniformDataType<T>(int i)
+        public void UpdateUniformDataType<T>(DescriptorSetObject obj)
         {
-            _setBuffers[i] = Buffer.CreateDevice(
+            obj.buffer = Buffer.CreateDevice(
                 System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
                 VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
             );
+            obj.set.BuffersUpdate(obj.buffer, 0, obj.binding);
         }
-        public async Task UpdateUniformData<T>(int i, T[] data) where T : struct
-            => await _setBuffers[i].SetDataWithStaging<T>(data);
+        public async Task UpdateUniformData<T>(DescriptorSetObject obj, T[] data) where T : struct
+            => await obj.buffer.SetDataWithStaging<T>(data);
 
         private struct VulkanPixel
         {
@@ -200,7 +227,7 @@ namespace Tortuga.Graphics
             public byte A;
         };
 
-        public int[] CreateSampledImage(uint width, uint height, int bindings = 1)
+        public DescriptorSetObject[] CreateSampledImage(uint width, uint height, int bindings = 1)
         {
             var info = new DescriptorSetCreateInfo[bindings];
             for (int i = 0; i < info.Length; i++)
@@ -211,19 +238,21 @@ namespace Tortuga.Graphics
                 };
             return AddImageToDescriptorSets(info, width, height).ToArray();
         }
-        public void UpdateSampledImageSize(int i, uint width, uint height, uint mipLevel = 1)
+        public void UpdateSampledImageSize(DescriptorSetObject obj, uint width, uint height, uint mipLevel = 1)
         {
-            _setImages[i] = new API.Image(
+            obj.image = new API.Image(
                 width,
                 height,
                 VkFormat.R8g8b8a8Srgb,
                 VkImageUsageFlags.Sampled | VkImageUsageFlags.TransferDst,
                 mipLevel
             );
+            obj.imageView = new ImageView(obj.image, VkImageAspectFlags.Color);
+            obj.set.SampledImageUpdate(obj.imageView, obj.sampler, 0, obj.binding);
         }
-        public Task UpdateSampledImage(int i, Color[] pixels)
+        public Task UpdateSampledImage(DescriptorSetObject obj, Color[] pixels)
         {
-            if (pixels.Length != _setImages[i].Width * _setImages[i].Height)
+            if (pixels.Length != obj.image.Width * obj.image.Height)
                 throw new System.Exception("pixels don't match image size");
 
             return Task.Run(() =>
@@ -249,9 +278,9 @@ namespace Tortuga.Graphics
                 );
                 var command = commandPool.AllocateCommands()[0];
                 command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-                command.TransferImageLayout(_setImages[i], VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
-                command.BufferToImage(buffer, _setImages[i]);
-                command.TransferImageLayout(_setImages[i], VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
+                command.TransferImageLayout(obj.image, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
+                command.BufferToImage(buffer, obj.image);
+                command.TransferImageLayout(obj.image, VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
                 command.End();
                 command.Submit(
                     Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],

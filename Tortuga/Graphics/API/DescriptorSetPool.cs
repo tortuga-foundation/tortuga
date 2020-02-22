@@ -145,6 +145,33 @@ namespace Tortuga.Graphics.API
                 );
             }
 
+            public unsafe void BuffersUpdate(Buffer buffers, uint arrayIndex = 0, uint binding = 0)
+            {
+                var bufferInfo = new VkDescriptorBufferInfo()
+                {
+                    buffer = buffers.Handle,
+                    offset = 0,
+                    range = buffers.Size
+                };
+                var writeInfos = VkWriteDescriptorSet.New();
+
+
+                var bindings = _pool._descriptorSetLayout.CreateInfoUsed[binding];
+                writeInfos.dstSet = _descriptorSet;
+                writeInfos.dstBinding = binding;
+                writeInfos.dstArrayElement = arrayIndex;
+                writeInfos.descriptorCount = _arrayCount;
+                writeInfos.descriptorType = bindings.type;
+                writeInfos.pBufferInfo = &bufferInfo;
+                vkUpdateDescriptorSets(
+                    Engine.Instance.MainDevice.LogicalDevice,
+                    1,
+                    &writeInfos,
+                    0,
+                    null
+                );
+            }
+
             public unsafe void SampledImageUpdate(ImageView[] view, Sampler[] sampler, uint arrayIndex = 0)
             {
                 if (view.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
@@ -180,6 +207,33 @@ namespace Tortuga.Graphics.API
                     Engine.Instance.MainDevice.LogicalDevice,
                     writeInfos.Count,
                     (VkWriteDescriptorSet*)writeInfos.Data.ToPointer(),
+                    0,
+                    null
+                );
+            }
+
+            public unsafe void SampledImageUpdate(ImageView view, Sampler sampler, uint arrayIndex = 0, uint binding = 0)
+            {
+                var imageInfo = new VkDescriptorImageInfo
+                {
+                    imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+                    imageView = view.Handle,
+                    sampler = sampler.Handle
+                };
+                var writeInfos = VkWriteDescriptorSet.New();
+
+                var bindings = _pool._descriptorSetLayout.CreateInfoUsed[binding];
+                writeInfos.dstSet = _descriptorSet;
+                writeInfos.dstBinding = binding;
+                writeInfos.dstArrayElement = arrayIndex;
+                writeInfos.descriptorCount = _arrayCount;
+                writeInfos.descriptorType = bindings.type;
+                writeInfos.pImageInfo = &imageInfo;
+
+                vkUpdateDescriptorSets(
+                    Engine.Instance.MainDevice.LogicalDevice,
+                    1,
+                    &writeInfos,
                     0,
                     null
                 );

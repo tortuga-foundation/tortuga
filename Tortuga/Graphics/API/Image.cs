@@ -12,6 +12,7 @@ namespace Tortuga.Graphics.API
         public uint MipLevel => _mipLevel;
         public int Width => _width;
         public int Height => _height;
+        internal uint ReservedDescriptorSet;
 
         private VkImage _imageHandle;
         private VkDeviceMemory _deviceMemory;
