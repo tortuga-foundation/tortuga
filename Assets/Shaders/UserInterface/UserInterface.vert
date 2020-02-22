@@ -19,6 +19,7 @@ layout(location = 4) in vec3 inBiTangent;
 layout(location = 0) out vec2 outUV;
 
 void main() {
-    gl_Position = vec4(inPosition, 1.0);
+    vec4 worldPosition = model * vec4(inPosition, 1.0);
+    gl_Position = vec4(worldPosition.xyz, 1.0);
     outUV = inTexture;
 }

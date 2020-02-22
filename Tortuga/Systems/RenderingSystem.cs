@@ -84,6 +84,14 @@ namespace Tortuga.Systems
                     foreach (var command in meshCommand.TransferCommands)
                         transferCommands.Add(command.TransferCommand);
                 }
+                var ui = MyScene.GetComponents<Components.UserInterface>();
+                foreach (var mesh in ui)
+                {
+                    var meshCommand = ProcessMeshCommands(mesh, camera, lights);
+                    secondaryCommands.Add(meshCommand.RenderCommand);
+                    foreach (var command in meshCommand.TransferCommands)
+                        transferCommands.Add(command.TransferCommand);
+                }
 
                 //execute all meshes command buffer
                 _renderCommand.ExecuteCommands(secondaryCommands.ToArray());

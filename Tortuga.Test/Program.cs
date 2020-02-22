@@ -48,6 +48,15 @@ namespace Tortuga.Test
             var acr = scene.AddSystem<Systems.AutoCameraResolution>();
             acr.Scale = 0.5f; //camera should render with 50% of the window resolution
 
+            //user interface test
+            {
+                var userInterface = new Core.Entity();
+                var uTransform = await userInterface.AddComponent<Components.Transform>();
+                uTransform.Scale = Vector3.One * 0.1f;
+                var ui = await userInterface.AddComponent<Components.UserInterface>();
+                scene.AddEntity(userInterface);
+            }
+
             engine.LoadScene(scene);
             await engine.Run();
         }

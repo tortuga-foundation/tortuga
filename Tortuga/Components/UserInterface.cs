@@ -26,7 +26,7 @@ namespace Tortuga.Components
                     }
                 });
                 await this.SetIndices(new uint[]{
-                    0, 1, 2,
+                    0, 2, 1,
                     2, 0, 3
                 });
             });
