@@ -75,6 +75,7 @@ namespace Tortuga
                     }
                     this._mainWindow.Present();
                 }
+                MainDevice.WaitForDevice();
             });
         }
 

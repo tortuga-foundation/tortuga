@@ -150,6 +150,11 @@ namespace Tortuga.Graphics.API
             if (vkQueueWaitIdle(queue) != VkResult.Success)
                 throw new Exception("failed to wait on device queue");
         }
+        public void WaitForDevice()
+        {
+            if (vkDeviceWaitIdle(_logicalDevice) != VkResult.Success)
+                throw new Exception("failed to wait for device");
+        }
 
         public unsafe VkFormat FindDepthFormat
         {

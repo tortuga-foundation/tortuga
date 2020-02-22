@@ -9,6 +9,18 @@ namespace Tortuga.Systems
 {
     public class RenderingSystem : Core.BaseSystem
     {
+        public float CameraResolutionScale
+        {
+            get => _cameraResolutionScale;
+            set
+            {
+                if (value < 0.1f)
+                    return;
+                if (value > 4.0f)
+                    return;
+                _cameraResolutionScale = value;
+            }
+        }
         internal struct LightInfo
         {
             public Vector4 Position;
@@ -40,6 +52,7 @@ namespace Tortuga.Systems
         private CommandPool.Command _renderCommand;
         private Fence _renderWaitFence;
         private Semaphore _syncSemaphore;
+        private float _cameraResolutionScale = 1.0f;
 
         public RenderingSystem()
         {
@@ -70,6 +83,13 @@ namespace Tortuga.Systems
             var transferCommands = new List<CommandPool.Command>();
             foreach (var camera in cameras)
             {
+                var cameraRes = new IntVector2D
+                {
+                    x = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Width * CameraResolutionScale)),
+                    y = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Height * CameraResolutionScale)),
+                };
+                if (camera.Resolution != cameraRes)
+                    camera.Resolution = cameraRes;
                 await camera.UpdateCameraBuffers();
                 //begin render pass for this camera
                 _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
@@ -99,17 +119,18 @@ namespace Tortuga.Systems
 
                 //copy rendered image to swapchian for displaying in the window
                 _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.ColorAttachmentOptimal, VkImageLayout.TransferSrcOptimal);
+                var swapchain = Engine.Instance.MainWindow.Swapchain;
                 _renderCommand.BlitImage(
                     camera.Framebuffer.ColorImage.ImageHandle,
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.height)),
-                    Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.x)),
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.height * camera.Viewport.y)),
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.width)),
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.height * camera.Viewport.height))
+                    swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
+                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.x)),
+                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.y)),
+                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.width)),
+                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.height))
                 );
                 _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);
             }

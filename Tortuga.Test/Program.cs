@@ -45,8 +45,6 @@ namespace Tortuga.Test
 
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<AutoRotator>();
-            var acr = scene.AddSystem<Systems.AutoCameraResolution>();
-            acr.Scale = 0.5f; //camera should render with 50% of the window resolution
 
             //user interface test
             {

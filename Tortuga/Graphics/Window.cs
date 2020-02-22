@@ -118,7 +118,7 @@ namespace Tortuga.Graphics
             get => _windowHandle.Width;
             set => _windowHandle.Width = value;
         }
-        public int height
+        public int Height
         {
             get => _windowHandle.Height;
             set => _windowHandle.Height = value;

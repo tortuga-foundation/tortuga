@@ -11,6 +11,7 @@ namespace Tortuga.Graphics.API
         public VkSwapchainKHR Handle => _swapchain;
         public NativeList<VkImage> Images => _images;
         public VkFormat ImagesFormat => _format.format;
+        public VkExtent2D Extent => _extent;
 
         private Device.QueueFamily _presentQueueFamily;
         private bool[] _queuesSupportingPresentation;
@@ -191,7 +192,7 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to create swapchain");
             _swapchain = swapchain;
 
-            SetupSwapchainImages(window.Width, window.height);
+            SetupSwapchainImages(window.Width, window.Height);
         }
 
         unsafe ~Swapchain()
