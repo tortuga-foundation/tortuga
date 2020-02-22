@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Tortuga.Graphics;
+using System.Drawing;
 
 namespace Tortuga
 {
@@ -25,11 +26,14 @@ namespace Tortuga
                     "Assets/Shaders/Simple/Simple.frag"
                 )
             );
+            var albedoIndex = Materials["Simple"].CreateSampledImage(1, 1);
+            Materials["Simple"].UpdateSampledImage(albedoIndex[0], new Color[] { Color.LightSlateGray });
             Materials.Add(
                 "UserInterface",
                 new Material(
                     "Assets/Shaders/UserInterface/UserInterface.vert",
-                    "Assets/Shaders/UserInterface/UserInterface.frag"
+                    "Assets/Shaders/UserInterface/UserInterface.frag",
+                    false
                 )
             );
 

@@ -43,6 +43,6 @@ void main() {
     float nDot1 = dot(unitNormal, unitLightVector);
     float brightness = max(nDot1, 0.);
 
-    vec4 outAlbedo = texture(albedo, inUV);
-    outColor = outAlbedo;
+    vec3 outAlbedo = texture(albedo, inUV).rgb * brightness;
+    outColor = vec4(outAlbedo, 1.);
 }

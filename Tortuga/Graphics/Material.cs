@@ -182,6 +182,13 @@ namespace Tortuga.Graphics
                 };
             return AddBuffersToDescriptorSets<T>(info).ToArray();
         }
+        public void UpdateUniformDataType<T>(int i)
+        {
+            _setBuffers[i] = Buffer.CreateDevice(
+                System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
+                VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
+            );
+        }
         public async Task UpdateUniformData<T>(int i, T[] data) where T : struct
             => await _setBuffers[i].SetDataWithStaging<T>(data);
 
@@ -203,6 +210,16 @@ namespace Tortuga.Graphics
                     stage = VkShaderStageFlags.Fragment
                 };
             return AddImageToDescriptorSets(info, width, height).ToArray();
+        }
+        public void UpdateSampledImageSize(int i, uint width, uint height, uint mipLevel = 1)
+        {
+            _setImages[i] = new API.Image(
+                width,
+                height,
+                VkFormat.R8g8b8a8Srgb,
+                VkImageUsageFlags.Sampled | VkImageUsageFlags.TransferDst,
+                mipLevel
+            );
         }
         public Task UpdateSampledImage(int i, Color[] pixels)
         {
