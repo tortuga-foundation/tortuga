@@ -9,18 +9,6 @@ namespace Tortuga.Systems
 {
     public class RenderingSystem : Core.BaseSystem
     {
-        public float CameraResolutionScale
-        {
-            get => _cameraResolutionScale;
-            set
-            {
-                if (value < 0.1f)
-                    return;
-                if (value > 4.0f)
-                    return;
-                _cameraResolutionScale = value;
-            }
-        }
         internal struct LightInfo
         {
             public Vector4 Position;
@@ -52,7 +40,7 @@ namespace Tortuga.Systems
         private CommandPool.Command _renderCommand;
         private Fence _renderWaitFence;
         private Semaphore _syncSemaphore;
-        private float _cameraResolutionScale = 1.0f;
+        private float _cameraResolutionScale => Settings.Graphics.RenderResolutionScale;
 
         public RenderingSystem()
         {
@@ -85,8 +73,8 @@ namespace Tortuga.Systems
             {
                 var cameraRes = new IntVector2D
                 {
-                    x = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Width * CameraResolutionScale)),
-                    y = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Height * CameraResolutionScale)),
+                    x = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Width * _cameraResolutionScale)),
+                    y = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Height * _cameraResolutionScale)),
                 };
                 if (camera.Resolution != cameraRes)
                     camera.Resolution = cameraRes;

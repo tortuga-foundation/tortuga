@@ -33,5 +33,9 @@ namespace Tortuga
 
             public static WindowType Type = WindowType.ResizeableWindow;
         }
+        public static class Graphics
+        {
+            public static float RenderResolutionScale = 1.0f;
+        }
     }
 }
