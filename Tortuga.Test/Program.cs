@@ -20,7 +20,7 @@ namespace Tortuga.Test
             scene.AddEntity(camera);
 
             //load obj model
-            var cube = new OBJLoader("Assets/Models/Monkey.obj");
+            var cube = new OBJLoader("Assets/Models/Sphere.obj");
 
             //light
             var light = new Core.Entity();

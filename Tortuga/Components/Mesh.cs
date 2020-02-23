@@ -50,18 +50,33 @@ namespace Tortuga.Components
                         "Assets/Shaders/PBR/PBR.vert",
                         "Assets/Shaders/PBR/PBR.frag"
                     ));
-                    _material.CreateUniformData<PBR>("PBR");
+                    _material.CreateUniformData<PBR>("pbr");
+                    _material.CreateSampledImage("albedo", 1, 1);
+                    _material.CreateSampledImage("normal", 1, 1);
+                    _material.CreateSampledImage("metal", 1, 1);
 
 
                     //copy data
                     var task = Task.Run(async () =>
                     {
-                        await _material.UpdateUniformData("PBR", new PBR
+                        await _material.UpdateUniformData("pbr", new PBR
                         {
                             Metallic = 1,
                             Rougness = 0.3f,
                             EnableSmoothShading = 0
                         });
+                        await _material.UpdateSampledImage(
+                            "albedo", 
+                            new Graphics.Image("Assets/Images/Bricks/Bricks01_COL_1K.jpg")
+                        );
+                        await _material.UpdateSampledImage(
+                            "normal", 
+                            new Graphics.Image("Assets/Images/Bricks/Bricks01_NRM_1K.jpg")
+                        );
+                        await _material.UpdateSampledImage(
+                            "metal", 
+                            new Graphics.Image("Assets/Images/Bricks/Bricks01_GLOSS_1K.jpg")
+                        );
                     });
                     task.Wait();
                 }

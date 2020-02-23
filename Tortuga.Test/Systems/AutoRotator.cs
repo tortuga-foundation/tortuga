@@ -20,7 +20,7 @@ namespace Tortuga.Test
                         transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
                 }
             });
-            _rotation += 0.01f;
+            _rotation += 0.001f;
         }
     }
 }

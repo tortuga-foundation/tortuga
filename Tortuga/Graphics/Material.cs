@@ -189,6 +189,7 @@ namespace Tortuga.Graphics
                 );
                 obj.ImageView = new ImageView(obj.Image, VkImageAspectFlags.Color);
                 obj.Set.SampledImageUpdate(obj.ImageView, obj.Sampler);
+                _descriptorMapper[key] = obj;
             }
 
             var pixelData = new VulkanPixel[image.Pixels.Length];
@@ -205,7 +206,7 @@ namespace Tortuga.Graphics
             }
 
             var staging = Buffer.CreateHost(
-                System.Convert.ToUInt32(Unsafe.SizeOf<VulkanPixel>()),
+                System.Convert.ToUInt32(Unsafe.SizeOf<VulkanPixel>() * image.Width * image.Height),
                 VkBufferUsageFlags.TransferSrc
             );
 
@@ -251,6 +252,12 @@ namespace Tortuga.Graphics
                     i
                 );
             }
+            command.TransferImageLayout(
+                obj.Image,
+                VkImageLayout.TransferDstOptimal,
+                VkImageLayout.ShaderReadOnlyOptimal,
+                obj.Image.MipLevel - 1
+            );
             command.End();
 
             await Task.Run(() =>

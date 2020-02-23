@@ -10,16 +10,16 @@ struct LightInfo
     float range;
 };
 
-layout(set=0,binding=0) readonly uniform CAMERA_MVP
+layout(set=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
     mat4 projection;
 };
-layout(set=1,binding=0) readonly uniform MESH_MVP
+layout(set=1) readonly uniform MESH_MVP
 {
     mat4 model;
 };
-layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
+layout(set=2) readonly uniform LIGHT_SHADER_INFO
 {
     int lightsCount;
     int lightReserved1;
@@ -27,7 +27,7 @@ layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
     int lightReserved3;
     LightInfo info[10];
 } lightData;
-layout(set=3,binding=0) readonly uniform MATERIAL_INFO
+layout(set=3) readonly uniform MATERIAL_INFO
 {
     float metallic;
     float roughness;

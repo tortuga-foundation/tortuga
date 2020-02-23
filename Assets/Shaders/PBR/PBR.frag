@@ -11,16 +11,16 @@ struct LightInfo
     float range;
 };
 
-layout(set=0,binding=0) readonly uniform CAMERA_MVP
+layout(set=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
     mat4 projection;
 };
-layout(set=1,binding=0) readonly uniform MESH_MVP
+layout(set=1) readonly uniform MESH_MVP
 {
     mat4 model;
 };
-layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
+layout(set=2) readonly uniform LIGHT_SHADER_INFO
 {
     int lightsCount;
     int lightReserved1;
@@ -28,12 +28,15 @@ layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
     int lightReserved3;
     LightInfo info[10];
 } lightData;
-layout(set=3,binding=0) readonly uniform MATERIAL_INFO
+layout(set=3) readonly uniform MATERIAL_INFO
 {
     float metallic;
     float roughness;
     int enableSmoothShading;
 };
+layout(set=4, binding=0) uniform sampler2D albedoTexture;
+layout(set=5, binding=0) uniform sampler2D normalTexture;
+layout(set=6, binding=0) uniform sampler2D metalTexture;
 
 layout(location = 0) in vec3 inNormal;
 layout(location = 1) in vec2 inUV;
@@ -50,7 +53,7 @@ float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
 void main() {
-    vec3 albedo = vec3(1.);//texture(albedoTexture, inUV).rgb;
+    vec3 albedo = texture(albedoTexture, inUV).rgb;
 
     //vec3 uvNormal = texture(normalTexture, inUV).xyz;
     //uvNormal = (uvNormal * 2.) - vec3(1.);
