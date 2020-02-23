@@ -26,8 +26,8 @@ namespace Tortuga
                 Materials.Add(
                     "Simple",
                     new Material(
-                        "Assets/Shaders/Simple/Simple.vert",
-                        "Assets/Shaders/Simple/Simple.frag"
+                        new Shader("Assets/Shaders/Simple/Simple.vert",
+                        "Assets/Shaders/Simple/Simple.frag")
                     )
                 );
                 var albedoIndex = Materials["Simple"].CreateSampledImage(1, 1);
@@ -41,8 +41,8 @@ namespace Tortuga
                 Materials.Add(
                     "UserInterface",
                     new Material(
-                        "Assets/Shaders/UserInterface/UserInterface.vert",
-                        "Assets/Shaders/UserInterface/UserInterface.frag",
+                        new Shader("Assets/Shaders/UserInterface/UserInterface.vert",
+                        "Assets/Shaders/UserInterface/UserInterface.frag"),
                         false
                     )
                 );
@@ -57,8 +57,8 @@ namespace Tortuga
                 Materials.Add(
                     "PBR",
                     new Material(
-                        "Assets/Shaders/PBR/PBR.vert",
-                        "Assets/Shaders/PBR/PBR.frag"
+                        new Shader("Assets/Shaders/PBR/PBR.vert",
+                        "Assets/Shaders/PBR/PBR.frag")
                     )
                 );
                 var materialInfo = Materials["PBR"].CreateUniformData<Graphics.PBR>();

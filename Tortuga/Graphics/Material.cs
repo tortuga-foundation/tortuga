@@ -21,15 +21,12 @@ namespace Tortuga.Graphics
     {
         public Matrix4x4 Model;
 
-        internal Shader Vertex => _vertex;
-        internal Shader Fragment => _fragment;
         internal Pipeline ActivePipeline => _pipeline;
         internal List<DescriptorSetPool.DescriptorSet> DescriptorSets => _descriptorSets;
         internal bool UsingLighting => _usingLighting;
         internal List<Tortuga.Graphics.API.Image> SetImages => _setImages;
 
-        private Shader _vertex;
-        private Shader _fragment;
+        private Graphics.Shader _shader;
         private Pipeline _pipeline;
         private List<DescriptorSetLayout> _layouts;
         private List<DescriptorSetPool> _setPool;
@@ -41,12 +38,11 @@ namespace Tortuga.Graphics
         private bool _isDirty;
         private bool _usingLighting;
 
-        public Material(string vertexShader, string fragmentShader, bool includeLighting = true)
+        public Material(Graphics.Shader shader, bool includeLighting = true)
         {
             _usingLighting = includeLighting;
-            _vertex = new Shader(vertexShader);
-            _fragment = new Shader(fragmentShader);
 
+            _shader = shader;
             _layouts = new List<DescriptorSetLayout>();
             _setPool = new List<DescriptorSetPool>();
             _descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
@@ -89,8 +85,8 @@ namespace Tortuga.Graphics
 
             _pipeline = new Pipeline(
                 totalDescriptorSets.ToArray(),
-                _vertex,
-                _fragment
+                _shader.Vertex,
+                _shader.Fragment
             );
             _isDirty = false;
         }
@@ -106,10 +102,9 @@ namespace Tortuga.Graphics
             return _setBuffers[1].SetDataGetTransferObject(new Systems.RenderingSystem.LightShaderInfo[] { info });
         }
 
-        public void UpdateShaders(string vertex, string fragment)
+        public void UpdateShaders(Graphics.Shader shader)
         {
-            _vertex = new Shader(vertex);
-            _fragment = new Shader(fragment);
+            _shader = shader;
             _isDirty = true;
         }
 

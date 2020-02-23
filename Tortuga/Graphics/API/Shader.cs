@@ -7,7 +7,7 @@ using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    public class Shader
+    internal class Shader
     {
         public enum ShaderType
         {
@@ -21,7 +21,6 @@ namespace Tortuga.Graphics.API
 
         public VkShaderModule Handle => _shader;
         private VkShaderModule _shader;
-        public ShaderType Type;
 
         private unsafe void SetupShader(byte[] byteCode)
         {
