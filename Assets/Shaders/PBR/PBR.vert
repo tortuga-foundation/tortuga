@@ -56,7 +56,7 @@ void main() {
     if (enableSmoothShading == 1)
         outNormal = (model * normalize(vec4(inPosition, 1.0))).xyz;
     else
-        outNormal = mat3(model) * inNormal;
+        outNormal = normalize(model * vec4(inNormal, 0.)).xyz;
     outWorldPosition = worldPosition.xyz;
     //TBN
     vec3 surfaceTangent = normalize(model * vec4(inTangent, 0.)).xyz;

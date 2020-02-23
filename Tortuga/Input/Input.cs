@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Tortuga.Input
 {
-    public static class Input
+    public static class InputSystem
     {
         public static Action<KeyCode> OnKeyDown;
         public static Action<KeyCode> OnKeyUp;

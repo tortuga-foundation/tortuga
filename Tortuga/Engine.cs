@@ -3,6 +3,7 @@ using Tortuga.Graphics.API;
 using Vulkan;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Tortuga.Input;
 
 namespace Tortuga
 {
@@ -46,7 +47,7 @@ namespace Tortuga
                     type = VkDescriptorType.UniformBuffer
                 }
             });
-            Input.Input.Initialize();
+            InputSystem.Initialize();
         }
 
         public Task Run()
@@ -56,7 +57,7 @@ namespace Tortuga
                 while (this._mainWindow.Exists)
                 {
                     var events = this._mainWindow.PumpEvents();
-                    Input.Input.ProcessEvents(events);
+                    InputSystem.ProcessEvents(events);
                     this._mainWindow.AcquireSwapchainImage();
                     if (_activeScene != null)
                     {
