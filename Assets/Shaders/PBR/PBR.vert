@@ -25,12 +25,13 @@ layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
     int lightReserved1;
     int lightReserved2;
     int lightReserved3;
-    LightInfo lights[10];
-};
+    LightInfo info[10];
+} lightData;
 layout(set=3,binding=0) readonly uniform MATERIAL_INFO
 {
     float metallic;
     float roughness;
+    int enableSmoothShading;
 };
 
 layout(location = 0) in vec3 inPosition;
@@ -43,16 +44,22 @@ layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outUV;
 layout(location = 2) out vec3 outCameraDirection;
 layout(location = 3) out vec3 outWorldPosition;
-layout(location = 4) out vec3 outLightVector[10];
+layout(location = 4) out mat3 TBN;
 
 void main() {
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;
 
     vec4 camreaPos = inverse(view)[3];
-    outCameraDirection = normalize(camreaPos.xyz - worldPosition.xyz);
+    outCameraDirection = camreaPos.xyz - worldPosition.xyz;
     outUV = inTexture;
-    outNormal = normalize((model * vec4(inNormal, 0.)).xyz);
-    for (int i = 0; i < lightsCount; i++)
-        outLightVector[i] = lights[i].position.xyz - worldPosition.xyz;
+    if (enableSmoothShading == 1)
+        outNormal = (model * normalize(vec4(inPosition, 1.0))).xyz;
+    else
+        outNormal = mat3(model) * inNormal;
+    outWorldPosition = worldPosition.xyz;
+    //TBN
+    vec3 surfaceTangent = normalize(model * vec4(inTangent, 0.)).xyz;
+    vec3 SurfaceBiTangent = normalize(model * vec4(inBiTangent, 0.)).xyz;
+    TBN = mat3(surfaceTangent, SurfaceBiTangent, outNormal);
 }
