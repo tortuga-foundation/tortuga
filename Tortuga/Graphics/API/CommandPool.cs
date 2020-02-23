@@ -184,11 +184,13 @@ namespace Tortuga.Graphics.API
                 int sourceY,
                 int sourceWidth,
                 int sourceHeight,
+                uint sourceMipLevel,
                 VkImage destination,
                 int destinationX,
                 int destinationY,
                 int destinationWidth,
-                int destinationHeight
+                int destinationHeight,
+                uint destinationMipLevel
                 )
             {
                 if (source == VkImage.Null)
@@ -213,7 +215,7 @@ namespace Tortuga.Graphics.API
                     srcSubresource = new VkImageSubresourceLayers
                     {
                         aspectMask = VkImageAspectFlags.Color,
-                        mipLevel = 0,
+                        mipLevel = sourceMipLevel,
                         baseArrayLayer = 0,
                         layerCount = 1
                     },
@@ -232,15 +234,24 @@ namespace Tortuga.Graphics.API
                     dstSubresource = new VkImageSubresourceLayers
                     {
                         aspectMask = VkImageAspectFlags.Color,
-                        mipLevel = 0,
+                        mipLevel = destinationMipLevel,
                         baseArrayLayer = 0,
                         layerCount = 1
                     }
                 };
-                vkCmdBlitImage(_handle, source, VkImageLayout.TransferSrcOptimal, destination, VkImageLayout.TransferDstOptimal, 1, &regionInfo, VkFilter.Linear);
+                vkCmdBlitImage(
+                    _handle,
+                    source,
+                    VkImageLayout.TransferSrcOptimal,
+                    destination,
+                    VkImageLayout.TransferDstOptimal,
+                    1,
+                    &regionInfo,
+                    VkFilter.Linear
+                );
             }
 
-            public unsafe void BufferToImage(Buffer buffer, Image image)
+            public unsafe void BufferToImage(Buffer buffer, Image image, uint mipLevel = 0)
             {
                 var region = new VkBufferImageCopy();
                 region.bufferOffset = 0;
@@ -261,7 +272,7 @@ namespace Tortuga.Graphics.API
                 region.imageSubresource = new VkImageSubresourceLayers
                 {
                     aspectMask = VkImageAspectFlags.Color,
-                    mipLevel = 0,
+                    mipLevel = mipLevel,
                     baseArrayLayer = 0,
                     layerCount = 1
                 };
@@ -276,7 +287,7 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void TransferImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint mipLevel = 1)
+            public unsafe void TransferImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, uint mipLevel = 0, uint mipLevelCount = 1)
             {
                 //aspect flags
                 VkImageAspectFlags aspect = 0;
@@ -365,8 +376,8 @@ namespace Tortuga.Graphics.API
                     barrier.dstQueueFamilyIndex = QueueFamilyIgnored;
                     barrier.image = image;
                     barrier.subresourceRange.aspectMask = aspect;
-                    barrier.subresourceRange.baseMipLevel = 0;
-                    barrier.subresourceRange.levelCount = mipLevel;
+                    barrier.subresourceRange.baseMipLevel = mipLevel;
+                    barrier.subresourceRange.levelCount = mipLevelCount;
                     barrier.subresourceRange.baseArrayLayer = 0;
                     barrier.subresourceRange.layerCount = 1;
                     barrier.srcAccessMask = sourceAccess;
@@ -374,8 +385,8 @@ namespace Tortuga.Graphics.API
                 }
                 vkCmdPipelineBarrier(_handle, source, destination, 0, 0, null, 0, null, 1, &barrier);
             }
-            public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout)
-                => TransferImageLayout(image.ImageHandle, image.Format, oldLayout, newLayout, image.MipLevel);
+            public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout, uint mipLevel = 0)
+                => TransferImageLayout(image.ImageHandle, image.Format, oldLayout, newLayout, mipLevel, image.MipLevel);
 
             public unsafe void SetViewport(int x, int y, uint width, uint height)
             {

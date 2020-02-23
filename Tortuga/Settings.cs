@@ -36,6 +36,7 @@ namespace Tortuga
         public static class Graphics
         {
             public static float RenderResolutionScale = 1.0f;
+            public static uint TextureSize = 1024;
         }
     }
 }

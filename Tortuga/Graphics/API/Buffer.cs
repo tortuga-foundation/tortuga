@@ -17,7 +17,6 @@ namespace Tortuga.Graphics.API
     {
         public VkBuffer Handle => _buffer;
         public uint Size => _size;
-        internal uint ReservedDescriptorSet;
 
         private VkBuffer _buffer;
         private VkMemoryRequirements _memoryRequirements;

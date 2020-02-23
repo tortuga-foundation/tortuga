@@ -45,7 +45,26 @@ namespace Tortuga.Components
             await Task.Run(() =>
             {
                 if (_material == null)
-                    _material = Tortuga.Global.Instance.Materials["PBR"];
+                {
+                    _material = new Material(new Graphics.Shader(
+                        "Assets/Shaders/PBR/PBR.vert",
+                        "Assets/Shaders/PBR/PBR.frag"
+                    ));
+                    _material.CreateUniformData<PBR>("PBR");
+
+
+                    //copy data
+                    var task = Task.Run(async () =>
+                    {
+                        await _material.UpdateUniformData("PBR", new PBR
+                        {
+                            Metallic = 1,
+                            Rougness = 0.3f,
+                            EnableSmoothShading = 0
+                        });
+                    });
+                    task.Wait();
+                }
                 _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
             });

@@ -22,7 +22,6 @@ namespace Tortuga
         private DescriptorSetLayout _cameraDescriptorLayout;
 
         private Core.Scene _activeScene;
-        private Global _global;
 
         public Engine()
         {
@@ -47,7 +46,6 @@ namespace Tortuga
                     type = VkDescriptorType.UniformBuffer
                 }
             });
-            _global = new Global();
             Input.Input.Initialize();
         }
 

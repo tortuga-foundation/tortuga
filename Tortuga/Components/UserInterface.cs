@@ -8,9 +8,21 @@ namespace Tortuga.Components
     {
         public UserInterface()
         {
-            this.ActiveMaterial = Global.Instance.Materials["UserInterface"];
+            this.ActiveMaterial = new Graphics.Material(
+                new Graphics.Shader(
+                    "Assets/Shaders/UserInterface/UserInterface.vert",
+                    "Assets/Shaders/UserInterface/UserInterface.frag"
+                )
+            );
+            this.ActiveMaterial.CreateSampledImage("albedo", 1, 1);
+
+            //copy data
             var task = Task.Run(async () =>
             {
+                await this.ActiveMaterial.UpdateSampledImage(
+                    "albedo",
+                    Graphics.Image.SingleColor(System.Drawing.Color.White)
+                );
                 await this.SetVertices(new Graphics.Vertex[]{
                     new Graphics.Vertex{
                         Position = new Vector3(-1, -1, 0)
@@ -31,30 +43,6 @@ namespace Tortuga.Components
                 });
             });
             task.Wait();
-        }
-
-        public void UpdateUserInterface(Color[] pixels)
-        {
-            var setInfo = Global.Instance.MaterialSets["UserInterface_Albedo"];
-
-            var pixelLen = this.ActiveMaterial.SetImages[0].Width * this.ActiveMaterial.SetImages[0].Height;
-            if (pixelLen != pixels.Length)
-            {
-                System.Console.WriteLine("Call 'UpdateUserInterface(pixels, width, height)' before calling this method with wrong image size");
-                return;
-            }
-            this.ActiveMaterial.UpdateSampledImage(setInfo, pixels);
-        }
-
-        public void UpdateUserInterface(Color[] pixels, uint width, uint height)
-        {
-            var setInfo = Global.Instance.MaterialSets["UserInterface_Albedo"];
-
-            if (width * height != pixels.Length)
-                throw new System.Exception("Pixel length does not match image width and height");
-
-            this.ActiveMaterial.UpdateSampledImageSize(setInfo, width, height, 1);
-            this.ActiveMaterial.UpdateSampledImage(setInfo, pixels);
         }
     }
 }

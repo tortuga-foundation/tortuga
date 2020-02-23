@@ -4,37 +4,53 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using System.Drawing;
 
 namespace Tortuga.Graphics
 {
-    public struct DescriptorSetObject
-    {
-        internal DescriptorSetPool.DescriptorSet set;
-        internal uint binding;
-        internal Buffer buffer;
-        internal API.Image image;
-        internal ImageView imageView;
-        internal Sampler sampler;
-    }
     public class Material
     {
+        public enum ShaderDataType
+        {
+            Data,
+            Image
+        };
+
+        private struct DescriptorSetObject
+        {
+            public DescriptorSetLayout Layout;
+            public DescriptorSetPool Pool;
+            public DescriptorSetPool.DescriptorSet Set;
+            public Buffer Buffer;
+            public API.Image Image;
+            public ImageView ImageView;
+            public Sampler Sampler;
+        }
+        private struct VulkanPixel
+        {
+            public byte R;
+            public byte G;
+            public byte B;
+            public byte A;
+        };
+
         public Matrix4x4 Model;
 
         internal Pipeline ActivePipeline => _pipeline;
-        internal List<DescriptorSetPool.DescriptorSet> DescriptorSets => _descriptorSets;
         internal bool UsingLighting => _usingLighting;
-        internal List<Tortuga.Graphics.API.Image> SetImages => _setImages;
+        internal DescriptorSetPool.DescriptorSet[] DescriptorSets
+        {
+            get
+            {
+                var sets = new List<DescriptorSetPool.DescriptorSet>();
+                foreach (var obj in _descriptorMapper.Values)
+                    sets.Add(obj.Set);
+                return sets.ToArray();
+            }
+        }
 
         private Graphics.Shader _shader;
         private Pipeline _pipeline;
-        private List<DescriptorSetLayout> _layouts;
-        private List<DescriptorSetPool> _setPool;
-        private List<DescriptorSetPool.DescriptorSet> _descriptorSets;
-        private List<Buffer> _setBuffers;
-        private List<Tortuga.Graphics.API.Image> _setImages;
-        private List<ImageView> _setImageViews;
-        private List<Sampler> _setSamplers;
+        private Dictionary<string, DescriptorSetObject> _descriptorMapper;
         private bool _isDirty;
         private bool _usingLighting;
 
@@ -43,34 +59,14 @@ namespace Tortuga.Graphics
             _usingLighting = includeLighting;
 
             _shader = shader;
-            _layouts = new List<DescriptorSetLayout>();
-            _setPool = new List<DescriptorSetPool>();
-            _descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
-            _setBuffers = new List<Buffer>();
-            _setImages = new List<API.Image>();
-            _setImageViews = new List<ImageView>();
-            _setSamplers = new List<Sampler>();
+            _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
 
             //model matrix
-            AddBuffersToDescriptorSets<Matrix4x4>(new DescriptorSetCreateInfo[]{
-                new DescriptorSetCreateInfo
-                {
-                    stage = VkShaderStageFlags.All,
-                    type = VkDescriptorType.UniformBuffer
-                }
-            });
+            CreateUniformData<Matrix4x4>("MODEL");
 
             if (_usingLighting)
-            {
-                //lighting
-                AddBuffersToDescriptorSets<Systems.RenderingSystem.LightShaderInfo>(new DescriptorSetCreateInfo[]{
-                    new DescriptorSetCreateInfo
-                    {
-                        stage = VkShaderStageFlags.All,
-                        type = VkDescriptorType.UniformBuffer
-                    }
-                });
-            }
+                CreateUniformData<Systems.RenderingSystem.LightShaderInfo>("LIGHT");
+            _isDirty = true;
         }
 
         public void ReCompilePipeline()
@@ -80,8 +76,8 @@ namespace Tortuga.Graphics
 
             var totalDescriptorSets = new List<DescriptorSetLayout>();
             totalDescriptorSets.Add(Engine.Instance.CameraDescriptorLayout);
-            foreach (var l in _layouts)
-                totalDescriptorSets.Add(l);
+            foreach (var l in _descriptorMapper.Values)
+                totalDescriptorSets.Add(l.Layout);
 
             _pipeline = new Pipeline(
                 totalDescriptorSets.ToArray(),
@@ -91,192 +87,175 @@ namespace Tortuga.Graphics
             _isDirty = false;
         }
 
-        internal BufferTransferObject ModelTransferObject(Matrix4x4 model)
-        {
-            return _setBuffers[0].SetDataGetTransferObject(new Matrix4x4[] { model });
-        }
-        internal BufferTransferObject LightingTransferObject(Systems.RenderingSystem.LightShaderInfo info)
-        {
-            if (_usingLighting == false)
-                throw new System.Exception("Lighting is disabled for this material but it is still being used in rendering");
-            return _setBuffers[1].SetDataGetTransferObject(new Systems.RenderingSystem.LightShaderInfo[] { info });
-        }
-
         public void UpdateShaders(Graphics.Shader shader)
         {
             _shader = shader;
             _isDirty = true;
         }
 
-        private List<DescriptorSetObject> AddBuffersToDescriptorSets<T>(DescriptorSetCreateInfo[] createInfo)
+        public void CreateUniformData<T>(string key) where T : struct
         {
-            var layout = new DescriptorSetLayout(createInfo);
+            if (_descriptorMapper.ContainsKey(key))
+                return;
+
+            var layout = new DescriptorSetLayout(
+                new DescriptorSetCreateInfo[]
+                {
+                    new DescriptorSetCreateInfo{
+                        stage = VkShaderStageFlags.All,
+                        type = VkDescriptorType.UniformBuffer
+                    }
+                }
+            );
             var pool = new DescriptorSetPool(layout);
             var set = pool.AllocateDescriptorSet();
-            var buffers = new List<Buffer>();
-            var rtn = new List<DescriptorSetObject>();
-            for (int i = 0; i < createInfo.Length; i++)
-            {
-                var info = createInfo[i];
-                if (info.type != VkDescriptorType.UniformBuffer)
-                    throw new System.NotSupportedException("only uniform buffers are supported by this method");
-
-                var buffer = Buffer.CreateDevice(
-                    System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
-                    VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
-                );
-                buffer.ReservedDescriptorSet = System.Convert.ToUInt32(_descriptorSets.Count);
-                buffers.Add(buffer);
-                _setBuffers.Add(buffer);
-                rtn.Add(new DescriptorSetObject
-                {
-                    set = set,
-                    binding = System.Convert.ToUInt32(i),
-                    buffer = buffer
-                });
-            }
-            set.BuffersUpdate(buffers.ToArray());
-            _layouts.Add(layout);
-            _setPool.Add(pool);
-            _descriptorSets.Add(set);
-            _isDirty = true;
-            return rtn;
-        }
-
-        private List<DescriptorSetObject> AddImageToDescriptorSets(DescriptorSetCreateInfo[] createInfo, uint imageWidth, uint imageHeight)
-        {
-            var rtn = new List<DescriptorSetObject>();
-            var layout = new DescriptorSetLayout(createInfo);
-            var pool = new DescriptorSetPool(layout);
-            var set = pool.AllocateDescriptorSet();
-            var imageViews = new List<ImageView>();
-            var samplers = new List<Sampler>();
-            for (int i = 0; i < createInfo.Length; i++)
-            {
-                var info = createInfo[i];
-                if (info.type != VkDescriptorType.CombinedImageSampler)
-                    throw new System.NotSupportedException("only sampled images are supported by this method");
-
-                var image = new Tortuga.Graphics.API.Image(
-                    imageWidth,
-                    imageHeight,
-                    VkFormat.R8g8b8a8Srgb,
-                    VkImageUsageFlags.Sampled | VkImageUsageFlags.TransferDst,
-                    1
-                );
-                image.ReservedDescriptorSet = System.Convert.ToUInt32(_descriptorSets.Count);
-                var imageView = new ImageView(
-                    image,
-                    VkImageAspectFlags.Color
-                );
-                var sampler = new Sampler();
-                _setImages.Add(image);
-                _setImageViews.Add(imageView);
-                _setSamplers.Add(sampler);
-                imageViews.Add(imageView);
-                samplers.Add(sampler);
-                rtn.Add(new DescriptorSetObject
-                {
-                    set = set,
-                    binding = System.Convert.ToUInt32(i),
-                    image = image,
-                    imageView = imageView,
-                    sampler = sampler
-                });
-            }
-            set.SampledImageUpdate(imageViews.ToArray(), samplers.ToArray());
-            _layouts.Add(layout);
-            _setPool.Add(pool);
-            _descriptorSets.Add(set);
-            _isDirty = true;
-            return rtn;
-        }
-
-        public DescriptorSetObject[] CreateUniformData<T>(int bindings = 1)
-        {
-            var info = new DescriptorSetCreateInfo[bindings];
-            for (int i = 0; i < info.Length; i++)
-                info[i] = new DescriptorSetCreateInfo
-                {
-                    type = VkDescriptorType.UniformBuffer,
-                    stage = VkShaderStageFlags.All
-                };
-            return AddBuffersToDescriptorSets<T>(info).ToArray();
-        }
-        public void UpdateUniformDataType<T>(DescriptorSetObject obj)
-        {
-            obj.buffer = Buffer.CreateDevice(
+            var buffer = Buffer.CreateDevice(
                 System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
                 VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
             );
-            obj.set.BuffersUpdate(obj.buffer, 0, obj.binding);
-        }
-        public async Task UpdateUniformData<T>(DescriptorSetObject obj, T[] data) where T : struct
-            => await obj.buffer.SetDataWithStaging<T>(data);
+            set.BuffersUpdate(buffer);
 
-        private struct VulkanPixel
-        {
-            public byte R;
-            public byte G;
-            public byte B;
-            public byte A;
-        };
-
-        public DescriptorSetObject[] CreateSampledImage(uint width, uint height, int bindings = 1)
-        {
-            var info = new DescriptorSetCreateInfo[bindings];
-            for (int i = 0; i < info.Length; i++)
-                info[i] = new DescriptorSetCreateInfo
+            _descriptorMapper.Add(
+                key, new DescriptorSetObject
                 {
-                    type = VkDescriptorType.CombinedImageSampler,
-                    stage = VkShaderStageFlags.Fragment
-                };
-            return AddImageToDescriptorSets(info, width, height).ToArray();
+                    Layout = layout,
+                    Pool = pool,
+                    Set = set,
+                    Buffer = buffer
+                }
+            );
+            _isDirty = true;
         }
-        public void UpdateSampledImageSize(DescriptorSetObject obj, uint width, uint height, uint mipLevel = 1)
+        public async Task UpdateUniformData<T>(string key, T data) where T : struct
         {
-            obj.image = new API.Image(
-                width,
-                height,
+            if (_descriptorMapper.ContainsKey(key) == false)
+                return;
+            await _descriptorMapper[key].Buffer.SetDataWithStaging(new T[] { data });
+        }
+
+        public void CreateSampledImage(string key, uint width, uint height, uint mipLevel = 1)
+        {
+            if (_descriptorMapper.ContainsKey(key))
+                return;
+
+            var layout = new DescriptorSetLayout(
+                new DescriptorSetCreateInfo[]
+                {
+                    new DescriptorSetCreateInfo
+                    {
+                        stage = VkShaderStageFlags.All,
+                        type = VkDescriptorType.CombinedImageSampler
+                    }
+                }
+            );
+            var pool = new DescriptorSetPool(layout);
+            var set = pool.AllocateDescriptorSet();
+            var image = new API.Image(
+                width, height,
                 VkFormat.R8g8b8a8Srgb,
                 VkImageUsageFlags.Sampled | VkImageUsageFlags.TransferDst,
                 mipLevel
             );
-            obj.imageView = new ImageView(obj.image, VkImageAspectFlags.Color);
-            obj.set.SampledImageUpdate(obj.imageView, obj.sampler, 0, obj.binding);
-        }
-        public Task UpdateSampledImage(DescriptorSetObject obj, Color[] pixels)
-        {
-            if (pixels.Length != obj.image.Width * obj.image.Height)
-                throw new System.Exception("pixels don't match image size");
-
-            return Task.Run(() =>
+            var imageView = new API.ImageView(
+                image,
+                VkImageAspectFlags.Color
+            );
+            var sampler = new API.Sampler();
+            set.SampledImageUpdate(imageView, sampler);
+            _descriptorMapper.Add(key, new DescriptorSetObject
             {
-                //create staging buffer for image
-                var vulkanPixels = new VulkanPixel[pixels.Length];
-                for (int j = 0; j < pixels.Length; j++)
-                {
-                    vulkanPixels[j].R = pixels[j].R;
-                    vulkanPixels[j].G = pixels[j].G;
-                    vulkanPixels[j].B = pixels[j].B;
-                    vulkanPixels[j].A = pixels[j].A;
-                }
-                var buffer = Buffer.CreateHost(
-                    System.Convert.ToUInt32(Unsafe.SizeOf<VulkanPixel>() * vulkanPixels.Length),
-                    VkBufferUsageFlags.TransferSrc
-                );
-                buffer.SetData(vulkanPixels);
+                Layout = layout,
+                Pool = pool,
+                Set = set,
+                Image = image,
+                ImageView = imageView,
+                Sampler = sampler
+            });
+            _isDirty = true;
+        }
+        public async Task UpdateSampledImage(string key, Image image)
+        {
+            if (_descriptorMapper.ContainsKey(key) == false)
+                return;
 
-                var fence = new Fence();
-                var commandPool = new CommandPool(
-                    Engine.Instance.MainDevice.GraphicsQueueFamily
+            var obj = _descriptorMapper[key];
+            if (image.Width != obj.Image.Width || image.Height != obj.Image.Height)
+            {
+                obj.Image = new API.Image(
+                    image.Width, image.Height,
+                    VkFormat.R8g8b8a8Srgb,
+                    VkImageUsageFlags.Sampled | VkImageUsageFlags.TransferDst,
+                    obj.Image.MipLevel
                 );
-                var command = commandPool.AllocateCommands()[0];
-                command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-                command.TransferImageLayout(obj.image, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
-                command.BufferToImage(buffer, obj.image);
-                command.TransferImageLayout(obj.image, VkImageLayout.TransferDstOptimal, VkImageLayout.ShaderReadOnlyOptimal);
-                command.End();
+                obj.ImageView = new ImageView(obj.Image, VkImageAspectFlags.Color);
+                obj.Set.SampledImageUpdate(obj.ImageView, obj.Sampler);
+            }
+
+            var pixelData = new VulkanPixel[image.Pixels.Length];
+            for (int i = 0; i < pixelData.Length; i++)
+            {
+                var rawPixel = image.Pixels[i];
+                pixelData[i] = new VulkanPixel
+                {
+                    R = rawPixel.R,
+                    G = rawPixel.B,
+                    B = rawPixel.G,
+                    A = rawPixel.A
+                };
+            }
+
+            var staging = Buffer.CreateHost(
+                System.Convert.ToUInt32(Unsafe.SizeOf<VulkanPixel>()),
+                VkBufferUsageFlags.TransferSrc
+            );
+
+            var fence = new Fence();
+            var commandPool = new CommandPool(
+                Engine.Instance.MainDevice.GraphicsQueueFamily
+            );
+            var command = commandPool.AllocateCommands()[0];
+            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+            command.TransferImageLayout(
+                obj.Image,
+                VkImageLayout.Undefined,
+                VkImageLayout.TransferDstOptimal,
+                0
+            );
+            command.BufferToImage(staging, obj.Image);
+            for (uint i = 0; i < obj.Image.MipLevel - 1; i++)
+            {
+                command.TransferImageLayout(
+                    obj.Image,
+                    VkImageLayout.TransferDstOptimal,
+                    VkImageLayout.TransferSrcOptimal,
+                    i
+                );
+                command.TransferImageLayout(
+                    obj.Image,
+                    VkImageLayout.Undefined,
+                    VkImageLayout.TransferDstOptimal,
+                    i + 1
+                );
+                command.BlitImage(
+                    obj.Image.ImageHandle,
+                    0, 0, obj.Image.Width, obj.Image.Height,
+                    i,
+                    obj.Image.ImageHandle,
+                    0, 0, obj.Image.Width, obj.Image.Height,
+                    i + 1
+                );
+                command.TransferImageLayout(
+                    obj.Image,
+                    VkImageLayout.TransferSrcOptimal,
+                    VkImageLayout.ShaderReadOnlyOptimal,
+                    i
+                );
+            }
+            command.End();
+
+            await Task.Run(() =>
+            {
+                staging.SetData(pixelData);
                 command.Submit(
                     Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],
                     null, null,
@@ -284,6 +263,11 @@ namespace Tortuga.Graphics
                 );
                 fence.Wait();
             });
+        }
+
+        internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, T data) where T : struct
+        {
+            return _descriptorMapper[key].Buffer.SetDataGetTransferObject(new T[] { data });
         }
     }
 }

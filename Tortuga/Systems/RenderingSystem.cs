@@ -114,11 +114,13 @@ namespace Tortuga.Systems
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
                     System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.height)),
+                    0,
                     swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
                     System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.x)),
                     System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.y)),
                     System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.width)),
-                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.height))
+                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.height)),
+                    0
                 );
                 _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);
             }
@@ -155,7 +157,7 @@ namespace Tortuga.Systems
             if (mesh.ActiveMaterial.UsingLighting)
             {
                 var lights = GetClosestLights(mesh, allLights);
-                transferCommands.Add(mesh.ActiveMaterial.LightingTransferObject(lights));
+                transferCommands.Add(mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", lights));
             }
             mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             mesh.RenderCommand.SetViewport(
@@ -176,7 +178,7 @@ namespace Tortuga.Systems
                 descriptorSets.ToArray()
             );
             if (mesh.IsStatic == false)
-                transferCommands.Add(mesh.ActiveMaterial.ModelTransferObject(mesh.ModelMatrix));
+                transferCommands.Add(mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix));
             mesh.RenderCommand.BindVertexBuffer(mesh.VertexBuffer);
             mesh.RenderCommand.BindIndexBuffer(mesh.IndexBuffer);
             mesh.RenderCommand.DrawIndexed(mesh.IndicesCount);
