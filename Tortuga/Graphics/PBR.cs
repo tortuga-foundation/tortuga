@@ -6,5 +6,6 @@ namespace Tortuga.Graphics
     {
         public float Metallic;
         public float Rougness;
+        public int EnableSmoothShading;
     }
 }
