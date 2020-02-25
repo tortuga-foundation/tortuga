@@ -50,15 +50,20 @@ void main() {
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;
 
+    //vertex position
+    outWorldPosition = worldPosition.xyz;
+    //texture uv
+    outUV = inTexture;
+
+    //camera position
     vec4 camreaPos = inverse(view)[3];
     outCameraDirection = camreaPos.xyz - worldPosition.xyz;
-    outUV = inTexture;
+
+    //normals
     if (enableSmoothShading == 1)
-        outNormal = (model * normalize(vec4(inPosition, 1.0))).xyz;
+        outNormal = (model * normalize(vec4(inPosition, 1.0))).xyz; //todo
     else
         outNormal = normalize(model * vec4(inNormal, 0.)).xyz;
-    outWorldPosition = worldPosition.xyz;
-    //TBN
     vec3 surfaceTangent = normalize(model * vec4(inTangent, 0.)).xyz;
     vec3 SurfaceBiTangent = normalize(model * vec4(inBiTangent, 0.)).xyz;
     TBN = mat3(surfaceTangent, SurfaceBiTangent, outNormal);
