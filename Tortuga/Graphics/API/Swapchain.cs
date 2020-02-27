@@ -251,5 +251,63 @@ namespace Tortuga.Graphics.API
             else if (val.CompareTo(max) > 0) return max;
             else return val;
         }
+
+        public unsafe void Resize()
+        {
+            //get surface capabilities
+            VkSurfaceCapabilitiesKHR surfaceCapabilities;
+            if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+                Engine.Instance.MainDevice.PhysicalDevice,
+                _window.Surface,
+                out surfaceCapabilities) != VkResult.Success
+            )
+                throw new Exception("failed to get device surface capabilities");
+            _surfaceCapabilities = surfaceCapabilities;
+
+            //choose extent
+            if (_surfaceCapabilities.currentExtent.width != uint.MaxValue)
+                _extent = _surfaceCapabilities.currentExtent;
+            else
+            {
+                VkExtent2D actualExtent = new VkExtent2D
+                {
+                    width = Convert.ToUInt32(_window.SdlHandle.Width),
+                    height = Convert.ToUInt32(_window.SdlHandle.Height)
+                };
+                actualExtent.width = Clamp(
+                    actualExtent.width,
+                    _surfaceCapabilities.minImageExtent.width,
+                    _surfaceCapabilities.maxImageExtent.width
+                );
+                actualExtent.height = Clamp(
+                    actualExtent.height,
+                    _surfaceCapabilities.minImageExtent.height,
+                    _surfaceCapabilities.maxImageExtent.height
+                );
+                _extent = actualExtent;
+            }
+
+            var swapchainInfo = VkSwapchainCreateInfoKHR.New();
+            swapchainInfo.compositeAlpha = VkCompositeAlphaFlagsKHR.OpaqueKHR;
+            swapchainInfo.surface = _window.Surface;
+            swapchainInfo.minImageCount = _imagesCount;
+            swapchainInfo.imageFormat = _format.format;
+            swapchainInfo.imageColorSpace = _format.colorSpace;
+            swapchainInfo.imageExtent = _extent;
+            swapchainInfo.imageArrayLayers = 1;
+            swapchainInfo.imageUsage = VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferDst;
+            swapchainInfo.imageSharingMode = VkSharingMode.Exclusive;
+            swapchainInfo.preTransform = _surfaceCapabilities.currentTransform;
+            swapchainInfo.presentMode = _presentMode;
+            swapchainInfo.clipped = true;
+            swapchainInfo.oldSwapchain = _swapchain;
+
+            VkSwapchainKHR swapchain;
+            if (vkCreateSwapchainKHR(Engine.Instance.MainDevice.LogicalDevice, &swapchainInfo, null, &swapchain) != VkResult.Success)
+                throw new Exception("failed to create swapchain");
+            _swapchain = swapchain;
+
+            SetupSwapchainImages(_window.Width, _window.Height);
+        }
     }
 }

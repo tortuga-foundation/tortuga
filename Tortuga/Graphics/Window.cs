@@ -141,7 +141,7 @@ namespace Tortuga.Graphics
             );
             if (acquireResponse == VkResult.ErrorOutOfDateKHR)
             {
-                _swapchain = new API.Swapchain(this);
+                _swapchain.Resize();
                 AcquireSwapchainImage();
                 return;
             }
