@@ -22,6 +22,8 @@ namespace Tortuga.Graphics.API
         private VkMemoryRequirements _memoryRequirements;
         private VkDeviceMemory _deviceMemory;
         private uint _size;
+        private Buffer _staging;
+        private CommandPool _commandPool;
 
         public unsafe Buffer(uint size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryProperties)
         {
@@ -72,6 +74,10 @@ namespace Tortuga.Graphics.API
                 0
             ) != VkResult.Success)
                 throw new System.Exception("failed to bind buffer handle to device memory");
+        
+            _commandPool = new CommandPool(
+                Engine.Instance.MainDevice.TransferQueueFamily
+            );
         }
 
         public static Buffer CreateHost(uint size, VkBufferUsageFlags usageFlags)
@@ -163,14 +169,14 @@ namespace Tortuga.Graphics.API
         public async Task<T[]> GetDataWithStaging<T>() where T : struct
         {
             //setup staging buffer
-            var staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
+            if (_staging == null || _staging.Size != _size)
+                _staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
 
             //setup transfer command
             var fence = new Fence();
-            var pool = new CommandPool(Engine.Instance.MainDevice.TransferQueueFamily);
-            var command = pool.AllocateCommands()[0];
+            var command = _commandPool.AllocateCommands()[0];
             command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            command.CopyBuffer(this, staging);
+            command.CopyBuffer(this, _staging);
             command.End();
             command.Submit(
                 Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
@@ -178,25 +184,25 @@ namespace Tortuga.Graphics.API
                 fence
             );
             fence.Wait();
-            return await Task.FromResult(staging.GetData<T>());
+            return await Task.FromResult(_staging.GetData<T>());
         }
 
         internal BufferTransferObject SetDataGetTransferObject<T>(T[] data) where T : struct
         {
             //setup staging buffer
-            var staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
-            staging.SetData(data);
+            if (_staging == null || _staging.Size != _size)
+                _staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
+            _staging.SetData(data);
 
             //setup transfer command
-            var pool = new CommandPool(Engine.Instance.MainDevice.TransferQueueFamily);
-            var command = pool.AllocateCommands()[0];
+            var command = _commandPool.AllocateCommands()[0];
             command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            command.CopyBuffer(staging, this);
+            command.CopyBuffer(_staging, this);
             command.End();
             return new BufferTransferObject
             {
-                commandPool = pool,
-                StagingBuffer = staging,
+                commandPool = _commandPool,
+                StagingBuffer = _staging,
                 TransferCommand = command
             };
         }

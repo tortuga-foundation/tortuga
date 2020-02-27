@@ -52,6 +52,27 @@ namespace Tortuga.Systems
 
         public override async Task Update()
         {
+            var transferCommands = new List<CommandPool.Command>();
+
+            var cameras = MyScene.GetComponents<Components.Camera>();
+            var lights = MyScene.GetComponents<Components.Light>();
+            var meshes = MyScene.GetComponents<Components.Mesh>();
+            var uis = MyScene.GetComponents<Components.UserInterface>();
+            foreach (var mesh in meshes)
+            {
+                if (mesh.ActiveMaterial.UsingLighting)
+                {
+                    var meshLights = GetClosestLights(mesh, lights);
+                    var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", meshLights);
+                    transferCommands.Add(command.TransferCommand);
+                }
+                if (mesh.IsStatic == false)
+                {
+                    var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
+                    transferCommands.Add(command.TransferCommand);
+                }
+            }
+
             //if previous frame has not finished rendering wait for it to finish before rendering next frame
             _renderWaitFence.Wait();
             _renderWaitFence.Reset();
@@ -66,9 +87,6 @@ namespace Tortuga.Systems
                 VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal
             );
 
-            var cameras = MyScene.GetComponents<Components.Camera>();
-            var lights = MyScene.GetComponents<Components.Light>();
-            var transferCommands = new List<CommandPool.Command>();
             foreach (var camera in cameras)
             {
                 var cameraRes = new IntVector2D
@@ -83,22 +101,17 @@ namespace Tortuga.Systems
                 _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
 
                 //build render command for each mesh
-                var meshes = MyScene.GetComponents<Components.Mesh>();
+
                 var secondaryCommands = new List<CommandPool.Command>();
                 foreach (var mesh in meshes)
                 {
                     var meshCommand = ProcessMeshCommands(mesh, camera, lights);
-                    secondaryCommands.Add(meshCommand.RenderCommand);
-                    foreach (var command in meshCommand.TransferCommands)
-                        transferCommands.Add(command.TransferCommand);
+                    secondaryCommands.Add(meshCommand);
                 }
-                var ui = MyScene.GetComponents<Components.UserInterface>();
-                foreach (var mesh in ui)
+                foreach (var mesh in uis)
                 {
                     var meshCommand = ProcessMeshCommands(mesh, camera, lights);
-                    secondaryCommands.Add(meshCommand.RenderCommand);
-                    foreach (var command in meshCommand.TransferCommands)
-                        transferCommands.Add(command.TransferCommand);
+                    secondaryCommands.Add(meshCommand);
                 }
 
                 //execute all meshes command buffer
@@ -145,20 +158,8 @@ namespace Tortuga.Systems
             );
         }
 
-        private struct MeshCommands
+        private CommandPool.Command ProcessMeshCommands(Components.Mesh mesh, Components.Camera camera, Components.Light[] allLights)
         {
-            public CommandPool.Command RenderCommand;
-            public BufferTransferObject[] TransferCommands;
-        }
-
-        private MeshCommands ProcessMeshCommands(Components.Mesh mesh, Components.Camera camera, Components.Light[] allLights)
-        {
-            var transferCommands = new List<BufferTransferObject>();
-            if (mesh.ActiveMaterial.UsingLighting)
-            {
-                var lights = GetClosestLights(mesh, allLights);
-                transferCommands.Add(mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", lights));
-            }
             mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             mesh.RenderCommand.SetViewport(
                 System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
@@ -177,17 +178,11 @@ namespace Tortuga.Systems
                 VkPipelineBindPoint.Graphics,
                 descriptorSets.ToArray()
             );
-            if (mesh.IsStatic == false)
-                transferCommands.Add(mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix));
             mesh.RenderCommand.BindVertexBuffer(mesh.VertexBuffer);
             mesh.RenderCommand.BindIndexBuffer(mesh.IndexBuffer);
             mesh.RenderCommand.DrawIndexed(mesh.IndicesCount);
             mesh.RenderCommand.End();
-            return new MeshCommands
-            {
-                RenderCommand = mesh.RenderCommand,
-                TransferCommands = transferCommands.ToArray()
-            };
+            return mesh.RenderCommand;
         }
 
         private LightShaderInfo GetClosestLights(Components.Mesh mesh, Components.Light[] lights)
