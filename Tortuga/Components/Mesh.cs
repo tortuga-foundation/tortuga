@@ -89,7 +89,7 @@ namespace Tortuga.Components
             _vertices = vertices;
             _vertexBuffer = Graphics.API.Buffer.CreateDevice(
                 Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * vertices.Length),
-                VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.TransferSrc
+                VkBufferUsageFlags.VertexBuffer
             );
             await _vertexBuffer.SetDataWithStaging(vertices);
         }
@@ -99,7 +99,7 @@ namespace Tortuga.Components
             this._indices = indices;
             _indexBuffer = Graphics.API.Buffer.CreateDevice(
                 Convert.ToUInt32(sizeof(uint) * indices.Length),
-                VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst |VkBufferUsageFlags.TransferSrc
+                VkBufferUsageFlags.IndexBuffer
             );
             await _indexBuffer.SetDataWithStaging(indices);
         }

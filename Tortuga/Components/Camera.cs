@@ -79,7 +79,7 @@ namespace Tortuga.Components
                 );
                 _cameraBuffer = Tortuga.Graphics.API.Buffer.CreateDevice(
                     Convert.ToUInt32(Unsafe.SizeOf<CameraShaderInfo>()),
-                    VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.TransferSrc
+                    VkBufferUsageFlags.UniformBuffer
                 );
                 _cameraDescriptorPool = new DescriptorSetPool(Engine.Instance.CameraDescriptorLayout);
                 _cameraDescriptorSet = _cameraDescriptorPool.AllocateDescriptorSet();

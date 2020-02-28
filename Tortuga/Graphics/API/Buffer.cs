@@ -29,6 +29,11 @@ namespace Tortuga.Graphics.API
 
         public unsafe Buffer(uint size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryProperties, bool isStaging = false)
         {
+            if ((usageFlags & VkBufferUsageFlags.TransferSrc) == 0)
+                usageFlags |= VkBufferUsageFlags.TransferSrc;
+            if ((usageFlags & VkBufferUsageFlags.TransferDst) == 0)
+                usageFlags |= VkBufferUsageFlags.TransferDst;
+
             this._size = size;
             var bufferCreateInfo = VkBufferCreateInfo.New();
             bufferCreateInfo.size = size;

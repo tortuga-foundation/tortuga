@@ -111,7 +111,7 @@ namespace Tortuga.Graphics
             var set = pool.AllocateDescriptorSet();
             var buffer = Buffer.CreateDevice(
                 System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
-                VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
+                VkBufferUsageFlags.UniformBuffer
             );
             set.BuffersUpdate(buffer);
 
