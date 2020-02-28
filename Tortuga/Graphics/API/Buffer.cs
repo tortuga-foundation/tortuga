@@ -24,8 +24,10 @@ namespace Tortuga.Graphics.API
         private uint _size;
         private Buffer _staging;
         private CommandPool _commandPool;
+        private CommandPool.Command _transferToCommand;
+        private CommandPool.Command _transferFromCommand;
 
-        public unsafe Buffer(uint size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryProperties)
+        public unsafe Buffer(uint size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryProperties, bool isStaging = false)
         {
             this._size = size;
             var bufferCreateInfo = VkBufferCreateInfo.New();
@@ -74,10 +76,30 @@ namespace Tortuga.Graphics.API
                 0
             ) != VkResult.Success)
                 throw new System.Exception("failed to bind buffer handle to device memory");
-        
-            _commandPool = new CommandPool(
-                Engine.Instance.MainDevice.TransferQueueFamily
-            );
+
+
+            //setup staging buffer
+            if (!isStaging)
+            {
+                _staging = new Buffer(
+                    _size,
+                    VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst,
+                    VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent,
+                    true
+                );
+                //setup transfer commands
+                _commandPool = new CommandPool(
+                    Engine.Instance.MainDevice.TransferQueueFamily
+                );
+                _transferToCommand = _commandPool.AllocateCommands()[0];
+                _transferToCommand.Begin(VkCommandBufferUsageFlags.SimultaneousUse);
+                _transferToCommand.CopyBuffer(_staging, this);
+                _transferToCommand.End();
+                _transferFromCommand = _commandPool.AllocateCommands()[0];
+                _transferFromCommand.Begin(VkCommandBufferUsageFlags.SimultaneousUse);
+                _transferFromCommand.CopyBuffer(this, _staging);
+                _transferFromCommand.End();
+            }
         }
 
         public static Buffer CreateHost(uint size, VkBufferUsageFlags usageFlags)
@@ -147,18 +169,8 @@ namespace Tortuga.Graphics.API
         {
             await Task.Run(() =>
             {
-                //setup staging buffer
-                var staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
-                staging.SetData(data);
-
-                //setup transfer command
                 var fence = new Fence();
-                var pool = new CommandPool(Engine.Instance.MainDevice.TransferQueueFamily);
-                var command = pool.AllocateCommands()[0];
-                command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-                command.CopyBuffer(staging, this);
-                command.End();
-                command.Submit(
+                _transferToCommand.Submit(
                     Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
                     null, null,
                     fence
@@ -168,17 +180,9 @@ namespace Tortuga.Graphics.API
         }
         public async Task<T[]> GetDataWithStaging<T>() where T : struct
         {
-            //setup staging buffer
-            if (_staging == null || _staging.Size != _size)
-                _staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
-
             //setup transfer command
             var fence = new Fence();
-            var command = _commandPool.AllocateCommands()[0];
-            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            command.CopyBuffer(this, _staging);
-            command.End();
-            command.Submit(
+            _transferFromCommand.Submit(
                 Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
                 null, null,
                 fence
@@ -189,21 +193,12 @@ namespace Tortuga.Graphics.API
 
         internal BufferTransferObject SetDataGetTransferObject<T>(T[] data) where T : struct
         {
-            //setup staging buffer
-            if (_staging == null || _staging.Size != _size)
-                _staging = Buffer.CreateHost(_size, VkBufferUsageFlags.TransferSrc);
             _staging.SetData(data);
-
-            //setup transfer command
-            var command = _commandPool.AllocateCommands()[0];
-            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            command.CopyBuffer(_staging, this);
-            command.End();
             return new BufferTransferObject
             {
                 commandPool = _commandPool,
                 StagingBuffer = _staging,
-                TransferCommand = command
+                TransferCommand = _transferToCommand
             };
         }
     }

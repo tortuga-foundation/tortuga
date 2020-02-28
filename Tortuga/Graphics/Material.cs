@@ -111,7 +111,7 @@ namespace Tortuga.Graphics
             var set = pool.AllocateDescriptorSet();
             var buffer = Buffer.CreateDevice(
                 System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
-                VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferDst
+                VkBufferUsageFlags.UniformBuffer | VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
             );
             set.BuffersUpdate(buffer);
 
@@ -207,7 +207,7 @@ namespace Tortuga.Graphics
 
             var staging = Buffer.CreateHost(
                 System.Convert.ToUInt32(Unsafe.SizeOf<VulkanPixel>() * image.Width * image.Height),
-                VkBufferUsageFlags.TransferSrc
+                VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
             );
 
             var fence = new Fence();
