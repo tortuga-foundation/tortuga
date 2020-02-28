@@ -107,6 +107,20 @@ namespace Tortuga.Graphics.API
             }
         }
 
+        unsafe ~Buffer()
+        {
+            vkDestroyBuffer(
+                Engine.Instance.MainDevice.LogicalDevice,
+                _buffer,
+                null
+            );
+            vkFreeMemory(
+                Engine.Instance.MainDevice.LogicalDevice,
+                _deviceMemory,
+                null
+            );
+        }
+
         public static Buffer CreateHost(uint size, VkBufferUsageFlags usageFlags)
             => new Buffer(
             size,
@@ -174,6 +188,7 @@ namespace Tortuga.Graphics.API
         {
             await Task.Run(() =>
             {
+                _staging.SetData(data);
                 var fence = new Fence();
                 _transferToCommand.Submit(
                     Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
