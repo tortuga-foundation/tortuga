@@ -54,10 +54,10 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0);
 
 void main() {
     vec3 albedo = texture(albedoTexture, inUV).rgb;
-
     vec3 uvNormal = texture(normalTexture, inUV).rbg;
-
+    uvNormal = normalize((uvNormal * 2) - vec3(1.));
     vec3 N = normalize(TBN * uvNormal);
+
     vec3 V = normalize(inCameraDirection);
 
     vec3 F0 = vec3(0.04); 
@@ -105,7 +105,7 @@ void main() {
     // gamma correct
     color = pow(color, vec3(1.0/2.2));
 
-    outColor = vec4(uvNormal, 1.);
+    outColor = vec4(color, 1.);
 }
 
 // ----------------------------------------------------------------------------

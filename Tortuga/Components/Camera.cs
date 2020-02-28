@@ -50,8 +50,8 @@ namespace Tortuga.Components
         }
         public float NearClipPlane = 0.01f;
         public float FarClipPlane = 100.0f;
+        public float FieldOfView = 90.0f;
         public ProjectionType Projection = ProjectionType.Perspective;
-        public float FieldOfView = 60.0f;
         public bool IsStatic
         {
             get
@@ -121,11 +121,9 @@ namespace Tortuga.Components
             }
         }
 
-        public async Task UpdateCameraBuffers()
-        {
-            if (IsStatic)
-                return;
-            await _cameraBuffer.SetDataWithStaging(
+        internal BufferTransferObject UpdateCameraBuffers()
+        {            
+            return _cameraBuffer.SetDataGetTransferObject<CameraShaderInfo>(
                 new CameraShaderInfo[]
                 {
                     new CameraShaderInfo

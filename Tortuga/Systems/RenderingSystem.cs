@@ -96,7 +96,9 @@ namespace Tortuga.Systems
                 };
                 if (camera.Resolution != cameraRes)
                     camera.Resolution = cameraRes;
-                await camera.UpdateCameraBuffers();
+                if (camera.IsStatic == false)
+                    transferCommands.Add(camera.UpdateCameraBuffers().TransferCommand);
+                    
                 //begin render pass for this camera
                 _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
 
