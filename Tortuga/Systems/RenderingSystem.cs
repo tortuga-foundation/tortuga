@@ -119,7 +119,8 @@ namespace Tortuga.Systems
                     }
 
                     //execute all meshes command buffer
-                    _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
+                    if (secondaryCommands.Count > 0)
+                        _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
                     _renderCommand.EndRenderPass();
 
                     //copy rendered image to swapchian for displaying in the window
@@ -148,16 +149,21 @@ namespace Tortuga.Systems
                     VkImageLayout.TransferDstOptimal, VkImageLayout.PresentSrcKHR
                 );
                 _renderCommand.End();
-                CommandPool.Command.Submit(
-                    Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
-                    transferCommands.ToArray(),
-                    new Semaphore[] { _syncSemaphore },
-                    null
-                );
+                var syncSemaphores = new Semaphore[0];
+                if (transferCommands.Count > 0)
+                {
+                    CommandPool.Command.Submit(
+                        Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
+                        transferCommands.ToArray(),
+                        new Semaphore[] { _syncSemaphore },
+                        null
+                    );
+                    syncSemaphores = new Semaphore[] { _syncSemaphore };
+                }
                 _renderCommand.Submit(
                     Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],
                     null,
-                    new Semaphore[] { _syncSemaphore },
+                    syncSemaphores,
                     _renderWaitFence
                 );
             });
