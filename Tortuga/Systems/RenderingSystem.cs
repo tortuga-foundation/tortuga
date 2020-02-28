@@ -52,112 +52,115 @@ namespace Tortuga.Systems
 
         public override async Task Update()
         {
-            var transferCommands = new List<CommandPool.Command>();
-
-            var cameras = MyScene.GetComponents<Components.Camera>();
-            var lights = MyScene.GetComponents<Components.Light>();
-            var meshes = MyScene.GetComponents<Components.Mesh>();
-            var uis = MyScene.GetComponents<Components.UserInterface>();
-            foreach (var mesh in meshes)
+            await Task.Run(() =>
             {
-                if (mesh.ActiveMaterial.UsingLighting)
-                {
-                    var meshLights = GetClosestLights(mesh, lights);
-                    var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", meshLights);
-                    transferCommands.Add(command.TransferCommand);
-                }
-                if (mesh.IsStatic == false)
-                {
-                    var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
-                    transferCommands.Add(command.TransferCommand);
-                }
-            }
+                var transferCommands = new List<CommandPool.Command>();
 
-            //if previous frame has not finished rendering wait for it to finish before rendering next frame
-            _renderWaitFence.Wait();
-            _renderWaitFence.Reset();
-
-            //begin rendering frame
-            _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-
-            //prepare swapchain for image copy
-            _renderCommand.TransferImageLayout(
-                Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
-                Engine.Instance.MainWindow.Swapchain.ImagesFormat,
-                VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal
-            );
-
-            foreach (var camera in cameras)
-            {
-                var cameraRes = new IntVector2D
-                {
-                    x = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Width * _cameraResolutionScale)),
-                    y = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Height * _cameraResolutionScale)),
-                };
-                if (camera.Resolution != cameraRes)
-                    camera.Resolution = cameraRes;
-                if (camera.IsStatic == false)
-                    transferCommands.Add(camera.UpdateCameraBuffers().TransferCommand);
-                    
-                //begin render pass for this camera
-                _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
-
-                //build render command for each mesh
-
-                var secondaryCommands = new List<CommandPool.Command>();
+                var cameras = MyScene.GetComponents<Components.Camera>();
+                var lights = MyScene.GetComponents<Components.Light>();
+                var meshes = MyScene.GetComponents<Components.Mesh>();
+                var uis = MyScene.GetComponents<Components.UserInterface>();
                 foreach (var mesh in meshes)
                 {
-                    var meshCommand = ProcessMeshCommands(mesh, camera, lights);
-                    secondaryCommands.Add(meshCommand);
-                }
-                foreach (var mesh in uis)
-                {
-                    var meshCommand = ProcessMeshCommands(mesh, camera, lights);
-                    secondaryCommands.Add(meshCommand);
+                    if (mesh.ActiveMaterial.UsingLighting)
+                    {
+                        var meshLights = GetClosestLights(mesh, lights);
+                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", meshLights);
+                        transferCommands.Add(command.TransferCommand);
+                    }
+                    if (mesh.IsStatic == false)
+                    {
+                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
+                        transferCommands.Add(command.TransferCommand);
+                    }
                 }
 
-                //execute all meshes command buffer
-                _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
-                _renderCommand.EndRenderPass();
+                //if previous frame has not finished rendering wait for it to finish before rendering next frame
+                _renderWaitFence.Wait();
+                _renderWaitFence.Reset();
 
-                //copy rendered image to swapchian for displaying in the window
-                _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.ColorAttachmentOptimal, VkImageLayout.TransferSrcOptimal);
-                var swapchain = Engine.Instance.MainWindow.Swapchain;
-                _renderCommand.BlitImage(
-                    camera.Framebuffer.ColorImage.ImageHandle,
-                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
-                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
-                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
-                    System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.height)),
-                    0,
-                    swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
-                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.x)),
-                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.y)),
-                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.width)),
-                    System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.height)),
-                    0
+                //begin rendering frame
+                _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+
+                //prepare swapchain for image copy
+                _renderCommand.TransferImageLayout(
+                    Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
+                    Engine.Instance.MainWindow.Swapchain.ImagesFormat,
+                    VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal
                 );
-                _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);
-            }
-            //prepare swapchain for presentation
-            _renderCommand.TransferImageLayout(
-                Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
-                Engine.Instance.MainWindow.Swapchain.ImagesFormat,
-                VkImageLayout.TransferDstOptimal, VkImageLayout.PresentSrcKHR
-            );
-            _renderCommand.End();
-            CommandPool.Command.Submit(
-                Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
-                transferCommands.ToArray(),
-                new Semaphore[] { _syncSemaphore },
-                null
-            );
-            _renderCommand.Submit(
-                Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],
-                null,
-                new Semaphore[] { _syncSemaphore },
-                _renderWaitFence
-            );
+
+                foreach (var camera in cameras)
+                {
+                    var cameraRes = new IntVector2D
+                    {
+                        x = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Width * _cameraResolutionScale)),
+                        y = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Height * _cameraResolutionScale)),
+                    };
+                    if (camera.Resolution != cameraRes)
+                        camera.Resolution = cameraRes;
+                    if (camera.IsStatic == false)
+                        transferCommands.Add(camera.UpdateCameraBuffers().TransferCommand);
+
+                    //begin render pass for this camera
+                    _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
+
+                    //build render command for each mesh
+
+                    var secondaryCommands = new List<CommandPool.Command>();
+                    foreach (var mesh in meshes)
+                    {
+                        var meshCommand = ProcessMeshCommands(mesh, camera, lights);
+                        secondaryCommands.Add(meshCommand);
+                    }
+                    foreach (var mesh in uis)
+                    {
+                        var meshCommand = ProcessMeshCommands(mesh, camera, lights);
+                        secondaryCommands.Add(meshCommand);
+                    }
+
+                    //execute all meshes command buffer
+                    _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
+                    _renderCommand.EndRenderPass();
+
+                    //copy rendered image to swapchian for displaying in the window
+                    _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.ColorAttachmentOptimal, VkImageLayout.TransferSrcOptimal);
+                    var swapchain = Engine.Instance.MainWindow.Swapchain;
+                    _renderCommand.BlitImage(
+                        camera.Framebuffer.ColorImage.ImageHandle,
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.height)),
+                        0,
+                        swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.x)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.y)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.width)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.height)),
+                        0
+                    );
+                    _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);
+                }
+                //prepare swapchain for presentation
+                _renderCommand.TransferImageLayout(
+                    Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
+                    Engine.Instance.MainWindow.Swapchain.ImagesFormat,
+                    VkImageLayout.TransferDstOptimal, VkImageLayout.PresentSrcKHR
+                );
+                _renderCommand.End();
+                CommandPool.Command.Submit(
+                    Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
+                    transferCommands.ToArray(),
+                    new Semaphore[] { _syncSemaphore },
+                    null
+                );
+                _renderCommand.Submit(
+                    Engine.Instance.MainDevice.GraphicsQueueFamily.Queues[0],
+                    null,
+                    new Semaphore[] { _syncSemaphore },
+                    _renderWaitFence
+                );
+            });
         }
 
         private CommandPool.Command ProcessMeshCommands(Components.Mesh mesh, Components.Camera camera, Components.Light[] allLights)
