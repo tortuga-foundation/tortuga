@@ -30,39 +30,44 @@ layout(set=2) readonly uniform LIGHT_SHADER_INFO
 } lightData;
 layout(set=3) readonly uniform MATERIAL_INFO
 {
-    float metallic;
-    float roughness;
     int enableSmoothShading;
 };
 layout(set=4, binding=0) uniform sampler2D albedoTexture;
 layout(set=5, binding=0) uniform sampler2D normalTexture;
 layout(set=6, binding=0) uniform sampler2D metalTexture;
+layout(set=7, binding=0) uniform sampler2D roughnessTexture;
+layout(set=8, binding=0) uniform sampler2D aoTexture;
 
 layout(location = 0) in vec3 inNormal;
 layout(location = 1) in vec2 inUV;
-layout(location = 2) in vec3 inCameraDirection;
+layout(location = 2) in vec3 inCameraPosition;
 layout(location = 3) in vec3 inWorldPosition;
 layout(location = 4) in mat3 TBN;
 
 layout(location = 0) out vec4 outColor;
 
 const float PI = 3.14159265359;
+vec3 getNormalFromMap();
 float distributionGGX(vec3 N, vec3 H, float roughness);
 float geometrySchlickGGX(float NdotV, float roughness);
 float geometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
 vec3 fresnelSchlick(float cosTheta, vec3 F0);
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness);
 
 void main() {
     vec3 albedo = texture(albedoTexture, inUV).rgb;
-    vec3 uvNormal = texture(normalTexture, inUV).rbg;
-    uvNormal = normalize((uvNormal * 2) - vec3(1.));
-    vec3 N = normalize(TBN * uvNormal);
+    float metallic = texture(metalTexture, inUV).r;
+    float roughness = texture(roughnessTexture, inUV).r;
+    float ao = texture(aoTexture, inUV).r;
 
-    vec3 V = normalize(inCameraDirection);
+    vec3 N = getNormalFromMap();
+    vec3 V = normalize(inCameraPosition - inWorldPosition);
 
+    // calculate reflectance at normal incidence; if dia-electric (like plastic) use F0 
+    // of 0.04 and if it's a metal, use the albedo color as F0 (metallic workflow)    
     vec3 F0 = vec3(0.04); 
     F0 = mix(F0, albedo, metallic);
-	           
+
     // reflectance equation
     vec3 Lo = vec3(0.0);
     for (int i = 0; i < lightData.lightsCount; i++)
@@ -70,44 +75,73 @@ void main() {
         LightInfo lightInfo = lightData.info[i];
         //calculate per light radiance
         // calculate per-light radiance
-        vec3 L = normalize(lightInfo.position.xyz - inWorldPosition);
+        vec3 L = -normalize(lightInfo.position.xyz - inWorldPosition);
         vec3 H = normalize(V + L);
-        float distance    = length(lightInfo.position.xyz - inWorldPosition);
+        float distance = length(lightInfo.position.xyz - inWorldPosition);
         float attenuation = 1.0 / (distance * distance);
-        vec3 radiance     = vec3(1.) * attenuation * lightInfo.intensity;
-        
-        // cook-torrance brdf
-        float NDF = distributionGGX(N, H, roughness);
-        float G = geometrySmith(N, V, L, roughness);
-        vec3 F = fresnelSchlick(max(dot(H, V), 0.0), F0);
-        
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metallic;
+        vec3 radiance = lightInfo.color.rgb * attenuation;
 
-        vec3 numerator    = NDF * G * F;
-        float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0);
-        vec3 specular     = numerator / max(denominator, 0.001);
+        // Cook-Torrance BRDF
+        float NDF = distributionGGX(N, H, roughness);   
+        float G   = geometrySmith(N, V, L, roughness);      
+        vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
+           
+        vec3 nominator    = NDF * G * F; 
+        float denominator = 4 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.001; // 0.001 to prevent divide by zero.
+        vec3 specular = nominator / denominator;
+        
+        // kS is equal to Fresnel
+        vec3 kS = F;
+        // for energy conservation, the diffuse and specular light can't
+        // be above 1.0 (unless the surface emits light); to preserve this
+        // relationship the diffuse component (kD) should equal 1.0 - kS.
+        vec3 kD = vec3(1.0) - kS;
+        // multiply kD by the inverse metalness such that only non-metals 
+        // have diffuse lighting, or a linear blend if partly metal (pure metals
+        // have no diffuse light).
+        kD *= 1.0 - metallic;	  
+
+        // scale light by NdotL
+        float NdotL = max(dot(N, L), 0.0);        
 
         // add to outgoing radiance Lo
-        float NdotL = max(dot(N, L), 0.0);
-        Lo += (kD * albedo / PI + specular) * radiance * NdotL;
+        Lo += (kD * albedo / PI + specular) * radiance * NdotL; 
     }
 
-    // ambient lighting (note that the next IBL tutorial will replace
+    // ambient lighting (note that the next IBL tutorial will replace 
     // this ambient lighting with environment lighting).
-    vec3 ambient = vec3(0.001) * albedo;
-
+    vec3 ambient = vec3(0.03) * albedo * ao;
+    
     vec3 color = ambient + Lo;
 
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // gamma correct
-    color = pow(color, vec3(1.0/2.2));
-
+    color = pow(color, vec3(1.0/2.2)); 
     outColor = vec4(color, 1.);
 }
 
+// ----------------------------------------------------------------------------
+// Easy trick to get tangent-normals to world-space to keep PBR code simplified.
+// Don't worry if you don't get what's going on; you generally want to do normal 
+// mapping the usual way for performance anways; I do plan make a note of this 
+// technique somewhere later in the normal mapping tutorial.
+vec3 getNormalFromMap()
+{
+    vec3 tangentNormal = texture(normalTexture, inUV).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(inWorldPosition);
+    vec3 Q2  = dFdy(inWorldPosition);
+    vec2 st1 = dFdx(inUV);
+    vec2 st2 = dFdy(inUV);
+
+    vec3 N   = normalize(inNormal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}
 // ----------------------------------------------------------------------------
 float distributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -120,7 +154,7 @@ float distributionGGX(vec3 N, vec3 H, float roughness)
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
     denom = PI * denom * denom;
 
-    return nom / max(denom, 0.001); // prevent divide by zero for roughness=0.0 and NdotH=1.0
+    return nom / denom;
 }
 // ----------------------------------------------------------------------------
 float geometrySchlickGGX(float NdotV, float roughness)
@@ -148,4 +182,9 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 {
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
+// ----------------------------------------------------------------------------
+vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
+{
+    return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
+}   
 // ----------------------------------------------------------------------------

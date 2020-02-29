@@ -23,19 +23,19 @@ namespace Tortuga.Test
         public override async Task Update()
         {
             if (InputSystem.IsKeyDown(KeyCode.D))
-                _left += 0.1f;
+                _left += 0.001f;
             else if (InputSystem.IsKeyDown(KeyCode.A))
-                _left -= 0.1f;
+                _left -= 0.001f;
 
             if (InputSystem.IsKeyDown(KeyCode.W))
-                _top += 0.1f;
+                _top += 0.001f;
             else if (InputSystem.IsKeyDown(KeyCode.S))
-                _top -= 0.1f;
+                _top -= 0.001f;
             
             if (InputSystem.IsKeyDown(KeyCode.Up))
-                _forward += 0.1f;
+                _forward += 0.001f;
             else if (InputSystem.IsKeyDown(KeyCode.Down))
-                _forward -= 0.1f;
+                _forward -= 0.001f;
 
             await Task.Run(() =>
             {

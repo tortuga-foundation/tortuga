@@ -42,7 +42,7 @@ layout(location = 4) in vec3 inBiTangent;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outUV;
-layout(location = 2) out vec3 outCameraDirection;
+layout(location = 2) out vec3 outCameraPosition;
 layout(location = 3) out vec3 outWorldPosition;
 layout(location = 4) out mat3 TBN;
 
@@ -56,8 +56,7 @@ void main() {
     outUV = inTexture;
 
     //camera position
-    vec4 camreaPos = inverse(view)[3];
-    outCameraDirection = camreaPos.xyz - worldPosition.xyz;
+    outCameraPosition = inverse(view)[3].xyz;
 
     //normals
     if (enableSmoothShading == 1)
