@@ -99,7 +99,7 @@ namespace Tortuga.Components
             get
             {
                 if (this.Projection == ProjectionType.Perspective)
-                    return Matrix4x4.CreatePerspectiveFieldOfView(ToRadians(FieldOfView), Resolution.x / Resolution.y, NearClipPlane, FarClipPlane);
+                    return Matrix4x4.CreatePerspectiveFieldOfView(ToRadians(FieldOfView), (float)Resolution.x / (float)Resolution.y, NearClipPlane, FarClipPlane);
                 else if (this.Projection == ProjectionType.Orthographic)
                     return Matrix4x4.CreateOrthographic(Resolution.x, Resolution.y, NearClipPlane, FarClipPlane);
 
@@ -122,7 +122,7 @@ namespace Tortuga.Components
         }
 
         internal BufferTransferObject UpdateCameraBuffers()
-        {            
+        {
             return _cameraBuffer.SetDataGetTransferObject<CameraShaderInfo>(
                 new CameraShaderInfo[]
                 {
