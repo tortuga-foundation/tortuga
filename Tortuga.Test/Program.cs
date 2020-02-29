@@ -25,7 +25,7 @@ namespace Tortuga.Test
             //light
             var light = new Core.Entity();
             var lTransform = await light.AddComponent<Components.Transform>();
-            lTransform.Position = new Vector3(0, 0, -7);
+            lTransform.Position = new Vector3(0, 0, 1);
             var lComp = await light.AddComponent<Components.Light>();
             lComp.Intensity = 1.0f;
             lComp.Range = 1.0f;

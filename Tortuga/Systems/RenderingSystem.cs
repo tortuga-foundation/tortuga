@@ -17,13 +17,10 @@ namespace Tortuga.Systems
             public int Type;
             public float Intensity;
             public float Range;
+            public int Reserved;
         }
         internal struct LightShaderInfo
         {
-            public int Count;
-            public int Reserved1;
-            public int Reserved2;
-            public int Reserved3;
             public LightInfo Light0;
             public LightInfo Light1;
             public LightInfo Light2;
@@ -34,6 +31,7 @@ namespace Tortuga.Systems
             public LightInfo Light7;
             public LightInfo Light8;
             public LightInfo Light9;
+            public int Count;
         }
 
         private CommandPool _renderCommandPool;
@@ -222,9 +220,6 @@ namespace Tortuga.Systems
             return new LightShaderInfo
             {
                 Count = lights.Length,
-                Reserved1 = 0,
-                Reserved2 = 0,
-                Reserved3 = 0,
                 Light0 = infoList[0],
                 Light1 = infoList[1],
                 Light2 = infoList[2],

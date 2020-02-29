@@ -9,6 +9,7 @@ struct LightInfo
     int type;
     float intensity;
     float range;
+    int reserved;
 };
 
 layout(set=0) readonly uniform CAMERA_MVP
@@ -22,11 +23,8 @@ layout(set=1) readonly uniform MESH_MVP
 };
 layout(set=2) readonly uniform LIGHT_SHADER_INFO
 {
-    int lightsCount;
-    int lightReserved1;
-    int lightReserved2;
-    int lightReserved3;
     LightInfo info[10];
+    int lightsCount;
 } lightData;
 layout(set=3) readonly uniform MATERIAL_INFO
 {
@@ -75,15 +73,15 @@ void main() {
         LightInfo lightInfo = lightData.info[i];
         //calculate per light radiance
         // calculate per-light radiance
-        vec3 L = -normalize(lightInfo.position.xyz - inWorldPosition);
+        vec3 L = normalize(lightInfo.position.xyz - inWorldPosition);
         vec3 H = normalize(V + L);
         float distance = length(lightInfo.position.xyz - inWorldPosition);
         float attenuation = 1.0 / (distance * distance);
         vec3 radiance = lightInfo.color.rgb * attenuation;
 
         // Cook-Torrance BRDF
-        float NDF = distributionGGX(N, H, roughness);   
-        float G   = geometrySmith(N, V, L, roughness);      
+        float NDF = distributionGGX(N, H, roughness);
+        float G   = geometrySmith(N, V, L, roughness);
         vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);
            
         vec3 nominator    = NDF * G * F; 
@@ -128,7 +126,7 @@ void main() {
 // technique somewhere later in the normal mapping tutorial.
 vec3 getNormalFromMap()
 {
-    vec3 tangentNormal = texture(normalTexture, inUV).xyz * 2.0 - 1.0;
+    vec3 tangentNormal = texture(normalTexture, inUV).rbg * 2.0 - 1.0;
 
     vec3 Q1  = dFdx(inWorldPosition);
     vec3 Q2  = dFdy(inWorldPosition);

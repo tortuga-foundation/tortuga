@@ -8,6 +8,7 @@ struct LightInfo
     int type;
     float intensity;
     float range;
+    int reserved;
 };
 
 layout(set=0) readonly uniform CAMERA_MVP
@@ -21,16 +22,11 @@ layout(set=1) readonly uniform MESH_MVP
 };
 layout(set=2) readonly uniform LIGHT_SHADER_INFO
 {
-    int lightsCount;
-    int lightReserved1;
-    int lightReserved2;
-    int lightReserved3;
     LightInfo info[10];
+    int lightsCount;
 } lightData;
 layout(set=3) readonly uniform MATERIAL_INFO
 {
-    float metallic;
-    float roughness;
     int enableSmoothShading;
 };
 
