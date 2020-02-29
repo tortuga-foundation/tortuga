@@ -53,6 +53,10 @@ namespace Tortuga.Systems
         {
             await Task.Run(() =>
             {
+                if (_renderWaitFence.IsSignaled() == false)
+                    return;
+                _renderWaitFence.Reset();
+
                 var transferCommands = new List<CommandPool.Command>();
 
                 var cameras = MyScene.GetComponents<Components.Camera>();
@@ -75,8 +79,6 @@ namespace Tortuga.Systems
                 }
 
                 //if previous frame has not finished rendering wait for it to finish before rendering next frame
-                _renderWaitFence.Wait();
-                _renderWaitFence.Reset();
 
                 //begin rendering frame
                 _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);

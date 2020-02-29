@@ -36,6 +36,16 @@ namespace Tortuga.Graphics.API
             );
         }
 
+        public unsafe bool IsSignaled()
+        {
+            return (
+                vkGetFenceStatus(
+                    Engine.Instance.MainDevice.LogicalDevice,
+                    _fence
+                ) == VkResult.Success
+            );
+        }
+
         public unsafe void Wait()
         {
             VkFence fence = _fence;
