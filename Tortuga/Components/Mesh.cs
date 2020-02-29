@@ -47,10 +47,10 @@ namespace Tortuga.Components
                 if (_material == null)
                 {
                     _material = new Material(new Graphics.Shader(
-                        "Assets/Shaders/PBR/PBR.vert",
-                        "Assets/Shaders/PBR/PBR.frag"
+                        "Assets/Shaders/Default/Default.vert",
+                        "Assets/Shaders/Default/Default.frag"
                     ));
-                    _material.CreateUniformData<PBR>("pbr");
+                    _material.CreateUniformData<int>("enableSmoothShading");
                     _material.CreateSampledImage("albedo", 1, 1);
                     _material.CreateSampledImage("normal", 1, 1);
                     _material.CreateSampledImage("metal", 1, 1);
@@ -60,10 +60,7 @@ namespace Tortuga.Components
                     //copy data
                     var task = Task.Run(async () =>
                     {
-                        await _material.UpdateUniformData("pbr", new PBR
-                        {
-                            EnableSmoothShading = 0
-                        });
+                        await _material.UpdateUniformData<int>("pbr", 0);
                         await _material.UpdateSampledImage(
                             "albedo",
                             new Graphics.Image("Assets/Images/Bricks/Bricks01_COL_1K.jpg")

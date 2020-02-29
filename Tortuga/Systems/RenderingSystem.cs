@@ -53,8 +53,7 @@ namespace Tortuga.Systems
         {
             await Task.Run(() =>
             {
-                if (_renderWaitFence.IsSignaled() == false)
-                    return;
+                _renderWaitFence.Wait();
                 _renderWaitFence.Reset();
 
                 var transferCommands = new List<CommandPool.Command>();

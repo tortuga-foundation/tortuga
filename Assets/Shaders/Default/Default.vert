@@ -31,7 +31,7 @@ layout(set=3) readonly uniform MATERIAL_INFO
 };
 
 layout(location = 0) in vec3 inPosition;
-layout(location = 1) in vec2 inTexture;
+layout(location = 1) in vec2 inUV;
 layout(location = 2) in vec3 inNormal;
 
 layout(location = 0) out vec3 outNormal;
@@ -46,7 +46,7 @@ void main() {
     //vertex position
     outWorldPosition = worldPosition.xyz;
     //texture uv
-    outUV = inTexture;
+    outUV = inUV;
 
     //camera position
     outCameraPosition = inverse(view)[3].xyz;
