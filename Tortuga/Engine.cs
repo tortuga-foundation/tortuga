@@ -56,23 +56,30 @@ namespace Tortuga
             {
                 while (this._mainWindow.Exists)
                 {
-                    var events = this._mainWindow.PumpEvents();
-                    InputSystem.ProcessEvents(events);
-                    this._mainWindow.AcquireSwapchainImage();
-                    if (_activeScene != null)
+                    try
                     {
-                        var tasks = new List<Task>();
-                        foreach (var system in _activeScene.Systems.Values)
-                            tasks.Add(system.Update());
-
-                        foreach (var entity in _activeScene.Entities)
+                        var events = this._mainWindow.PumpEvents();
+                        InputSystem.ProcessEvents(events);
+                        this._mainWindow.AcquireSwapchainImage();
+                        if (_activeScene != null)
                         {
-                            foreach (var component in entity.Components)
-                                tasks.Add(component.Value.Update());
+                            var tasks = new List<Task>();
+                            foreach (var system in _activeScene.Systems.Values)
+                                tasks.Add(system.Update());
+
+                            foreach (var entity in _activeScene.Entities)
+                            {
+                                foreach (var component in entity.Components)
+                                    tasks.Add(component.Value.Update());
+                            }
+                            Task.WaitAll(tasks.ToArray());
                         }
-                        Task.WaitAll(tasks.ToArray());
+                        this._mainWindow.Present();
                     }
-                    this._mainWindow.Present();
+                    catch (System.Exception e)
+                    {
+                        System.Console.WriteLine(e.ToString());
+                    }
                 }
                 MainDevice.WaitForDevice();
             });

@@ -63,23 +63,23 @@ namespace Tortuga.Components
                         await _material.UpdateUniformData<int>("pbr", 0);
                         await _material.UpdateSampledImage(
                             "albedo",
-                            new Graphics.Image("Assets/Images/Bricks/Bricks01_COL_1K.jpg")
+                            new Graphics.Image("Assets/Images/Bricks/Albedo.jpg")
                         );
                         await _material.UpdateSampledImage(
                             "normal",
-                            new Graphics.Image("Assets/Images/Bricks/Bricks01_NRM_1K.jpg")
+                            new Graphics.Image("Assets/Images/Bricks/Normal.jpg")
                         );
                         await _material.UpdateSampledImage(
                             "metal",
-                            new Graphics.Image("Assets/Images/Bricks/Bricks01_GLOSS_1K.jpg")
+                            new Graphics.Image("Assets/Images/Bricks/Metalness.jpg")
                         );
                         await _material.UpdateSampledImage(
                             "roughness",
-                            new Graphics.Image("Assets/Images/Bricks/Bricks01_REFL_1K.jpg")
+                            new Graphics.Image("Assets/Images/Bricks/Roughness.jpg")
                         );
                         await _material.UpdateSampledImage(
                             "ao",
-                            new Graphics.Image("Assets/Images/Bricks/Bricks01_AO_1K.jpg")
+                            new Graphics.Image("Assets/Images/Bricks/AmbientOclusion.jpg")
                         );
                     });
                     task.Wait();

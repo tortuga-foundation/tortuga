@@ -52,11 +52,33 @@ void main() {
     float roughness = texture(roughnessTexture, inUV).r;
     float ao = texture(aoTexture, inUV).r;
 
-    vec3 N = getNormalFromMap();
     vec3 V = normalize(inCameraPosition - inWorldPosition);
+    vec3 N = getNormalFromMap();
 
+    //for each light
+    vec3 color = vec3(0.);
+    for (int i = 0; i < lightData.lightsCount; i++) {
+        //get light data
+        LightInfo light = lightData.info[i];
+        vec3 L = light.position.xyz - inWorldPosition;
+        float D = length(L);
+        L = normalize(L);
+        vec3 R = reflect(-L, N);
 
-    outColor = vec4(1.);
+        //compute diffuse
+        float diffuseAmount = (dot(L, N) * light.intensity * (1. - roughness)) / (D * D);
+        color += (albedo.rgb * light.color.rgb) * diffuseAmount * (1. - metallic) * ao;
+
+        //specular
+        float specularAmount = normalize(dot(R, V));
+        specularAmount = max(specularAmount, 0.);
+        specularAmount = specularAmount * (1 - roughness);
+        specularAmount = pow(specularAmount, 10.);
+        vec3 specular = (light.color.rgb * specularAmount * light.intensity) / (D * D);
+        color += specular * (1. - roughness);
+    }
+
+    outColor = vec4(color, 1.);
 }
 
 // ----------------------------------------------------------------------------
