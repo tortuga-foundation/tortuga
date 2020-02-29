@@ -54,28 +54,35 @@ namespace Tortuga.Components
                     _material.CreateSampledImage("albedo", 1, 1);
                     _material.CreateSampledImage("normal", 1, 1);
                     _material.CreateSampledImage("metal", 1, 1);
-
+                    _material.CreateSampledImage("roughness", 1, 1);
+                    _material.CreateSampledImage("ao", 1, 1);
 
                     //copy data
                     var task = Task.Run(async () =>
                     {
                         await _material.UpdateUniformData("pbr", new PBR
                         {
-                            Metallic = 1,
-                            Rougness = 0.3f,
                             EnableSmoothShading = 0
                         });
                         await _material.UpdateSampledImage(
-                            "albedo", 
+                            "albedo",
                             new Graphics.Image("Assets/Images/Bricks/Bricks01_COL_1K.jpg")
                         );
                         await _material.UpdateSampledImage(
-                            "normal", 
+                            "normal",
                             new Graphics.Image("Assets/Images/Bricks/Bricks01_NRM_1K.jpg")
                         );
                         await _material.UpdateSampledImage(
-                            "metal", 
+                            "metal",
                             new Graphics.Image("Assets/Images/Bricks/Bricks01_GLOSS_1K.jpg")
+                        );
+                        await _material.UpdateSampledImage(
+                            "roughness",
+                            new Graphics.Image("Assets/Images/Bricks/Bricks01_REFL_1K.jpg")
+                        );
+                        await _material.UpdateSampledImage(
+                            "ao",
+                            new Graphics.Image("Assets/Images/Bricks/Bricks01_AO_1K.jpg")
                         );
                     });
                     task.Wait();
