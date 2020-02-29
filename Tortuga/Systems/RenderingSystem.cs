@@ -3,12 +3,12 @@ using Tortuga.Graphics.API;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using System.Diagnostics;
 
 namespace Tortuga.Systems
 {
     public class RenderingSystem : Core.BaseSystem
     {
+        #pragma warning disable 0649
         internal struct LightInfo
         {
             public Vector4 Position;
@@ -33,6 +33,7 @@ namespace Tortuga.Systems
             public LightInfo Light9;
             public int Count;
         }
+        #pragma warning restore 0649
 
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
