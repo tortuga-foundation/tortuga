@@ -33,14 +33,11 @@ layout(set=3) readonly uniform MATERIAL_INFO
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexture;
 layout(location = 2) in vec3 inNormal;
-layout(location = 3) in vec3 inTangent;
-layout(location = 4) in vec3 inBiTangent;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outUV;
 layout(location = 2) out vec3 outCameraPosition;
 layout(location = 3) out vec3 outWorldPosition;
-layout(location = 4) out mat3 TBN;
 
 void main() {
     vec4 worldPosition = model * vec4(inPosition, 1.0);
@@ -59,7 +56,4 @@ void main() {
         outNormal = (model * normalize(vec4(inPosition, 1.0))).xyz; //todo
     else
         outNormal = normalize(model * vec4(inNormal, 0.)).xyz;
-    vec3 surfaceTangent = normalize(model * vec4(inTangent, 0.)).xyz;
-    vec3 SurfaceBiTangent = normalize(model * vec4(inBiTangent, 0.)).xyz;
-    TBN = mat3(surfaceTangent, SurfaceBiTangent, outNormal);
 }

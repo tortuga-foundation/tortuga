@@ -110,11 +110,6 @@ namespace Tortuga.Components
             );
             await _indexBuffer.SetDataWithStaging(indices);
         }
-        public async Task ComputeTangents()
-        {
-            _vertices = Vertex.ComputeTangents(_vertices, _indices);
-            await _vertexBuffer.SetDataWithStaging(_vertices);
-        }
         public Matrix4x4 ModelMatrix
         {
             get

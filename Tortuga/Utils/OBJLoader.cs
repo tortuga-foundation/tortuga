@@ -112,7 +112,7 @@ namespace Tortuga.Utils
                         Normal = Normals[index.Normal]
                     });
                 }
-                return Vertex.ComputeTangents(output.ToArray(), ToGraphicsIndex);
+                return output.ToArray();
             }
         }
         public uint[] ToGraphicsIndex => _graphicsIndices;
