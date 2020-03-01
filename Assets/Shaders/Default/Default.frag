@@ -8,8 +8,8 @@ struct LightInfo
     vec4 color;
     int type;
     float intensity;
-    float range;
-    int reserved;
+    int reserved1;
+    int reserved2;
 };
 
 layout(set=0) readonly uniform CAMERA_MVP
@@ -28,6 +28,7 @@ layout(set=2) readonly uniform LIGHT_SHADER_INFO
 } lightData;
 layout(set=3) readonly uniform MATERIAL_INFO
 {
+    int workflow;
     int enableSmoothShading;
 };
 
@@ -201,9 +202,25 @@ void main() {
     vec3 f0 = vec3(0.04);
 
     //metalness workflow
-    roughness = clamp(texture(physicalDescriptorTexture, inUV).g, MIN_ROUGHNESS, 1.);
-    metallic = clamp(texture(physicalDescriptorTexture, inUV).r, 0., 1.);
-    baseColor = SRGBtoLINEAR(texture(albedoTexture, inUV));
+    if (workflow == 0)
+    {
+        roughness = clamp(texture(physicalDescriptorTexture, inUV).g, MIN_ROUGHNESS, 1.);
+        metallic = clamp(texture(physicalDescriptorTexture, inUV).r, 0., 1.);
+        baseColor = SRGBtoLINEAR(texture(albedoTexture, inUV));
+    }
+    else if (workflow == 1)
+    {
+        roughness = 1. - texture(physicalDescriptorTexture, inUV).g;
+        const float epsilon = 1e-6;
+        vec4 diffuse = SRGBtoLINEAR(texture(albedoTexture, inUV));
+		vec3 specular = SRGBtoLINEAR(texture(physicalDescriptorTexture, inUV)).rgb;
+        float maxSpecular = max(max(specular.r, specular.g), specular.b);
+		// Convert metallic value from specular glossiness inputs
+		metallic = ConvertMetallic(diffuse.rgb, specular, maxSpecular);
+        vec3 baseColorDiffusePart = diffuse.rgb * ((1.0 - maxSpecular) / (1 - MIN_ROUGHNESS) / max(1 - metallic, epsilon));
+		vec3 baseColorSpecularPart = specular - (vec3(MIN_ROUGHNESS) * (1 - metallic) * (1 / max(metallic, epsilon)));
+		baseColor = vec4(mix(baseColorDiffusePart, baseColorSpecularPart, metallic * metallic), diffuse.a);
+    }
 
     //get diffuse color
     diffuseColor = baseColor.rgb * (vec3(1.) - f0);

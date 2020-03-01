@@ -28,7 +28,6 @@ namespace Tortuga.Test
             lTransform.Position = new Vector3(0, 0, -7);
             var lComp = await light.AddComponent<Components.Light>();
             lComp.Intensity = 1.0f;
-            lComp.Range = 1.0f;
             lComp.Type = Components.Light.LightType.Point;
             lComp.Color = Color.White;
             scene.AddEntity(light);

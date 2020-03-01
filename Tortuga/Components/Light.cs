@@ -14,7 +14,6 @@ namespace Tortuga.Components
         public Color Color;
         public LightType Type;
         public float Intensity;
-        public float Range;
 
         public Vector3 Forward
         {

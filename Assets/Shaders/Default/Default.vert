@@ -7,8 +7,8 @@ struct LightInfo
     vec4 color;
     int type;
     float intensity;
-    float range;
-    int reserved;
+    int reserved1;
+    int reserved2;
 };
 
 layout(set=0) readonly uniform CAMERA_MVP
@@ -27,7 +27,7 @@ layout(set=2) readonly uniform LIGHT_SHADER_INFO
 } lightData;
 layout(set=3) readonly uniform MATERIAL_INFO
 {
-    int enableSmoothShading;
+    int workflow;
 };
 
 layout(location = 0) in vec3 inPosition;
@@ -43,17 +43,8 @@ void main() {
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;
 
-    //vertex position
     outWorldPosition = worldPosition.xyz;
-    //texture uv
     outUV = inUV;
-
-    //camera position
     outCameraPosition = inverse(view)[3].xyz;
-
-    //normals
-    if (enableSmoothShading == 1)
-        outNormal = (model * normalize(vec4(inPosition, 1.0))).xyz; //todo
-    else
-        outNormal = normalize(model * vec4(inNormal, 0.)).xyz;
+    outNormal = normalize(model * vec4(inNormal, 0.)).xyz;
 }

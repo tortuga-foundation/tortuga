@@ -16,8 +16,8 @@ namespace Tortuga.Systems
             public Vector4 Color;
             public int Type;
             public float Intensity;
-            public float Range;
-            public int Reserved;
+            public int Reserved1;
+            public int Reserved2;
         }
         internal struct LightShaderInfo
         {
@@ -214,7 +214,6 @@ namespace Tortuga.Systems
                     Forward = new Vector4(l.Forward, 1),
                     Position = new Vector4(l.Position, 1),
                     Intensity = l.Intensity,
-                    Range = l.Range,
                     Type = (int)l.Type
                 });
             for (int i = infoList.Count; i < 10; i++)

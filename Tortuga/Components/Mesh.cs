@@ -50,7 +50,7 @@ namespace Tortuga.Components
                         "Assets/Shaders/Default/Default.vert",
                         "Assets/Shaders/Default/Default.frag"
                     ));
-                    _material.CreateUniformData<int>("enableSmoothShading");
+                    _material.CreateUniformData<PBR>("PBR");
                     _material.CreateSampledImage("albedo", 1, 1);
                     _material.CreateSampledImage("normal", 1, 1);
                     _material.CreateSampledImage("detailTexture", 1, 1);
@@ -68,7 +68,10 @@ namespace Tortuga.Components
                     //copy data
                     var task = Task.Run(async () =>
                     {
-                        await _material.UpdateUniformData<int>("pbr", 0);
+                        await _material.UpdateUniformData<PBR>("PBR", new PBR
+                        {
+                            Workflow = 0  
+                        });
                         await _material.UpdateSampledImage(
                             "albedo",
                             new Graphics.Image("Assets/Images/Bricks/Albedo.jpg")
