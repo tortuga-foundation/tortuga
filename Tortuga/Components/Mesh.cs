@@ -55,13 +55,13 @@ namespace Tortuga.Components
                     _material.CreateSampledImage("normal", 1, 1);
                     _material.CreateSampledImage("detailTexture", 1, 1);
 
-                    var detailTexture = new Graphics.Image("Assets/Images/Bricks/Metalness.jpg");
+                    var detailTexture = Graphics.Image.SingleColor(System.Drawing.Color.Black);
                     detailTexture.CopyChannel(
-                        new Graphics.Image("Assets/Images/Bricks/Roughness.jpg"),
+                        Graphics.Image.SingleColor(System.Drawing.Color.DarkGray),
                         Graphics.Image.Channel.G
                     );
                     detailTexture.CopyChannel(
-                        new Graphics.Image("Assets/Images/Bricks/AmbientOclusion.jpg"),
+                        Graphics.Image.SingleColor(System.Drawing.Color.DarkGray),
                         Graphics.Image.Channel.B
                     );
 
@@ -74,11 +74,11 @@ namespace Tortuga.Components
                         });
                         await _material.UpdateSampledImage(
                             "albedo",
-                            new Graphics.Image("Assets/Images/Bricks/Albedo.jpg")
+                            Graphics.Image.SingleColor(System.Drawing.Color.Gray)
                         );
                         await _material.UpdateSampledImage(
                             "normal",
-                            new Graphics.Image("Assets/Images/Bricks/Normal.jpg")
+                            Graphics.Image.SingleColor(System.Drawing.Color.Blue)
                         );
                         await _material.UpdateSampledImage(
                             "detailTexture",

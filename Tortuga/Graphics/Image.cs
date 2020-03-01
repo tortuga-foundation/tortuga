@@ -41,52 +41,69 @@ namespace Tortuga.Graphics
 
         public void CopyChannel(Image source, Channel channels)
         {
-            if (source._pixels.Length != _pixels.Length)
-                throw new NotSupportedException("source and destination images must be the same size");
-
-            for (int i = 0; i < source._pixels.Length; i++)
+            for (int x = 0; x < _width; x++)
             {
-                if ((channels & Channel.R) != 0)
+                for (int y = 0; y < _height; y++)
                 {
-                    _pixels[i] = Color.FromArgb(
-                        _pixels[i].A,
-                        source._pixels[i].R,
-                        _pixels[i].G,
-                        _pixels[i].B
+                    float xP = (float)x / (float)_width;
+                    float yP = (float)y / (float)_height;
+                    var sourcePixel = source.GetPixel(
+                        Convert.ToUInt32(MathF.Round(xP * source.Width)),
+                        Convert.ToUInt32(MathF.Round(yP * source.Height))
                     );
-                }
-                if ((channels & Channel.G) != 0)
-                {
-                    _pixels[i] = Color.FromArgb(
-                        _pixels[i].A,
-                        _pixels[i].R,
-                        source._pixels[i].G,
-                        _pixels[i].B
-                    );
-                }
-                if ((channels & Channel.B) != 0)
-                {
-                    _pixels[i] = Color.FromArgb(
-                        _pixels[i].A,
-                        _pixels[i].R,
-                        _pixels[i].G,
-                        source._pixels[i].B
-                    );
-                }
-                if ((channels & Channel.A) != 0)
-                {
-                    _pixels[i] = Color.FromArgb(
-                        source._pixels[i].A,
-                        _pixels[i].R,
-                        _pixels[i].G,
-                        _pixels[i].B
-                    );
+
+                    int index = (x * Convert.ToInt32(_height)) + y;
+                    if ((channels & Channel.R) != 0)
+                    {
+                        _pixels[index] = Color.FromArgb(
+                            _pixels[index].A,
+                            sourcePixel.R,
+                            _pixels[index].G,
+                            _pixels[index].B
+                        );
+                    }
+                    if ((channels & Channel.G) != 0)
+                    {
+                        _pixels[index] = Color.FromArgb(
+                            _pixels[index].A,
+                            _pixels[index].R,
+                            sourcePixel.G,
+                            _pixels[index].B
+                        );
+                    }
+                    if ((channels & Channel.B) != 0)
+                    {
+                        _pixels[index] = Color.FromArgb(
+                            _pixels[index].A,
+                            _pixels[index].R,
+                            _pixels[index].G,
+                            sourcePixel.B
+                        );
+                    }
+                    if ((channels & Channel.A) != 0)
+                    {
+                        _pixels[index] = Color.FromArgb(
+                            sourcePixel.A,
+                            _pixels[index].R,
+                            _pixels[index].G,
+                            _pixels[index].B
+                        );
+                    }
                 }
             }
         }
 
         public Color GetPixel(uint x, uint y)
         {
+            if (y >= _height)
+                y = _height - 1;
+            else if (y < 0)
+                y = 0;
+            if (x >= _width)
+                x = _width - 1;
+            else if (x < 0)
+                x = 0;
+
             return _pixels[(x * _height) + y];
         }
 
