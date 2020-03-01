@@ -53,9 +53,17 @@ namespace Tortuga.Components
                     _material.CreateUniformData<int>("enableSmoothShading");
                     _material.CreateSampledImage("albedo", 1, 1);
                     _material.CreateSampledImage("normal", 1, 1);
-                    _material.CreateSampledImage("metal", 1, 1);
-                    _material.CreateSampledImage("roughness", 1, 1);
-                    _material.CreateSampledImage("ao", 1, 1);
+                    _material.CreateSampledImage("detailTexture", 1, 1);
+
+                    var detailTexture = new Graphics.Image("Assets/Images/Bricks/Metalness.jpg");
+                    detailTexture.CopyChannel(
+                        new Graphics.Image("Assets/Images/Bricks/Roughness.jpg"),
+                        Graphics.Image.Channel.G
+                    );
+                    detailTexture.CopyChannel(
+                        new Graphics.Image("Assets/Images/Bricks/AmbientOclusion.jpg"),
+                        Graphics.Image.Channel.B
+                    );
 
                     //copy data
                     var task = Task.Run(async () =>
@@ -70,16 +78,8 @@ namespace Tortuga.Components
                             new Graphics.Image("Assets/Images/Bricks/Normal.jpg")
                         );
                         await _material.UpdateSampledImage(
-                            "metal",
-                            new Graphics.Image("Assets/Images/Bricks/Metalness.jpg")
-                        );
-                        await _material.UpdateSampledImage(
-                            "roughness",
-                            new Graphics.Image("Assets/Images/Bricks/Roughness.jpg")
-                        );
-                        await _material.UpdateSampledImage(
-                            "ao",
-                            new Graphics.Image("Assets/Images/Bricks/AmbientOclusion.jpg")
+                            "detailTexture",
+                            detailTexture
                         );
                     });
                     task.Wait();
