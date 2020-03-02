@@ -20,27 +20,32 @@ namespace Tortuga.Test
             scene.AddEntity(camera);
 
             //load obj model
-            var cube = new OBJLoader("Assets/Models/Sphere.obj");
+            var sphere = new OBJLoader("Assets/Models/Sphere.obj");
 
             //light
-            var light = new Core.Entity();
-            var lTransform = await light.AddComponent<Components.Transform>();
-            lTransform.Position = new Vector3(0, 0, -7);
-            var lComp = await light.AddComponent<Components.Light>();
-            lComp.Intensity = 1.0f;
-            lComp.Type = Components.Light.LightType.Point;
-            lComp.Color = Color.White;
-            scene.AddEntity(light);
+            {
+                var e = new Core.Entity();
+                var transform = await e.AddComponent<Components.Transform>();
+                transform.Position = new Vector3(0, 0, -7);
+                var light = await e.AddComponent<Components.Light>();
+                light.Intensity = 1.0f;
+                light.Type = Components.Light.LightType.Point;
+                light.Color = Color.White;
+                scene.AddEntity(e);
+            }
 
-            //entity
-            var triangle = new Core.Entity();
-            var transform = await triangle.AddComponent<Components.Transform>();
-            transform.Position = new Vector3(0, 0, -10);
-            transform.IsStatic = false;
-            var mesh = await triangle.AddComponent<Components.Mesh>();
-            scene.AddEntity(triangle);
-            await mesh.SetVertices(cube.ToGraphicsVertices);
-            await mesh.SetIndices(cube.ToGraphicsIndex);
+            //sphere 1
+            {
+                var e = new Core.Entity();
+                var transform = await e.AddComponent<Components.Transform>();
+                transform.Position = new Vector3(0, 0, -10);
+                transform.IsStatic = false;
+                var mesh = await e.AddComponent<Components.Mesh>();
+                await mesh.SetVertices(sphere.ToGraphicsVertices);
+                await mesh.SetIndices(sphere.ToGraphicsIndex);
+                mesh.ActiveMaterial = Graphics.Material.Load("Assets/Material/Metal.json");
+                scene.AddEntity(e);
+            }
 
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<AutoRotator>();

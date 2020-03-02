@@ -46,14 +46,14 @@ namespace Tortuga.Components
             {
                 if (_material == null)
                 {
-                    _material = new Material(new Graphics.Shader(
+                    _material = new Material(Graphics.Shader.Load(
                         "Assets/Shaders/Default/Default.vert",
                         "Assets/Shaders/Default/Default.frag"
                     ));
                     _material.CreateUniformData<PBR>("PBR");
-                    _material.CreateSampledImage("albedo", 1, 1);
-                    _material.CreateSampledImage("normal", 1, 1);
-                    _material.CreateSampledImage("detailTexture", 1, 1);
+                    _material.CreateSampledImage("Albedo", 1, 1);
+                    _material.CreateSampledImage("Normal", 1, 1);
+                    _material.CreateSampledImage("Detail", 1, 1);
 
                     var detailTexture = Graphics.Image.SingleColor(System.Drawing.Color.Black);
                     detailTexture.CopyChannel(
@@ -73,15 +73,15 @@ namespace Tortuga.Components
                             Workflow = 0  
                         });
                         await _material.UpdateSampledImage(
-                            "albedo",
+                            "Albedo",
                             Graphics.Image.SingleColor(System.Drawing.Color.Gray)
                         );
                         await _material.UpdateSampledImage(
-                            "normal",
+                            "Normal",
                             Graphics.Image.SingleColor(System.Drawing.Color.Blue)
                         );
                         await _material.UpdateSampledImage(
-                            "detailTexture",
+                            "Detail",
                             detailTexture
                         );
                     });

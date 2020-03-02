@@ -1,0 +1,37 @@
+{
+  "Light": true,
+  "Shaders": {
+    "Vertex": "Assets/Shaders/Default/Default.vert",
+    "Fragment": "Assets/Shaders/Default/Default.frag"
+  },
+  "DescriptorSets": [
+    {
+      "Type": "Data",
+      "Size": "int",
+      "Name": "PBR",
+      "Value": 0
+    },
+    {
+      "Type": "SampledImage2D",
+      "Name": "Albedo",
+      "Value": "Assets/Images/Bricks/Albedo.jpg",
+      "MipLevel": 1
+    },
+    {
+      "Type": "SampledImage2D",
+      "Name": "Normal",
+      "Value": "Assets/Images/Bricks/Normal.jpg",
+      "MipLevel": 1
+    },
+    {
+      "Type": "SampledImage2D",
+      "Name": "Detail",
+      "Value": [
+        "Assets/Images/Bricks/Metalness.jpg",
+        "Assets/Images/Bricks/Roughness.jpg",
+        "Assets/Images/Bricks/AmbientOclusion.jpg"
+      ],
+      "MipLevel": 1
+    }
+  ]
+}

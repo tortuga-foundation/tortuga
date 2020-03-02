@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.IO;
+using System.Linq;
 
 namespace Tortuga.Graphics
 {
@@ -279,6 +281,104 @@ namespace Tortuga.Graphics
         internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, T data) where T : struct
         {
             return _descriptorMapper[key].Buffer.SetDataGetTransferObject(new T[] { data });
+        }
+
+        public static Material Load(string path)
+        {
+            if (File.Exists(path) == false)
+                throw new FileNotFoundException("could not find materail file");
+
+            var obj = Json.JsonParser.FromJson(File.ReadAllText(path));
+            try
+            {
+                var lighting = (bool)obj["Light"];
+                //setup shader
+                var shadersJSON = obj["Shaders"] as Dictionary<string, object>;
+                var vertexShader = shadersJSON["Vertex"] as string;
+                var fragmentShader = shadersJSON["Fragment"] as string;
+                var shader = Shader.Load(vertexShader, fragmentShader);
+
+                //create new material
+                var material = new Material(shader, lighting);
+                //setup material descriptor sets
+                var setsJSON = obj["DescriptorSets"] as ICollection<object>;
+                foreach (var setRawJSON in setsJSON)
+                {
+                    var setJSON = setRawJSON as Dictionary<string, object>;
+                    var setType = setJSON["Type"] as string;
+                    var setName = setJSON["Name"] as string;
+
+                    if (setType == "Data")
+                    {
+                        var setSize = setJSON["Size"] as string;
+                        if (setSize == "int")
+                        {
+                            var setValue = System.Convert.ToInt32(System.Math.Round((double)setJSON["Value"]));
+                            material.CreateUniformData<PBR>(setName);
+                            material.UpdateUniformData<PBR>(setName, new PBR
+                            {
+                                Workflow = setValue
+                            }).Wait();
+                        }
+                    }
+                    else if (setType == "SampledImage2D")
+                    {
+                        var mipLevel = System.Convert.ToInt32(System.Math.Round((double)setJSON["MipLevel"]));
+                        material.CreateSampledImage(setName, 1, 1);
+                        var singleImage = setJSON["Value"] as string;
+                        if (singleImage != null)
+                        {
+                            if (File.Exists(singleImage))
+                                material.UpdateSampledImage(setName, new Graphics.Image(singleImage)).Wait();
+                        }
+                        else
+                        {
+                            var rawMultiImage = setJSON["Value"] as ICollection<object>;
+                            var multiImage = rawMultiImage.ToArray();
+                            if (multiImage.Length <= 4 && multiImage.Length > 0)
+                            {
+                                var R = new Graphics.Image(multiImage[0] as string);
+                                if (multiImage.Length > 1)
+                                {
+                                    var G = new Graphics.Image(multiImage[1] as string);
+                                    R.CopyChannel(G, Graphics.Image.Channel.G);
+                                }
+                                if (multiImage.Length > 2)
+                                {
+                                    var B = new Graphics.Image(multiImage[2] as string);
+                                    R.CopyChannel(B, Graphics.Image.Channel.B);
+                                }
+                                if (multiImage.Length > 3)
+                                {
+                                    var A = new Graphics.Image(multiImage[3] as string);
+                                    R.CopyChannel(A, Graphics.Image.Channel.A);
+                                }
+                                material.UpdateSampledImage(setName, R).Wait();
+                            }
+                        }
+                    }
+                }
+                return material;
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine(e.ToString());
+            }
+            //if cannot get material use default pbr
+            {
+                var material = new Material(Graphics.Shader.Load(
+                        "Assets/Shaders/Default/Default.vert",
+                        "Assets/Shaders/Default/Default.frag"
+                    ));
+                material.CreateUniformData<PBR>("PBR");
+                material.CreateSampledImage("Albedo", 1, 1);
+                material.CreateSampledImage("Normal", 1, 1);
+                material.CreateSampledImage("Detail", 1, 1);
+                material.UpdateSampledImage("Albedo", Graphics.Image.SingleColor(System.Drawing.Color.White)).Wait();
+                material.UpdateSampledImage("Normal", Graphics.Image.SingleColor(System.Drawing.Color.White)).Wait();
+                material.UpdateSampledImage("Detail", Graphics.Image.SingleColor(System.Drawing.Color.White)).Wait();
+                return material;
+            }
         }
     }
 }
