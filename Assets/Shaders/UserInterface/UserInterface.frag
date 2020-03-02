@@ -10,7 +10,11 @@ layout(set=1, binding=0) readonly uniform MESH_MVP
 {
     mat4 model;
 };
-layout(set=2, binding=0) uniform sampler2D albedo;
+layout(set=2,binding=0) readonly uniform USER_INTERFACE_STRUCT
+{
+    int Is3D;
+};
+layout(set=3, binding=0) uniform sampler2D albedo;
 
 layout(location = 0) in vec2 inUV;
 
