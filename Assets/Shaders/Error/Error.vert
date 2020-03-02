@@ -32,16 +32,7 @@ layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inTexture;
 layout(location = 2) in vec3 inNormal;
 
-layout(location = 0) out vec3 outNormal;
-layout(location = 1) out vec2 outUV;
-layout(location = 2) out vec3 outLightVector[10];
-
 void main() {
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;
-
-    outUV = inTexture;
-    outNormal = (model * vec4(inNormal, 0.)).xyz;
-    for (int i = 0; i < lightsCount; i++)
-        outLightVector[i] = lights[i].position.xyz - worldPosition.xyz;
 }

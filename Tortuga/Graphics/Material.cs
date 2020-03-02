@@ -356,7 +356,7 @@ namespace Tortuga.Graphics
                             else if (type == "Vec3")
                             {
                                 var val = raw["Value"] as string;
-                                var reg = new Regex(@"vec3([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*)");
+                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*\)");
                                 var match = reg.Match(val);
                                 var axies = new List<float>();
                                 axies.Add(float.Parse(match.Groups[1].ToString()));
@@ -419,19 +419,19 @@ namespace Tortuga.Graphics
             {
                 System.Console.WriteLine(e.ToString());
             }
-            //if cannot get material use default pbr
+            return ErrorMaterial;
+        }
+
+        public static Material ErrorMaterial
+        {
+            get
             {
-                var material = new Material(Graphics.Shader.Load(
-                        "Assets/Shaders/Default/Default.vert",
-                        "Assets/Shaders/Default/Default.frag"
-                    ));
-                material.CreateUniformData<PBR>("PBR");
-                material.CreateSampledImage("Albedo", 1, 1);
-                material.CreateSampledImage("Normal", 1, 1);
-                material.CreateSampledImage("Detail", 1, 1);
-                material.UpdateSampledImage("Albedo", Graphics.Image.SingleColor(System.Drawing.Color.White)).Wait();
-                material.UpdateSampledImage("Normal", Graphics.Image.SingleColor(System.Drawing.Color.White)).Wait();
-                material.UpdateSampledImage("Detail", Graphics.Image.SingleColor(System.Drawing.Color.White)).Wait();
+                var material = new Material(
+                    Graphics.Shader.Load(
+                        "Assets/Shaders/Error/Error.vert",
+                        "Assets/Shaders/Error/Error.frag"
+                    )
+                );
                 return material;
             }
         }

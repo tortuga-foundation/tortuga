@@ -45,48 +45,8 @@ namespace Tortuga.Components
             await Task.Run(() =>
             {
                 if (_material == null)
-                {
-                    _material = new Material(Graphics.Shader.Load(
-                        "Assets/Shaders/Default/Default.vert",
-                        "Assets/Shaders/Default/Default.frag"
-                    ));
-                    _material.CreateUniformData<PBR>("PBR");
-                    _material.CreateSampledImage("Albedo", 1, 1);
-                    _material.CreateSampledImage("Normal", 1, 1);
-                    _material.CreateSampledImage("Detail", 1, 1);
-
-                    var detailTexture = Graphics.Image.SingleColor(System.Drawing.Color.Black);
-                    detailTexture.CopyChannel(
-                        Graphics.Image.SingleColor(System.Drawing.Color.DarkGray),
-                        Graphics.Image.Channel.G
-                    );
-                    detailTexture.CopyChannel(
-                        Graphics.Image.SingleColor(System.Drawing.Color.DarkGray),
-                        Graphics.Image.Channel.B
-                    );
-
-                    //copy data
-                    var task = Task.Run(async () =>
-                    {
-                        await _material.UpdateUniformData<PBR>("PBR", new PBR
-                        {
-                            Workflow = 0  
-                        });
-                        await _material.UpdateSampledImage(
-                            "Albedo",
-                            Graphics.Image.SingleColor(System.Drawing.Color.Gray)
-                        );
-                        await _material.UpdateSampledImage(
-                            "Normal",
-                            Graphics.Image.SingleColor(System.Drawing.Color.Blue)
-                        );
-                        await _material.UpdateSampledImage(
-                            "Detail",
-                            detailTexture
-                        );
-                    });
-                    task.Wait();
-                }
+                    _material = Material.ErrorMaterial;
+                    
                 _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
             });

@@ -28,21 +28,9 @@ layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
     int lightReserved3;
     LightInfo lights[10];
 };
-layout(set=3,binding=0) uniform sampler2D albedo;
-
-layout(location = 0) in vec3 inNormal;
-layout(location = 1) in vec2 inUV;
-layout(location = 2) in vec3 inLightVector[10];
 
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    vec3 unitNormal = normalize(inNormal);
-    vec3 unitLightVector = normalize(inLightVector[0]);
-    
-    float nDot1 = dot(unitNormal, unitLightVector);
-    float brightness = max(nDot1, 0.);
-
-    vec3 outAlbedo = texture(albedo, inUV).rgb * brightness;
-    outColor = vec4(outAlbedo, 1.);
+    outColor = vec4(vec3(1., 0., 0.), 1.);
 }
