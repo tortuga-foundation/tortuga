@@ -1,6 +1,6 @@
 # Tortuga
 
-Tortua is an open source game engine built using dot c# net core 3.0 
+Tortua is an open source game engine built using dot c# net core 3.0
 
 ![.NET Core](https://github.com/tortuga-foundation/tortuga/workflows/.NET%20Core/badge.svg?branch=master)
 
@@ -8,19 +8,77 @@ Tortua is an open source game engine built using dot c# net core 3.0
 
 ## Core Features
 
-* Multi-Threading
-* Entity Component System (With Component Behaviour)
-* PBR Shader (Metalness Workflow)
-* Event Based Input System
+- Multi-Threading
+- Entity Component System (With Component Behaviour)
+- PBR Shader (Metalness Workflow)
+- Event Based Input System
 
 ## Prerequisites
 
-* Dot Net Core 3.0
-* Vulkan
-* SDL (With Vulkan Support)
+- Dot Net Core 3.0
+- Vulkan
+- SDL (With Vulkan Support)
 
 ## How to Run
 
 1. `dotnet restore tortuga.sln`
 2. `dotnet build tortuga.sln`
 3. `./Tortuga.Test/bin/Debug/netcoreapp3.0/Tortuga.Test.dll`
+
+## Example
+
+```c#
+var engine = new Engine();
+
+//create new scene
+var scene = new Core.Scene();
+
+//camera
+{
+    var entity = new Core.Entity();
+    var camera = await entity.AddComponent<Components.Camera>();
+    camera.FieldOfView = 90;
+    scene.AddEntity(entity);
+}
+
+//load obj model
+var sphere = new OBJLoader("Assets/Models/Sphere.obj");
+//load bricks material
+var bricks = Graphics.Material.Load("Assets/Material/Bricks.json");
+
+//light
+{
+    var entity = new Core.Entity();
+    var transform = await entity.AddComponent<Components.Transform>();
+    transform.Position = new Vector3(0, 0, -7);
+    //add light component
+    var light = await entity.AddComponent<Components.Light>();
+    light.Intensity = 1.0f;
+    light.Type = Components.Light.LightType.Point;
+    light.Color = Color.White;
+    scene.AddEntity(entity);
+}
+
+//sphere 1
+{
+    var entity = new Core.Entity();
+    var transform = await entity.AddComponent<Components.Transform>();
+    transform.Position = new Vector3(0, 0, -10);
+    transform.IsStatic = false;
+    //add mesh component
+    var mesh = await entity.AddComponent<Components.Mesh>();
+    await mesh.SetVertices(sphere.ToGraphicsVertices);
+    await mesh.SetIndices(sphere.ToGraphicsIndex);
+    mesh.ActiveMaterial = bricks;
+
+    scene.AddEntity(entity);
+}
+
+//add systems to the scene
+scene.AddSystem<Systems.RenderingSystem>();
+scene.AddSystem<AutoRotator>();
+scene.AddSystem<LightMovement>();
+
+engine.LoadScene(scene); //set this scene as currently active
+await engine.Run();
+```

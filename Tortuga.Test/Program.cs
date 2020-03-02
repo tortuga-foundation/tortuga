@@ -15,43 +15,52 @@ namespace Tortuga.Test
             var scene = new Core.Scene();
 
             //camera
-            var camera = new Core.Entity();
-            await camera.AddComponent<Components.Camera>();
-            scene.AddEntity(camera);
+            {
+                var entity = new Core.Entity();
+                var camera = await entity.AddComponent<Components.Camera>();
+                camera.FieldOfView = 90;
+                scene.AddEntity(entity);
+            }
 
             //load obj model
             var sphere = new OBJLoader("Assets/Models/Sphere.obj");
+            //load bricks material
+            var bricks = Graphics.Material.Load("Assets/Material/Bricks.json");
 
             //light
             {
-                var e = new Core.Entity();
-                var transform = await e.AddComponent<Components.Transform>();
+                var entity = new Core.Entity();
+                var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -7);
-                var light = await e.AddComponent<Components.Light>();
+                //add light component
+                var light = await entity.AddComponent<Components.Light>();
                 light.Intensity = 1.0f;
                 light.Type = Components.Light.LightType.Point;
                 light.Color = Color.White;
-                scene.AddEntity(e);
+                scene.AddEntity(entity);
             }
 
             //sphere 1
             {
-                var e = new Core.Entity();
-                var transform = await e.AddComponent<Components.Transform>();
+                var entity = new Core.Entity();
+                var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;
-                var mesh = await e.AddComponent<Components.Mesh>();
+                //add mesh component
+                var mesh = await entity.AddComponent<Components.Mesh>();
                 await mesh.SetVertices(sphere.ToGraphicsVertices);
                 await mesh.SetIndices(sphere.ToGraphicsIndex);
-                mesh.ActiveMaterial = Graphics.Material.Load("Assets/Material/Bricks.json");
-                scene.AddEntity(e);
+                mesh.ActiveMaterial = bricks;
+
+                scene.AddEntity(entity);
             }
 
+            //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<AutoRotator>();
             scene.AddSystem<LightMovement>();
 
-            engine.LoadScene(scene);
+            engine.LoadScene(scene); //set this scene as currently active
             await engine.Run();
         }
     }
