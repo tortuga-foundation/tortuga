@@ -246,9 +246,13 @@ void main() {
         vec3 n = GetNormal();
         vec3 v = normalize(inCameraPosition - inWorldPosition);    // Vector from surface point to camera
         vec3 l = normalize(light.position.xyz - inWorldPosition);     // Vector from surface point to light
+        if (light.type == 1)
+            l = normalize(light.forward.xyz);
         vec3 h = normalize(l+v);                        // Half vector between both l and v
         vec3 reflection = -normalize(reflect(v, n));
         float distance = length(light.position.xyz - inWorldPosition);
+        if (light.type == 1)
+            distance = 1;
         reflection.y *= -1.0f;
 
         float NdotL = clamp(dot(n, l), 0.001, 1.0);
