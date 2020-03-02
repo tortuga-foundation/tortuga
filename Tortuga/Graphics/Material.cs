@@ -353,15 +353,31 @@ namespace Tortuga.Graphics
                                 foreach (var b in bytes)
                                     data.Add(b);
                             }
-                            else if (type == "Vec3")
+                            else if (type == "Vec2")
                             {
                                 var val = raw["Value"] as string;
-                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*\)");
+                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*\)");
+                                var match = reg.Match(val);
+                                var axies = new List<float>();
+                                axies.Add(float.Parse(match.Groups[1].ToString()));
+                                axies.Add(float.Parse(match.Groups[2].ToString()));
+                                foreach (var ax in axies)
+                                {
+                                    var bytes = System.BitConverter.GetBytes(ax);
+                                    foreach (var b in bytes)
+                                        data.Add(b);
+                                }
+                            }
+                            else if (type == "Vec4")
+                            {
+                                var val = raw["Value"] as string;
+                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*\)");
                                 var match = reg.Match(val);
                                 var axies = new List<float>();
                                 axies.Add(float.Parse(match.Groups[1].ToString()));
                                 axies.Add(float.Parse(match.Groups[2].ToString()));
                                 axies.Add(float.Parse(match.Groups[3].ToString()));
+                                axies.Add(float.Parse(match.Groups[4].ToString()));
                                 foreach (var ax in axies)
                                 {
                                     var bytes = System.BitConverter.GetBytes(ax);
