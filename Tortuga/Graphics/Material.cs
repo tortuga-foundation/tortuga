@@ -271,6 +271,10 @@ namespace Tortuga.Graphics
                 fence.Wait();
             });
         }
+        public async Task<T> GetUniformData<T>(string key) where T : struct
+        {
+            return (await _descriptorMapper[key].Buffer.GetDataWithStaging<T>())[0];
+        }
 
         internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, T data) where T : struct
         {
