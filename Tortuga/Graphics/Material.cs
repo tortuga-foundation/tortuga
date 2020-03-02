@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.IO;
 using System.Linq;
-System.Text.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace Tortuga.Graphics
 {
@@ -356,7 +356,7 @@ namespace Tortuga.Graphics
                             else if (type == "Vec3")
                             {
                                 var val = raw["Value"] as string;
-                                var reg = new System.Text.RegularExpressions.Regex(@"vec3([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*)");
+                                var reg = new Regex(@"vec3([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*)");
                                 var match = reg.Match(val);
                                 var axies = new List<float>();
                                 axies.Add(float.Parse(match.Groups[1].ToString()));
