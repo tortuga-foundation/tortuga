@@ -25,10 +25,10 @@ namespace Tortuga.Components
         internal DescriptorSetPool.DescriptorSet CameraDescriptorSet => _cameraDescriptorSet;
         public Tortuga.Rect Viewport = new Rect
         {
-            x = 0,
-            y = 0,
-            width = 1,
-            height = 1
+            X = 0,
+            Y = 0,
+            Width = 1,
+            Height = 1
         };
         public Tortuga.IntVector2D Resolution
         {

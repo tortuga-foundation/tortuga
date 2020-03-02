@@ -302,7 +302,8 @@ namespace Tortuga.Graphics
             if (File.Exists(path) == false)
                 throw new FileNotFoundException("could not find materail file");
 
-            var obj = Json.JsonParser.FromJson(File.ReadAllText(path));
+            var jsonContent = File.ReadAllText(path);
+            var obj = Json.JsonParser.FromJson(jsonContent);
             try
             {
                 var lighting = (bool)obj["Light"];
@@ -356,7 +357,7 @@ namespace Tortuga.Graphics
                             else if (type == "Vec2")
                             {
                                 var val = raw["Value"] as string;
-                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*\)");
+                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*\)");
                                 var match = reg.Match(val);
                                 var axies = new List<float>();
                                 axies.Add(float.Parse(match.Groups[1].ToString()));
@@ -371,7 +372,7 @@ namespace Tortuga.Graphics
                             else if (type == "Vec4")
                             {
                                 var val = raw["Value"] as string;
-                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*\)");
+                                var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*\)");
                                 var match = reg.Match(val);
                                 var axies = new List<float>();
                                 axies.Add(float.Parse(match.Groups[1].ToString()));
@@ -401,6 +402,21 @@ namespace Tortuga.Graphics
                         {
                             if (File.Exists(singleImage))
                                 material.UpdateSampledImage(setName, new Graphics.Image(singleImage)).Wait();
+                            else
+                            {
+                                var regex = new Regex(@"[a-zA-Z]{4}[\ ]*\([\ ]*([0-9]+)[\ ]*,[\ ]*([0-9]+)[\ ]*,[\ ]*([0-9]+)[\ ]*,[\ ]*([0-9]+)[\ ]*\)");
+                                var match = regex.Match(singleImage);
+                                var r = int.Parse(match.Groups[1].Value);
+                                var g = int.Parse(match.Groups[2].Value);
+                                var b = int.Parse(match.Groups[3].Value);
+                                var a = int.Parse(match.Groups[4].Value);
+                                material.UpdateSampledImage(
+                                    setName,
+                                    Graphics.Image.SingleColor(
+                                        System.Drawing.Color.FromArgb(a, r, g, b)
+                                    )
+                                ).Wait();
+                            }
                         }
                         else
                         {
@@ -438,17 +454,20 @@ namespace Tortuga.Graphics
             return ErrorMaterial;
         }
 
+
+        private static Material _cachedErrorMaterial;
         public static Material ErrorMaterial
         {
             get
             {
-                var material = new Material(
-                    Graphics.Shader.Load(
-                        "Assets/Shaders/Error/Error.vert",
-                        "Assets/Shaders/Error/Error.frag"
-                    )
-                );
-                return material;
+                if (_cachedErrorMaterial == null)
+                    _cachedErrorMaterial = new Material(
+                        Graphics.Shader.Load(
+                            "Assets/Shaders/Error/Error.vert",
+                            "Assets/Shaders/Error/Error.frag"
+                        )
+                    );
+                return _cachedErrorMaterial;
             }
         }
     }

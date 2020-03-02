@@ -76,6 +76,14 @@ namespace Tortuga.Systems
                         transferCommands.Add(command.TransferCommand);
                     }
                 }
+                foreach (var mesh in uis)
+                {
+                    if (mesh.IsStatic == false)
+                    {
+                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
+                        transferCommands.Add(command.TransferCommand);
+                    }
+                }
 
                 //if previous frame has not finished rendering wait for it to finish before rendering next frame
 
@@ -128,16 +136,16 @@ namespace Tortuga.Systems
                     var swapchain = Engine.Instance.MainWindow.Swapchain;
                     _renderCommand.BlitImage(
                         camera.Framebuffer.ColorImage.ImageHandle,
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.height)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.X)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Y)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.Width)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Height)),
                         0,
                         swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
-                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.x)),
-                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.y)),
-                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.width)),
-                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.height)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.X)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.Y)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.Width)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.Height)),
                         0
                     );
                     _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);
@@ -173,10 +181,10 @@ namespace Tortuga.Systems
         {
             mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             mesh.RenderCommand.SetViewport(
-                System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.x)),
-                System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.y)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.width)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.width))
+                System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.X)),
+                System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Y)),
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.Width)),
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Width))
             );
 
             var descriptorSets = new List<DescriptorSetPool.DescriptorSet>();

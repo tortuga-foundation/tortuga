@@ -1,0 +1,15 @@
+{
+  "Light": false,
+  "Shaders": {
+    "Vertex": "Assets/Shaders/UserInterface/UserInterface.vert",
+    "Fragment": "Assets/Shaders/UserInterface/UserInterface.frag"
+  },
+  "DescriptorSets": [
+    {
+      "Type": "SampledImage2D",
+      "Name": "Albedo",
+      "Value": "RGBA(255, 255, 255, 255)",
+      "MipLevel": 1
+    }
+  ]
+}

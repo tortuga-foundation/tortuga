@@ -5,62 +5,54 @@ namespace Tortuga.Components
 {
     public class UserInterface : Mesh
     {
-        public bool Is3D
+        private static Graphics.Material _cachedMaterial = Graphics.Material.Load("Assets/Material/UI.json");
+        public override Graphics.Material ActiveMaterial
         {
-            get => _is3D;
-            set
+            get
             {
-                _is3D = value;
-                int val = 0;
-                if (value)
-                    val = 1;
-                var t = this.ActiveMaterial.UpdateUniformData<int>("Is3D", val);
-                t.Wait();
+                if (_cachedMaterial == null)
+                    _cachedMaterial = Graphics.Material.Load("Assets/Material/UI.json");
+                return _cachedMaterial;
             }
         }
 
-        private bool _is3D = true;
-
         public UserInterface()
         {
-            this.ActiveMaterial = new Graphics.Material(
-                new Graphics.Shader(
-                    "Assets/Shaders/UserInterface/UserInterface.vert",
-                    "Assets/Shaders/UserInterface/UserInterface.frag"
-                ),
-                false
-            );
-            this.ActiveMaterial.CreateUniformData<int>("Is3D");
-            this.ActiveMaterial.CreateSampledImage("albedo", 1, 1);
-
-            //copy data
-            var task = Task.Run(async () =>
-            {
-                await this.ActiveMaterial.UpdateUniformData<int>("Is3D", 1);
-                await this.ActiveMaterial.UpdateSampledImage(
-                    "albedo",
-                    Graphics.Image.SingleColor(System.Drawing.Color.White)
-                );
-                await this.SetVertices(new Graphics.Vertex[]{
+            this.SetVertices(
+                new Graphics.Vertex[]{
                     new Graphics.Vertex{
-                        Position = new Vector3(-1, -1, 0)
+                        Position = new Vector3(-1, -1, 0),
+                        TextureCoordinates = new Vector2(0, 0),
+                        Normal = new Vector3(0, 0, 1)
                     },
                     new Graphics.Vertex{
-                        Position = new Vector3(1, -1, 0)
+                        Position = new Vector3(1, -1, 0),
+                        TextureCoordinates = new Vector2(1, 0),
+                        Normal = new Vector3(0, 0, 1)
                     },
                     new Graphics.Vertex{
-                        Position = new Vector3(1, 1, 0)
+                        Position = new Vector3(1, 1, 0),
+                        TextureCoordinates = new Vector2(1, 1),
+                        Normal = new Vector3(0, 0, 1)
                     },
                     new Graphics.Vertex{
-                        Position = new Vector3(-1, 1, 0)
+                        Position = new Vector3(-1, 1, 0),
+                        TextureCoordinates = new Vector2(0, 1),
+                        Normal = new Vector3(0, 0, 1)
                     }
-                });
-                await this.SetIndices(new uint[]{
+                }
+            ).Wait();
+            this.SetIndices(
+                new uint[]{
                     0, 2, 1,
                     2, 0, 3
-                });
-            });
-            task.Wait();
+                }
+            ).Wait();
+        }
+    
+        public Task UpdateImage(Graphics.Image image)
+        {
+            return this.ActiveMaterial.UpdateSampledImage("Albedo", image);
         }
     }
 }

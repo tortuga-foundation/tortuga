@@ -23,9 +23,20 @@ namespace Tortuga.Test
             }
 
             //load obj model
-            var sphere = new OBJLoader("Assets/Models/Sphere.obj");
+            var sphereOBJ = new OBJLoader("Assets/Models/Sphere.obj");
             //load bricks material
-            var bricks = Graphics.Material.Load("Assets/Material/Bricks.json");
+            var bricksMaterial = Graphics.Material.Load("Assets/Material/Bricks.json");
+
+            //user interface
+            {
+                var entity = new Core.Entity();
+                var transform = await entity.AddComponent<Components.Transform>();
+                transform.RectTransform = new Rect(0.7, 0, 0.3, 1);
+                transform.IsStatic = false;
+                var ui = await entity.AddComponent<Components.UserInterface>();
+                await ui.UpdateImage(Graphics.Image.SingleColor(Color.DarkGray));
+                scene.AddEntity(entity);
+            }
 
             //light
             {
@@ -48,9 +59,9 @@ namespace Tortuga.Test
                 transform.IsStatic = false;
                 //add mesh component
                 var mesh = await entity.AddComponent<Components.Mesh>();
-                await mesh.SetVertices(sphere.ToGraphicsVertices);
-                await mesh.SetIndices(sphere.ToGraphicsIndex);
-                mesh.ActiveMaterial = bricks;
+                await mesh.SetVertices(sphereOBJ.ToGraphicsVertices);
+                await mesh.SetIndices(sphereOBJ.ToGraphicsIndex);
+                mesh.ActiveMaterial = bricksMaterial;
 
                 scene.AddEntity(entity);
             }

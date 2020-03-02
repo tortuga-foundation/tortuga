@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 
 namespace Tortuga.Components
@@ -9,6 +10,26 @@ namespace Tortuga.Components
         public Quaternion Rotation = Quaternion.Identity;
         public Vector3 Scale = new Vector3(1, 1, 1);
 
+        public Rect RectTransform
+        {
+            get
+            {
+                return new Rect
+                {
+                    X = Position.X,
+                    Y = Position.Y,
+                    Width = Scale.X,
+                    Height = Scale.Y
+                };
+            }
+            set
+            {
+                Position.X = Convert.ToSingle(value.X);
+                Position.Y = Convert.ToSingle(value.Y);
+                Scale.X = Convert.ToSingle(value.Width);
+                Scale.Y = Convert.ToSingle(value.Height);
+            }
+        }
 
         public Matrix4x4 ToMatrix
         {

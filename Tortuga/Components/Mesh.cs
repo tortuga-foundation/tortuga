@@ -10,7 +10,7 @@ namespace Tortuga.Components
 {
     public class Mesh : Core.BaseComponent
     {
-        public Material ActiveMaterial
+        public virtual Material ActiveMaterial
         {
             set { _material = value; }
             get { return _material; }
