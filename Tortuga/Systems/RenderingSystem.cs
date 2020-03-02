@@ -70,18 +70,20 @@ namespace Tortuga.Systems
                         var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", meshLights);
                         transferCommands.Add(command.TransferCommand);
                     }
-                    if (mesh.IsStatic == false)
+                    if (mesh.IsStatic == false || mesh.HasRenderedOnce == false)
                     {
                         var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
                         transferCommands.Add(command.TransferCommand);
+                        mesh.HasRenderedOnce = true;
                     }
                 }
                 foreach (var mesh in uis)
                 {
-                    if (mesh.IsStatic == false)
+                    if (mesh.IsStatic == false || mesh.HasRenderedOnce == false)
                     {
                         var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
                         transferCommands.Add(command.TransferCommand);
+                        mesh.HasRenderedOnce = true;
                     }
                 }
 
