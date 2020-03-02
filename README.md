@@ -12,6 +12,7 @@ Tortua is an open source game engine built using dot c# net core 3.0
 - Entity Component System (With Component Behaviour)
 - PBR Shader (Metalness Workflow)
 - Event Based Input System
+- Material JSON Object
 
 ## Prerequisites
 
@@ -27,6 +28,7 @@ Tortua is an open source game engine built using dot c# net core 3.0
 
 ## Example
 
+#### Sample Code:
 ```c#
 var engine = new Engine();
 
@@ -81,4 +83,50 @@ scene.AddSystem<LightMovement>();
 
 engine.LoadScene(scene); //set this scene as currently active
 await engine.Run();
+```
+
+#### Material JSON
+```json
+{
+  "Light": true,
+  "Shaders": {
+    "Vertex": "Assets/Shaders/Default/Default.vert",
+    "Fragment": "Assets/Shaders/Default/Default.frag"
+  },
+  "DescriptorSets": [
+    {
+      "Type": "UniformData",
+      "Name": "PBR",
+      "Value": {
+        "WorkFlow": {
+          "Type": "Int",
+          "Value": 0
+        }
+      }
+    },
+    {
+      "Type": "SampledImage2D",
+      "Name": "Albedo",
+      "Value": "Assets/Images/Bricks/Albedo.jpg",
+      "MipLevel": 1
+    },
+    {
+      "Type": "SampledImage2D",
+      "Name": "Normal",
+      "Value": "Assets/Images/Bricks/Normal.jpg",
+      "MipLevel": 1
+    },
+    {
+      "Type": "SampledImage2D",
+      "Name": "Detail",
+      "Value": [
+        "Assets/Images/Bricks/Metalness.jpg",
+        "Assets/Images/Bricks/Roughness.jpg",
+        "Assets/Images/Bricks/AmbientOclusion.jpg"
+      ],
+      "MipLevel": 1
+    }
+  ]
+}
+
 ```
