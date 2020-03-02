@@ -43,7 +43,7 @@ namespace Tortuga.Test
                 var mesh = await e.AddComponent<Components.Mesh>();
                 await mesh.SetVertices(sphere.ToGraphicsVertices);
                 await mesh.SetIndices(sphere.ToGraphicsIndex);
-                mesh.ActiveMaterial = Graphics.Material.Load("Assets/Material/Metal.json");
+                mesh.ActiveMaterial = Graphics.Material.Load("Assets/Material/Bricks.json");
                 scene.AddEntity(e);
             }
 
