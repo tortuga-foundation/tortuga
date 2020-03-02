@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.IO;
 using System.Linq;
+System.Text.RegularExpressions;
 
 namespace Tortuga.Graphics
 {
@@ -95,7 +96,7 @@ namespace Tortuga.Graphics
             _isDirty = true;
         }
 
-        public void CreateUniformData<T>(string key) where T : struct
+        public void CreateUniformData(string key, uint byteSize)
         {
             if (_descriptorMapper.ContainsKey(key))
                 return;
@@ -112,7 +113,7 @@ namespace Tortuga.Graphics
             var pool = new DescriptorSetPool(layout);
             var set = pool.AllocateDescriptorSet();
             var buffer = Buffer.CreateDevice(
-                System.Convert.ToUInt32(Unsafe.SizeOf<T>()),
+                byteSize,
                 VkBufferUsageFlags.UniformBuffer
             );
             set.BuffersUpdate(buffer);
@@ -127,6 +128,19 @@ namespace Tortuga.Graphics
                 }
             );
             _isDirty = true;
+        }
+        public async Task UpdateUniformDataArray<T>(string key, T[] data) where T : struct
+        {
+            if (_descriptorMapper.ContainsKey(key) == false)
+                return;
+            await _descriptorMapper[key].Buffer.SetDataWithStaging(data);
+        }
+        public void CreateUniformData<T>(string key) where T : struct
+        {
+            CreateUniformData(
+                key,
+                System.Convert.ToUInt32(Unsafe.SizeOf<T>())
+            );
         }
         public async Task UpdateUniformData<T>(string key, T data) where T : struct
         {
@@ -308,18 +322,59 @@ namespace Tortuga.Graphics
                     var setType = setJSON["Type"] as string;
                     var setName = setJSON["Name"] as string;
 
-                    if (setType == "Data")
+                    if (setType == "UniformData")
                     {
-                        var setSize = setJSON["Size"] as string;
-                        if (setSize == "int")
+                        var setValue = setJSON["value"] as Dictionary<string, object>;
+                        var data = new List<byte>();
+                        foreach (var item in setValue)
                         {
-                            var setValue = System.Convert.ToInt32(System.Math.Round((double)setJSON["Value"]));
-                            material.CreateUniformData<PBR>(setName);
-                            material.UpdateUniformData<PBR>(setName, new PBR
+                            var raw = item.Value as Dictionary<string, object>;
+                            var type = raw["Type"] as string;
+                            if (type == "Int")
                             {
-                                Workflow = setValue
-                            }).Wait();
+                                var val = System.Convert.ToInt32(
+                                    System.Math.Round((double)raw["Value"])
+                                );
+                                var bytes = System.BitConverter.GetBytes(val);
+                                foreach (var b in bytes)
+                                    data.Add(b);
+                            }
+                            else if (type == "Double")
+                            {
+                                var val = (double)raw["Value"];
+                                var bytes = System.BitConverter.GetBytes(val);
+                                foreach (var b in bytes)
+                                    data.Add(b);
+                            }
+                            else if (type == "Float")
+                            {
+                                var val = System.Convert.ToSingle((double)raw["Value"]);
+                                var bytes = System.BitConverter.GetBytes(val);
+                                foreach (var b in bytes)
+                                    data.Add(b);
+                            }
+                            else if (type == "Vec3")
+                            {
+                                var val = raw["Value"] as string;
+                                var reg = new System.Text.RegularExpressions.Regex(@"vec3([\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*,[\ ]*([0-9\,\-]+)[\ ]*)");
+                                var match = reg.Match(val);
+                                var axies = new List<float>();
+                                axies.Add(float.Parse(match.Groups[1].ToString()));
+                                axies.Add(float.Parse(match.Groups[2].ToString()));
+                                axies.Add(float.Parse(match.Groups[3].ToString()));
+                                foreach (var ax in axies)
+                                {
+                                    var bytes = System.BitConverter.GetBytes(ax);
+                                    foreach (var b in bytes)
+                                        data.Add(b);
+                                }
+                            }
                         }
+                        material.CreateUniformData(
+                            setName,
+                            System.Convert.ToUInt32(data.Count() * sizeof(byte))
+                        );
+                        material.UpdateUniformDataArray<byte>(setName, data.ToArray()).Wait();
                     }
                     else if (setType == "SampledImage2D")
                     {

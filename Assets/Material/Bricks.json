@@ -6,10 +6,14 @@
   },
   "DescriptorSets": [
     {
-      "Type": "Data",
-      "Size": "int",
+      "Type": "UniformData",
       "Name": "PBR",
-      "Value": 0
+      "Value": {
+        "WorkFlow": {
+          "Type": "Int",
+          "Value": 0
+        }
+      }
     },
     {
       "Type": "SampledImage2D",
