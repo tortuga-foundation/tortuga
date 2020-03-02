@@ -8,7 +8,7 @@ namespace Tortuga.Systems
 {
     public class RenderingSystem : Core.BaseSystem
     {
-        #pragma warning disable 0649
+#pragma warning disable 0649
         internal struct LightInfo
         {
             public Vector4 Position;
@@ -33,7 +33,7 @@ namespace Tortuga.Systems
             public LightInfo Light9;
             public int Count;
         }
-        #pragma warning restore 0649
+#pragma warning restore 0649
 
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
@@ -53,6 +53,7 @@ namespace Tortuga.Systems
         {
             await Task.Run(() =>
             {
+                //if previous frame has not finished rendering wait for it to finish before rendering next frame
                 _renderWaitFence.Wait();
                 _renderWaitFence.Reset();
 
@@ -86,8 +87,6 @@ namespace Tortuga.Systems
                         mesh.HasRenderedOnce = true;
                     }
                 }
-
-                //if previous frame has not finished rendering wait for it to finish before rendering next frame
 
                 //begin rendering frame
                 _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
