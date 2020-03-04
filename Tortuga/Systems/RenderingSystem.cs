@@ -8,33 +8,6 @@ namespace Tortuga.Systems
 {
     public class RenderingSystem : Core.BaseSystem
     {
-#pragma warning disable 0649
-        internal struct LightInfo
-        {
-            public Vector4 Position;
-            public Vector4 Forward;
-            public Vector4 Color;
-            public int Type;
-            public float Intensity;
-            public int Reserved1;
-            public int Reserved2;
-        }
-        internal struct LightShaderInfo
-        {
-            public LightInfo Light0;
-            public LightInfo Light1;
-            public LightInfo Light2;
-            public LightInfo Light3;
-            public LightInfo Light4;
-            public LightInfo Light5;
-            public LightInfo Light6;
-            public LightInfo Light7;
-            public LightInfo Light8;
-            public LightInfo Light9;
-            public int Count;
-        }
-#pragma warning restore 0649
-
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
         private Fence _renderWaitFence;
@@ -48,7 +21,6 @@ namespace Tortuga.Systems
             _renderWaitFence = new Fence(true);
             _syncSemaphore = new Semaphore();
         }
-
 
         public override void OnEnable()
         {
@@ -82,6 +54,7 @@ namespace Tortuga.Systems
 
                 var transferCommands = new List<CommandPool.Command>();
 
+                var uis = MyScene.GetComponents<Components.UserInterface>();
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
                 var meshes = MyScene.GetComponents<Components.Mesh>();
@@ -212,7 +185,7 @@ namespace Tortuga.Systems
             return mesh.RenderCommand;
         }
 
-        private LightShaderInfo GetClosestLights(Components.Mesh mesh, Components.Light[] lights)
+        private Components.Light.FullShaderInfo GetClosestLights(Components.Mesh mesh, Components.Light[] lights)
         {
             System.Array.Sort(lights, (Components.Light left, Components.Light right) =>
             {
@@ -222,9 +195,9 @@ namespace Tortuga.Systems
             });
             if (lights.Length > 10)
                 System.Array.Resize(ref lights, 10);
-            var infoList = new List<LightInfo>();
+            var infoList = new List<Components.Light.LightShaderInfo>();
             foreach (var l in lights)
-                infoList.Add(new LightInfo
+                infoList.Add(new Components.Light.LightShaderInfo
                 {
                     Color = new Vector4(l.Color.R, l.Color.G, l.Color.B, l.Color.A),
                     Forward = new Vector4(l.Forward, 1),
@@ -233,8 +206,8 @@ namespace Tortuga.Systems
                     Type = (int)l.Type
                 });
             for (int i = infoList.Count; i < 10; i++)
-                infoList.Add(new LightInfo());
-            return new LightShaderInfo
+                infoList.Add(new Components.Light.LightShaderInfo());
+            return new Components.Light.FullShaderInfo
             {
                 Count = lights.Length,
                 Light0 = infoList[0],

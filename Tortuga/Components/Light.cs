@@ -37,5 +37,32 @@ namespace Tortuga.Components
                 return transform.Position;
             }
         }
+
+#pragma warning disable 0649
+        public struct LightShaderInfo
+        {
+            public Vector4 Position;
+            public Vector4 Forward;
+            public Vector4 Color;
+            public int Type;
+            public float Intensity;
+            public int Reserved1;
+            public int Reserved2;
+        }
+        public struct FullShaderInfo
+        {
+            public LightShaderInfo Light0;
+            public LightShaderInfo Light1;
+            public LightShaderInfo Light2;
+            public LightShaderInfo Light3;
+            public LightShaderInfo Light4;
+            public LightShaderInfo Light5;
+            public LightShaderInfo Light6;
+            public LightShaderInfo Light7;
+            public LightShaderInfo Light8;
+            public LightShaderInfo Light9;
+            public int Count;
+        }
+#pragma warning restore 0649
     }
 }
