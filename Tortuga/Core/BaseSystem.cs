@@ -10,6 +10,9 @@ namespace Tortuga.Core
         public BaseSystem() { }
         public abstract Task Update();
 
+        public abstract void OnEnable();
+        public abstract void OnDisable();
+
         public static T Create<T>(Scene scene) where T : BaseSystem, new()
         {
             var t = new T();

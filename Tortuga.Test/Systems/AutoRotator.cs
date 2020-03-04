@@ -20,6 +20,9 @@ namespace Tortuga.Test
 
         }
 
+        public override void OnEnable() { }
+        public override void OnDisable() { }
+
         public override async Task Update()
         {
             if (InputSystem.IsKeyDown(KeyCode.D))

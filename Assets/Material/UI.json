@@ -1,4 +1,5 @@
 {
+  "Type": "Material",
   "Light": false,
   "Shaders": {
     "Vertex": "Assets/Shaders/UserInterface/UserInterface.vert",

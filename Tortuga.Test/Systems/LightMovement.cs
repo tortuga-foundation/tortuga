@@ -9,6 +9,9 @@ namespace Tortuga.Test
     {
         private float _left = 0;
 
+
+        public override void OnEnable() { }
+        public override void OnDisable() { }
         public override async Task Update()
         {
             if (InputSystem.IsKeyDown(KeyCode.Right))

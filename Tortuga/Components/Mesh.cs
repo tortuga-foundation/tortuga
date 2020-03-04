@@ -30,8 +30,7 @@ namespace Tortuga.Components
                 return transform.IsStatic;
             }
         }
-        public bool HasRenderedOnce = false;
-
+        
         private Material _material;
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;

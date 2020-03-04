@@ -49,6 +49,29 @@ namespace Tortuga.Systems
             _syncSemaphore = new Semaphore();
         }
 
+
+        public override void OnEnable()
+        {
+            var tasks = new List<Task>();
+            var meshes = MyScene.GetComponents<Components.Mesh>();
+            foreach (var mesh in meshes)
+            {
+                tasks.Add(
+                    mesh.ActiveMaterial.UpdateUniformData(
+                        "MODEL", 
+                        0, 
+                        mesh.ModelMatrix
+                    )
+                );
+            }
+            var cameras = MyScene.GetComponents<Components.Camera>();
+            foreach (var camera in cameras)
+                tasks.Add(camera.UpdateCameraBuffers());
+            Task.WaitAll(tasks.ToArray());
+        }
+
+        public override void OnDisable() { }
+
         public override async Task Update()
         {
             await Task.Run(() =>
@@ -62,7 +85,6 @@ namespace Tortuga.Systems
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
                 var meshes = MyScene.GetComponents<Components.Mesh>();
-                var uis = MyScene.GetComponents<Components.UserInterface>();
                 foreach (var mesh in meshes)
                 {
                     if (mesh.ActiveMaterial.UsingLighting)
@@ -71,20 +93,10 @@ namespace Tortuga.Systems
                         var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
                         transferCommands.Add(command.TransferCommand);
                     }
-                    if (mesh.IsStatic == false || mesh.HasRenderedOnce == false)
+                    if (mesh.IsStatic == false)
                     {
                         var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
                         transferCommands.Add(command.TransferCommand);
-                        mesh.HasRenderedOnce = true;
-                    }
-                }
-                foreach (var mesh in uis)
-                {
-                    if (mesh.IsStatic == false || mesh.HasRenderedOnce == false)
-                    {
-                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
-                        transferCommands.Add(command.TransferCommand);
-                        mesh.HasRenderedOnce = true;
                     }
                 }
 
@@ -108,7 +120,7 @@ namespace Tortuga.Systems
                     if (camera.Resolution != cameraRes)
                         camera.Resolution = cameraRes;
                     if (camera.IsStatic == false)
-                        transferCommands.Add(camera.UpdateCameraBuffers().TransferCommand);
+                        transferCommands.Add(camera.UpdateCameraBuffersSemaphore().TransferCommand);
 
                     //begin render pass for this camera
                     _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
@@ -117,11 +129,6 @@ namespace Tortuga.Systems
 
                     var secondaryCommands = new List<CommandPool.Command>();
                     foreach (var mesh in meshes)
-                    {
-                        var meshCommand = ProcessMeshCommands(mesh, camera, lights);
-                        secondaryCommands.Add(meshCommand);
-                    }
-                    foreach (var mesh in uis)
                     {
                         var meshCommand = ProcessMeshCommands(mesh, camera, lights);
                         secondaryCommands.Add(meshCommand);

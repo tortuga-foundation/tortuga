@@ -87,11 +87,19 @@ namespace Tortuga
 
         public void LoadScene(Core.Scene scene)
         {
+            if (_activeScene != null && _activeScene != new Core.Scene())
+                UnloadScene(_activeScene);
+            
             _activeScene = scene;
+            foreach (var system in this._activeScene.Systems)
+                system.Value.OnEnable();
         }
 
         public void UnloadScene(Core.Scene scene)
         {
+            foreach (var system in this._activeScene.Systems)
+                system.Value.OnDisable();
+
             _activeScene = new Core.Scene();
         }
     }

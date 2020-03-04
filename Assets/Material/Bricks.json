@@ -1,4 +1,5 @@
 {
+  "Type": "Material",
   "Light": true,
   "Shaders": {
     "Vertex": "Assets/Shaders/Default/Default.vert",

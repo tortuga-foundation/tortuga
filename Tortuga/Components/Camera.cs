@@ -121,7 +121,20 @@ namespace Tortuga.Components
             }
         }
 
-        internal BufferTransferObject UpdateCameraBuffers()
+        public Task UpdateCameraBuffers()
+        {
+            return _cameraBuffer.SetDataWithStaging<CameraShaderInfo>(
+                new CameraShaderInfo[]
+                {
+                    new CameraShaderInfo
+                    {
+                        Projection = ProjectionMatrix,
+                        View = ViewMatrix
+                    }
+                }
+            );
+        }
+        internal BufferTransferObject UpdateCameraBuffersSemaphore()
         {
             return _cameraBuffer.SetDataGetTransferObject<CameraShaderInfo>(
                 new CameraShaderInfo[]
