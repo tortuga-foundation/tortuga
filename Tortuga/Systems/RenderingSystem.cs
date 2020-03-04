@@ -197,14 +197,7 @@ namespace Tortuga.Systems
                 System.Array.Resize(ref lights, 10);
             var infoList = new List<Components.Light.LightShaderInfo>();
             foreach (var l in lights)
-                infoList.Add(new Components.Light.LightShaderInfo
-                {
-                    Color = new Vector4(l.Color.R, l.Color.G, l.Color.B, l.Color.A),
-                    Forward = new Vector4(l.Forward, 1),
-                    Position = new Vector4(l.Position, 1),
-                    Intensity = l.Intensity,
-                    Type = (int)l.Type
-                });
+                infoList.Add(l.BuildShaderInfo);
             for (int i = infoList.Count; i < 10; i++)
                 infoList.Add(new Components.Light.LightShaderInfo());
             return new Components.Light.FullShaderInfo

@@ -38,6 +38,16 @@ namespace Tortuga.Components
             }
         }
 
+        internal LightShaderInfo BuildShaderInfo
+            => new LightShaderInfo
+            {
+                Type = (int)Type,
+                Color = new Vector4(Color.R, Color.G, Color.B, Color.A),
+                Forward = new Vector4(Forward, 1.0f),
+                Intensity = Intensity,
+                Position = new Vector4(Position, 1.0f),
+            };
+
 #pragma warning disable 0649
         public struct LightShaderInfo
         {
