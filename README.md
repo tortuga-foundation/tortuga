@@ -44,7 +44,7 @@ var scene = new Core.Scene();
 }
 
 //load obj model
-var sphereOBJ = new OBJLoader("Assets/Models/Sphere.obj");
+var sphereOBJ = await OBJLoader.Load("Assets/Models/Sphere.obj");
 //load bricks material
 var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
 
