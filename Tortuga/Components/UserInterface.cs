@@ -5,13 +5,17 @@ namespace Tortuga.Components
 {
     public class UserInterface : Mesh
     {
-        private static Graphics.Material _cachedMaterial = Graphics.Material.Load("Assets/Material/UI.json");
+        private static Graphics.Material _cachedMaterial;
         public override Graphics.Material ActiveMaterial
         {
             get
             {
                 if (_cachedMaterial == null)
-                    _cachedMaterial = Graphics.Material.Load("Assets/Material/UI.json");
+                {
+                    var task = Utils.MaterialLoader.Load("Assets/Material/UI.json");
+                    task.Wait();
+                    _cachedMaterial = task.Result;
+                }
                 return _cachedMaterial;
             }
         }

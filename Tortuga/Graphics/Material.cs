@@ -336,10 +336,6 @@ namespace Tortuga.Graphics
             return _descriptorMapper[key].Buffers[binding].SetDataGetTransferObject(new T[] { data });
         }
 
-        public static Material Load(string path)
-        {
-            return Tortuga.Utils.MaterialLoader.Load(path);
-        }
         private static Material _cachedErrorMaterial;
         public static Material ErrorMaterial
         {

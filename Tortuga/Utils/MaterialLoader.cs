@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Tortuga.Graphics;
 using System.Drawing;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace Tortuga.Utils
 {
@@ -87,7 +88,7 @@ namespace Tortuga.Utils
             };
         }
 
-        public static Material Load(string path)
+        public static async Task<Material> Load(string path)
         {
             if (File.Exists(path) == false)
                 throw new FileNotFoundException("could not find materail file");
@@ -163,8 +164,10 @@ namespace Tortuga.Utils
                         }
 
                         material.CreateUniformData(name, byteSizes.ToArray());
+                        var tasks = new Task[bindings.Length];
                         for (int i = 0; i < bindings.Length; i++)
-                            material.UpdateUniformDataArray<byte>(name, i, totalBytes[i]).Wait();
+                            tasks[i] = material.UpdateUniformDataArray<byte>(name, i, totalBytes[i]);
+                        Task.WaitAll(tasks);
                     }
                     else if (type == "SampledImage2D")
                     {
@@ -182,20 +185,20 @@ namespace Tortuga.Utils
                             {
                                 if (File.Exists(stringValue))
                                 {
-                                    material.UpdateSampledImage(
+                                    await material.UpdateSampledImage(
                                         name,
                                         i,
                                         new Graphics.Image(stringValue)
-                                    ).Wait();
+                                    );
                                 }
                                 else
                                 {
                                     var color = GetColor(stringValue);
-                                    material.UpdateSampledImage(
+                                    await material.UpdateSampledImage(
                                         name,
                                         i,
                                         Graphics.Image.SingleColor(color)
-                                    ).Wait();
+                                    );
                                 }
                             }
                             else
@@ -219,11 +222,11 @@ namespace Tortuga.Utils
                                         var A = new Graphics.Image(multiImage[3]);
                                         R.CopyChannel(A, Graphics.Image.Channel.A);
                                     }
-                                    material.UpdateSampledImage(
+                                    await material.UpdateSampledImage(
                                         name,
                                         i,
                                         R
-                                    ).Wait();
+                                    );
                                 }
                             }
                         }

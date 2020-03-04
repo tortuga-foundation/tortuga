@@ -25,7 +25,7 @@ namespace Tortuga.Test
             //load obj model
             var sphereOBJ = new OBJLoader("Assets/Models/Sphere.obj");
             //load bricks material
-            var bricksMaterial = Graphics.Material.Load("Assets/Material/Bricks.json");
+            var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
 
             //light
             {
