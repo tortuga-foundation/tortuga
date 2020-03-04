@@ -8,34 +8,38 @@
     {
       "Type": "UniformData",
       "Name": "PBR",
-      "Value": {
-        "WorkFlow": {
-          "Type": "Int",
-          "Value": 0
+      "Bindings": [
+        {
+          "Values": [
+            {
+              "Type": "Int",
+              "Value": 0
+            }
+          ]
         }
-      }
+      ]
     },
     {
       "Type": "SampledImage2D",
-      "Name": "Albedo",
-      "Value": "Assets/Images/Bricks/Albedo.jpg",
-      "MipLevel": 1
-    },
-    {
-      "Type": "SampledImage2D",
-      "Name": "Normal",
-      "Value": "Assets/Images/Bricks/Normal.jpg",
-      "MipLevel": 1
-    },
-    {
-      "Type": "SampledImage2D",
-      "Name": "Detail",
-      "Value": [
-        "Assets/Images/Bricks/Metalness.jpg",
-        "Assets/Images/Bricks/Roughness.jpg",
-        "Assets/Images/Bricks/AmbientOclusion.jpg"
-      ],
-      "MipLevel": 1
+      "Name": "Textures",
+      "Bindings": [
+        {
+          "Value": "Assets/Images/Bricks/Albedo.jpg",
+          "MipLevel": 1
+        },
+        {
+          "Value": "Assets/Images/Bricks/Normal.jpg",
+          "MipLevel": 1
+        },
+        {
+          "Value": [
+            "Assets/Images/Bricks/Metalness.jpg",
+            "Assets/Images/Bricks/Roughness.jpg",
+            "Assets/Images/Bricks/AmbientOclusion.jpg"
+          ],
+          "MipLevel": 1
+        }
+      ]
     }
   ]
 }

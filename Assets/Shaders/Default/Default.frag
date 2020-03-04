@@ -12,28 +12,28 @@ struct LightInfo
     int reserved2;
 };
 
-layout(set=0) readonly uniform CAMERA_MVP
+layout(set=0, binding=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
     mat4 projection;
 };
-layout(set=1) readonly uniform MESH_MVP
+layout(set=1, binding=0) readonly uniform MESH_MVP
 {
     mat4 model;
 };
-layout(set=2) readonly uniform LIGHT_SHADER_INFO
+layout(set=2, binding=0) readonly uniform LIGHT_SHADER_INFO
 {
     LightInfo info[10];
     int lightsCount;
 } lightData;
-layout(set=3) readonly uniform MATERIAL_INFO
+layout(set=3, binding=0) readonly uniform MATERIAL_INFO
 {
     int workflow;
 };
 
 layout(set=4, binding=0) uniform sampler2D albedoTexture;
-layout(set=5, binding=0) uniform sampler2D normalTexture;
-layout(set=6, binding=0) uniform sampler2D physicalDescriptorTexture;
+layout(set=4, binding=1) uniform sampler2D normalTexture;
+layout(set=4, binding=2) uniform sampler2D physicalDescriptorTexture;
 
 layout(location = 0) in vec3 inNormal;
 layout(location = 1) in vec2 inUV;
@@ -102,7 +102,7 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 
 vec3 GetNormal()
 {
-    vec3 tangentNormal = texture(normalTexture, inUV).rbg;
+    vec3 tangentNormal = texture(normalTexture, inUV).rgb;
 
     vec3 q1  = dFdx(inWorldPosition);
     vec3 q2  = dFdy(inWorldPosition);

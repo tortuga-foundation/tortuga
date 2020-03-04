@@ -7,9 +7,13 @@
   "DescriptorSets": [
     {
       "Type": "SampledImage2D",
-      "Name": "Albedo",
-      "Value": "RGBA(255, 255, 255, 255)",
-      "MipLevel": 1
+      "Bindings": [
+        {
+          "Name": "Albedo",
+          "Value": "RGBA(255, 255, 255, 255)",
+          "MipLevel": 1
+        }
+      ]
     }
   ]
 }

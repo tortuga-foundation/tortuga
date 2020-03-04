@@ -52,7 +52,7 @@ namespace Tortuga.Components
     
         public Task UpdateImage(Graphics.Image image)
         {
-            return this.ActiveMaterial.UpdateSampledImage("Albedo", image);
+            return this.ActiveMaterial.UpdateSampledImage("Albedo", 0, image);
         }
     }
 }

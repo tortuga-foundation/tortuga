@@ -68,12 +68,12 @@ namespace Tortuga.Systems
                     if (mesh.ActiveMaterial.UsingLighting)
                     {
                         var meshLights = GetClosestLights(mesh, lights);
-                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", meshLights);
+                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
                         transferCommands.Add(command.TransferCommand);
                     }
                     if (mesh.IsStatic == false || mesh.HasRenderedOnce == false)
                     {
-                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
+                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
                         transferCommands.Add(command.TransferCommand);
                         mesh.HasRenderedOnce = true;
                     }
@@ -82,7 +82,7 @@ namespace Tortuga.Systems
                 {
                     if (mesh.IsStatic == false || mesh.HasRenderedOnce == false)
                     {
-                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", mesh.ModelMatrix);
+                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
                         transferCommands.Add(command.TransferCommand);
                         mesh.HasRenderedOnce = true;
                     }

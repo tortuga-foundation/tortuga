@@ -27,17 +27,6 @@ namespace Tortuga.Test
             //load bricks material
             var bricksMaterial = Graphics.Material.Load("Assets/Material/Bricks.json");
 
-            //user interface
-            {
-                var entity = new Core.Entity();
-                var transform = await entity.AddComponent<Components.Transform>();
-                transform.RectTransform = new Rect(0.7, 0, 0.3, 1);
-                transform.IsStatic = false;
-                var ui = await entity.AddComponent<Components.UserInterface>();
-                await ui.UpdateImage(Graphics.Image.SingleColor(Color.DarkGray));
-                scene.AddEntity(entity);
-            }
-
             //light
             {
                 var entity = new Core.Entity();
