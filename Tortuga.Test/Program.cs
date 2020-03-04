@@ -32,6 +32,7 @@ namespace Tortuga.Test
                 var entity = new Core.Entity();
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -7);
+                transform.IsStatic = true;
                 //add light component
                 var light = await entity.AddComponent<Components.Light>();
                 light.Intensity = 1.0f;

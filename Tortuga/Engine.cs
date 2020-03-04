@@ -54,10 +54,13 @@ namespace Tortuga
         {
             return Task.Run(() =>
             {
+                Time.FrameStopWatch = new System.Diagnostics.Stopwatch();
+                Time.FrameStopWatch.Start();
                 while (this._mainWindow.Exists)
                 {
                     try
                     {
+                        Time.FrameStopWatch.Restart();
                         var events = this._mainWindow.PumpEvents();
                         InputSystem.ProcessEvents(events);
                         this._mainWindow.AcquireSwapchainImage();
@@ -75,6 +78,7 @@ namespace Tortuga
                             Task.WaitAll(tasks.ToArray());
                         }
                         this._mainWindow.Present();
+                        Time.DeltaTime = Time.FrameStopWatch.ElapsedTicks / 10000000.0f;
                     }
                     catch (System.Exception e)
                     {

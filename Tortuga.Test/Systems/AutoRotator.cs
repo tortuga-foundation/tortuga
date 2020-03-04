@@ -11,6 +11,7 @@ namespace Tortuga.Test
         private float _left = 0;
         private float _top = 0;
         private float _forward = -10.0f;
+        private float _multiplier = 0.05f;
 
         public AutoRotator()
         {
@@ -26,19 +27,19 @@ namespace Tortuga.Test
         public override async Task Update()
         {
             if (InputSystem.IsKeyDown(KeyCode.D))
-                _left += 0.001f;
+                _left += Time.DeltaTime * _multiplier;
             else if (InputSystem.IsKeyDown(KeyCode.A))
-                _left -= 0.001f;
+                _left -= Time.DeltaTime * _multiplier;
 
             if (InputSystem.IsKeyDown(KeyCode.W))
-                _top += 0.001f;
+                _top += Time.DeltaTime * _multiplier;
             else if (InputSystem.IsKeyDown(KeyCode.S))
-                _top -= 0.001f;
-            
+                _top -= Time.DeltaTime * _multiplier;
+
             if (InputSystem.IsKeyDown(KeyCode.Up))
-                _forward += 0.001f;
+                _forward += Time.DeltaTime * _multiplier;
             else if (InputSystem.IsKeyDown(KeyCode.Down))
-                _forward -= 0.001f;
+                _forward -= Time.DeltaTime * _multiplier;
 
             await Task.Run(() =>
             {
@@ -53,7 +54,9 @@ namespace Tortuga.Test
                     transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
                 }
             });
-            _rotation += 0.001f;
+            _rotation += Time.DeltaTime * _multiplier * 0.2f;
+            if (_rotation >= 360)
+                _rotation = 0;
         }
     }
 }
