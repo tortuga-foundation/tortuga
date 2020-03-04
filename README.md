@@ -44,9 +44,9 @@ var scene = new Core.Scene();
 }
 
 //load obj model
-var sphere = new OBJLoader("Assets/Models/Sphere.obj");
+var sphereOBJ = new OBJLoader("Assets/Models/Sphere.obj");
 //load bricks material
-var bricks = Graphics.Material.Load("Assets/Material/Bricks.json");
+var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
 
 //light
 {
@@ -69,9 +69,9 @@ var bricks = Graphics.Material.Load("Assets/Material/Bricks.json");
     transform.IsStatic = false;
     //add mesh component
     var mesh = await entity.AddComponent<Components.Mesh>();
-    await mesh.SetVertices(sphere.ToGraphicsVertices);
-    await mesh.SetIndices(sphere.ToGraphicsIndex);
-    mesh.ActiveMaterial = bricks;
+    await mesh.SetVertices(sphereOBJ.ToGraphicsVertices);
+    await mesh.SetIndices(sphereOBJ.ToGraphicsIndex);
+    mesh.ActiveMaterial = bricksMaterial;
 
     scene.AddEntity(entity);
 }
