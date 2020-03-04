@@ -188,7 +188,7 @@ namespace Tortuga.Utils
                                     await material.UpdateSampledImage(
                                         name,
                                         i,
-                                        new Graphics.Image(stringValue)
+                                        await ImageLoader.Load(stringValue)
                                     );
                                 }
                                 else
@@ -206,26 +206,34 @@ namespace Tortuga.Utils
                                 var multiImage = GetStringArray(binding["Value"] as ICollection<object>);
                                 if (multiImage.Length <= 4 && multiImage.Length > 0)
                                 {
-                                    var R = new Graphics.Image(multiImage[0]);
+                                    var R = await ImageLoader.Load(multiImage[0]);
                                     if (multiImage.Length > 1)
                                     {
-                                        var G = new Graphics.Image(multiImage[1]);
+                                        var G = await ImageLoader.Load(multiImage[1]);
                                         R.CopyChannel(G, Graphics.Image.Channel.G);
                                     }
                                     if (multiImage.Length > 2)
                                     {
-                                        var B = new Graphics.Image(multiImage[2]);
+                                        var B = await ImageLoader.Load(multiImage[2]);
                                         R.CopyChannel(B, Graphics.Image.Channel.B);
                                     }
                                     if (multiImage.Length > 3)
                                     {
-                                        var A = new Graphics.Image(multiImage[3]);
+                                        var A = await ImageLoader.Load(multiImage[3]);
                                         R.CopyChannel(A, Graphics.Image.Channel.A);
                                     }
                                     await material.UpdateSampledImage(
                                         name,
                                         i,
                                         R
+                                    );
+                                }
+                                else
+                                {
+                                    await material.UpdateSampledImage(
+                                        name,
+                                        i,
+                                        Graphics.Image.SingleColor(Color.Black)
                                     );
                                 }
                             }

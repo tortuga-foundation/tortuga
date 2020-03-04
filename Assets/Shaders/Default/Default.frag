@@ -99,21 +99,9 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 	return srgbIn;
 	#endif //MANUAL_SRGB
 }
-
-vec3 GetNormal()
+vec3 GetNormal(mat3 TBN)
 {
     vec3 tangentNormal = texture(normalTexture, inUV).rgb;
-
-    vec3 q1  = dFdx(inWorldPosition);
-    vec3 q2  = dFdy(inWorldPosition);
-    vec2 st1 = dFdx(inUV);
-    vec2 st2 = dFdy(inUV);
-
-    vec3 N   = normalize(inNormal);
-    vec3 T  = normalize(q1 * st2.t - q2 * st1.t);
-    vec3 B  = -normalize(cross(N, T));
-    mat3 TBN = mat3(T, B, N);
-
     return normalize(TBN * tangentNormal);
 }
 
@@ -192,6 +180,20 @@ float ConvertMetallic(vec3 diffuse, vec3 specular, float maxSpecular) {
 	return clamp((-b + sqrt(D)) / (2.0 * a), 0.0, 1.0);
 }
 
+mat3 GetTBN()
+{
+    vec3 q1  = dFdx(inWorldPosition);
+    vec3 q2  = dFdy(inWorldPosition);
+    vec2 st1 = dFdx(inUV);
+    vec2 st2 = dFdy(inUV);
+
+    vec3 N   = normalize(inNormal);
+    vec3 T  = normalize(q1 * st2.t - q2 * st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+    return TBN;
+}
+
 void main() {
     vec4 baseColor;
     vec3 diffuseColor;
@@ -199,6 +201,11 @@ void main() {
     float roughness;
 
     vec3 f0 = vec3(0.04);
+
+    mat3 TBN = GetTBN();
+    vec3 n = GetNormal(TBN);
+    // Vector from surface point to camera
+    vec3 v = normalize(inCameraPosition - inWorldPosition);
 
     //metalness workflow
     if (workflow == 0)
@@ -243,8 +250,6 @@ void main() {
         vec3 specularEnvironmentR0 = specularColor.rgb;
         vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
 
-        vec3 n = GetNormal();
-        vec3 v = normalize(inCameraPosition - inWorldPosition);    // Vector from surface point to camera
         vec3 l = normalize(light.position.xyz - inWorldPosition);     // Vector from surface point to light
         if (light.type == 1)
             l = normalize(light.forward.xyz);
