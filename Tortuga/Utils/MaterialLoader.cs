@@ -240,6 +240,7 @@ namespace Tortuga.Utils
                         }
                     }
                 }
+                material.ReCompilePipeline();
                 return material;
             }
             catch (System.Exception e)
