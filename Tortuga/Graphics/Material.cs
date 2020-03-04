@@ -238,14 +238,13 @@ namespace Tortuga.Graphics
                     obj.Images[binding].MipLevel
                 );
                 obj.ImageViews[binding] = new ImageView(obj.Images[binding], VkImageAspectFlags.Color);
-                obj.Set.SampledImageUpdate(obj.ImageViews[binding], obj.Samplers[binding]);
-                _descriptorMapper[key] = obj;
-                _descriptorMapper[key].Set.SampledImageUpdate(
+                obj.Set.SampledImageUpdate(
                     obj.ImageViews[binding],
                     obj.Samplers[binding],
                     0,
                     System.Convert.ToUInt32(binding)
                 );
+                _descriptorMapper[key] = obj;
             }
 
             var pixelData = new VulkanPixel[image.Pixels.Length];
