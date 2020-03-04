@@ -65,7 +65,7 @@ namespace Tortuga.Graphics
             CreateUniformData<Matrix4x4>("MODEL");
 
             if (_usingLighting)
-                CreateUniformData<Systems.RenderingSystem.LightShaderInfo>("LIGHT");
+                CreateUniformData<Components.Light.FullShaderInfo>("LIGHT");
             _isDirty = true;
         }
 

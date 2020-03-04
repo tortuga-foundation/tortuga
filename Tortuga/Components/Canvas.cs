@@ -1,8 +1,8 @@
 using System.Numerics;
 
-namespace Tortuga.Graphics.UserInterface
+namespace Tortuga.Components
 {
-    public class Canvas
+    public class Canvas : Core.BaseComponent
     {
         public Vector2 Position;
         public Vector2 Scale;
