@@ -11,6 +11,7 @@ namespace Tortuga.Core
 
         public Dictionary<Type, BaseComponent> Components => _components;
         private Dictionary<Type, BaseComponent> _components;
+        private Dictionary<Type, BaseComponent> _markedForRemoval;
 
         public Entity()
         {
@@ -28,7 +29,16 @@ namespace Tortuga.Core
             return newComp;
         }
 
-        public async Task RemoveComponent<T>() where T : BaseComponent, new()
+        public Task RemoveComponent<T>() where T : BaseComponent, new()
+        {
+            return Task.Run(() =>
+            {
+                if (_components.ContainsKey(typeof(T)))
+                    _markedForRemoval.Add(typeof(T), _components[typeof(T)]);
+            });
+        }
+
+        public async Task RemoveComponentImediate<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
             {
@@ -36,6 +46,22 @@ namespace Tortuga.Core
                 OnComponentRemoved?.Invoke(this, _components[typeof(T)]);
                 _components.Remove(typeof(T));
             }
+            if (_markedForRemoval.ContainsKey(typeof(T)))
+                _markedForRemoval.Remove(typeof(T));
+        }
+
+        public async Task RemoveAllMarkedForRemoval()
+        {
+            foreach (var marked in _markedForRemoval)
+            {
+                if (_components.ContainsKey(marked.Key))
+                {
+                    await _components[marked.Key].OnDisable();
+                    OnComponentRemoved?.Invoke(this, _components[marked.Key]);
+                    _components.Remove(marked.Key);
+                }
+            }
+            _markedForRemoval.Clear();
         }
 
         public T GetComponent<T>() where T : BaseComponent, new()

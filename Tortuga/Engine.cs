@@ -78,6 +78,12 @@ namespace Tortuga
                             Task.WaitAll(tasks.ToArray());
                         }
                         this._mainWindow.Present();
+                        //clean up marked for removal
+                        var removalTasks = new List<Task>();
+                        foreach (var entity in _activeScene.Entities)
+                            removalTasks.Add(entity.RemoveAllMarkedForRemoval());
+                        Task.WaitAll(removalTasks.ToArray());
+                        //Store Time elapsed
                         Time.DeltaTime = (Time.StopWatch.ElapsedTicks - Time.LastFramesTicks) / 10000000.0f;
                     }
                     catch (System.Exception e)
