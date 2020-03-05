@@ -53,8 +53,14 @@ namespace Tortuga.Graphics
         private Dictionary<string, DescriptorSetObject> _descriptorMapper;
         private bool _isDirty;
         private bool _usingLighting;
+        private bool _vertexInput;
 
-        public Material(Graphics.Shader shader, bool includeLighting = true)
+        public Material(
+            Graphics.Shader shader, 
+            bool includeLighting = true, 
+            bool includeModelMatrix = true,
+            bool compileWithoutVertexInput = false
+        )
         {
             _usingLighting = includeLighting;
 
@@ -62,10 +68,13 @@ namespace Tortuga.Graphics
             _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
 
             //model matrix
-            CreateUniformData<Matrix4x4>("MODEL");
+            if (includeModelMatrix)
+                CreateUniformData<Matrix4x4>("MODEL");
 
             if (_usingLighting)
                 CreateUniformData<Components.Light.FullShaderInfo>("LIGHT");
+
+            _vertexInput = compileWithoutVertexInput == false;
             _isDirty = true;
         }
 
@@ -79,10 +88,21 @@ namespace Tortuga.Graphics
             foreach (var l in _descriptorMapper.Values)
                 totalDescriptorSets.Add(l.Layout);
 
+            
+            NativeList<VkVertexInputBindingDescription> bindingDescription = new NativeList<VkVertexInputBindingDescription>();
+            NativeList<VkVertexInputAttributeDescription> attributeDescriptions = new NativeList<VkVertexInputAttributeDescription>();
+            if (_vertexInput)
+            {
+                bindingDescription = VertexLayoutBuilder.BindingDescriptions;
+                attributeDescriptions = VertexLayoutBuilder.AttributeDescriptions;
+            }
+
             _pipeline = new Pipeline(
                 totalDescriptorSets.ToArray(),
                 _shader.Vertex,
-                _shader.Fragment
+                _shader.Fragment,
+                bindingDescription,
+                attributeDescriptions
             );
             _isDirty = false;
         }

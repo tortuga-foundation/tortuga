@@ -31,6 +31,8 @@ namespace Tortuga.Test
             {
                 var button = new Core.Entity();
                 var ui = await button.AddComponent<Components.UserInterface>();
+                ui.PositionPixel = new Vector2(10, 10);
+                ui.ScalePixel = new Vector2(200, 200);
                 scene.AddEntity(button);
             }
 

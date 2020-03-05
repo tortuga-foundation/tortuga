@@ -14,9 +14,6 @@ namespace Tortuga.Components
     {
         public Graphics.Material ActiveMaterial;
 
-        private static Graphics.API.Buffer _vertexBuffer;
-        private static Graphics.API.Buffer _indexBuffer;
-
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
 
@@ -54,59 +51,13 @@ namespace Tortuga.Components
                         "Assets/Shaders/UserInterface/UserInterface.vert",
                         "Assets/Shaders/UserInterface/UserInterface.frag"
                     ),
-                    false
+                    false,
+                    false,
+                    true
                 );
                 ActiveMaterial.CreateUniformData<ShaderUIStruct>("Data");
                 ActiveMaterial.CreateSampledImage("Albedo", new uint[] { 1 });
-                ActiveMaterial.UpdateSampledImage("Albedo", 0, Graphics.Image.SingleColor(Color.White)).Wait();
-            }
-            if (UserInterface._vertexBuffer == null)
-            {
-                var vertices = new Vertex[]{
-                    new Vertex
-                    {
-                        Position = new Vector3(-1, -1, 0),
-                        TextureCoordinates = new Vector2(0, 0),
-                        Normal = new Vector3(0, 0, 1)
-                    },
-                    new Vertex
-                    {
-                        Position = new Vector3(1, -1, 0),
-                        TextureCoordinates = new Vector2(1, 0),
-                        Normal = new Vector3(0, 0, 1)
-                    },
-                    new Vertex
-                    {
-                        Position = new Vector3(1, 1, 0),
-                        TextureCoordinates = new Vector2(1, 1),
-                        Normal = new Vector3(0, 0, 1)
-                    },
-                    new Vertex
-                    {
-                        Position = new Vector3(-1, 1, 0),
-                        TextureCoordinates = new Vector2(0, 1),
-                        Normal = new Vector3(0, 0, 1)
-                    }
-                };
-
-                UserInterface._vertexBuffer = Graphics.API.Buffer.CreateDevice(
-                    Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * vertices.Length),
-                    VkBufferUsageFlags.VertexBuffer
-                );
-                await UserInterface._vertexBuffer.SetDataWithStaging(vertices);
-            }
-            if (UserInterface._indexBuffer == null)
-            {
-                var indices = new uint[]{
-                    0, 1, 2,
-                    2, 3, 0
-                };
-
-                UserInterface._indexBuffer = Graphics.API.Buffer.CreateDevice(
-                    Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * indices.Length),
-                    VkBufferUsageFlags.IndexBuffer
-                );
-                await UserInterface._indexBuffer.SetDataWithStaging(indices);
+                await ActiveMaterial.UpdateSampledImage("Albedo", 0, Graphics.Image.SingleColor(Color.White));
             }
 
             _renderCommandPool = new CommandPool(
@@ -170,9 +121,7 @@ namespace Tortuga.Components
                 VkPipelineBindPoint.Graphics,
                 descriptorSets.ToArray()
             );
-            _renderCommand.BindVertexBuffer(_vertexBuffer);
-            _renderCommand.BindIndexBuffer(_indexBuffer);
-            _renderCommand.DrawIndexed(6);
+            _renderCommand.Draw(6);
             _renderCommand.End();
             return _renderCommand;
         }

@@ -11,11 +11,14 @@ namespace Tortuga.Graphics.API
         private VkPipelineLayout _layout;
         private VkPipeline _pipeline;
 
-        public unsafe Pipeline(DescriptorSetLayout[] layouts, Shader vertex, Shader fragment)
+        public unsafe Pipeline(
+            DescriptorSetLayout[] layouts, 
+            Shader vertex, 
+            Shader fragment, 
+            NativeList<VkVertexInputBindingDescription> bindingDescriptions,
+            NativeList<VkVertexInputAttributeDescription> attributeDescriptions
+        )
         {
-            var bindingDescriptions = VertexLayoutBuilder.BindingDescriptions;
-            var attributeDescriptions = VertexLayoutBuilder.AttributeDescriptions;
-
             var vertexInputInfo = VkPipelineVertexInputStateCreateInfo.New();
             vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.Count;
             vertexInputInfo.pVertexBindingDescriptions = (VkVertexInputBindingDescription*)bindingDescriptions.Data.ToPointer();
