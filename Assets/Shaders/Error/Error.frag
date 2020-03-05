@@ -15,6 +15,10 @@ layout(set=0,binding=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
     mat4 projection;
+    int cameraX;
+    int cameraY;
+    int cameraWidth;
+    int cameraHeight;
 };
 layout(set=1,binding=0) readonly uniform MESH_MVP
 {
@@ -32,5 +36,5 @@ layout(set=2,binding=0) readonly uniform LIGHT_SHADER_INFO
 layout(location = 0) out vec4 outColor;
 
 void main() {
-    outColor = vec4(vec3(1., 0., 0.), 1.);
+    outColor = vec4(vec3(0.862745098, 0., 0.305882353), 1.);
 }

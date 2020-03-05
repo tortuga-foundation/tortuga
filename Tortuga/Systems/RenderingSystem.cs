@@ -30,9 +30,20 @@ namespace Tortuga.Systems
             {
                 tasks.Add(
                     mesh.ActiveMaterial.UpdateUniformData(
-                        "MODEL", 
-                        0, 
+                        "MODEL",
+                        0,
                         mesh.ModelMatrix
+                    )
+                );
+            }
+            var uis = MyScene.GetComponents<Components.UserInterface>();
+            foreach (var ui in uis)
+            {
+                tasks.Add(
+                    ui.ActiveMaterial.UpdateUniformData(
+                        "Data",
+                        0,
+                        ui.BuildShaderStruct
                     )
                 );
             }
@@ -72,6 +83,14 @@ namespace Tortuga.Systems
                         transferCommands.Add(command.TransferCommand);
                     }
                 }
+                foreach (var ui in uis)
+                {
+                    if (ui.IsStatic == false)
+                    {
+                        var command = ui.ActiveMaterial.UpdateUniformDataSemaphore("Data", 0, ui.BuildShaderStruct);
+                        transferCommands.Add(command.TransferCommand);
+                    }
+                }
 
                 //begin rendering frame
                 _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
@@ -105,6 +124,11 @@ namespace Tortuga.Systems
                     {
                         var meshCommand = ProcessMeshCommands(mesh, camera, lights);
                         secondaryCommands.Add(meshCommand);
+                    }
+                    foreach (var ui in uis)
+                    {
+                        var uiCommand = ui.BuildDrawCommand(camera);
+                        secondaryCommands.Add(uiCommand);
                     }
 
                     //execute all meshes command buffer
@@ -162,8 +186,8 @@ namespace Tortuga.Systems
         {
             mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             mesh.RenderCommand.SetViewport(
-                System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.X)),
-                System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Y)),
+                System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
+                System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.Width)),
                 System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Width))
             );

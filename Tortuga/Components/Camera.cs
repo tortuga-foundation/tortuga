@@ -13,6 +13,10 @@ namespace Tortuga.Components
         {
             public Matrix4x4 View;
             public Matrix4x4 Projection;
+            public int PositionX;
+            public int PositionY;
+            public int Width;
+            public int Height;
         };
 
         public enum ProjectionType
@@ -129,7 +133,11 @@ namespace Tortuga.Components
                     new CameraShaderInfo
                     {
                         Projection = ProjectionMatrix,
-                        View = ViewMatrix
+                        View = ViewMatrix,
+                        PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
+                        PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
+                        Width = Resolution.x,
+                        Height = Resolution.y
                     }
                 }
             );

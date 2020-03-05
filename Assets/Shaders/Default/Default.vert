@@ -15,6 +15,10 @@ layout(set=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
     mat4 projection;
+    int cameraX;
+    int cameraY;
+    int cameraWidth;
+    int cameraHeight;
 };
 layout(set=1) readonly uniform MESH_MVP
 {

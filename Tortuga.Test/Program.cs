@@ -27,6 +27,13 @@ namespace Tortuga.Test
             //load bricks material
             var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
 
+            //user interface
+            {
+                var button = new Core.Entity();
+                var ui = await button.AddComponent<Components.UserInterface>();
+                scene.AddEntity(button);
+            }
+
             //light
             {
                 var entity = new Core.Entity();

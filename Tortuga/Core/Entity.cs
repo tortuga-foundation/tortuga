@@ -16,6 +16,7 @@ namespace Tortuga.Core
         public Entity()
         {
             _components = new Dictionary<Type, BaseComponent>();
+            _markedForRemoval = new Dictionary<Type, BaseComponent>();
         }
 
         public async Task<T> AddComponent<T>() where T : BaseComponent, new()
