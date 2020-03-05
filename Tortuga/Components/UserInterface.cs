@@ -19,8 +19,9 @@ namespace Tortuga.Components
 
         public enum ShadowType
         {
-            Outset = 0,
-            Inset = 1
+            None = 0,
+            Outset = 1,
+            Inset = 2
         }
 
         public class BoxShadow
@@ -38,7 +39,20 @@ namespace Tortuga.Components
 
         public bool IsStatic;
         public int IndexZ = 0;
-        public float BorderRadius = 0;
+        public float BorderRadiusTopLeft = 0;
+        public float BorderRadiusTopRight = 0;
+        public float BorderRadiusBottomLeft = 0;
+        public float BorderRadiusBottomRight = 0;
+        public float BorderRadius
+        {
+            set
+            {
+                BorderRadiusTopLeft = value;
+                BorderRadiusTopRight = value;
+                BorderRadiusBottomLeft = value;
+                BorderRadiusBottomRight = value;
+            }
+        }
         public Graphics.Image Background;
         public BoxShadow Shadow;
 
@@ -75,30 +89,35 @@ namespace Tortuga.Components
 
         internal struct ShaderUIStruct
         {
+            public Vector4 ShadowColor;
             public Vector2 Position;
             public Vector2 Scale;
-            public int IsStatic;
-            public int IndexZ;
-            public float BorderRadius;
-            public int ShadowType;
             public Vector2 ShadowOffset;
+            public float BorderRadiusTopLeft;
+            public float BorderRadiusTopRight;
+            public float BorderRadiusBottomLeft;
+            public float BorderRadiusBottomRight;
+            public int IndexZ;
+            public int ShadowType;
             public float ShadowBlur;
             public float ShadowSpread;
-            public Vector4 ShadowColor;
         }
         internal ShaderUIStruct BuildShaderStruct
             => new ShaderUIStruct
             {
+
+                ShadowColor = new Vector4(Shadow.Color.R, Shadow.Color.G, Shadow.Color.B, Shadow.Color.A),
                 Position = PositionPixel,
                 Scale = ScalePixel,
-                IsStatic = IsStatic ? 1 : 0,
-                IndexZ = IndexZ,
-                BorderRadius = BorderRadius,
-                ShadowType = (int)Shadow.Type,
                 ShadowOffset = Shadow.Offset,
+                BorderRadiusTopLeft = BorderRadiusTopLeft,
+                BorderRadiusTopRight = BorderRadiusTopRight,
+                BorderRadiusBottomLeft = BorderRadiusBottomLeft,
+                BorderRadiusBottomRight = BorderRadiusBottomRight,
+                IndexZ = IndexZ,
+                ShadowType = (int)Shadow.Type,
                 ShadowBlur = Shadow.Blur,
                 ShadowSpread = Shadow.Spread,
-                ShadowColor = new Vector4(Shadow.Color.R, Shadow.Color.G, Shadow.Color.B, Shadow.Color.A)
             };
 
         internal CommandPool.Command BuildDrawCommand(Components.Camera camera)

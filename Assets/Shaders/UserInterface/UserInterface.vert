@@ -11,16 +11,18 @@ layout(set=0,binding=0) readonly uniform CAMERA_MVP
 };
 layout(set=1, binding=0) readonly uniform UI_DATA
 {
+    vec4 shadowColor;
     vec2 position;
     vec2 scale;
-    int isStatic;
-    int indexZ;
-    float borderRadius;
-    int shadowType;
     vec2 shadowOffset;
+    float borderRadiusTopLeft;
+    float borderRadiusTopRight;
+    float borderRadiusBottomLeft;
+    float borderRadiusBottomRight;
+    int indexZ;
+    int shadowType;
     float shadowBlur;
     float shadowSpread;
-    vec4 shadowColor;
 };
 
 layout(location = 0) out vec2 outUV;
@@ -30,6 +32,7 @@ void main() {
     vec2 pos = vec2(position.x / cameraWidth, position.y / cameraHeight);
     vec2 sca = vec2(scale.x / cameraWidth,  scale.y / cameraHeight);
 
+    //setup vertex position and uvs
     vec2 vertexPositions[6] = vec2[](
         pos,
         sca,
@@ -47,8 +50,8 @@ void main() {
         vec2(0, 1)
     );
 
-    vec2 outPosition = vertexPositions[gl_VertexIndex];
-    outPosition = (outPosition - .5) * 2.;
-    gl_Position = vec4(outPosition, 0., 1.);
+    //output uv texture coords
     outUV = uv[gl_VertexIndex];
+    //convert vertices position and output
+    gl_Position = vec4((vertexPositions[gl_VertexIndex]  - .5) * 2., 0., 1.);
 }

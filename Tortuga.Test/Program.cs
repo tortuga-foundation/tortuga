@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
 using System.Drawing;
-using Tortuga.Utils;
 
 namespace Tortuga.Test
 {
@@ -33,6 +32,7 @@ namespace Tortuga.Test
                 var ui = await button.AddComponent<Components.UserInterface>();
                 ui.PositionPixel = new Vector2(10, 10);
                 ui.ScalePixel = new Vector2(200, 200);
+                ui.BorderRadius = 50.0f;
                 scene.AddEntity(button);
             }
 
