@@ -31,11 +31,20 @@ namespace Tortuga.Components
             public float Blur;
             public float Spread;
             public Color Color;
+
+            public BoxShadow()
+            {
+                Type = ShadowType.None;
+                Offset = new Vector2(0, 10);
+                Blur = 10;
+                Spread = 5;
+                Color = Color.FromArgb(255, 255, 255, 255);
+            }
         }
 
-        public Vector2 PositionPixel;
+        public Vector2 Position;
 
-        public Vector2 ScalePixel;
+        public Vector2 Scale;
 
         public bool IsStatic;
         public int IndexZ = 0;
@@ -53,8 +62,9 @@ namespace Tortuga.Components
                 BorderRadiusBottomRight = value;
             }
         }
+        public float Rotation;
         public Graphics.Image Background;
-        public BoxShadow Shadow;
+        public BoxShadow Shadow = new BoxShadow();
 
         public override async Task OnEnable()
         {
@@ -71,15 +81,13 @@ namespace Tortuga.Components
                 );
                 ActiveMaterial.CreateUniformData<ShaderUIStruct>("Data");
                 ActiveMaterial.CreateSampledImage("Albedo", new uint[] { 1 });
-                await ActiveMaterial.UpdateSampledImage("Albedo", 0, Graphics.Image.SingleColor(Color.White));
+                await ActiveMaterial.UpdateSampledImage("Albedo", 0, await Utils.ImageLoader.Load("Assets/Images/Sample.jpg"));
             }
 
             _renderCommandPool = new CommandPool(
                 Engine.Instance.MainDevice.GraphicsQueueFamily
             );
             _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
-            if (Shadow == null)
-                Shadow = new BoxShadow();
         }
 
         public Task UpdateImage(Graphics.Image image)
@@ -101,14 +109,20 @@ namespace Tortuga.Components
             public int ShadowType;
             public float ShadowBlur;
             public float ShadowSpread;
+            public float Rotation;
         }
         internal ShaderUIStruct BuildShaderStruct
             => new ShaderUIStruct
             {
 
-                ShadowColor = new Vector4(Shadow.Color.R, Shadow.Color.G, Shadow.Color.B, Shadow.Color.A),
-                Position = PositionPixel,
-                Scale = ScalePixel,
+                ShadowColor = new Vector4(
+                    Shadow.Color.R / 255, 
+                    Shadow.Color.G / 255, 
+                    Shadow.Color.B / 255, 
+                    Shadow.Color.A / 255
+                ),
+                Position = Position,
+                Scale = Scale,
                 ShadowOffset = Shadow.Offset,
                 BorderRadiusTopLeft = BorderRadiusTopLeft,
                 BorderRadiusTopRight = BorderRadiusTopRight,
@@ -118,6 +132,7 @@ namespace Tortuga.Components
                 ShadowType = (int)Shadow.Type,
                 ShadowBlur = Shadow.Blur,
                 ShadowSpread = Shadow.Spread,
+                Rotation = Rotation
             };
 
         internal CommandPool.Command BuildDrawCommand(Components.Camera camera)

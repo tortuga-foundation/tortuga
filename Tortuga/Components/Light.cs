@@ -42,7 +42,12 @@ namespace Tortuga.Components
             => new LightShaderInfo
             {
                 Type = (int)Type,
-                Color = new Vector4(Color.R, Color.G, Color.B, Color.A),
+                Color = new Vector4(
+                    Color.R / 255, 
+                    Color.G / 255, 
+                    Color.B / 255, 
+                    Color.A / 255
+                ),
                 Forward = new Vector4(Forward, 1.0f),
                 Intensity = Intensity,
                 Position = new Vector4(Position, 1.0f),
