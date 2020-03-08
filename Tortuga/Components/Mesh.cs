@@ -8,6 +8,14 @@ using System.Numerics;
 
 namespace Tortuga.Components
 {
+    [System.Serializable]
+    public struct Vertex
+    {
+        public Vector3 Position;
+        public Vector2 TextureCoordinates;
+        public Vector3 Normal;
+    }
+
     public class Mesh : Core.BaseComponent
     {
         public virtual Material ActiveMaterial

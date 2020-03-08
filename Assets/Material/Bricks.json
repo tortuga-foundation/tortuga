@@ -5,6 +5,16 @@
     "Vertex": "Assets/Shaders/Default/Default.vert",
     "Fragment": "Assets/Shaders/Default/Default.frag"
   },
+  "PipelineInput": [
+    {
+      "Type": "Vertex",
+      "Values": [
+        "Float3",
+        "Float2",
+        "Float3"
+      ]
+    }
+  ],
   "DescriptorSets": [
     {
       "Type": "UniformData",

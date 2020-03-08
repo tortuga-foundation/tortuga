@@ -106,14 +106,59 @@ namespace Tortuga.Utils
 
                 //create new material
                 var material = new Material(shader, lighting);
+                //setup pipeline input system
+                var inputJSON = GetObjectArray(obj["PipelineInput"]);
+                var pipelineInputBindings = new List<PipelineInputBuilder.BindingElement>();
+                foreach (var pipelineInput in inputJSON)
+                {
+                    var type = pipelineInput["Type"] as string;
+                    var rawValues = pipelineInput["Values"] as ICollection<object>;
+                    var values = new List<string>();
+                    foreach (var rawValue in rawValues)
+                        values.Add(rawValue as string);
+
+                    //attributes
+                    var attributeElements = new PipelineInputBuilder.AttributeElement[values.Count];
+                    for (int i = 0; i < values.Count; i++)
+                    {
+                        var formatTypes = Enum.GetValues(
+                            typeof(PipelineInputBuilder.AttributeElement.FormatType)
+                        ) as PipelineInputBuilder.AttributeElement.FormatType[];
+                        var formatTypeIndex = Array.FindIndex(
+                            formatTypes,
+                            (PipelineInputBuilder.AttributeElement.FormatType format) =>
+                                format.ToString() == values[i]
+                        );
+                        if (formatTypeIndex > -1)
+                            attributeElements[i] = new PipelineInputBuilder.AttributeElement(formatTypes[formatTypeIndex]);
+                        else
+                            throw new NotSupportedException();
+                    }
+
+                    //bindings
+                    PipelineInputBuilder.BindingElement.BindingType bindingType;
+                    if (type == "Vertex")
+                        bindingType = PipelineInputBuilder.BindingElement.BindingType.Vertex;
+                    else if (type == "Instance")
+                        bindingType = PipelineInputBuilder.BindingElement.BindingType.Instance;
+                    else
+                        throw new NotSupportedException();
+
+                    pipelineInputBindings.Add(new PipelineInputBuilder.BindingElement
+                    {
+                        Type = bindingType,
+                        Elements = attributeElements
+                    });
+                }
+                material.InputBuilder.Bindings = pipelineInputBindings.ToArray();
                 //setup material descriptor sets
-                var setsJSON = obj["DescriptorSets"] as ICollection<object>;
+                var setsJSON = GetObjectArray(obj["DescriptorSets"]);
                 foreach (var setRawJSON in setsJSON)
                 {
                     var setJSON = setRawJSON as Dictionary<string, object>;
                     var type = setJSON["Type"] as string;
                     var name = setJSON["Name"] as string;
-                    var bindings = GetObjectArray(setJSON["Bindings"] as ICollection<object>);
+                    var bindings = GetObjectArray(setJSON["Bindings"]);
 
                     if (type == "UniformData")
                     {
@@ -121,7 +166,7 @@ namespace Tortuga.Utils
                         var byteSizes = new List<uint>();
                         foreach (var binding in bindings)
                         {
-                            var dataValues = GetObjectArray(binding["Values"] as ICollection<object>);
+                            var dataValues = GetObjectArray(binding["Values"]);
                             var byteData = new List<byte>();
                             foreach (var data in dataValues)
                             {

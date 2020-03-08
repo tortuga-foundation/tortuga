@@ -76,8 +76,7 @@ namespace Tortuga.Components
                         "Assets/Shaders/UserInterface/UserInterface.frag"
                     ),
                     false,
-                    false,
-                    true
+                    false
                 );
                 ActiveMaterial.CreateUniformData<ShaderUIStruct>("Data");
                 ActiveMaterial.CreateSampledImage("Albedo", new uint[] { 1 });
