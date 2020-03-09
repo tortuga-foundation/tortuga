@@ -76,14 +76,26 @@ vec4 GetShadowColor(vec2 pos, vec2 spreadArea, vec2 blurArea)
 {
     vec2 spreadPos = pos * (blurArea + vec2(1.));
     vec2 spreadPosAbs = vec2(abs(spreadPos.x), abs(spreadPos.y));
-    if (spreadPosAbs.x < 1 && spreadPosAbs.y < 1)
+    if (shadowBlur == 0)
     {
-        if (BorderRadiusCheck(spreadPos))
+        if (spreadPosAbs.x < 1 && spreadPosAbs.y < 1 && BorderRadiusCheck(spreadPos))
             return shadowColor;
-        else
-            return vec4(0.);
     }
-    return vec4(0.);
+    vec2 fragment = vec2(1 / scale.x, 1 / scale.y);
+    int fragCount = 0;
+    float shadow = 0;
+    for (float x = spreadPosAbs.x - blurArea.x; x < spreadPosAbs.x + blurArea.x; x += fragment.x)
+    {
+        for (float y = spreadPosAbs.y - blurArea.y; y < spreadPosAbs.y + blurArea.y; y += fragment.y)
+        {
+            fragCount++;
+            if (x < 1 && y < 1 && BorderRadiusCheck(vec2(x, y)))
+                shadow++;
+        }
+    }
+    shadow /= fragCount;
+
+    return vec4(vec3(shadowColor.rgb * shadow), 1.);
 }
 
 void main() {
