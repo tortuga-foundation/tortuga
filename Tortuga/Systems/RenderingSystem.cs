@@ -66,6 +66,11 @@ namespace Tortuga.Systems
                 var transferCommands = new List<CommandPool.Command>();
 
                 var uis = MyScene.GetComponents<Components.UserInterface>();
+                System.Array.Sort(
+                    uis,
+                    (Components.UserInterface left, Components.UserInterface right) =>
+                        right.IndexZ - left.IndexZ
+                );
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
                 var meshes = MyScene.GetComponents<Components.Mesh>();
@@ -120,15 +125,15 @@ namespace Tortuga.Systems
                     //build render command for each mesh
 
                     var secondaryCommands = new List<CommandPool.Command>();
-                    foreach (var mesh in meshes)
-                    {
-                        var meshCommand = ProcessMeshCommands(mesh, camera, lights);
-                        secondaryCommands.Add(meshCommand);
-                    }
                     foreach (var ui in uis)
                     {
                         var uiCommand = ui.BuildDrawCommand(camera);
                         secondaryCommands.Add(uiCommand);
+                    }
+                    foreach (var mesh in meshes)
+                    {
+                        var meshCommand = ProcessMeshCommands(mesh, camera, lights);
+                        secondaryCommands.Add(meshCommand);
                     }
 
                     //execute all meshes command buffer

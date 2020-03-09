@@ -12,18 +12,13 @@ layout(set=0, binding=0) readonly uniform CAMERA_MVP
 };
 layout(set=1, binding=0) readonly uniform UI_DATA
 {
-    vec4 shadowColor;
     vec2 position;
     vec2 scale;
-    vec2 shadowOffset;
     float borderRadiusTopLeft;
     float borderRadiusTopRight;
     float borderRadiusBottomLeft;
     float borderRadiusBottomRight;
     int indexZ;
-    int shadowType;
-    float shadowBlur;
-    float shadowSpread;
     float rotation;
 };
 layout(set=2, binding=0) uniform sampler2D albedo;
@@ -72,66 +67,14 @@ bool BorderRadiusCheck(vec2 pos)
     return true;
 }
 
-vec4 GetShadowColor(vec2 pos, vec2 spreadArea, vec2 blurArea)
-{
-    vec2 spreadPos = pos * (blurArea + vec2(1.));
-    vec2 spreadPosAbs = vec2(abs(spreadPos.x), abs(spreadPos.y));
-    if (shadowBlur == 0)
-    {
-        if (spreadPosAbs.x < 1 && spreadPosAbs.y < 1 && BorderRadiusCheck(spreadPos))
-            return shadowColor;
-    }
-    vec2 fragment = vec2(1 / scale.x, 1 / scale.y);
-    int fragCount = 0;
-    float shadow = 0;
-    for (float x = spreadPosAbs.x - blurArea.x; x < spreadPosAbs.x + blurArea.x; x += fragment.x)
-    {
-        for (float y = spreadPosAbs.y - blurArea.y; y < spreadPosAbs.y + blurArea.y; y += fragment.y)
-        {
-            fragCount++;
-            if (x < 1 && y < 1 && BorderRadiusCheck(vec2(x, y)))
-                shadow++;
-        }
-    }
-    shadow /= fragCount;
-
-    return vec4(vec3(shadowColor.rgb * shadow), 1.);
-}
-
 void main() {
     vec2 pos = (inUV * 2.) - 1.;
     vec4 color;
 
-    vec2 shadowSpreadArea = vec2(
-        shadowSpread / scale.x,
-        shadowSpread / scale.y
-    );
-    vec2 shadowBlurArea = vec2(
-        shadowBlur / scale.x,
-        shadowBlur / scale.y
-    );
-
-    if (shadowType == 0)
-    {
-        if (BorderRadiusCheck(pos) == false)
-            color = vec4(0.);
-        else
-            color = texture(albedo, inUV);
-    }
-    else if (shadowType == 1)
-    {
-        vec2 totalShadowArea = shadowSpreadArea + shadowBlurArea + vec2(1.);
-        vec2 posWithShadow = vec2(pos.x * totalShadowArea.x, pos.y * totalShadowArea.y);
-        if (posWithShadow.x > -1 && 
-            posWithShadow.y > -1 && 
-            posWithShadow.x < 1 && 
-            posWithShadow.y < 1 && 
-            BorderRadiusCheck(posWithShadow)
-        )
-            color = texture(albedo, (posWithShadow + 1.) / 2.);
-        else
-            color = GetShadowColor(pos, shadowSpreadArea, shadowBlurArea);
-    }
+    if (BorderRadiusCheck(pos) == false)
+        color = vec4(0.);
+    else
+        color = texture(albedo, inUV);
 
     outColor = color;
 }

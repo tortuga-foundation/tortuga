@@ -33,11 +33,6 @@ namespace Tortuga.Test
                 ui.Position = new Vector2(150, 150);
                 ui.Scale = new Vector2(200, 200);
                 ui.BorderRadius = 50.0f;
-                ui.Shadow.Color = Color.Red;
-                ui.Shadow.Spread = 50;
-                ui.Shadow.Blur = 50;
-                ui.Shadow.Offset = Vector2.Zero;
-                ui.Shadow.Type = Components.UserInterface.ShadowType.Outset;
                 scene.AddEntity(button);
             }
 

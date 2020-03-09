@@ -11,18 +11,12 @@ layout(set=0,binding=0) readonly uniform CAMERA_MVP
 };
 layout(set=1, binding=0) readonly uniform UI_DATA
 {
-    vec4 shadowColor;
     vec2 position;
     vec2 scale;
-    vec2 shadowOffset;
     float borderRadiusTopLeft;
     float borderRadiusTopRight;
     float borderRadiusBottomLeft;
     float borderRadiusBottomRight;
-    int indexZ;
-    int shadowType;
-    float shadowBlur;
-    float shadowSpread;
 };
 
 layout(location = 0) out vec2 outUV;
@@ -33,19 +27,6 @@ void main() {
     vec2 sca = scale + position;
     pos = vec2(pos.x / cameraWidth, pos.y / cameraHeight);
     sca = vec2(sca.x / cameraWidth, sca.y / cameraHeight);
-    if (shadowType == 1)
-    {
-        vec2 shadowBlurArea = vec2(shadowBlur / cameraWidth, shadowBlur / cameraHeight) / 2.;
-        vec2 shadowSpreadArea = vec2(shadowSpread / cameraWidth, shadowSpread / cameraHeight) / 2.;
-
-        //position
-        pos -= shadowBlurArea;
-        pos -= shadowSpreadArea;
-
-        //scale
-        sca += shadowBlurArea;
-        sca += shadowSpreadArea;
-    }
 
     //setup vertex position and uvs
     vec2 vertexPositions[6] = vec2[](
