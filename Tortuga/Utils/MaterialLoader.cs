@@ -168,6 +168,11 @@ namespace Tortuga.Utils
                 foreach (var setRawJSON in setsJSON)
                 {
                     var setJSON = setRawJSON as Dictionary<string, object>;
+                    if (setJSON.ContainsKey("Type") == false)
+                        throw new InvalidDataException();
+                    if (setJSON.ContainsKey("Name") == false)
+                        throw new InvalidDataException();
+
                     var type = setJSON["Type"] as string;
                     var name = setJSON["Name"] as string;
                     Dictionary<string, object>[] bindings = new Dictionary<string, object>[0];
