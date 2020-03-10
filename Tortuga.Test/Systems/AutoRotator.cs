@@ -43,7 +43,7 @@ namespace Tortuga.Test
 
             await Task.Run(() =>
             {
-                var mesh = MyScene.GetComponents<Components.Mesh>();
+                var mesh = MyScene.GetComponents<Components.RenderMesh>();
                 foreach (var m in mesh)
                 {
                     var transform = m.MyEntity.GetComponent<Components.Transform>();

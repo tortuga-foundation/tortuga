@@ -45,10 +45,9 @@ namespace Tortuga.Test
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;
                 //add mesh component
-                var mesh = await entity.AddComponent<Components.Mesh>();
-                await mesh.SetVertices(sphereOBJ.ToGraphicsVertices);
-                await mesh.SetIndices(sphereOBJ.ToGraphicsIndex);
-                mesh.ActiveMaterial = bricksMaterial;
+                var mesh = await entity.AddComponent<Components.RenderMesh>();
+                mesh.Material = bricksMaterial;
+                await mesh.SetMesh(sphereOBJ); //this operation is async and might not be done instantly
 
                 scene.AddEntity(entity);
             }

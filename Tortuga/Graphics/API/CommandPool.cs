@@ -414,11 +414,11 @@ namespace Tortuga.Graphics.API
                 };
                 vkCmdSetViewport(_handle, 0, 1, &viewport);
             }
-            public unsafe void BindVertexBuffer(Buffer vertexBuffer)
+            public unsafe void BindVertexBuffer(Buffer vertexBuffer, uint bindPoint = 0)
             {
                 ulong offset = 0;
                 var buffer = vertexBuffer.Handle;
-                vkCmdBindVertexBuffers(_handle, 0, 1, &buffer, &offset);
+                vkCmdBindVertexBuffers(_handle, bindPoint, 1, &buffer, &offset);
             }
             public unsafe void BindIndexBuffer(Buffer indexBuffer)
             {

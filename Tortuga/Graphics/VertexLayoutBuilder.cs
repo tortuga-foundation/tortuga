@@ -13,13 +13,21 @@ namespace Tortuga.Graphics
                 Float1,
                 Float2,
                 Float3,
-                Float4
+                Float4,
+                VertexPosition,
+                VertexUV,
+                VertexNormal,
+                ObjectPosition,
+                ObjectRotation,
+                ObjectScale
             }
 
             public FormatType Format => _format;
             private FormatType _format;
             public uint Size => _size;
             private uint _size;
+            internal VkFormat VulkanFormat => _vulkanFormat;
+            private VkFormat _vulkanFormat;
 
             public AttributeElement(FormatType format)
             {
@@ -28,15 +36,25 @@ namespace Tortuga.Graphics
                 {
                     case FormatType.Float1:
                         _size = sizeof(float) * 1;
+                        _vulkanFormat = VkFormat.R32Sfloat;
                         break;
+                    case FormatType.VertexUV:
                     case FormatType.Float2:
                         _size = sizeof(float) * 2;
+                        _vulkanFormat = VkFormat.R32g32Sfloat;
                         break;
+                    case FormatType.ObjectPosition:
+                    case FormatType.ObjectRotation:
+                    case FormatType.ObjectScale:
+                    case FormatType.VertexPosition:
+                    case FormatType.VertexNormal:
                     case FormatType.Float3:
                         _size = sizeof(float) * 3;
+                        _vulkanFormat = VkFormat.R32g32b32Sfloat;
                         break;
                     case FormatType.Float4:
                         _size = sizeof(float) * 4;
+                        _vulkanFormat = VkFormat.R32g32b32a32Sfloat;
                         break;
 
                     default:
@@ -102,24 +120,6 @@ namespace Tortuga.Graphics
             }
         }
 
-        private VkFormat GetVkFormat(AttributeElement.FormatType format)
-        {
-            switch (format)
-            {
-                case AttributeElement.FormatType.Float1:
-                    return VkFormat.R32Sfloat;
-                case AttributeElement.FormatType.Float2:
-                    return VkFormat.R32g32Sfloat;
-                case AttributeElement.FormatType.Float3:
-                    return VkFormat.R32g32b32Sfloat;
-                case AttributeElement.FormatType.Float4:
-                    return VkFormat.R32g32b32a32Sfloat;
-
-                default:
-                    throw new NotSupportedException();
-            }
-        }
-
         internal NativeList<VkVertexInputAttributeDescription> AttributeDescriptions
         {
             get
@@ -134,7 +134,7 @@ namespace Tortuga.Graphics
                         attributeDescriptions.Add(new VkVertexInputAttributeDescription
                         {
                             binding = i,
-                            format = GetVkFormat(element.Format),
+                            format = element.VulkanFormat,
                             location = j,
                             offset = offset
                         });

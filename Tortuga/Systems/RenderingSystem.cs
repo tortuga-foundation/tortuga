@@ -25,11 +25,11 @@ namespace Tortuga.Systems
         public override void OnEnable()
         {
             var tasks = new List<Task>();
-            var meshes = MyScene.GetComponents<Components.Mesh>();
+            var meshes = MyScene.GetComponents<Components.RenderMesh>();
             foreach (var mesh in meshes)
             {
                 tasks.Add(
-                    mesh.ActiveMaterial.UpdateUniformData(
+                    mesh.Material.UpdateUniformData(
                         "MODEL",
                         0,
                         mesh.ModelMatrix
@@ -56,15 +56,15 @@ namespace Tortuga.Systems
 
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
-                var meshes = MyScene.GetComponents<Components.Mesh>();
+                var meshes = MyScene.GetComponents<Components.RenderMesh>();
                 foreach (var mesh in meshes)
                 {
-                    if (mesh.ActiveMaterial.UsingLighting)
+                    if (mesh.Material.UsingLighting)
                     {
                         try
                         {
-                            var meshLights = GetClosestLights(mesh, lights);
-                            var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
+                            var meshLights = mesh.RenderingLights(lights);
+                            var command = mesh.Material.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
                             transferCommands.Add(command.TransferCommand);
                         }
                         catch (System.Exception) { }
@@ -73,7 +73,7 @@ namespace Tortuga.Systems
                     {
                         try
                         {
-                            var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
+                            var command = mesh.Material.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
                             transferCommands.Add(command.TransferCommand);
                         }
                         catch (System.Exception) { }
@@ -110,7 +110,7 @@ namespace Tortuga.Systems
                     var secondaryCommands = new List<CommandPool.Command>();
                     foreach (var mesh in meshes)
                     {
-                        var meshCommand = ProcessMeshCommands(mesh, camera, lights);
+                        var meshCommand = mesh.RecordRenderCommand(camera);
                         secondaryCommands.Add(meshCommand);
                     }
 
@@ -163,64 +163,6 @@ namespace Tortuga.Systems
                     _renderWaitFence
                 );
             });
-        }
-
-        private CommandPool.Command ProcessMeshCommands(Components.Mesh mesh, Components.Camera camera, Components.Light[] allLights)
-        {
-            mesh.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
-            mesh.RenderCommand.SetViewport(
-                System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
-                System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.Width)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Width))
-            );
-
-            var descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
-            descriptorSets.Add(camera.CameraDescriptorSet);
-            foreach (var d in mesh.ActiveMaterial.DescriptorSets)
-                descriptorSets.Add(d);
-            mesh.ActiveMaterial.ReCompilePipeline();
-            mesh.RenderCommand.BindPipeline(
-                mesh.ActiveMaterial.ActivePipeline,
-                VkPipelineBindPoint.Graphics,
-                descriptorSets.ToArray()
-            );
-            mesh.RenderCommand.BindVertexBuffer(mesh.VertexBuffer);
-            mesh.RenderCommand.BindIndexBuffer(mesh.IndexBuffer);
-            mesh.RenderCommand.DrawIndexed(mesh.IndicesCount);
-            mesh.RenderCommand.End();
-            return mesh.RenderCommand;
-        }
-
-        private Components.Light.FullShaderInfo GetClosestLights(Components.Mesh mesh, Components.Light[] lights)
-        {
-            System.Array.Sort(lights, (Components.Light left, Components.Light right) =>
-            {
-                var leftDist = Vector3.Distance(left.Position, mesh.Position);
-                var rightDist = Vector3.Distance(right.Position, mesh.Position);
-                return System.Convert.ToInt32(System.MathF.Round(leftDist - rightDist));
-            });
-            if (lights.Length > 10)
-                System.Array.Resize(ref lights, 10);
-            var infoList = new List<Components.Light.LightShaderInfo>();
-            foreach (var l in lights)
-                infoList.Add(l.BuildShaderInfo);
-            for (int i = infoList.Count; i < 10; i++)
-                infoList.Add(new Components.Light.LightShaderInfo());
-            return new Components.Light.FullShaderInfo
-            {
-                Count = lights.Length,
-                Light0 = infoList[0],
-                Light1 = infoList[1],
-                Light2 = infoList[2],
-                Light3 = infoList[3],
-                Light4 = infoList[4],
-                Light5 = infoList[5],
-                Light6 = infoList[6],
-                Light7 = infoList[7],
-                Light8 = infoList[8],
-                Light9 = infoList[9]
-            };
         }
     }
 }
