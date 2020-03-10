@@ -36,17 +36,6 @@ namespace Tortuga.Systems
                     )
                 );
             }
-            var uis = MyScene.GetComponents<Components.UserInterface>();
-            foreach (var ui in uis)
-            {
-                tasks.Add(
-                    ui.ActiveMaterial.UpdateUniformData(
-                        "Data",
-                        0,
-                        ui.BuildShaderStruct
-                    )
-                );
-            }
             var cameras = MyScene.GetComponents<Components.Camera>();
             foreach (var camera in cameras)
                 tasks.Add(camera.UpdateCameraBuffers());
@@ -65,12 +54,6 @@ namespace Tortuga.Systems
 
                 var transferCommands = new List<CommandPool.Command>();
 
-                var uis = MyScene.GetComponents<Components.UserInterface>();
-                System.Array.Sort(
-                    uis,
-                    (Components.UserInterface left, Components.UserInterface right) =>
-                        right.IndexZ - left.IndexZ
-                );
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
                 var meshes = MyScene.GetComponents<Components.Mesh>();
@@ -78,22 +61,22 @@ namespace Tortuga.Systems
                 {
                     if (mesh.ActiveMaterial.UsingLighting)
                     {
-                        var meshLights = GetClosestLights(mesh, lights);
-                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
-                        transferCommands.Add(command.TransferCommand);
+                        try
+                        {
+                            var meshLights = GetClosestLights(mesh, lights);
+                            var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
+                            transferCommands.Add(command.TransferCommand);
+                        }
+                        catch (System.Exception) { }
                     }
                     if (mesh.IsStatic == false)
                     {
-                        var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
-                        transferCommands.Add(command.TransferCommand);
-                    }
-                }
-                foreach (var ui in uis)
-                {
-                    if (ui.IsStatic == false)
-                    {
-                        var command = ui.ActiveMaterial.UpdateUniformDataSemaphore("Data", 0, ui.BuildShaderStruct);
-                        transferCommands.Add(command.TransferCommand);
+                        try
+                        {
+                            var command = mesh.ActiveMaterial.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
+                            transferCommands.Add(command.TransferCommand);
+                        }
+                        catch (System.Exception) { }
                     }
                 }
 
@@ -125,11 +108,6 @@ namespace Tortuga.Systems
                     //build render command for each mesh
 
                     var secondaryCommands = new List<CommandPool.Command>();
-                    foreach (var ui in uis)
-                    {
-                        var uiCommand = ui.BuildDrawCommand(camera);
-                        secondaryCommands.Add(uiCommand);
-                    }
                     foreach (var mesh in meshes)
                     {
                         var meshCommand = ProcessMeshCommands(mesh, camera, lights);

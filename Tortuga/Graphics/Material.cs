@@ -60,13 +60,6 @@ namespace Tortuga.Graphics
             _shader = shader;
             _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
 
-            //model matrix
-            if (includeModelMatrix)
-                CreateUniformData<Matrix4x4>("MODEL");
-
-            if (_usingLighting)
-                CreateUniformData<Components.Light.FullShaderInfo>("LIGHT");
-
             if (inputBuilder == null)
                 InputBuilder = new PipelineInputBuilder();
             else
@@ -334,11 +327,14 @@ namespace Tortuga.Graphics
         }
         public async Task<T> GetUniformData<T>(string key, int binding) where T : struct
         {
+            if (_descriptorMapper.ContainsKey(key) == false)
+                throw new KeyNotFoundException();
             return (await _descriptorMapper[key].Buffers[binding].GetDataWithStaging<T>())[0];
         }
-
         internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, int binding, T data) where T : struct
         {
+            if (_descriptorMapper.ContainsKey(key) == false)
+                throw new KeyNotFoundException();
             return _descriptorMapper[key].Buffers[binding].SetDataGetTransferObject(new T[] { data });
         }
 

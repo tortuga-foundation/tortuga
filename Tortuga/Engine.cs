@@ -16,7 +16,7 @@ namespace Tortuga
         internal RenderPass MainRenderPass => _mainRenderPass;
         internal DescriptorSetLayout CameraDescriptorLayout => _cameraDescriptorLayout;
 
-        private static Engine _instance;
+        private static Engine _instance = new Engine();
         private VulkanInstance _vulkan;
         private Window _mainWindow;
         private RenderPass _mainRenderPass;
@@ -26,10 +26,15 @@ namespace Tortuga
 
         public Engine()
         {
+            //make sure this is a singleton
             if (Engine._instance != null)
                 throw new System.Exception("only 1 engine can be active at once");
+            
+            //setup vulkan
             Engine._instance = this;
             this._vulkan = new VulkanInstance();
+
+            //setup window
             Veldrid.Sdl2.SDL_WindowFlags windowFlags = Veldrid.Sdl2.SDL_WindowFlags.AllowHighDpi;
             if (Settings.Window.Type == Settings.Window.WindowType.ResizeableWindow)
                 windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Resizable;
@@ -38,7 +43,11 @@ namespace Tortuga
             else if (Settings.Window.Type == Settings.Window.WindowType.Borderless)
                 windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Borderless;
             _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, windowFlags, true);
+
+            //setup render pass
             _mainRenderPass = new RenderPass();
+
+            //setup camera uniform buffer layout
             _cameraDescriptorLayout = new DescriptorSetLayout(new DescriptorSetCreateInfo[]
             {
                 new DescriptorSetCreateInfo
@@ -47,6 +56,7 @@ namespace Tortuga
                     type = VkDescriptorType.UniformBuffer
                 }
             });
+            //initialize input event system
             InputSystem.Initialize();
         }
 

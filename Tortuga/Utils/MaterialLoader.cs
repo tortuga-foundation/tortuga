@@ -6,11 +6,23 @@ using Tortuga.Graphics;
 using System.Drawing;
 using System.Numerics;
 using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace Tortuga.Utils
 {
     public static class MaterialLoader
     {
+        private readonly static Dictionary<string, uint[]> _preDefinedUniforms = new Dictionary<string, uint[]>(){
+            {
+                "MODEL",
+                new uint[]{ Convert.ToUInt32(Unsafe.SizeOf<Matrix4x4>()) }
+            },
+            {
+                "LIGHT",
+                new uint[]{ Convert.ToUInt32(Unsafe.SizeOf<Components.Light.FullShaderInfo>()) }
+            }
+        };
+
         private static Dictionary<string, object>[] GetObjectArray(object array)
         {
             var rtn = new List<Dictionary<string, object>>();
@@ -158,10 +170,25 @@ namespace Tortuga.Utils
                     var setJSON = setRawJSON as Dictionary<string, object>;
                     var type = setJSON["Type"] as string;
                     var name = setJSON["Name"] as string;
-                    var bindings = GetObjectArray(setJSON["Bindings"]);
+                    Dictionary<string, object>[] bindings = new Dictionary<string, object>[0];
+                    if (setJSON.ContainsKey("Bindings"))
+                        bindings = GetObjectArray(setJSON["Bindings"]);
 
                     if (type == "UniformData")
                     {
+                        bool isPreDetermained = false;
+                        foreach (var pre in _preDefinedUniforms)
+                        {
+                            if (pre.Key == name)
+                            {
+                                material.CreateUniformData(pre.Key, pre.Value);
+                                isPreDetermained = true;
+                                break;
+                            }
+                        }
+                        if (isPreDetermained)
+                            continue;
+
                         var totalBytes = new List<byte[]>();
                         var byteSizes = new List<uint>();
                         foreach (var binding in bindings)

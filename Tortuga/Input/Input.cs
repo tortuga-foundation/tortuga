@@ -12,6 +12,7 @@ namespace Tortuga.Input
             => _isKeyPressed[key];
         public static Action<MouseButton> OnMouseButtonDown;
         public static Action<MouseButton> OnMouseButtonUp;
+        public static Action<Vector2> OnMousePositionChanged;
         public static bool IsMouseButtonDown(MouseButton button)
             => _isMouseButtonPressed[button];
         public static Vector2 MousePosition => _mousePosition;
@@ -59,10 +60,15 @@ namespace Tortuga.Input
                     OnMouseButtonUp?.Invoke(button);
                 }
             }
-            _mousePosition = new Vector2(
+            var mousePosition = new Vector2(
                 snapshot.MousePosition.X,
                 snapshot.MousePosition.Y
             );
+            if (mousePosition != _mousePosition)
+            {
+                _mousePosition = mousePosition;
+                OnMousePositionChanged?.Invoke(_mousePosition);
+            }
             if (snapshot.WheelDelta != 0)
                 OnWheelDeltaChange?.Invoke(snapshot.WheelDelta);
             _wheelDelta = snapshot.WheelDelta;

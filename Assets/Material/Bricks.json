@@ -8,17 +8,21 @@
   "PipelineInput": [
     {
       "Type": "Vertex",
-      "Values": [
-        "Float3",
-        "Float2",
-        "Float3"
-      ]
+      "Values": ["Float3", "Float2", "Float3"]
     }
   ],
   "DescriptorSets": [
     {
       "Type": "UniformData",
-      "Name": "PBR",
+      "Name": "MODEL"
+    },
+    {
+      "Type": "UniformData",
+      "Name": "LIGHT"
+    },
+    {
+      "Type": "UniformData",
+      "Name": "Data",
       "Bindings": [
         {
           "Values": [

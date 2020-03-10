@@ -8,8 +8,6 @@ namespace Tortuga.Test
     {
         static async Task Main(string[] args)
         {
-            var engine = new Engine();
-
             //create new scene
             var scene = new Core.Scene();
 
@@ -25,16 +23,6 @@ namespace Tortuga.Test
             var sphereOBJ = await Utils.OBJLoader.Load("Assets/Models/Sphere.obj");
             //load bricks material
             var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
-
-            //user interface
-            {
-                var button = new Core.Entity();
-                var ui = await button.AddComponent<Components.UserInterface>();
-                ui.Position = new Vector2(150, 150);
-                ui.Scale = new Vector2(200, 200);
-                ui.BorderRadius = 50.0f;
-                scene.AddEntity(button);
-            }
 
             //light
             {
@@ -70,8 +58,8 @@ namespace Tortuga.Test
             scene.AddSystem<AutoRotator>();
             scene.AddSystem<LightMovement>();
 
-            engine.LoadScene(scene); //set this scene as currently active
-            await engine.Run();
+            Engine.Instance.LoadScene(scene); //set this scene as currently active
+            await Engine.Instance.Run();
         }
     }
 }
