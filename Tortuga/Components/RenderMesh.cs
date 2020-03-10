@@ -47,6 +47,7 @@ namespace Tortuga.Components
             get
             {
                 var transform = MyEntity.GetComponent<Transform>();
+                if (transform == null)
                     return Vector3.Zero;
 
                 return transform.Position;
