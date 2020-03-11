@@ -106,7 +106,6 @@ namespace Tortuga.Graphics.API
                 _transferFromCommand.End();
             }
         }
-
         unsafe ~Buffer()
         {
             vkDestroyBuffer(
@@ -134,6 +133,25 @@ namespace Tortuga.Graphics.API
             usageFlags,
             VkMemoryPropertyFlags.DeviceLocal
         );
+
+        public unsafe void SetData(IntPtr ptr, int offset, int size)
+        {
+            IntPtr mappedMemory;
+            if (vkMapMemory(
+                Engine.Instance.MainDevice.LogicalDevice,
+                _deviceMemory,
+                0,
+                _size,
+                0,
+                (void**)&mappedMemory
+            ) != VkResult.Success)
+                throw new System.Exception("failed to map vulkan memory");
+            System.Buffer.MemoryCopy((void*)IntPtr.Add(ptr, offset), (void*)IntPtr.Add(mappedMemory, offset), size, size);
+            vkUnmapMemory(
+                Engine.Instance.MainDevice.LogicalDevice,
+                _deviceMemory
+            );
+        }
 
         public unsafe void SetData<T>(T[] data) where T : struct
         {
@@ -214,6 +232,17 @@ namespace Tortuga.Graphics.API
         internal BufferTransferObject SetDataGetTransferObject<T>(T[] data) where T : struct
         {
             _staging.SetData(data);
+            return new BufferTransferObject
+            {
+                commandPool = _commandPool,
+                StagingBuffer = _staging,
+                TransferCommand = _transferToCommand
+            };
+        }
+
+        internal BufferTransferObject SetDataGetTransferObject(IntPtr ptr, int offset, int size)
+        {
+            _staging.SetData(ptr, offset, size);
             return new BufferTransferObject
             {
                 commandPool = _commandPool,

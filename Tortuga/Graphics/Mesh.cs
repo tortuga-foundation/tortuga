@@ -13,7 +13,7 @@ namespace Tortuga.Graphics
 
     public class Mesh
     {
-        public uint[] Indices
+        public ushort[] Indices
         {
             set
             {
@@ -22,7 +22,7 @@ namespace Tortuga.Graphics
             }
             get => _indices;
         }
-        private uint[] _indices;
+        private ushort[] _indices;
         public uint IndicesLength => _indicesLength;
         private uint _indicesLength;
 

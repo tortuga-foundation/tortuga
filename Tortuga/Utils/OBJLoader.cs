@@ -94,8 +94,8 @@ namespace Tortuga.Utils
                     }
                 }
 
-                mesh.Indices = new uint[indices.Count];
-                for (uint i = 0; i < indices.Count; i++)
+                mesh.Indices = new ushort[indices.Count];
+                for (ushort i = 0; i < indices.Count; i++)
                     mesh.Indices[i] = i;
 
                 var output = new List<Graphics.Vertex>();

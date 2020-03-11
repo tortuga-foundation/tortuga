@@ -92,7 +92,7 @@ namespace Tortuga.Components
             if (_mesh == null || _mesh.IndicesLength != mesh.IndicesLength)
             {
                 _indexBuffer = Graphics.API.Buffer.CreateDevice(
-                    sizeof(uint) * mesh.IndicesLength,
+                    sizeof(ushort) * mesh.IndicesLength,
                     VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
                 );
             }
@@ -157,7 +157,7 @@ namespace Tortuga.Components
             _mesh = mesh;
         }
 
-        internal CommandPool.Command RecordRenderCommand(Components.Camera camera)
+        internal Task<CommandPool.Command> RecordRenderCommand(Components.Camera camera)
         {
             this.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             this.RenderCommand.SetViewport(
@@ -182,7 +182,7 @@ namespace Tortuga.Components
             this.RenderCommand.BindIndexBuffer(this.IndexBuffer);
             this.RenderCommand.DrawIndexed(this.IndicesCount);
             this.RenderCommand.End();
-            return this.RenderCommand;
+            return Task.FromResult(this.RenderCommand);
         }
         internal Components.Light.FullShaderInfo RenderingLights(Components.Light[] lights)
         {

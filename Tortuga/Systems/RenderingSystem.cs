@@ -1,7 +1,6 @@
 using Vulkan;
 using Tortuga.Graphics.API;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Threading.Tasks;
 
 namespace Tortuga.Systems
@@ -14,12 +13,15 @@ namespace Tortuga.Systems
         private Semaphore _syncSemaphore;
         private float _cameraResolutionScale => Settings.Graphics.RenderResolutionScale;
 
+        private Graphics.ImGUI _gui;
+
         public RenderingSystem()
         {
             _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
             _renderCommand = _renderCommandPool.AllocateCommands()[0];
             _renderWaitFence = new Fence(true);
             _syncSemaphore = new Semaphore();
+            _gui = new Graphics.ImGUI();
         }
 
         public override void OnEnable()
@@ -83,6 +85,7 @@ namespace Tortuga.Systems
                 //begin rendering frame
                 _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
 
+
                 //prepare swapchain for image copy
                 _renderCommand.TransferImageLayout(
                     Engine.Instance.MainWindow.Swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
@@ -105,18 +108,34 @@ namespace Tortuga.Systems
                     //begin render pass for this camera
                     _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
 
-                    //build render command for each mesh
 
-                    var secondaryCommands = new List<CommandPool.Command>();
+                    //create render command for ImGui
+                    var guiTask = _gui.RenderCommand(camera);
+
+                    //build render command for each mesh
+                    var secondaryCommandTask = new List<Task<CommandPool.Command>>();
                     foreach (var mesh in meshes)
                     {
                         var meshCommand = mesh.RecordRenderCommand(camera);
-                        secondaryCommands.Add(meshCommand);
+                        secondaryCommandTask.Add(meshCommand);
                     }
 
+                    var secondaryCommandTaskArray = secondaryCommandTask.ToArray();
+                    Task.WaitAll(secondaryCommandTaskArray);
+                    Task.WaitAll(guiTask);
+
+                    foreach (var guiTransfer in guiTask.Result.TransferCommands)
+                        transferCommands.Add(guiTransfer.TransferCommand);
+
                     //execute all meshes command buffer
-                    if (secondaryCommands.Count > 0)
-                        _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
+                    if (secondaryCommandTask.Count > 0)
+                    {
+                        var secondaryCmds = new List<CommandPool.Command>();
+                        foreach (var task in secondaryCommandTaskArray)
+                            secondaryCmds.Add(task.Result);
+                        secondaryCmds.Add(guiTask.Result.RenderCommand);
+                        _renderCommand.ExecuteCommands(secondaryCmds.ToArray());
+                    }
                     _renderCommand.EndRenderPass();
 
                     //copy rendered image to swapchian for displaying in the window

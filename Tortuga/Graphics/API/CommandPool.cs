@@ -424,11 +424,11 @@ namespace Tortuga.Graphics.API
             {
                 ulong offset = 0;
                 var buffer = indexBuffer.Handle;
-                vkCmdBindIndexBuffer(_handle, buffer, offset, VkIndexType.Uint32);
+                vkCmdBindIndexBuffer(_handle, buffer, offset, VkIndexType.Uint16);
             }
-            public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1)
+            public unsafe void DrawIndexed(uint indexCount, uint instanceCount = 1, uint indexOffset = 0, int vertexOffset = 0, uint instanceOffset = 0)
             {
-                vkCmdDrawIndexed(_handle, indexCount, instanceCount, 0, 0, 0);
+                vkCmdDrawIndexed(_handle, indexCount, instanceCount, indexOffset, vertexOffset, instanceOffset);
             }
             public unsafe void Draw(uint vertexCount)
             {
