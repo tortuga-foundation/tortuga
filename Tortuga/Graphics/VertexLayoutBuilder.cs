@@ -14,6 +14,17 @@ namespace Tortuga.Graphics
                 Float2,
                 Float3,
                 Float4,
+                Byte4Norm,
+                VertexPosition,
+                VertexUV,
+                VertexNormal,
+                ObjectPosition,
+                ObjectRotation,
+                ObjectScale
+            }
+
+            public enum ContentType
+            {
                 VertexPosition,
                 VertexUV,
                 VertexNormal,
@@ -55,6 +66,10 @@ namespace Tortuga.Graphics
                     case FormatType.Float4:
                         _size = sizeof(float) * 4;
                         _vulkanFormat = VkFormat.R32g32b32a32Sfloat;
+                        break;
+                    case FormatType.Byte4Norm:
+                        _size = sizeof(float);
+                        _vulkanFormat = VkFormat.R8g8b8a8Unorm;
                         break;
 
                     default:
