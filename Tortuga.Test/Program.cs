@@ -37,6 +37,7 @@ namespace Tortuga.Test
                 light.Color = Color.White;
                 scene.AddEntity(entity);
             }
+            Graphics.GUI.UserInterface.Instance.Items.Add(new Graphics.GUI.BaseInterface());
 
             //sphere 1
             {

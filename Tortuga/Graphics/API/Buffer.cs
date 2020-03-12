@@ -124,14 +124,16 @@ namespace Tortuga.Graphics.API
             => new Buffer(
             size,
             usageFlags,
-            VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent
+            VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent,
+            true
         );
 
         public static Buffer CreateDevice(uint size, VkBufferUsageFlags usageFlags)
             => new Buffer(
             size,
             usageFlags,
-            VkMemoryPropertyFlags.DeviceLocal
+            VkMemoryPropertyFlags.DeviceLocal,
+            false
         );
 
         public unsafe void SetData(IntPtr ptr, int offset, int size)
@@ -204,9 +206,9 @@ namespace Tortuga.Graphics.API
 
         public async Task SetDataWithStaging<T>(T[] data) where T : struct
         {
+            _staging.SetData(data);
             await Task.Run(() =>
             {
-                _staging.SetData(data);
                 var fence = new Fence();
                 _transferToCommand.Submit(
                     Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],

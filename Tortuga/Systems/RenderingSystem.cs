@@ -105,6 +105,12 @@ namespace Tortuga.Systems
                     //begin render pass for this camera
                     _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
 
+                    //record ui draw commands
+                    CommandPool.Command uiRenderCommand;
+                    var uiTransferCommands = Graphics.GUI.UserInterface.Instance.RecordCommands(camera, out uiRenderCommand);
+                    foreach (var t in uiTransferCommands)
+                        transferCommands.Add(t);
+
                     //build render command for each mesh
                     var secondaryCommandTask = new Task<CommandPool.Command>[meshes.Length];
                     for (int i = 0; i < meshes.Length; i++)
@@ -115,11 +121,11 @@ namespace Tortuga.Systems
                     //execute all meshes command buffer
                     if (secondaryCommandTask.Length > 0)
                     {
-                        var secondaryCmds = new CommandPool.Command[secondaryCommandTask.Length];
-                        for (int i = 0; i < secondaryCommandTask.Length; i++)
-                            secondaryCmds[i] = secondaryCommandTask[i].Result;
-
-                        _renderCommand.ExecuteCommands(secondaryCmds);
+                        var secondaryCmds = new List<CommandPool.Command>();
+                        secondaryCmds.Add(uiRenderCommand);
+                        foreach (var task in secondaryCommandTask)
+                            secondaryCmds.Add(task.Result);
+                        _renderCommand.ExecuteCommands(secondaryCmds.ToArray());
                     }
                     _renderCommand.EndRenderPass();
 
