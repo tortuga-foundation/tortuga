@@ -125,6 +125,7 @@ namespace Tortuga.Utils
                 {
                     var type = pipelineInput["Type"] as string;
                     var rawValues = pipelineInput["Values"] as ICollection<object>;
+                    var rawContentType = pipelineInput["Content"] as ICollection<object>;
                     var values = new List<string>();
                     foreach (var rawValue in rawValues)
                         values.Add(rawValue as string);
@@ -145,6 +146,27 @@ namespace Tortuga.Utils
                             attributeElements[i] = new PipelineInputBuilder.AttributeElement(formatTypes[formatTypeIndex]);
                         else
                             throw new NotSupportedException();
+                    }
+
+                    //content type
+                    if (rawContentType != null)
+                    {
+                        var contentTypes = new List<string>();
+                        foreach (var rawCT in rawContentType)
+                            contentTypes.Add(rawCT as string);
+                        for (int i = 0; i < contentTypes.Count; i++)
+                        {
+                            var typeOfContents = Enum.GetValues(
+                                typeof(PipelineInputBuilder.AttributeElement.ContentType)
+                            ) as PipelineInputBuilder.AttributeElement.ContentType[];
+                            var contentTypeIndex = Array.FindIndex(
+                                typeOfContents,
+                                (PipelineInputBuilder.AttributeElement.ContentType content) =>
+                                    content.ToString() == contentTypes[i]
+                            );
+                            if (contentTypeIndex > -1)
+                                attributeElements[i].Content = typeOfContents[contentTypeIndex];
+                        }
                     }
 
                     //bindings

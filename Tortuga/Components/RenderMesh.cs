@@ -14,8 +14,8 @@ namespace Tortuga.Components
         {
             set
             {
-                Task.Run(() => SetMesh(_mesh));
                 _material = value;
+                Task.Run(() => SetMesh(_mesh));
             }
             get => _material;
         }
@@ -107,38 +107,23 @@ namespace Tortuga.Components
                 if (binding.Type == Graphics.PipelineInputBuilder.BindingElement.BindingType.Vertex)
                 {
                     var bytes = new List<byte>();
-                    var attributesList = new List<Graphics.PipelineInputBuilder.AttributeElement.FormatType>();
-                    foreach (var element in binding.Elements)
-                        attributesList.Add(element.Format);
-
-
                     foreach (var vertex in mesh.Vertices)
                     {
-                        foreach (var attribute in attributesList)
+                        foreach (var attribute in binding.Elements)
                         {
-                            if (attribute == Graphics.PipelineInputBuilder.AttributeElement.FormatType.VertexPosition)
+                            if (attribute.Content == Graphics.PipelineInputBuilder.AttributeElement.ContentType.VertexPosition)
                             {
-                                foreach (var b in BitConverter.GetBytes(vertex.Position.X))
-                                    bytes.Add(b);
-                                foreach (var b in BitConverter.GetBytes(vertex.Position.Y))
-                                    bytes.Add(b);
-                                foreach (var b in BitConverter.GetBytes(vertex.Position.Z))
+                                foreach (var b in attribute.GetBytes(vertex.Position))
                                     bytes.Add(b);
                             }
-                            else if (attribute == Graphics.PipelineInputBuilder.AttributeElement.FormatType.VertexNormal)
+                            else if (attribute.Content == Graphics.PipelineInputBuilder.AttributeElement.ContentType.VertexUV)
                             {
-                                foreach (var b in BitConverter.GetBytes(vertex.Normal.X))
-                                    bytes.Add(b);
-                                foreach (var b in BitConverter.GetBytes(vertex.Normal.Y))
-                                    bytes.Add(b);
-                                foreach (var b in BitConverter.GetBytes(vertex.Normal.Z))
+                                foreach (var b in attribute.GetBytes(vertex.TextureCoordinates))
                                     bytes.Add(b);
                             }
-                            else if (attribute == Graphics.PipelineInputBuilder.AttributeElement.FormatType.VertexUV)
+                            else if (attribute.Content == Graphics.PipelineInputBuilder.AttributeElement.ContentType.VertexNormal)
                             {
-                                foreach (var b in BitConverter.GetBytes(vertex.TextureCoordinates.X))
-                                    bytes.Add(b);
-                                foreach (var b in BitConverter.GetBytes(vertex.TextureCoordinates.Y))
+                                foreach (var b in attribute.GetBytes(vertex.Normal))
                                     bytes.Add(b);
                             }
                         }
@@ -150,7 +135,7 @@ namespace Tortuga.Components
                             VkBufferUsageFlags.VertexBuffer
                         )
                     );
-                    await _vertexBuffers[i].SetDataWithStaging(bytes.ToArray());
+                    await _vertexBuffers[i].SetDataWithStaging(mesh.Vertices);
                 }
             }
 

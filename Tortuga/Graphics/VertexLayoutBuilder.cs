@@ -1,6 +1,8 @@
 using Vulkan;
 using System;
 using Tortuga.Graphics.API;
+using System.Numerics;
+using System.Collections.Generic;
 
 namespace Tortuga.Graphics
 {
@@ -14,17 +16,35 @@ namespace Tortuga.Graphics
                 Float2,
                 Float3,
                 Float4,
+                Byte2Norm,
+                Byte2,
+                SByte2,
                 Byte4Norm,
-                VertexPosition,
-                VertexUV,
-                VertexNormal,
-                ObjectPosition,
-                ObjectRotation,
-                ObjectScale
+                Byte4,
+                SByte4Norm,
+                SByte4,
+                UShort2Norm,
+                UShort2,
+                UShort4Norm,
+                UShort4,
+                Short2Norm,
+                Short4,
+                UInt1,
+                UInt2,
+                UInt3,
+                UInt4,
+                Int1,
+                Int2,
+                Int3,
+                Int4,
+                Half1,
+                Half2,
+                Half4
             }
 
             public enum ContentType
             {
+                None,
                 VertexPosition,
                 VertexUV,
                 VertexNormal,
@@ -33,6 +53,7 @@ namespace Tortuga.Graphics
                 ObjectScale
             }
 
+            public ContentType Content;
             public FormatType Format => _format;
             private FormatType _format;
             public uint Size => _size;
@@ -40,25 +61,20 @@ namespace Tortuga.Graphics
             internal VkFormat VulkanFormat => _vulkanFormat;
             private VkFormat _vulkanFormat;
 
-            public AttributeElement(FormatType format)
+            public AttributeElement(FormatType format, ContentType content = ContentType.None)
             {
                 _format = format;
+                Content = content;
                 switch (format)
                 {
                     case FormatType.Float1:
                         _size = sizeof(float) * 1;
                         _vulkanFormat = VkFormat.R32Sfloat;
                         break;
-                    case FormatType.VertexUV:
                     case FormatType.Float2:
                         _size = sizeof(float) * 2;
                         _vulkanFormat = VkFormat.R32g32Sfloat;
                         break;
-                    case FormatType.ObjectPosition:
-                    case FormatType.ObjectRotation:
-                    case FormatType.ObjectScale:
-                    case FormatType.VertexPosition:
-                    case FormatType.VertexNormal:
                     case FormatType.Float3:
                         _size = sizeof(float) * 3;
                         _vulkanFormat = VkFormat.R32g32b32Sfloat;
@@ -67,14 +83,166 @@ namespace Tortuga.Graphics
                         _size = sizeof(float) * 4;
                         _vulkanFormat = VkFormat.R32g32b32a32Sfloat;
                         break;
+                    case FormatType.Byte2Norm:
+                        _size = sizeof(byte) * 2;
+                        _vulkanFormat = VkFormat.R8g8Snorm;
+                        break;
+                    case FormatType.Byte2:
+                        _size = sizeof(byte) * 2;
+                        _vulkanFormat = VkFormat.R8g8Unorm;
+                        break;
+                    case FormatType.SByte2:
+                        _size = sizeof(byte) * 2;
+                        _vulkanFormat = VkFormat.R8g8Sint;
+                        break;
                     case FormatType.Byte4Norm:
-                        _size = sizeof(float);
+                        _size = sizeof(byte) * 4;
                         _vulkanFormat = VkFormat.R8g8b8a8Unorm;
+                        break;
+                    case FormatType.Byte4:
+                        _size = sizeof(byte) * 4;
+                        _vulkanFormat = VkFormat.R8g8b8a8Uint;
+                        break;
+                    case FormatType.SByte4Norm:
+                        _size = sizeof(byte) * 4;
+                        _vulkanFormat = VkFormat.R8g8b8a8Snorm;
+                        break;
+                    case FormatType.SByte4:
+                        _size = sizeof(byte) * 4;
+                        _vulkanFormat = VkFormat.R8g8b8a8Sint;
+                        break;
+                    case FormatType.UShort2Norm:
+                        _size = sizeof(short) * 2;
+                        _vulkanFormat = VkFormat.R16g16Unorm;
+                        break;
+                    case FormatType.UShort2:
+                        _size = sizeof(short) * 2;
+                        _vulkanFormat = VkFormat.R16g16Uint;
+                        break;
+                    case FormatType.Short2Norm:
+                        _size = sizeof(short) * 2;
+                        _vulkanFormat = VkFormat.R16g16b16a16Snorm;
+                        break;
+                    case FormatType.UShort4Norm:
+                        _size = sizeof(short) * 4;
+                        _vulkanFormat = VkFormat.R16g16b16a16Unorm;
+                        break;
+                    case FormatType.UShort4:
+                        _size = sizeof(short) * 4;
+                        _vulkanFormat = VkFormat.R16g16b16a16Uint;
+                        break;
+                    case FormatType.Short4:
+                        _size = sizeof(short) * 4;
+                        _vulkanFormat = VkFormat.R16g16b16a16Sint;
+                        break;
+                    case FormatType.UInt1:
+                        _size = sizeof(uint);
+                        _vulkanFormat = VkFormat.R32Uint;
+                        break;
+                    case FormatType.UInt2:
+                        _size = sizeof(uint) * 2;
+                        _vulkanFormat = VkFormat.R32g32Uint;
+                        break;
+                    case FormatType.UInt3:
+                        _size = sizeof(uint) * 2;
+                        _vulkanFormat = VkFormat.R32g32b32Uint;
+                        break;
+                    case FormatType.UInt4:
+                        _size = sizeof(uint) * 2;
+                        _vulkanFormat = VkFormat.R32g32b32a32Uint;
+                        break;
+                    case FormatType.Int1:
+                        _size = sizeof(int) * 2;
+                        _vulkanFormat = VkFormat.R32Sint;
+                        break;
+                    case FormatType.Int2:
+                        _size = sizeof(int) * 2;
+                        _vulkanFormat = VkFormat.R32g32Sint;
+                        break;
+                    case FormatType.Int3:
+                        _size = sizeof(int) * 2;
+                        _vulkanFormat = VkFormat.R32g32b32Sint;
+                        break;
+                    case FormatType.Int4:
+                        _size = sizeof(int) * 2;
+                        _vulkanFormat = VkFormat.R32g32b32a32Sint;
                         break;
 
                     default:
                         throw new NotSupportedException();
                 }
+            }
+
+            public byte[] GetBytes(float val)
+            {
+                if (
+                    _format != FormatType.Float1
+                )
+                    throw new NotSupportedException();
+
+                var totalBytes = new List<byte>();
+                foreach (var b in BitConverter.GetBytes(val))
+                    totalBytes.Add(b);
+                return totalBytes.ToArray();
+            }
+
+            public byte[] GetBytes(Vector2 vector)
+            {
+                if (
+                    _format != FormatType.Float1 &&
+                    _format != FormatType.Float2
+                )
+                    throw new NotSupportedException();
+
+                var totalBytes = new List<byte>();
+                foreach (var b in BitConverter.GetBytes(vector.X))
+                    totalBytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vector.Y))
+                    totalBytes.Add(b);
+                return totalBytes.ToArray();
+            }
+
+            public byte[] GetBytes(Vector3 vector)
+            {
+                if (
+                    _format != FormatType.Float1 &&
+                    _format != FormatType.Float2 &&
+                    _format != FormatType.Float3
+                )
+                    throw new NotSupportedException();
+
+                var totalBytes = new List<byte>();
+
+                foreach (var b in BitConverter.GetBytes(vector.X))
+                    totalBytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vector.Y))
+                    totalBytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vector.Z))
+                    totalBytes.Add(b);
+                return totalBytes.ToArray();
+            }
+
+            public byte[] GetBytes(Vector4 vector)
+            {
+                if (
+                    _format != FormatType.Float1 &&
+                    _format != FormatType.Float2 &&
+                    _format != FormatType.Float3 &&
+                    _format != FormatType.Float4
+                )
+                    throw new NotSupportedException();
+
+                var totalBytes = new List<byte>();
+
+                foreach (var b in BitConverter.GetBytes(vector.X))
+                    totalBytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vector.Y))
+                    totalBytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vector.Z))
+                    totalBytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vector.W))
+                    totalBytes.Add(b);
+                return totalBytes.ToArray();
             }
         };
         public class BindingElement
@@ -102,7 +270,7 @@ namespace Tortuga.Graphics
 
         public PipelineInputBuilder()
         {
-            Bindings = new BindingElement[]{};
+            Bindings = new BindingElement[] { };
         }
         public PipelineInputBuilder(BindingElement[] bindings)
         {

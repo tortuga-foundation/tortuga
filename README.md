@@ -13,6 +13,7 @@ Tortua is an open source game engine built using C# dot net core 3.0
 - PBR Shader (Metalness Workflow)
 - Event Based Input System
 - Material JSON Object
+- Full Linux Support
 
 ## Prerequisites
 

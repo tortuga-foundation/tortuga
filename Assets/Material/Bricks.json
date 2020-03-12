@@ -8,7 +8,8 @@
   "PipelineInput": [
     {
       "Type": "Vertex",
-      "Values": ["VertexPosition", "VertexUV", "VertexNormal"]
+      "Values": ["Float3", "Float2", "Float3"],
+      "Content": ["VertexPosition", "VertexUV", "VertexNormal"]
     }
   ],
   "DescriptorSets": [
