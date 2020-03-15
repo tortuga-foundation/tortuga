@@ -5,6 +5,7 @@ using Tortuga.Graphics;
 using Tortuga.Graphics.API;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 
 namespace Tortuga.Components
 {
@@ -78,7 +79,7 @@ namespace Tortuga.Components
 
 
         internal CommandPool.Command RenderCommand => _renderCommand;
-        internal Dictionary<uint, Graphics.API.Buffer> VertexBuffers => _vertexBuffers;
+        internal Graphics.API.Buffer VertexBuffers => _vertexBuffers;
         internal Graphics.API.Buffer IndexBuffer => _indexBuffer;
         internal uint IndicesCount => Mesh.IndicesLength;
 
@@ -86,12 +87,14 @@ namespace Tortuga.Components
         private Graphics.Mesh _mesh;
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
-        private Dictionary<uint, Graphics.API.Buffer> _vertexBuffers;
+        private Graphics.API.Buffer _vertexBuffers;
         private Graphics.API.Buffer _indexBuffer;
+        private DescriptorSetPool _uniformDescriptorPool;
+        private DescriptorSetPool.DescriptorSet _uniformDescriptorSet;
+        private Graphics.API.Buffer _uniformBuffer;
 
         public async override Task OnEnable()
         {
-            _vertexBuffers = new Dictionary<uint, Graphics.API.Buffer>();
             await Task.Run(() =>
             {
                 if (Material == null)
@@ -99,6 +102,13 @@ namespace Tortuga.Components
 
                 _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
+                _uniformDescriptorPool = new DescriptorSetPool(Engine.Instance.ModelDescriptorLayout);
+                _uniformDescriptorSet = _uniformDescriptorPool.AllocateDescriptorSet();
+                _uniformBuffer = Graphics.API.Buffer.CreateDevice(
+                    System.Convert.ToUInt32(Unsafe.SizeOf<System.Numerics.Matrix4x4>()),
+                    VkBufferUsageFlags.UniformBuffer
+                );
+                _uniformDescriptorSet.BuffersUpdate(_uniformBuffer);
             });
         }
 
@@ -123,50 +133,31 @@ namespace Tortuga.Components
                 await _indexBuffer.SetDataWithStaging(mesh.Indices);
 
             //vertex buffer
-            for (uint i = 0; i < Material.InputBuilder.Bindings.Length; i++)
+            var bytes = new List<byte>();
+            foreach (var vertex in mesh.Vertices)
             {
-                var binding = Material.InputBuilder.Bindings[i];
-                if (binding.Type == Graphics.PipelineInputBuilder.BindingElement.BindingType.Vertex)
-                {
-                    var bytes = new List<byte>();
-                    foreach (var vertex in mesh.Vertices)
-                    {
-                        foreach (var attribute in binding.Elements)
-                        {
-                            if (attribute.Content == Graphics.PipelineInputBuilder.AttributeElement.ContentType.VertexPosition)
-                            {
-                                foreach (var b in attribute.GetBytes(vertex.Position))
-                                    bytes.Add(b);
-                            }
-                            else if (attribute.Content == Graphics.PipelineInputBuilder.AttributeElement.ContentType.VertexUV)
-                            {
-                                foreach (var b in attribute.GetBytes(vertex.TextureCoordinates))
-                                    bytes.Add(b);
-                            }
-                            else if (attribute.Content == Graphics.PipelineInputBuilder.AttributeElement.ContentType.VertexNormal)
-                            {
-                                foreach (var b in attribute.GetBytes(vertex.Normal))
-                                    bytes.Add(b);
-                            }
-                        }
-                    }
-
-                    _vertexBuffers.Add(i,
-                        Graphics.API.Buffer.CreateDevice(
-                            System.Convert.ToUInt32(sizeof(byte) * bytes.Count),
-                            VkBufferUsageFlags.VertexBuffer
-                        )
-                    );
-                    await _vertexBuffers[i].SetDataWithStaging(mesh.Vertices);
-                }
+                foreach (var b in Graphics.PipelineInputBuilder.AttributeElement.GetBytes(vertex.Position))
+                    bytes.Add(b);
+                foreach (var b in Graphics.PipelineInputBuilder.AttributeElement.GetBytes(vertex.TextureCoordinates))
+                    bytes.Add(b);
+                foreach (var b in Graphics.PipelineInputBuilder.AttributeElement.GetBytes(vertex.Normal))
+                    bytes.Add(b);
             }
-
+            var vertexBufferSize = System.Convert.ToUInt32(sizeof(byte) * bytes.Count);
+            if (_vertexBuffers == null || _vertexBuffers.Size != vertexBufferSize)
+            {
+                _vertexBuffers = Graphics.API.Buffer.CreateDevice(
+                    vertexBufferSize,
+                    VkBufferUsageFlags.VertexBuffer
+                );
+            }
+            await _vertexBuffers.SetDataWithStaging(mesh.Vertices);
             _mesh = mesh;
         }
 
         internal Task<CommandPool.Command> RecordRenderCommand(
             Components.Camera camera,
-            Dictionary<uint, Graphics.API.Buffer> instanceBuffers = null,
+            Graphics.API.Buffer instanceBuffer = null,
             int InstanceCount = 0
         )
         {
@@ -180,6 +171,7 @@ namespace Tortuga.Components
 
             var descriptorSets = new List<DescriptorSetPool.DescriptorSet>();
             descriptorSets.Add(camera.CameraDescriptorSet);
+            descriptorSets.Add(this._uniformDescriptorSet);
             foreach (var d in this.Material.DescriptorSets)
                 descriptorSets.Add(d);
             this.Material.ReCompilePipeline();
@@ -188,17 +180,15 @@ namespace Tortuga.Components
                 VkPipelineBindPoint.Graphics,
                 descriptorSets.ToArray()
             );
-            foreach (var vertexBuffer in this.VertexBuffers)
-                this.RenderCommand.BindVertexBuffer(vertexBuffer.Value, vertexBuffer.Key);
+            this.RenderCommand.BindVertexBuffer(this.VertexBuffers, 0);
             this.RenderCommand.BindIndexBuffer(this.IndexBuffer);
-            if (instanceBuffers == null)
+            if (instanceBuffer == null)
             {
                 this.RenderCommand.DrawIndexed(this.IndicesCount);
             }
             else
             {
-                foreach (var instanceBuffer in instanceBuffers)
-                    this.RenderCommand.BindVertexBuffer(instanceBuffer.Value, instanceBuffer.Key);
+                this.RenderCommand.BindVertexBuffer(instanceBuffer, 1);
                 this.RenderCommand.DrawIndexed(this.IndicesCount, System.Convert.ToUInt32(InstanceCount));
             }
             this.RenderCommand.End();
@@ -233,6 +223,10 @@ namespace Tortuga.Components
                 Light8 = infoList[8],
                 Light9 = infoList[9]
             };
+        }
+        internal BufferTransferObject UpdateUniformBuffer()
+        {
+            return _uniformBuffer.SetDataGetTransferObject(new Matrix4x4[] { ModelMatrix });
         }
     }
 }

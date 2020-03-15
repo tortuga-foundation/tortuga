@@ -15,12 +15,14 @@ namespace Tortuga
         public Window MainWindow => _mainWindow;
         internal RenderPass MainRenderPass => _mainRenderPass;
         internal DescriptorSetLayout CameraDescriptorLayout => _cameraDescriptorLayout;
+        internal DescriptorSetLayout ModelDescriptorLayout => _modelDescriptorLayout;
 
         private static Engine _instance = new Engine();
         private VulkanInstance _vulkan;
         private Window _mainWindow;
         private RenderPass _mainRenderPass;
         private DescriptorSetLayout _cameraDescriptorLayout;
+        private DescriptorSetLayout _modelDescriptorLayout;
 
         private Core.Scene _activeScene;
         private Graphics.GUI.UserInterface _userInterface;
@@ -54,6 +56,14 @@ namespace Tortuga
                 new DescriptorSetCreateInfo
                 {
                     stage = VkShaderStageFlags.All,
+                    type = VkDescriptorType.UniformBuffer
+                }
+            });
+            _modelDescriptorLayout = new DescriptorSetLayout(new DescriptorSetCreateInfo[]
+            {
+                new DescriptorSetCreateInfo
+                {
+                    stage = VkShaderStageFlags.Vertex,
                     type = VkDescriptorType.UniformBuffer
                 }
             });

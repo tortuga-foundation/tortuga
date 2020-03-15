@@ -1,27 +1,11 @@
 {
   "Type": "Material",
-  "Light": true,
+  "IsInstanced": false,
   "Shaders": {
     "Vertex": "Assets/Shaders/Default/Default.vert",
     "Fragment": "Assets/Shaders/Default/Default.frag"
   },
-  "PipelineInput": [
-    {
-      "Type": "Vertex",
-      "Values": ["Float3", "Float2", "Float3"],
-      "Content": ["VertexPosition", "VertexUV", "VertexNormal"]
-    },
-    {
-      "Type": "Instance",
-      "Values": ["Float3", "Float4", "Float3"],
-      "Content": ["ObjectPosition", "ObjectRotation", "ObjectScale"]
-    }
-  ],
   "DescriptorSets": [
-    {
-      "Type": "UniformData",
-      "Name": "MODEL"
-    },
     {
       "Type": "UniformData",
       "Name": "LIGHT"
@@ -35,10 +19,6 @@
             {
               "Type": "Int",
               "Value": 0
-            },
-            {
-              "Type": "Int",
-              "Value": 1
             }
           ]
         }

@@ -12,6 +12,7 @@ namespace Tortuga.Systems
         private Fence _renderWaitFence;
         private Semaphore _syncSemaphore;
         private float _cameraResolutionScale => Settings.Graphics.RenderResolutionScale;
+        private Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>> _previousMaterialInstance;
 
         public RenderingSystem()
         {
@@ -23,6 +24,9 @@ namespace Tortuga.Systems
 
         public override void OnEnable()
         {
+            var fence = new Fence();
+            var transferCommands = new List<CommandPool.Command>();
+
             var tasks = new List<Task>();
             var meshes = MyScene.GetComponents<Components.RenderMesh>();
             foreach (var mesh in meshes)
@@ -38,7 +42,49 @@ namespace Tortuga.Systems
             var cameras = MyScene.GetComponents<Components.Camera>();
             foreach (var camera in cameras)
                 tasks.Add(camera.UpdateCameraBuffers());
+
+            //instancing transfer buffers
+            var materialInstancing = new Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>>();
+            foreach (var mesh in meshes)
+            {
+                if (materialInstancing.ContainsKey(mesh.Material) == false)
+                    materialInstancing[mesh.Material] = new Dictionary<Graphics.Mesh, List<Components.RenderMesh>>();
+                if (materialInstancing[mesh.Material].ContainsKey(mesh.Mesh) == false)
+                    materialInstancing[mesh.Material][mesh.Mesh] = new List<Components.RenderMesh>();
+
+                materialInstancing[mesh.Material][mesh.Mesh].Add(mesh);
+            }
+            _previousMaterialInstance = materialInstancing;
+            foreach (var material in materialInstancing)
+            {
+                if (material.Key.IsInstanced == false)
+                    continue;
+
+                foreach (var mesh in material.Value)
+                {
+                    var commands = material.Key.BuildInstanceBuffers(mesh.Value.ToArray());
+                    foreach (var t in commands)
+                        transferCommands.Add(t.TransferCommand);
+                }
+            }
+            if (transferCommands.Count > 0)
+            {
+                Engine.Instance.MainDevice.WaitForQueue(
+                    Engine.Instance.MainDevice.TransferQueueFamily.Queues[0]
+                );
+                CommandPool.Command.Submit(
+                    Engine.Instance.MainDevice.TransferQueueFamily.Queues[0],
+                    transferCommands.ToArray(),
+                    null,
+                    null,
+                    fence
+                );
+            }
+
+            //wait for all tasks and commands to finish
             Task.WaitAll(tasks.ToArray());
+            if (transferCommands.Count > 0)
+                fence.Wait();
         }
 
         public override void OnDisable() { }
@@ -54,21 +100,18 @@ namespace Tortuga.Systems
                 var meshes = MyScene.GetComponents<Components.RenderMesh>();
                 foreach (var mesh in meshes)
                 {
-                    if (mesh.Material.UsingLighting)
+                    try
                     {
-                        try
-                        {
-                            var meshLights = mesh.RenderingLights(lights);
-                            var command = mesh.Material.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
-                            transferCommands.Add(command.TransferCommand);
-                        }
-                        catch (System.Exception) { }
+                        var meshLights = mesh.RenderingLights(lights);
+                        var command = mesh.Material.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
+                        transferCommands.Add(command.TransferCommand);
                     }
+                    catch (System.Exception) { }
                     if (mesh.IsStatic == false)
                     {
                         try
                         {
-                            var command = mesh.Material.UpdateUniformDataSemaphore("MODEL", 0, mesh.ModelMatrix);
+                            var command = mesh.UpdateUniformBuffer();
                             transferCommands.Add(command.TransferCommand);
                         }
                         catch (System.Exception) { }
@@ -87,16 +130,29 @@ namespace Tortuga.Systems
                 }
                 foreach (var material in materialInstancing)
                 {
-                    if (material.Value.Values.Count < 2)
+                    if (material.Key.IsInstanced == false)
                         continue;
 
                     foreach (var mesh in material.Value)
                     {
+                        if (_previousMaterialInstance[material.Key][mesh.Key].Count == mesh.Value.Count)
+                        {
+                            bool isDynamic = false;
+                            foreach (var meshRender in mesh.Value)
+                            {
+                                if (meshRender.IsStatic == false)
+                                    isDynamic = true;
+                            }
+                            if (!isDynamic)
+                                continue;
+                        }
+
                         var commands = material.Key.BuildInstanceBuffers(mesh.Value.ToArray());
                         foreach (var t in commands)
                             transferCommands.Add(t.TransferCommand);
                     }
                 }
+                _previousMaterialInstance = materialInstancing;
 
                 //if previous frame has not finished rendering wait for it to finish before rendering next frame
                 _renderWaitFence.Wait();
@@ -141,7 +197,7 @@ namespace Tortuga.Systems
                         {
                             foreach (var mesh in material.Value)
                             {
-                                if (mesh.Value.Count > 1)
+                                if (material.Key.IsInstanced && mesh.Value.Count > 0)
                                 {
                                     secondaryCommandTask.Add(
                                         mesh.Value[0].RecordRenderCommand(
@@ -151,13 +207,16 @@ namespace Tortuga.Systems
                                         )
                                     );
                                 }
-                                else if (mesh.Value.Count == 1)
+                                else
                                 {
-                                    secondaryCommandTask.Add(
-                                        mesh.Value[0].RecordRenderCommand(
-                                            camera
-                                        )
-                                    );
+                                    foreach (var meshRender in mesh.Value)
+                                    {
+                                        secondaryCommandTask.Add(
+                                            meshRender.RecordRenderCommand(
+                                                camera
+                                            )
+                                        );
+                                    }
                                 }
                             }
                         }

@@ -31,8 +31,8 @@ namespace Tortuga.Graphics
         public static Material[] GetAllMaterials => _fullMaterialList.ToArray();
 
         internal Pipeline ActivePipeline => _pipeline;
-        internal bool UsingLighting => _usingLighting;
-        internal Dictionary<uint, API.Buffer> InstanceBuffers => _instanceBuffer;
+        internal API.Buffer InstanceBuffers => _instanceBuffer;
+        public bool IsInstanced => _isInstanced;
         internal DescriptorSetPool.DescriptorSet[] DescriptorSets
         {
             get
@@ -48,27 +48,62 @@ namespace Tortuga.Graphics
         private Pipeline _pipeline;
         private Dictionary<string, DescriptorSetObject> _descriptorMapper;
         private bool _isDirty;
-        private bool _usingLighting;
-        private Dictionary<uint, API.Buffer> _instanceBuffer;
+        private API.Buffer _instanceBuffer;
         private static List<Material> _fullMaterialList = new List<Material>();
+        private bool _isInstanced = false;
 
         public Material(
             Graphics.Shader shader,
-            bool includeLighting = true,
-            bool includeModelMatrix = true,
-            PipelineInputBuilder inputBuilder = null
+            bool isInstanced = false
         )
         {
-            _usingLighting = includeLighting;
 
             _shader = shader;
             _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
-            _instanceBuffer = new Dictionary<uint, Buffer>();
+            _isInstanced = isInstanced;
 
-            if (inputBuilder == null)
-                InputBuilder = new PipelineInputBuilder();
+            InputBuilder = new PipelineInputBuilder();
+            var vertexBinding = new PipelineInputBuilder.BindingElement
+            {
+                Type = PipelineInputBuilder.BindingElement.BindingType.Vertex,
+                Elements = new PipelineInputBuilder.AttributeElement[]
+                {
+                    new PipelineInputBuilder.AttributeElement(
+                        PipelineInputBuilder.AttributeElement.FormatType.Float3
+                    ),
+                    new PipelineInputBuilder.AttributeElement(
+                        PipelineInputBuilder.AttributeElement.FormatType.Float2
+                    ),
+                    new PipelineInputBuilder.AttributeElement(
+                        PipelineInputBuilder.AttributeElement.FormatType.Float3
+                    ),
+                }
+            };
+            if (isInstanced)
+            {
+                InputBuilder.Bindings = new PipelineInputBuilder.BindingElement[]{
+                    vertexBinding,
+                    new PipelineInputBuilder.BindingElement
+                    {
+                        Type = PipelineInputBuilder.BindingElement.BindingType.Instance,
+                        Elements = new PipelineInputBuilder.AttributeElement[]
+                        {
+                            new PipelineInputBuilder.AttributeElement(
+                                PipelineInputBuilder.AttributeElement.FormatType.Float3
+                            ),
+                            new PipelineInputBuilder.AttributeElement(
+                                PipelineInputBuilder.AttributeElement.FormatType.Float4
+                            ),
+                            new PipelineInputBuilder.AttributeElement(
+                                PipelineInputBuilder.AttributeElement.FormatType.Float3
+                            ),
+                        }
+                    }
+                };
+            }
             else
-                InputBuilder = inputBuilder;
+                InputBuilder.Bindings = new PipelineInputBuilder.BindingElement[] { vertexBinding };
+
             _isDirty = true;
             _fullMaterialList.Add(this);
         }
@@ -80,47 +115,27 @@ namespace Tortuga.Graphics
         internal List<BufferTransferObject> BuildInstanceBuffers(Components.RenderMesh[] meshes)
         {
             var transferObjects = new List<BufferTransferObject>();
-            for (uint i = 0; i < InputBuilder.Bindings.Length; i++)
+            var bytes = new List<byte>();
+            foreach (var mesh in meshes)
             {
-                var bindings = InputBuilder.Bindings[i];
-                if (bindings.Type != PipelineInputBuilder.BindingElement.BindingType.Instance)
-                    continue;
-
-                var bytes = new List<byte>();
-                foreach (var mesh in meshes)
-                {
-                    foreach (var attributes in bindings.Elements)
-                    {
-                        if (attributes.Content == PipelineInputBuilder.AttributeElement.ContentType.ObjectPosition)
-                        {
-                            foreach (var b in attributes.GetBytes(mesh.Position))
-                                bytes.Add(b);
-                        }
-                        else if (attributes.Content == PipelineInputBuilder.AttributeElement.ContentType.ObjectRotation)
-                        {
-                            foreach (var b in attributes.GetBytes(mesh.Rotation))
-                                bytes.Add(b);
-                        }
-                        else if (attributes.Content == PipelineInputBuilder.AttributeElement.ContentType.ObjectScale)
-                        {
-                            foreach (var b in attributes.GetBytes(mesh.Scale))
-                                bytes.Add(b);
-                        }
-                    }
-                }
-
-                var totalByteSize = sizeof(byte) * bytes.Count;
-                if (_instanceBuffer.ContainsKey(i) == false || _instanceBuffer[i].Size != totalByteSize)
-                {
-                    _instanceBuffer[i] = API.Buffer.CreateDevice(
-                        System.Convert.ToUInt32(totalByteSize),
-                        VkBufferUsageFlags.VertexBuffer
-                    );
-                    transferObjects.Add(
-                        _instanceBuffer[i].SetDataGetTransferObject(bytes.ToArray())
-                    );
-                }
+                foreach (var b in PipelineInputBuilder.AttributeElement.GetBytes(mesh.Position))
+                    bytes.Add(b);
+                foreach (var b in PipelineInputBuilder.AttributeElement.GetBytes(mesh.Rotation))
+                    bytes.Add(b);
+                foreach (var b in PipelineInputBuilder.AttributeElement.GetBytes(mesh.Scale))
+                    bytes.Add(b);
             }
+            var totalByteSize = sizeof(byte) * bytes.Count;
+            if (_instanceBuffer == null || _instanceBuffer.Size != totalByteSize)
+            {
+                _instanceBuffer = API.Buffer.CreateDevice(
+                    System.Convert.ToUInt32(totalByteSize),
+                    VkBufferUsageFlags.VertexBuffer
+                );
+            }
+            transferObjects.Add(
+                _instanceBuffer.SetDataGetTransferObject(bytes.ToArray())
+            );
             return transferObjects;
         }
 
@@ -131,6 +146,7 @@ namespace Tortuga.Graphics
 
             var totalDescriptorSets = new List<DescriptorSetLayout>();
             totalDescriptorSets.Add(Engine.Instance.CameraDescriptorLayout);
+            totalDescriptorSets.Add(Engine.Instance.ModelDescriptorLayout);
             foreach (var l in _descriptorMapper.Values)
                 totalDescriptorSets.Add(l.Layout);
             _pipeline = new Pipeline(

@@ -32,16 +32,11 @@ layout(set=2) readonly uniform LIGHT_SHADER_INFO
 layout(set=3) readonly uniform MATERIAL_INFO
 {
     int workflow;
-    int isInstanced;
 };
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inUV;
 layout(location = 2) in vec3 inNormal;
-
-layout(location = 3) in vec3 inObjectPosition;
-layout(location = 4) in vec4 inObjectRotation;
-layout(location = 5) in vec3 inObjectScale;
 
 layout(location = 0) out vec3 outNormal;
 layout(location = 1) out vec2 outUV;
@@ -87,13 +82,13 @@ mat4 scaleMatrix(mat4 matrix, vec3 vector)
 }
 
 void main() {
-    //vec4 worldPosition = model * vec4(inPosition, 1.0);
-    mat4 instancedModel = mat4(1.);
-    instancedModel = scaleMatrix(instancedModel, inObjectScale);
-    instancedModel = rotateMatrix(instancedModel, inObjectRotation);
-    instancedModel = translateMatrix(instancedModel, inObjectPosition);
-    
-    vec4 worldPosition = instancedModel * vec4(inPosition, 1.0);
+    vec4 worldPosition = model * vec4(inPosition, 1.0);
+    //mat4 instancedModel = mat4(1.);
+    //instancedModel = scaleMatrix(instancedModel, inObjectScale);
+    //instancedModel = rotateMatrix(instancedModel, inObjectRotation);
+    //instancedModel = translateMatrix(instancedModel, inObjectPosition);
+    //
+    //vec4 worldPosition = instancedModel * vec4(inPosition, 1.0);
 
 
     gl_Position = projection * view * worldPosition;

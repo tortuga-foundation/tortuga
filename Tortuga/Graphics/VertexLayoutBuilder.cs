@@ -61,10 +61,9 @@ namespace Tortuga.Graphics
             internal VkFormat VulkanFormat => _vulkanFormat;
             private VkFormat _vulkanFormat;
 
-            public AttributeElement(FormatType format, ContentType content = ContentType.None)
+            public AttributeElement(FormatType format)
             {
                 _format = format;
-                Content = content;
                 switch (format)
                 {
                     case FormatType.Float1:
@@ -173,27 +172,16 @@ namespace Tortuga.Graphics
                 }
             }
 
-            public byte[] GetBytes(float val)
+            public static byte[] GetBytes(float val)
             {
-                if (
-                    _format != FormatType.Float1
-                )
-                    throw new NotSupportedException();
-
                 var totalBytes = new List<byte>();
                 foreach (var b in BitConverter.GetBytes(val))
                     totalBytes.Add(b);
                 return totalBytes.ToArray();
             }
 
-            public byte[] GetBytes(Vector2 vector)
+            public static byte[] GetBytes(Vector2 vector)
             {
-                if (
-                    _format != FormatType.Float1 &&
-                    _format != FormatType.Float2
-                )
-                    throw new NotSupportedException();
-
                 var totalBytes = new List<byte>();
                 foreach (var b in BitConverter.GetBytes(vector.X))
                     totalBytes.Add(b);
@@ -202,15 +190,8 @@ namespace Tortuga.Graphics
                 return totalBytes.ToArray();
             }
 
-            public byte[] GetBytes(Vector3 vector)
+            public static byte[] GetBytes(Vector3 vector)
             {
-                if (
-                    _format != FormatType.Float1 &&
-                    _format != FormatType.Float2 &&
-                    _format != FormatType.Float3
-                )
-                    throw new NotSupportedException();
-
                 var totalBytes = new List<byte>();
 
                 foreach (var b in BitConverter.GetBytes(vector.X))
@@ -222,16 +203,8 @@ namespace Tortuga.Graphics
                 return totalBytes.ToArray();
             }
 
-            public byte[] GetBytes(Vector4 vector)
+            public static byte[] GetBytes(Vector4 vector)
             {
-                if (
-                    _format != FormatType.Float1 &&
-                    _format != FormatType.Float2 &&
-                    _format != FormatType.Float3 &&
-                    _format != FormatType.Float4
-                )
-                    throw new NotSupportedException();
-
                 var totalBytes = new List<byte>();
 
                 foreach (var b in BitConverter.GetBytes(vector.X))

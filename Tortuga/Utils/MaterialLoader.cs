@@ -109,7 +109,7 @@ namespace Tortuga.Utils
             var obj = Json.JsonParser.FromJson(jsonContent);
             try
             {
-                var lighting = (bool)obj["Light"];
+                var isInstanced = (bool)obj["IsInstanced"];
                 //setup shader
                 var shadersJSON = obj["Shaders"] as Dictionary<string, object>;
                 var vertexShader = shadersJSON["Vertex"] as string;
@@ -117,74 +117,7 @@ namespace Tortuga.Utils
                 var shader = Shader.Load(vertexShader, fragmentShader);
 
                 //create new material
-                var material = new Material(shader, lighting);
-                //setup pipeline input system
-                var inputJSON = GetObjectArray(obj["PipelineInput"]);
-                var pipelineInputBindings = new List<PipelineInputBuilder.BindingElement>();
-                foreach (var pipelineInput in inputJSON)
-                {
-                    var type = pipelineInput["Type"] as string;
-                    var rawValues = pipelineInput["Values"] as ICollection<object>;
-                    var rawContentType = pipelineInput["Content"] as ICollection<object>;
-                    var values = new List<string>();
-                    foreach (var rawValue in rawValues)
-                        values.Add(rawValue as string);
-
-                    //attributes
-                    var attributeElements = new PipelineInputBuilder.AttributeElement[values.Count];
-                    for (int i = 0; i < values.Count; i++)
-                    {
-                        var formatTypes = Enum.GetValues(
-                            typeof(PipelineInputBuilder.AttributeElement.FormatType)
-                        ) as PipelineInputBuilder.AttributeElement.FormatType[];
-                        var formatTypeIndex = Array.FindIndex(
-                            formatTypes,
-                            (PipelineInputBuilder.AttributeElement.FormatType format) =>
-                                format.ToString() == values[i]
-                        );
-                        if (formatTypeIndex > -1)
-                            attributeElements[i] = new PipelineInputBuilder.AttributeElement(formatTypes[formatTypeIndex]);
-                        else
-                            throw new NotSupportedException();
-                    }
-
-                    //content type
-                    if (rawContentType != null)
-                    {
-                        var contentTypes = new List<string>();
-                        foreach (var rawCT in rawContentType)
-                            contentTypes.Add(rawCT as string);
-                        for (int i = 0; i < contentTypes.Count; i++)
-                        {
-                            var typeOfContents = Enum.GetValues(
-                                typeof(PipelineInputBuilder.AttributeElement.ContentType)
-                            ) as PipelineInputBuilder.AttributeElement.ContentType[];
-                            var contentTypeIndex = Array.FindIndex(
-                                typeOfContents,
-                                (PipelineInputBuilder.AttributeElement.ContentType content) =>
-                                    content.ToString() == contentTypes[i]
-                            );
-                            if (contentTypeIndex > -1)
-                                attributeElements[i].Content = typeOfContents[contentTypeIndex];
-                        }
-                    }
-
-                    //bindings
-                    PipelineInputBuilder.BindingElement.BindingType bindingType;
-                    if (type == "Vertex")
-                        bindingType = PipelineInputBuilder.BindingElement.BindingType.Vertex;
-                    else if (type == "Instance")
-                        bindingType = PipelineInputBuilder.BindingElement.BindingType.Instance;
-                    else
-                        throw new NotSupportedException();
-
-                    pipelineInputBindings.Add(new PipelineInputBuilder.BindingElement
-                    {
-                        Type = bindingType,
-                        Elements = attributeElements
-                    });
-                }
-                material.InputBuilder.Bindings = pipelineInputBindings.ToArray();
+                var material = new Material(shader, isInstanced);
                 //setup material descriptor sets
                 var setsJSON = GetObjectArray(obj["DescriptorSets"]);
                 foreach (var setRawJSON in setsJSON)

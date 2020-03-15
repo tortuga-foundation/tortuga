@@ -11,7 +11,6 @@ struct LightInfo
     int reserved1;
     int reserved2;
 };
-
 layout(set=0, binding=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
@@ -21,10 +20,6 @@ layout(set=0, binding=0) readonly uniform CAMERA_MVP
     int cameraWidth;
     int cameraHeight;
 };
-layout(set=1, binding=0) readonly uniform MESH_MVP
-{
-    mat4 model;
-};
 layout(set=2, binding=0) readonly uniform LIGHT_SHADER_INFO
 {
     LightInfo info[10];
@@ -33,7 +28,6 @@ layout(set=2, binding=0) readonly uniform LIGHT_SHADER_INFO
 layout(set=3, binding=0) readonly uniform MATERIAL_INFO
 {
     int workflow;
-    int isInstanced;
 };
 
 layout(set=4, binding=0) uniform sampler2D albedoTexture;
