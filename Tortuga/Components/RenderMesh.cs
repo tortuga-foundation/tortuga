@@ -53,6 +53,28 @@ namespace Tortuga.Components
                 return transform.Position;
             }
         }
+        public Vector4 Rotation
+        {
+            get
+            {
+                var transform = MyEntity.GetComponent<Transform>();
+                if (transform == null)
+                    return Vector4.Zero;
+
+                return new Vector4(transform.Rotation.X, transform.Rotation.Y, transform.Rotation.Z, transform.Rotation.W);
+            }
+        }
+        public Vector3 Scale
+        {
+            get
+            {
+                var transform = MyEntity.GetComponent<Transform>();
+                if (transform == null)
+                    return Vector3.Zero;
+
+                return transform.Scale;
+            }
+        }
 
 
         internal CommandPool.Command RenderCommand => _renderCommand;
@@ -142,7 +164,11 @@ namespace Tortuga.Components
             _mesh = mesh;
         }
 
-        internal Task<CommandPool.Command> RecordRenderCommand(Components.Camera camera)
+        internal Task<CommandPool.Command> RecordRenderCommand(
+            Components.Camera camera,
+            Dictionary<uint, Graphics.API.Buffer> instanceBuffers = null,
+            int InstanceCount = 0
+        )
         {
             this.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
             this.RenderCommand.SetViewport(
@@ -165,7 +191,16 @@ namespace Tortuga.Components
             foreach (var vertexBuffer in this.VertexBuffers)
                 this.RenderCommand.BindVertexBuffer(vertexBuffer.Value, vertexBuffer.Key);
             this.RenderCommand.BindIndexBuffer(this.IndexBuffer);
-            this.RenderCommand.DrawIndexed(this.IndicesCount);
+            if (instanceBuffers == null)
+            {
+                this.RenderCommand.DrawIndexed(this.IndicesCount);
+            }
+            else
+            {
+                foreach (var instanceBuffer in instanceBuffers)
+                    this.RenderCommand.BindVertexBuffer(instanceBuffer.Value, instanceBuffer.Key);
+                this.RenderCommand.DrawIndexed(this.IndicesCount, System.Convert.ToUInt32(InstanceCount));
+            }
             this.RenderCommand.End();
             return Task.FromResult(this.RenderCommand);
         }

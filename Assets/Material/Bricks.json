@@ -10,6 +10,11 @@
       "Type": "Vertex",
       "Values": ["Float3", "Float2", "Float3"],
       "Content": ["VertexPosition", "VertexUV", "VertexNormal"]
+    },
+    {
+      "Type": "Instance",
+      "Values": ["Float3", "Float4", "Float3"],
+      "Content": ["ObjectPosition", "ObjectRotation", "ObjectScale"]
     }
   ],
   "DescriptorSets": [
@@ -30,6 +35,10 @@
             {
               "Type": "Int",
               "Value": 0
+            },
+            {
+              "Type": "Int",
+              "Value": 1
             }
           ]
         }

@@ -308,6 +308,7 @@ namespace Tortuga.Graphics
             get
             {
                 var attributeDescriptions = new NativeList<VkVertexInputAttributeDescription>();
+                uint location = 0;
                 for (uint i = 0; i < Bindings.Length; i++)
                 {
                     uint offset = 0;
@@ -318,10 +319,11 @@ namespace Tortuga.Graphics
                         {
                             binding = i,
                             format = element.VulkanFormat,
-                            location = j,
+                            location = location,
                             offset = offset
                         });
                         offset += element.Size;
+                        location++;
                     }
                 }
                 return attributeDescriptions;

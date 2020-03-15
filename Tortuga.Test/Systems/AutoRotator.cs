@@ -8,9 +8,6 @@ namespace Tortuga.Test
     public class AutoRotator : BaseSystem
     {
         private float _rotation = 0.0f;
-        private float _left = 0;
-        private float _top = 0;
-        private float _forward = -10.0f;
         private float _multiplier = 0.05f;
 
         public AutoRotator()
@@ -26,21 +23,6 @@ namespace Tortuga.Test
 
         public override async Task Update()
         {
-            if (InputSystem.IsKeyDown(KeyCode.D))
-                _left += Time.DeltaTime * _multiplier;
-            else if (InputSystem.IsKeyDown(KeyCode.A))
-                _left -= Time.DeltaTime * _multiplier;
-
-            if (InputSystem.IsKeyDown(KeyCode.W))
-                _top += Time.DeltaTime * _multiplier;
-            else if (InputSystem.IsKeyDown(KeyCode.S))
-                _top -= Time.DeltaTime * _multiplier;
-
-            if (InputSystem.IsKeyDown(KeyCode.Up))
-                _forward += Time.DeltaTime * _multiplier;
-            else if (InputSystem.IsKeyDown(KeyCode.Down))
-                _forward -= Time.DeltaTime * _multiplier;
-
             await Task.Run(() =>
             {
                 var mesh = MyScene.GetComponents<Components.RenderMesh>();
@@ -50,7 +32,26 @@ namespace Tortuga.Test
                     if (transform == null)
                         continue;
 
-                    transform.Position = new Vector3(_left, _top, _forward);
+                    var left = transform.Position.X;
+                    var top = transform.Position.Y;
+                    var forward = transform.Position.Z;
+
+                    if (InputSystem.IsKeyDown(KeyCode.D))
+                        left += Time.DeltaTime * _multiplier;
+                    else if (InputSystem.IsKeyDown(KeyCode.A))
+                        left -= Time.DeltaTime * _multiplier;
+
+                    if (InputSystem.IsKeyDown(KeyCode.W))
+                        top += Time.DeltaTime * _multiplier;
+                    else if (InputSystem.IsKeyDown(KeyCode.S))
+                        top -= Time.DeltaTime * _multiplier;
+
+                    if (InputSystem.IsKeyDown(KeyCode.Up))
+                        forward += Time.DeltaTime * _multiplier;
+                    else if (InputSystem.IsKeyDown(KeyCode.Down))
+                        forward -= Time.DeltaTime * _multiplier;
+
+                    transform.Position = new Vector3(left, top, forward);
                     transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
                 }
             });

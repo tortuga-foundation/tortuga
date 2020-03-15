@@ -1,7 +1,6 @@
 using Vulkan;
 using Tortuga.Graphics.API;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
@@ -29,8 +28,11 @@ namespace Tortuga.Graphics
 
         public PipelineInputBuilder InputBuilder;
 
+        public static Material[] GetAllMaterials => _fullMaterialList.ToArray();
+
         internal Pipeline ActivePipeline => _pipeline;
         internal bool UsingLighting => _usingLighting;
+        internal Dictionary<uint, API.Buffer> InstanceBuffers => _instanceBuffer;
         internal DescriptorSetPool.DescriptorSet[] DescriptorSets
         {
             get
@@ -47,6 +49,8 @@ namespace Tortuga.Graphics
         private Dictionary<string, DescriptorSetObject> _descriptorMapper;
         private bool _isDirty;
         private bool _usingLighting;
+        private Dictionary<uint, API.Buffer> _instanceBuffer;
+        private static List<Material> _fullMaterialList = new List<Material>();
 
         public Material(
             Graphics.Shader shader,
@@ -59,12 +63,65 @@ namespace Tortuga.Graphics
 
             _shader = shader;
             _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
+            _instanceBuffer = new Dictionary<uint, Buffer>();
 
             if (inputBuilder == null)
                 InputBuilder = new PipelineInputBuilder();
             else
                 InputBuilder = inputBuilder;
             _isDirty = true;
+            _fullMaterialList.Add(this);
+        }
+        ~Material()
+        {
+            _fullMaterialList.Remove(this);
+        }
+
+        internal List<BufferTransferObject> BuildInstanceBuffers(Components.RenderMesh[] meshes)
+        {
+            var transferObjects = new List<BufferTransferObject>();
+            for (uint i = 0; i < InputBuilder.Bindings.Length; i++)
+            {
+                var bindings = InputBuilder.Bindings[i];
+                if (bindings.Type != PipelineInputBuilder.BindingElement.BindingType.Instance)
+                    continue;
+
+                var bytes = new List<byte>();
+                foreach (var mesh in meshes)
+                {
+                    foreach (var attributes in bindings.Elements)
+                    {
+                        if (attributes.Content == PipelineInputBuilder.AttributeElement.ContentType.ObjectPosition)
+                        {
+                            foreach (var b in attributes.GetBytes(mesh.Position))
+                                bytes.Add(b);
+                        }
+                        else if (attributes.Content == PipelineInputBuilder.AttributeElement.ContentType.ObjectRotation)
+                        {
+                            foreach (var b in attributes.GetBytes(mesh.Rotation))
+                                bytes.Add(b);
+                        }
+                        else if (attributes.Content == PipelineInputBuilder.AttributeElement.ContentType.ObjectScale)
+                        {
+                            foreach (var b in attributes.GetBytes(mesh.Scale))
+                                bytes.Add(b);
+                        }
+                    }
+                }
+
+                var totalByteSize = sizeof(byte) * bytes.Count;
+                if (_instanceBuffer.ContainsKey(i) == false || _instanceBuffer[i].Size != totalByteSize)
+                {
+                    _instanceBuffer[i] = API.Buffer.CreateDevice(
+                        System.Convert.ToUInt32(totalByteSize),
+                        VkBufferUsageFlags.VertexBuffer
+                    );
+                    transferObjects.Add(
+                        _instanceBuffer[i].SetDataGetTransferObject(bytes.ToArray())
+                    );
+                }
+            }
+            return transferObjects;
         }
 
         public void ReCompilePipeline()

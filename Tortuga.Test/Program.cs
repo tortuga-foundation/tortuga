@@ -53,6 +53,20 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
+            //sphere 2
+            {
+                var entity = new Core.Entity();
+                var transform = await entity.AddComponent<Components.Transform>();
+                transform.Position = new Vector3(3, 0, -10);
+                transform.IsStatic = false;
+                //add mesh component
+                var mesh = await entity.AddComponent<Components.RenderMesh>();
+                mesh.Material = bricksMaterial;
+                await mesh.SetMesh(sphereOBJ); //this operation is async and might not be done instantly
+
+                scene.AddEntity(entity);
+            }
+
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<AutoRotator>();

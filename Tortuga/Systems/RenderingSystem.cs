@@ -47,10 +47,6 @@ namespace Tortuga.Systems
         {
             await Task.Run(() =>
             {
-                //if previous frame has not finished rendering wait for it to finish before rendering next frame
-                _renderWaitFence.Wait();
-                _renderWaitFence.Reset();
-
                 var transferCommands = new List<CommandPool.Command>();
 
                 var cameras = MyScene.GetComponents<Components.Camera>();
@@ -78,6 +74,33 @@ namespace Tortuga.Systems
                         catch (System.Exception) { }
                     }
                 }
+
+                var materialInstancing = new Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>>();
+                foreach (var mesh in meshes)
+                {
+                    if (materialInstancing.ContainsKey(mesh.Material) == false)
+                        materialInstancing[mesh.Material] = new Dictionary<Graphics.Mesh, List<Components.RenderMesh>>();
+                    if (materialInstancing[mesh.Material].ContainsKey(mesh.Mesh) == false)
+                        materialInstancing[mesh.Material][mesh.Mesh] = new List<Components.RenderMesh>();
+
+                    materialInstancing[mesh.Material][mesh.Mesh].Add(mesh);
+                }
+                foreach (var material in materialInstancing)
+                {
+                    if (material.Value.Values.Count < 2)
+                        continue;
+
+                    foreach (var mesh in material.Value)
+                    {
+                        var commands = material.Key.BuildInstanceBuffers(mesh.Value.ToArray());
+                        foreach (var t in commands)
+                            transferCommands.Add(t.TransferCommand);
+                    }
+                }
+
+                //if previous frame has not finished rendering wait for it to finish before rendering next frame
+                _renderWaitFence.Wait();
+                _renderWaitFence.Reset();
 
                 //begin rendering frame
                 _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
@@ -112,14 +135,38 @@ namespace Tortuga.Systems
                         transferCommands.Add(t);
 
                     //build render command for each mesh
-                    var secondaryCommandTask = new Task<CommandPool.Command>[meshes.Length];
-                    for (int i = 0; i < meshes.Length; i++)
-                        secondaryCommandTask[i] = meshes[i].RecordRenderCommand(camera);
+                    var secondaryCommandTask = new List<Task<CommandPool.Command>>();
+                    {
+                        foreach (var material in materialInstancing)
+                        {
+                            foreach (var mesh in material.Value)
+                            {
+                                if (mesh.Value.Count > 1)
+                                {
+                                    secondaryCommandTask.Add(
+                                        mesh.Value[0].RecordRenderCommand(
+                                            camera,
+                                            material.Key.InstanceBuffers,
+                                            mesh.Value.Count
+                                        )
+                                    );
+                                }
+                                else if (mesh.Value.Count == 1)
+                                {
+                                    secondaryCommandTask.Add(
+                                        mesh.Value[0].RecordRenderCommand(
+                                            camera
+                                        )
+                                    );
+                                }
+                            }
+                        }
+                    }
 
-                    Task.WaitAll(secondaryCommandTask);
+                    Task.WaitAll(secondaryCommandTask.ToArray());
 
                     //execute all meshes command buffer
-                    if (secondaryCommandTask.Length > 0)
+                    if (secondaryCommandTask.Count > 0)
                     {
                         var secondaryCmds = new List<CommandPool.Command>();
                         secondaryCmds.Add(uiRenderCommand);

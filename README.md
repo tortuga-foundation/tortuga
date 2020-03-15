@@ -13,6 +13,7 @@ Tortua is an open source game engine built using C# dot net core 3.0
 - PBR Shader (Metalness Workflow)
 - Event Based Input System
 - Material JSON Object
+- Material Instancing
 - Full Linux Support
 
 ## Prerequisites
@@ -89,15 +90,36 @@ await engine.Run();
 #### Material JSON
 ```json
 {
+  "Type": "Material",
   "Light": true,
   "Shaders": {
     "Vertex": "Assets/Shaders/Default/Default.vert",
     "Fragment": "Assets/Shaders/Default/Default.frag"
   },
+  "PipelineInput": [
+    {
+      "Type": "Vertex",
+      "Values": ["Float3", "Float2", "Float3"],
+      "Content": ["VertexPosition", "VertexUV", "VertexNormal"]
+    },
+    {
+      "Type": "Instance",
+      "Values": ["Float3", "Float4", "Float3"],
+      "Content": ["ObjectPosition", "ObjectRotation", "ObjectScale"]
+    }
+  ],
   "DescriptorSets": [
     {
       "Type": "UniformData",
-      "Name": "PBR",
+      "Name": "MODEL"
+    },
+    {
+      "Type": "UniformData",
+      "Name": "LIGHT"
+    },
+    {
+      "Type": "UniformData",
+      "Name": "Data",
       "Bindings": [
         {
           "Values": [
@@ -133,6 +155,4 @@ await engine.Run();
     }
   ]
 }
-
-
 ```

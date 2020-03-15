@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Tortuga.Graphics
@@ -32,5 +33,16 @@ namespace Tortuga.Graphics
             get => _vertices;
         }
         private Vertex[] _vertices;
+        public static Mesh[] GetAllMeshes => _allMeshes.ToArray();
+        private static List<Mesh> _allMeshes = new List<Mesh>();
+    
+        public Mesh()
+        {
+            _allMeshes.Add(this);
+        }
+        ~Mesh()
+        {
+            _allMeshes.Remove(this);
+        }
     }
 }

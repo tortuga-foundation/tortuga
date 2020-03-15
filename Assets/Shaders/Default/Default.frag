@@ -33,6 +33,7 @@ layout(set=2, binding=0) readonly uniform LIGHT_SHADER_INFO
 layout(set=3, binding=0) readonly uniform MATERIAL_INFO
 {
     int workflow;
+    int isInstanced;
 };
 
 layout(set=4, binding=0) uniform sampler2D albedoTexture;
