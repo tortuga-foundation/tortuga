@@ -1,9 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System;
-using System.Text.RegularExpressions;
 using Tortuga.Graphics;
-using System.Drawing;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
