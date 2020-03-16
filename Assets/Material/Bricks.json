@@ -29,19 +29,19 @@
       "Name": "Textures",
       "Bindings": [
         {
-          "Value": "Assets/Images/Bricks/Albedo.jpg",
+          "Image": "Assets/Images/Bricks/Albedo.jpg",
           "MipLevel": 1
         },
         {
-          "Value": "Assets/Images/Bricks/Normal.jpg",
+          "Image": "Assets/Images/Bricks/Normal.jpg",
           "MipLevel": 1
         },
         {
-          "Value": [
-            "Assets/Images/Bricks/Metalness.jpg",
-            "Assets/Images/Bricks/Roughness.jpg",
-            "Assets/Images/Bricks/AmbientOclusion.jpg"
-          ],
+          "BuildImage": {
+            "R": "Assets/Images/Bricks/Metalness.jpg",
+            "G": "Assets/Images/Bricks/Roughness.jpg",
+            "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+          },
           "MipLevel": 1
         }
       ]

@@ -7,6 +7,7 @@ using System.Drawing;
 using System.Numerics;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Tortuga.Utils
 {
@@ -23,81 +24,39 @@ namespace Tortuga.Utils
             }
         };
 
-        private static Dictionary<string, object>[] GetObjectArray(object array)
+        private class ShaderJSON
         {
-            var rtn = new List<Dictionary<string, object>>();
-            foreach (var item in array as ICollection<object>)
-                rtn.Add(item as Dictionary<string, object>);
-            return rtn.ToArray();
+            public string Vertex { set; get; }
+            public string Fragment { set; get; }
         }
-        private static string[] GetStringArray(object array)
+
+        private class BindingValueJSON
         {
-            var rtn = new List<string>();
-            foreach (var item in array as ICollection<object>)
-                rtn.Add(item as string);
-            return rtn.ToArray();
+            public string Type { get; set; }
+            public float Value { get; set; }
         }
-        private static Color GetColor(object data)
+
+        private class BindingsJSON
         {
-            try
-            {
-                var regex = new Regex(@"[a-zA-Z]{4}[\ ]*\([\ ]*([0-9]+)[\ ]*,[\ ]*([0-9]+)[\ ]*,[\ ]*([0-9]+)[\ ]*,[\ ]*([0-9]+)[\ ]*\)");
-                var match = regex.Match(data as string);
-                var r = int.Parse(match.Groups[1].Value);
-                var g = int.Parse(match.Groups[2].Value);
-                var b = int.Parse(match.Groups[3].Value);
-                var a = int.Parse(match.Groups[4].Value);
-                return Color.FromArgb(a, r, g, b);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-            return Color.White;
+            public IList<BindingValueJSON> Values { get; set; }
+            public uint MipLevel { get; set; }
+            public IDictionary<string, string> BuildImage { get; set; }
+            public string Image { get; set; }
         }
-        private static Vector2 GetVector2(object data)
+
+        private class DescriptorSetJSON
         {
-            var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*\)");
-            var match = reg.Match(data as string);
-            var rtn = new Vector2();
-            rtn.X = float.Parse(match.Groups[1].ToString());
-            rtn.Y = float.Parse(match.Groups[2].ToString());
-            return rtn;
+            public string Type { get; set; }
+            public string Name { get; set; }
+            public IList<BindingsJSON> Bindings { get; set; }
         }
-        private static Vector4 GetVector4(object data)
+
+        private class MaterialJSON
         {
-            var reg = new Regex(@"[a-zA-Z0-9]{4}[\ ]*\([\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*,[\ ]*([0-9\.\-]+)[\ ]*\)");
-            var match = reg.Match(data as string);
-            var rtn = new Vector4();
-            rtn.X = float.Parse(match.Groups[1].ToString());
-            rtn.Y = float.Parse(match.Groups[2].ToString());
-            rtn.Z = float.Parse(match.Groups[3].ToString());
-            rtn.W = float.Parse(match.Groups[4].ToString());
-            return rtn;
-        }
-        private static int GetInt(object data)
-        {
-            return System.Convert.ToInt32(System.Math.Round((double)data));
-        }
-        private static uint GetUInt(object data)
-        {
-            return System.Convert.ToUInt32(System.Math.Round((double)data));
-        }
-        private static float GetFloat(object data)
-        {
-            return System.Convert.ToSingle((double)data);
-        }
-        private static float[] VectorToArray(Vector2 data)
-        {
-            return new float[]{
-                data.X, data.Y
-            };
-        }
-        private static float[] VectorToArray(Vector4 data)
-        {
-            return new float[]{
-                data.X, data.Y, data.Z, data.W
-            };
+            public string Type { set; get; }
+            public bool IsInstanced { set; get; }
+            public ShaderJSON Shaders { get; set; }
+            public IList<DescriptorSetJSON> DescriptorSets { get; set; }
         }
 
         public static async Task<Material> Load(string path)
@@ -106,173 +65,82 @@ namespace Tortuga.Utils
                 throw new FileNotFoundException("could not find materail file");
 
             var jsonContent = File.ReadAllText(path);
-            var obj = Json.JsonParser.FromJson(jsonContent);
             try
             {
-                var isInstanced = (bool)obj["IsInstanced"];
-                //setup shader
-                var shadersJSON = obj["Shaders"] as Dictionary<string, object>;
-                var vertexShader = shadersJSON["Vertex"] as string;
-                var fragmentShader = shadersJSON["Fragment"] as string;
-                var shader = Shader.Load(vertexShader, fragmentShader);
-
-                //create new material
-                var material = new Material(shader, isInstanced);
-                //setup material descriptor sets
-                var setsJSON = GetObjectArray(obj["DescriptorSets"]);
-                foreach (var setRawJSON in setsJSON)
+                var serializedData = JsonSerializer.Deserialize<MaterialJSON>(
+                    jsonContent
+                );
+                var shader = new Graphics.Shader(
+                    serializedData.Shaders.Vertex,
+                    serializedData.Shaders.Fragment
+                );
+                var material = new Material(shader, serializedData.IsInstanced);
+                foreach (var descriptorSet in serializedData.DescriptorSets)
                 {
-                    var setJSON = setRawJSON as Dictionary<string, object>;
-                    if (setJSON.ContainsKey("Type") == false)
-                        throw new InvalidDataException();
-                    if (setJSON.ContainsKey("Name") == false)
-                        throw new InvalidDataException();
-
-                    var type = setJSON["Type"] as string;
-                    var name = setJSON["Name"] as string;
-                    Dictionary<string, object>[] bindings = new Dictionary<string, object>[0];
-                    if (setJSON.ContainsKey("Bindings"))
-                        bindings = GetObjectArray(setJSON["Bindings"]);
-
-                    if (type == "UniformData")
+                    if (descriptorSet.Type == "UniformData")
                     {
-                        bool isPreDetermained = false;
-                        foreach (var pre in _preDefinedUniforms)
+                        if (_preDefinedUniforms.ContainsKey(descriptorSet.Name))
                         {
-                            if (pre.Key == name)
-                            {
-                                material.CreateUniformData(pre.Key, pre.Value);
-                                isPreDetermained = true;
-                                break;
-                            }
-                        }
-                        if (isPreDetermained)
+                            material.CreateUniformData(descriptorSet.Name, _preDefinedUniforms[descriptorSet.Name]);
                             continue;
+                        }
 
+                        var totalSize = new List<uint>();
                         var totalBytes = new List<byte[]>();
-                        var byteSizes = new List<uint>();
-                        foreach (var binding in bindings)
+                        for (int i = 0; i < descriptorSet.Bindings.Count; i++)
                         {
-                            var dataValues = GetObjectArray(binding["Values"]);
-                            var byteData = new List<byte>();
-                            foreach (var data in dataValues)
+                            var bytes = new List<byte>();
+                            var binding = descriptorSet.Bindings[i];
+                            foreach (var values in binding.Values)
                             {
-                                var dataType = data["Type"] as string;
-                                if (dataType == "Int")
+                                if (values.Type == "Int")
                                 {
-                                    var bytes = System.BitConverter.GetBytes(GetInt(data["Value"]));
-                                    foreach (var b in bytes)
-                                        byteData.Add(b);
+                                    foreach (var b in BitConverter.GetBytes(Convert.ToInt32(values.Value)))
+                                        bytes.Add(b);
                                 }
-                                else if (dataType == "Float")
+                                else if (values.Type == "float")
                                 {
-                                    var bytes = System.BitConverter.GetBytes(GetFloat(data["Value"]));
-                                    foreach (var b in bytes)
-                                        byteData.Add(b);
-                                }
-                                else if (dataType == "Vec2")
-                                {
-                                    var dataArr = VectorToArray(GetVector2(data["Value"]));
-                                    foreach (var num in dataArr)
-                                    {
-                                        var bytes = System.BitConverter.GetBytes(num);
-                                        foreach (var b in bytes)
-                                            byteData.Add(b);
-                                    }
-                                }
-                                else if (dataType == "Vec4")
-                                {
-                                    var dataArr = VectorToArray(GetVector4(data["Value"]));
-                                    foreach (var num in dataArr)
-                                    {
-                                        var bytes = System.BitConverter.GetBytes(num);
-                                        foreach (var b in bytes)
-                                            byteData.Add(b);
-                                    }
+                                    foreach (var b in BitConverter.GetBytes(values.Value))
+                                        bytes.Add(b);
                                 }
                             }
-                            totalBytes.Add(byteData.ToArray());
-                            byteSizes.Add(Convert.ToUInt32(byteData.Count * sizeof(byte)));
+                            totalBytes.Add(bytes.ToArray());
+                            totalSize.Add(Convert.ToUInt32(bytes.Count * sizeof(byte)));
                         }
-
-                        material.CreateUniformData(name, byteSizes.ToArray());
-                        var tasks = new Task[bindings.Length];
-                        for (int i = 0; i < bindings.Length; i++)
-                            tasks[i] = material.UpdateUniformDataArray<byte>(name, i, totalBytes[i]);
-                        Task.WaitAll(tasks);
+                        material.CreateUniformData(descriptorSet.Name, totalSize.ToArray());
+                        for (int i = 0; i < totalBytes.Count; i++)
+                            await material.UpdateUniformDataArray(descriptorSet.Name, i, totalBytes[i]);
                     }
-                    else if (type == "SampledImage2D")
+                    else if (descriptorSet.Type == "SampledImage2D")
                     {
-                        var mipLevels = new uint[bindings.Length];
-                        for (int i = 0; i < bindings.Length; i++)
-                            mipLevels[i] = Convert.ToUInt32(Math.Round((double)bindings[i]["MipLevel"]));
-
-                        material.CreateSampledImage(name, mipLevels);
-
-                        for (int i = 0; i < bindings.Length; i++)
+                        var images = new List<Graphics.Image>();
+                        var mipLevels = new List<uint>();
+                        for (int i = 0; i < descriptorSet.Bindings.Count; i++)
                         {
-                            var binding = bindings[i];
-                            var stringValue = binding["Value"] as string;
-                            if (stringValue != null)
+                            var binding = descriptorSet.Bindings[i];
+                            if (binding.Image != null)
                             {
-                                if (File.Exists(stringValue))
-                                {
-                                    await material.UpdateSampledImage(
-                                        name,
-                                        i,
-                                        await ImageLoader.Load(stringValue)
-                                    );
-                                }
-                                else
-                                {
-                                    var color = GetColor(stringValue);
-                                    await material.UpdateSampledImage(
-                                        name,
-                                        i,
-                                        Graphics.Image.SingleColor(color)
-                                    );
-                                }
+                                mipLevels.Add(binding.MipLevel);
+                                images.Add(await ImageLoader.Load(binding.Image));
                             }
-                            else
+                            else if (binding.BuildImage != null)
                             {
-                                var multiImage = GetStringArray(binding["Value"] as ICollection<object>);
-                                if (multiImage.Length <= 4 && multiImage.Length > 0)
-                                {
-                                    var R = await ImageLoader.Load(multiImage[0]);
-                                    if (multiImage.Length > 1)
-                                    {
-                                        var G = await ImageLoader.Load(multiImage[1]);
-                                        R.CopyChannel(G, Graphics.Image.Channel.G);
-                                    }
-                                    if (multiImage.Length > 2)
-                                    {
-                                        var B = await ImageLoader.Load(multiImage[2]);
-                                        R.CopyChannel(B, Graphics.Image.Channel.B);
-                                    }
-                                    if (multiImage.Length > 3)
-                                    {
-                                        var A = await ImageLoader.Load(multiImage[3]);
-                                        R.CopyChannel(A, Graphics.Image.Channel.A);
-                                    }
-                                    await material.UpdateSampledImage(
-                                        name,
-                                        i,
-                                        R
-                                    );
-                                }
-                                else
-                                {
-                                    await material.UpdateSampledImage(
-                                        name,
-                                        i,
-                                        Graphics.Image.SingleColor(Color.Black)
-                                    );
-                                }
+                                var R = await ImageLoader.Load(binding.BuildImage["R"]);
+                                if (binding.BuildImage.ContainsKey("G"))
+                                    R.CopyChannel(await ImageLoader.Load(binding.BuildImage["G"]), Graphics.Image.Channel.G);
+                                if (binding.BuildImage.ContainsKey("B"))
+                                    R.CopyChannel(await ImageLoader.Load(binding.BuildImage["B"]), Graphics.Image.Channel.B);
+                                if (binding.BuildImage.ContainsKey("A"))
+                                    R.CopyChannel(await ImageLoader.Load(binding.BuildImage["A"]), Graphics.Image.Channel.A);
+                                images.Add(R);
+                                mipLevels.Add(binding.MipLevel);
                             }
                         }
+                        material.CreateSampledImage(descriptorSet.Name, mipLevels.ToArray());
+                        for (int i = 0; i < images.Count; i++)
+                            await material.UpdateSampledImage(descriptorSet.Name, i, images[i]);
                     }
                 }
-                material.ReCompilePipeline();
                 return material;
             }
             catch (System.Exception e)
