@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
-using System.Drawing;
 
 namespace Tortuga.Test
 {
@@ -34,7 +33,7 @@ namespace Tortuga.Test
                 var light = await entity.AddComponent<Components.Light>();
                 light.Intensity = 200.0f;
                 light.Type = Components.Light.LightType.Point;
-                light.Color = Color.White;
+                light.Color = System.Drawing.Color.White;
                 scene.AddEntity(entity);
             }
 
