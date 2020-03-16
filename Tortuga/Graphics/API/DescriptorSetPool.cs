@@ -145,7 +145,7 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void BuffersUpdate(Buffer buffers, uint arrayIndex = 0, uint binding = 0)
+            public unsafe void BuffersUpdate(Buffer buffers, uint binding = 0, uint arrayIndex = 0)
             {
                 var bufferInfo = new VkDescriptorBufferInfo()
                 {
@@ -212,7 +212,7 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void SampledImageUpdate(ImageView view, Sampler sampler, uint arrayIndex = 0, uint binding = 0)
+            public unsafe void SampledImageUpdate(ImageView view, Sampler sampler, uint binding = 0, uint arrayIndex = 0)
             {
                 var imageInfo = new VkDescriptorImageInfo
                 {

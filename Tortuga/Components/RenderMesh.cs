@@ -175,11 +175,8 @@ namespace Tortuga.Components
             foreach (var d in this.Material.DescriptorSets)
                 descriptorSets.Add(d);
             this.Material.ReCompilePipeline();
-            this.RenderCommand.BindPipeline(
-                this.Material.ActivePipeline,
-                VkPipelineBindPoint.Graphics,
-                descriptorSets.ToArray()
-            );
+            this.RenderCommand.BindPipeline(this.Material.ActivePipeline);
+            this.RenderCommand.BindDescriptorSets(this.Material.ActivePipeline, descriptorSets.ToArray());
             this.RenderCommand.BindVertexBuffer(this.VertexBuffers, 0);
             this.RenderCommand.BindIndexBuffer(this.IndexBuffer);
             if (instanceBuffer == null)

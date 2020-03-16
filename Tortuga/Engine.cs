@@ -25,7 +25,6 @@ namespace Tortuga
         private DescriptorSetLayout _modelDescriptorLayout;
 
         private Core.Scene _activeScene;
-        private Graphics.GUI.UserInterface _userInterface;
 
         public Engine()
         {
@@ -69,8 +68,6 @@ namespace Tortuga
             });
             //initialize input event system
             InputSystem.Initialize();
-            //initialize user interface system
-            _userInterface = new Graphics.GUI.UserInterface();
         }
 
         public Task Run()

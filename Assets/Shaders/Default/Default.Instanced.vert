@@ -46,17 +46,17 @@ mat4 rotateMatrix(mat4 matrix, vec4 q)
     float sqY = q.y * q.y;
     float sqZ = q.z * q.z;
 
-    matrix[0][0] = 1 - (2 * sqY) - (2 * sqZ);
+    matrix[0][0] -= (2 * sqY) - (2 * sqZ);
     matrix[1][0] = (2 * q.x * q.y) - (2 * q.z * q.w);
     matrix[2][0] = (2 * q.x * q.z) + (2 * q.y * q.w);
     
     matrix[0][1] = (2 * q.x * q.y) + (2 * q.z * q.w);
-    matrix[1][1] = 1 - (2 * sqX) - (2 * sqZ);
+    matrix[1][1] -= (2 * sqX) - (2 * sqZ);
     matrix[2][1] = (2 * q.y * q.z) - (2 * q.x * q.w);
     
     matrix[0][2] = (2 * q.x * q.z) - (2 * q.y * q.w);
     matrix[1][2] = (2 * q.y * q.z) + (2 * q.x * q.w);
-    matrix[2][2] = 1 - (2 * sqX) - (2 * sqY);
+    matrix[2][2] -= (2 * sqX) - (2 * sqY);
 
     return matrix;
 }

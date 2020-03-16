@@ -156,7 +156,11 @@ namespace Tortuga.Graphics.API
             {
                 vkCmdEndRenderPass(_handle);
             }
-            public unsafe void BindPipeline(Pipeline pipeline, VkPipelineBindPoint bindPoint = VkPipelineBindPoint.Graphics, DescriptorSetPool.DescriptorSet[] descriptorSets = null)
+            public unsafe void BindPipeline(Pipeline pipeline, VkPipelineBindPoint bindPoint = VkPipelineBindPoint.Graphics)
+            {
+                vkCmdBindPipeline(_handle, bindPoint, pipeline.Handle);
+            }
+            public unsafe void BindDescriptorSets(Pipeline pipeline, DescriptorSetPool.DescriptorSet[] descriptorSets, VkPipelineBindPoint bindPoint = VkPipelineBindPoint.Graphics)
             {
                 var sets = new NativeList<VkDescriptorSet>();
                 if (descriptorSets != null)
@@ -165,8 +169,8 @@ namespace Tortuga.Graphics.API
                         sets.Add(set.Handle);
                 }
 
-                vkCmdBindPipeline(_handle, bindPoint, pipeline.Handle);
                 if (sets.Count > 0)
+                {
                     vkCmdBindDescriptorSets(
                         _handle,
                         bindPoint,
@@ -177,6 +181,7 @@ namespace Tortuga.Graphics.API
                         0,
                         null
                     );
+                }
             }
             public unsafe void BlitImage(
                 VkImage source,

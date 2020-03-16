@@ -2,9 +2,9 @@ namespace Tortuga
 {
     public struct Rect
     {
-        public double X, Y, Width, Height;
+        public float X, Y, Width, Height;
 
-        public Rect(double x, double y, double width, double height)
+        public Rect(float x, float y, float width, float height)
         {
             X = x;
             Y = y;
