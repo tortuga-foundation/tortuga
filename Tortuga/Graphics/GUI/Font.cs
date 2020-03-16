@@ -13,7 +13,7 @@ namespace Tortuga.Graphics.GUI
 
     public class Font
     {
-        public Graphics.Image FontAtlas;
+        public Graphics.Image Atlas;
         public Symbol[] Symbols;
         public int Base;
         public int Bold;

@@ -42,20 +42,6 @@ namespace Tortuga.Graphics
                 Half4
             }
 
-            public enum ContentType
-            {
-                None,
-                VertexPosition,
-                VertexUV,
-                VertexNormal,
-                ObjectPosition,
-                ObjectRotation,
-                ObjectScale
-            }
-
-            public ContentType Content;
-            public FormatType Format => _format;
-            private FormatType _format;
             public uint Size => _size;
             private uint _size;
             internal VkFormat VulkanFormat => _vulkanFormat;
@@ -63,7 +49,6 @@ namespace Tortuga.Graphics
 
             public AttributeElement(FormatType format)
             {
-                _format = format;
                 switch (format)
                 {
                     case FormatType.Float1:
