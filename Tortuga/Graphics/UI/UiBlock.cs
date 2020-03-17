@@ -58,7 +58,7 @@ namespace Tortuga.Graphics.UI
             };
 
             //setup shader
-            this.Shader = new Shader(
+            this.Shader = Shader.Load(
                 "Assets/Shaders/UI/UI.vert",
                 "Assets/Shaders/UI/UI.frag"
             );
