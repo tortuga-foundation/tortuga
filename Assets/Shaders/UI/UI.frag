@@ -54,10 +54,7 @@ bool BorderRadiusTest()
 
 void main() {
     if (BorderRadiusTest())
-    {
-        outColor = vec4(0.);
-        return;
-    }
+        discard;
 
     outColor = vec4(1.);
 }

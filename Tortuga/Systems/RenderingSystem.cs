@@ -191,10 +191,6 @@ namespace Tortuga.Systems
                     _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
                     var secondaryCmds = new List<CommandPool.Command>();
 
-                    //build render command for each ui
-                    foreach (var ui in uis)
-                        secondaryCmds.Add(ui.BuildRenderCommand(camera));
-
                     //build render command for each mesh
                     var secondaryCommandTask = new List<Task<CommandPool.Command>>();
                     {
@@ -235,6 +231,9 @@ namespace Tortuga.Systems
                         foreach (var task in secondaryCommandTask)
                             secondaryCmds.Add(task.Result);
                     }
+                    //build render command for each ui
+                    foreach (var ui in uis)
+                        secondaryCmds.Add(ui.BuildRenderCommand(camera));
                     if (secondaryCmds.Count > 0)
                         _renderCommand.ExecuteCommands(secondaryCmds.ToArray());
                     _renderCommand.EndRenderPass();
