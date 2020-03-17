@@ -68,7 +68,7 @@ namespace Tortuga.Utils
                 var serializedData = JsonSerializer.Deserialize<MaterialJSON>(
                     jsonContent
                 );
-                var shader = new Graphics.Shader(
+                var shader = Graphics.Shader.Load(
                     serializedData.Shaders.Vertex,
                     serializedData.Shaders.Fragment
                 );

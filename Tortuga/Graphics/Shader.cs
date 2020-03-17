@@ -14,7 +14,7 @@ namespace Tortuga.Graphics
 
         private static Dictionary<string, Shader> _compiledShaders = new Dictionary<string, Shader>();
 
-        internal Shader(string vertex, string fragment)
+        private Shader(string vertex, string fragment)
         {
             _vertex = new API.Shader(vertex);
             _fragment = new API.Shader(fragment);
