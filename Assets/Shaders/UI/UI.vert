@@ -8,10 +8,11 @@ layout(set = 0, binding = 1) readonly uniform DATA
 {
     vec4 color;
     vec4 rect;
-    float borderRadius;
+    vec4 borderRadius;
 } model;
 
 layout(location=0) out vec2 outUV;
+layout(location=1) out vec2 outPosition;
 
 void main()
 {
@@ -39,5 +40,8 @@ void main()
 
     vec2 position = vertexPositions[gl_VertexIndex];
     gl_Position = projection * vec4(position, 1, 1);
+
+    //outputs
 	outUV = uv[gl_VertexIndex];
+    outPosition = position;
 }

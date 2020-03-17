@@ -13,11 +13,24 @@ namespace Tortuga.Graphics.UI
         {
             public Vector4 Color;
             public Vector4 Rect;
-            public float BorderRadius;
+            public Vector4 BorderRadius;
         }
 
         public Color Background;
-        public float BorderRadius;
+        public float BorderRadius
+        {
+            set
+            {
+                BorderRadiusTopLeft = value;
+                BorderRadiusTopRight = value;
+                BorderRadiusBottomLeft = value;
+                BorderRadiusBottomRight = value;
+            }
+        }
+        public float BorderRadiusTopLeft;
+        public float BorderRadiusTopRight;
+        public float BorderRadiusBottomLeft;
+        public float BorderRadiusBottomRight;
 
         private API.Buffer _projectionBuffer;
         private API.Buffer _dataBuffer;
@@ -103,7 +116,12 @@ namespace Tortuga.Graphics.UI
                 new ShaderData[]{
                     new ShaderData
                     {
-                        BorderRadius = this.BorderRadius,
+                        BorderRadius = new Vector4(
+                            this.BorderRadiusTopLeft,
+                            this.BorderRadiusTopRight,
+                            this.BorderRadiusBottomLeft,
+                            this.BorderRadiusBottomRight
+                        ),
                         Color = new Vector4(
                             Background.R / 255,
                             Background.G / 255,
