@@ -1,4 +1,4 @@
-namespace Tortuga.Graphics.GUI
+namespace Tortuga.Graphics.UI
 {
     public struct Symbol
     {

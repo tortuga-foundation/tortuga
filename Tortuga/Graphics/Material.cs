@@ -18,13 +18,6 @@ namespace Tortuga.Graphics
             public List<ImageView> ImageViews;
             public List<Sampler> Samplers;
         }
-        private struct VulkanPixel
-        {
-            public byte R;
-            public byte G;
-            public byte B;
-            public byte A;
-        };
 
         public PipelineInputBuilder InputBuilder;
 
@@ -319,11 +312,11 @@ namespace Tortuga.Graphics
                 _descriptorMapper[key] = obj;
             }
 
-            var pixelData = new VulkanPixel[image.Pixels.Length];
+            var pixelData = new ShaderPixel[image.Pixels.Length];
             for (int i = 0; i < pixelData.Length; i++)
             {
                 var rawPixel = image.Pixels[i];
-                pixelData[i] = new VulkanPixel
+                pixelData[i] = new ShaderPixel
                 {
                     R = rawPixel.R,
                     G = rawPixel.G,
@@ -333,7 +326,7 @@ namespace Tortuga.Graphics
             }
 
             var staging = Buffer.CreateHost(
-                System.Convert.ToUInt32(Unsafe.SizeOf<VulkanPixel>() * image.Width * image.Height),
+                System.Convert.ToUInt32(Unsafe.SizeOf<ShaderPixel>() * image.Width * image.Height),
                 VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
             );
 

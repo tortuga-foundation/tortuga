@@ -37,14 +37,14 @@ namespace Tortuga.Utils
             public IList<SymbolJSON> symbols { get; set; }
         }
 
-        public static async Task<Graphics.GUI.Font> Load(string path)
+        public static async Task<Graphics.UI.Font> Load(string path)
         {
             try
             {
                 var jsonContent = File.ReadAllText(path);
                 var deserializedJSON = JsonSerializer.Deserialize<FontJSON>(jsonContent);
 
-                var font = new Graphics.GUI.Font();
+                var font = new Graphics.UI.Font();
                 font.Base = 17;
                 font.Bold = deserializedJSON.config.bold;
                 font.CharHeight = deserializedJSON.config.charHeight;
@@ -55,7 +55,7 @@ namespace Tortuga.Utils
                 font.Size = deserializedJSON.config.size;
                 font.Smooth = deserializedJSON.config.smooth;
                 font.Atlas = await ImageLoader.Load(deserializedJSON.config.textureFile);
-                font.Symbols = new Graphics.GUI.Symbol[deserializedJSON.symbols.Count];
+                font.Symbols = new Graphics.UI.Symbol[deserializedJSON.symbols.Count];
                 for (int i = 0; i < font.Symbols.Length; i++)
                 {
                     var symbol = deserializedJSON.symbols[i];

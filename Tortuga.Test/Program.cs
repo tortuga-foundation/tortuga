@@ -51,7 +51,7 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
-            //sphere 2
+            //sphere 2z
             {
                 var entity = new Core.Entity();
                 var transform = await entity.AddComponent<Components.Transform>();
@@ -64,6 +64,13 @@ namespace Tortuga.Test
 
                 scene.AddEntity(entity);
             }
+
+            var block = new Graphics.UI.UiBlock(System.Drawing.Color.White);
+            block.Constraints.X = new Graphics.UI.MaxConstraint(210.0f);
+            block.Constraints.Y = new Graphics.UI.RelativeConstraint(10.0f);
+            block.Constraints.Width = new Graphics.UI.RelativeConstraint(200.0f);
+            block.Constraints.Height = new Graphics.UI.MaxConstraint(20.0f);
+            block.BorderRadius = 20.0f;
 
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
