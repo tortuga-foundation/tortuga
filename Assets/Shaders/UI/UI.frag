@@ -56,5 +56,5 @@ void main() {
     if (BorderRadiusTest())
         discard;
 
-    outColor = vec4(1.);
+    outColor = vec4(model.color);
 }

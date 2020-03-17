@@ -123,10 +123,10 @@ namespace Tortuga.Graphics.UI
                             this.BorderRadiusBottomRight
                         ),
                         Color = new Vector4(
-                            Background.R / 255,
-                            Background.G / 255,
-                            Background.B / 255,
-                            Background.A / 255
+                            Background.R / 255.0f,
+                            Background.G / 255.0f,
+                            Background.B / 255.0f,
+                            Background.A / 255.0f
                         ),
                         Rect = this.Rect
                     }
