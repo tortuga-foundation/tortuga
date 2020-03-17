@@ -63,7 +63,7 @@ namespace Tortuga.Graphics.API
             var colorBlendAttachment = new VkPipelineColorBlendAttachmentState()
             {
                 colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A,
-                blendEnable = VkBool32.False,
+                blendEnable = VkBool32.True,
                 srcColorBlendFactor = VkBlendFactor.SrcAlpha,
                 dstColorBlendFactor = VkBlendFactor.OneMinusSrcAlpha,
                 colorBlendOp = VkBlendOp.Add,
