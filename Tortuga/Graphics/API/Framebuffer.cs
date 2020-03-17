@@ -27,7 +27,7 @@ namespace Tortuga.Graphics.API
             _height = height;
             _colorImage = new Image(
                 width, height,
-                VkFormat.R32g32b32a32Sfloat,
+                VkFormat.R8g8b8a8Unorm,
                 VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
             );
             _colorImageView = new ImageView(_colorImage, VkImageAspectFlags.Color);
