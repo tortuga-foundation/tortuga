@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json;
+using System.Numerics;
 
 namespace Tortuga.Graphics
 {
@@ -12,6 +15,11 @@ namespace Tortuga.Graphics
     /// </summary>
     public class Material
     {
+        /// <summary>
+        /// returns true if material uses instancing
+        /// </summary>
+        public bool IsInstanced => _isInstanced;
+
         private struct DescriptorSetObject
         {
             public DescriptorSetLayout Layout;
@@ -22,15 +30,8 @@ namespace Tortuga.Graphics
             public List<ImageView> ImageViews;
             public List<Sampler> Samplers;
         }
-
-        private PipelineInputBuilder _inputBuilder;
-
         internal Pipeline ActivePipeline => _pipeline;
         internal API.Buffer InstanceBuffers => _instanceBuffer;
-        /// <summary>
-        /// 
-        /// </summary>
-        public bool IsInstanced => _isInstanced;
         internal DescriptorSetPool.DescriptorSet[] DescriptorSets
         {
             get
@@ -42,6 +43,7 @@ namespace Tortuga.Graphics
             }
         }
 
+        private PipelineInputBuilder _inputBuilder;
         private Graphics.Shader _shader;
         private Pipeline _pipeline;
         private Dictionary<string, DescriptorSetObject> _descriptorMapper;
@@ -131,7 +133,7 @@ namespace Tortuga.Graphics
                 foreach (var b in BitConverter.GetBytes(mesh.Rotation.W))
                     bytes.Add(b);
 
-                
+
                 foreach (var b in BitConverter.GetBytes(mesh.Scale.X))
                     bytes.Add(b);
                 foreach (var b in BitConverter.GetBytes(mesh.Scale.Y))
@@ -186,6 +188,8 @@ namespace Tortuga.Graphics
             _isDirty = true;
         }
 
+        #region Uniform Buffer Descriptor Set
+        
         /// <summary>
         /// Create a uniform buffer type descriptor set
         /// </summary>
@@ -297,6 +301,29 @@ namespace Tortuga.Graphics
                 return;
             await _descriptorMapper[key].Buffers[binding].SetDataWithStaging(new T[] { data });
         }
+
+        /// <summary>
+        /// Get uniform data from a descriptor set binding
+        /// </summary>
+        public async Task<T> GetUniformData<T>(string key, int binding) where T : struct
+        {
+            if (_descriptorMapper.ContainsKey(key) == false)
+                throw new KeyNotFoundException();
+            return (await _descriptorMapper[key].Buffers[binding].GetDataWithStaging<T>())[0];
+        }
+        /// <summary>
+        /// Update a descriptor set uniform data async in rendering
+        /// </summary>
+        internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, int binding, T data) where T : struct
+        {
+            if (_descriptorMapper.ContainsKey(key) == false)
+                throw new KeyNotFoundException();
+            return _descriptorMapper[key].Buffers[binding].SetDataGetTransferObject(new T[] { data });
+        }
+
+        #endregion
+
+        #region Sampled Image Descriptor Set
 
         /// <summary>
         /// Create a image type descriptor set
@@ -463,24 +490,10 @@ namespace Tortuga.Graphics
                 fence.Wait();
             });
         }
-        /// <summary>
-        /// Get uniform data from a descriptor set binding
-        /// </summary>
-        public async Task<T> GetUniformData<T>(string key, int binding) where T : struct
-        {
-            if (_descriptorMapper.ContainsKey(key) == false)
-                throw new KeyNotFoundException();
-            return (await _descriptorMapper[key].Buffers[binding].GetDataWithStaging<T>())[0];
-        }
-        /// <summary>
-        /// Update a descriptor set uniform data async in rendering
-        /// </summary>
-        internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, int binding, T data) where T : struct
-        {
-            if (_descriptorMapper.ContainsKey(key) == false)
-                throw new KeyNotFoundException();
-            return _descriptorMapper[key].Buffers[binding].SetDataGetTransferObject(new T[] { data });
-        }
+        
+        #endregion
+
+        #region Error Material
 
         /// <summary>
         /// Error material that is used in case there is an issue
@@ -500,5 +513,151 @@ namespace Tortuga.Graphics
             }
         }
         private static Material _cachedErrorMaterial;
+
+        #endregion
+
+        #region Material Loader
+        private readonly static Dictionary<string, uint[]> _preDefinedUniforms = new Dictionary<string, uint[]>(){
+            {
+                "MODEL",
+                new uint[]{ Convert.ToUInt32(Unsafe.SizeOf<Matrix4x4>()) }
+            },
+            {
+                "LIGHT",
+                new uint[]{ Convert.ToUInt32(Unsafe.SizeOf<Components.Light.FullShaderInfo>()) }
+            }
+        };
+
+        private class ShaderJSON
+        {
+            public string Vertex { set; get; }
+            public string Fragment { set; get; }
+        }
+
+        private class BindingValueJSON
+        {
+            public string Type { get; set; }
+            public float Value { get; set; }
+        }
+
+        private class BindingsJSON
+        {
+            public IList<BindingValueJSON> Values { get; set; }
+            public uint MipLevel { get; set; }
+            public IDictionary<string, string> BuildImage { get; set; }
+            public string Image { get; set; }
+        }
+
+        private class DescriptorSetJSON
+        {
+            public string Type { get; set; }
+            public string Name { get; set; }
+            public IList<BindingsJSON> Bindings { get; set; }
+        }
+
+        private class MaterialJSON
+        {
+            public string Type { set; get; }
+            public bool IsInstanced { set; get; }
+            public ShaderJSON Shaders { get; set; }
+            public IList<DescriptorSetJSON> DescriptorSets { get; set; }
+        }
+
+        /// <summary>
+        /// Load a material json object into memory
+        /// </summary>
+        /// <param name="path">path to the material json object</param>
+        /// <returns>material object that can be used for rendering</returns>
+        public static async Task<Material> Load(string path)
+        {
+            if (File.Exists(path) == false)
+                throw new FileNotFoundException("could not find materail file");
+
+            var jsonContent = File.ReadAllText(path);
+            try
+            {
+                var serializedData = JsonSerializer.Deserialize<MaterialJSON>(
+                    jsonContent
+                );
+                var shader = Graphics.Shader.Load(
+                    serializedData.Shaders.Vertex,
+                    serializedData.Shaders.Fragment
+                );
+                var material = new Material(shader, serializedData.IsInstanced);
+                foreach (var descriptorSet in serializedData.DescriptorSets)
+                {
+                    if (descriptorSet.Type == "UniformData")
+                    {
+                        if (_preDefinedUniforms.ContainsKey(descriptorSet.Name))
+                        {
+                            material.CreateUniformData(descriptorSet.Name, _preDefinedUniforms[descriptorSet.Name]);
+                            continue;
+                        }
+
+                        var totalSize = new List<uint>();
+                        var totalBytes = new List<byte[]>();
+                        for (int i = 0; i < descriptorSet.Bindings.Count; i++)
+                        {
+                            var bytes = new List<byte>();
+                            var binding = descriptorSet.Bindings[i];
+                            foreach (var values in binding.Values)
+                            {
+                                if (values.Type == "Int")
+                                {
+                                    foreach (var b in BitConverter.GetBytes(Convert.ToInt32(values.Value)))
+                                        bytes.Add(b);
+                                }
+                                else if (values.Type == "float")
+                                {
+                                    foreach (var b in BitConverter.GetBytes(values.Value))
+                                        bytes.Add(b);
+                                }
+                            }
+                            totalBytes.Add(bytes.ToArray());
+                            totalSize.Add(Convert.ToUInt32(bytes.Count * sizeof(byte)));
+                        }
+                        material.CreateUniformData(descriptorSet.Name, totalSize.ToArray());
+                        for (int i = 0; i < totalBytes.Count; i++)
+                            await material.UpdateUniformDataArray(descriptorSet.Name, i, totalBytes[i]);
+                    }
+                    else if (descriptorSet.Type == "SampledImage2D")
+                    {
+                        var images = new List<Graphics.Image>();
+                        var mipLevels = new List<uint>();
+                        for (int i = 0; i < descriptorSet.Bindings.Count; i++)
+                        {
+                            var binding = descriptorSet.Bindings[i];
+                            if (binding.Image != null)
+                            {
+                                mipLevels.Add(binding.MipLevel);
+                                images.Add(await Graphics.Image.Load(binding.Image));
+                            }
+                            else if (binding.BuildImage != null)
+                            {
+                                var R = await Graphics.Image.Load(binding.BuildImage["R"]);
+                                if (binding.BuildImage.ContainsKey("G"))
+                                    R.CopyChannel(await Graphics.Image.Load(binding.BuildImage["G"]), Graphics.Image.Channel.G);
+                                if (binding.BuildImage.ContainsKey("B"))
+                                    R.CopyChannel(await Graphics.Image.Load(binding.BuildImage["B"]), Graphics.Image.Channel.B);
+                                if (binding.BuildImage.ContainsKey("A"))
+                                    R.CopyChannel(await Graphics.Image.Load(binding.BuildImage["A"]), Graphics.Image.Channel.A);
+                                images.Add(R);
+                                mipLevels.Add(binding.MipLevel);
+                            }
+                        }
+                        material.CreateSampledImage(descriptorSet.Name, mipLevels.ToArray());
+                        for (int i = 0; i < images.Count; i++)
+                            await material.UpdateSampledImage(descriptorSet.Name, i, images[i]);
+                    }
+                }
+                return material;
+            }
+            catch (System.Exception e)
+            {
+                System.Console.WriteLine(e.ToString());
+            }
+            return Material.ErrorMaterial;
+        }
+        #endregion
     }
 }

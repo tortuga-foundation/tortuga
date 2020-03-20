@@ -3,7 +3,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <DocumentationFile>Documentation\Tortuga.XML</DocumentationFile>
+    <DocumentationFile>bin\Tortuga.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Veldrid.Sdl2" Version="4.7.0"/>
