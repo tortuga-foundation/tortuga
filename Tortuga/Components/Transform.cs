@@ -3,34 +3,31 @@ using System.Numerics;
 
 namespace Tortuga.Components
 {
+    /// <summary>
+    /// Transform component, used to store position, rotation and scale of an entity
+    /// </summary>
     public class Transform : Core.BaseComponent
     {
+        /// <summary>
+        /// Is the entity static or can the entity change every frame
+        /// </summary>
         public bool IsStatic = false;
+        /// <summary>
+        /// Position of the entity
+        /// </summary>
         public Vector3 Position = new Vector3(0, 0, 0);
+        /// <summary>
+        /// Rotation of the entity
+        /// </summary>
         public Quaternion Rotation = Quaternion.Identity;
+        /// <summary>
+        /// Scale of the entity
+        /// </summary>
         public Vector3 Scale = new Vector3(1, 1, 1);
 
-        public Rect RectTransform
-        {
-            get
-            {
-                return new Rect
-                {
-                    X = Position.X,
-                    Y = Position.Y,
-                    Width = Scale.X,
-                    Height = Scale.Y
-                };
-            }
-            set
-            {
-                Position.X = Convert.ToSingle(value.X);
-                Position.Y = Convert.ToSingle(value.Y);
-                Scale.X = Convert.ToSingle(value.Width);
-                Scale.Y = Convert.ToSingle(value.Height);
-            }
-        }
-
+        /// <summary>
+        /// Returns model matrix of the entity
+        /// </summary>
         public Matrix4x4 ToMatrix
         {
             get
@@ -42,6 +39,9 @@ namespace Tortuga.Components
                 return mat;
             }
         }
+        /// <summary>
+        /// Returns right vector of the entity
+        /// </summary>
         public Vector3 Right
         {
             get
@@ -50,6 +50,9 @@ namespace Tortuga.Components
                 return Vector3.Normalize(new Vector3(mat.M11, mat.M21, mat.M31));
             }
         }
+        /// <summary>
+        /// Returns up vector of the entity
+        /// </summary>
         public Vector3 Up
         {
             get
@@ -58,6 +61,9 @@ namespace Tortuga.Components
                 return Vector3.Normalize(new Vector3(mat.M12, mat.M22, mat.M32));
             }
         }
+        /// <summary>
+        /// Returns forward vector of the entity
+        /// </summary>
         public Vector3 Forward
         {
             get

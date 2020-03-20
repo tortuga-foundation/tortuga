@@ -1,11 +1,15 @@
 using Vulkan;
 using Tortuga.Graphics.API;
+using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace Tortuga.Graphics
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class Material
     {
         private struct DescriptorSetObject
@@ -13,18 +17,19 @@ namespace Tortuga.Graphics
             public DescriptorSetLayout Layout;
             public DescriptorSetPool Pool;
             public DescriptorSetPool.DescriptorSet Set;
-            public List<Buffer> Buffers;
+            public List<API.Buffer> Buffers;
             public List<API.Image> Images;
             public List<ImageView> ImageViews;
             public List<Sampler> Samplers;
         }
 
-        public PipelineInputBuilder InputBuilder;
-
-        public static Material[] GetAllMaterials => _fullMaterialList.ToArray();
+        private PipelineInputBuilder _inputBuilder;
 
         internal Pipeline ActivePipeline => _pipeline;
         internal API.Buffer InstanceBuffers => _instanceBuffer;
+        /// <summary>
+        /// 
+        /// </summary>
         public bool IsInstanced => _isInstanced;
         internal DescriptorSetPool.DescriptorSet[] DescriptorSets
         {
@@ -42,9 +47,13 @@ namespace Tortuga.Graphics
         private Dictionary<string, DescriptorSetObject> _descriptorMapper;
         private bool _isDirty;
         private API.Buffer _instanceBuffer;
-        private static List<Material> _fullMaterialList = new List<Material>();
         private bool _isInstanced = false;
 
+        /// <summary>
+        /// Constructor to create a basic material
+        /// </summary>
+        /// <param name="shader">Shader object used for this material</param>
+        /// <param name="isInstanced">Does this material pass position, rotation and scale using instance buffer</param>
         public Material(
             Graphics.Shader shader,
             bool isInstanced = false
@@ -55,7 +64,7 @@ namespace Tortuga.Graphics
             _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
             _isInstanced = isInstanced;
 
-            InputBuilder = new PipelineInputBuilder();
+            _inputBuilder = new PipelineInputBuilder();
             var vertexBinding = new PipelineInputBuilder.BindingElement
             {
                 Type = PipelineInputBuilder.BindingElement.BindingType.Vertex,
@@ -74,7 +83,7 @@ namespace Tortuga.Graphics
             };
             if (isInstanced)
             {
-                InputBuilder.Bindings = new PipelineInputBuilder.BindingElement[]{
+                _inputBuilder.Bindings = new PipelineInputBuilder.BindingElement[]{
                     vertexBinding,
                     new PipelineInputBuilder.BindingElement
                     {
@@ -95,14 +104,9 @@ namespace Tortuga.Graphics
                 };
             }
             else
-                InputBuilder.Bindings = new PipelineInputBuilder.BindingElement[] { vertexBinding };
+                _inputBuilder.Bindings = new PipelineInputBuilder.BindingElement[] { vertexBinding };
 
             _isDirty = true;
-            _fullMaterialList.Add(this);
-        }
-        ~Material()
-        {
-            _fullMaterialList.Remove(this);
         }
 
         internal List<BufferTransferObject> BuildInstanceBuffers(Components.RenderMesh[] meshes)
@@ -111,11 +115,28 @@ namespace Tortuga.Graphics
             var bytes = new List<byte>();
             foreach (var mesh in meshes)
             {
-                foreach (var b in PipelineInputBuilder.AttributeElement.GetBytes(mesh.Position))
+                foreach (var b in BitConverter.GetBytes(mesh.Position.X))
                     bytes.Add(b);
-                foreach (var b in PipelineInputBuilder.AttributeElement.GetBytes(mesh.Rotation))
+                foreach (var b in BitConverter.GetBytes(mesh.Position.Y))
                     bytes.Add(b);
-                foreach (var b in PipelineInputBuilder.AttributeElement.GetBytes(mesh.Scale))
+                foreach (var b in BitConverter.GetBytes(mesh.Position.Z))
+                    bytes.Add(b);
+
+                foreach (var b in BitConverter.GetBytes(mesh.Rotation.X))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(mesh.Rotation.Y))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(mesh.Rotation.Z))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(mesh.Rotation.W))
+                    bytes.Add(b);
+
+                
+                foreach (var b in BitConverter.GetBytes(mesh.Scale.X))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(mesh.Scale.Y))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(mesh.Scale.Z))
                     bytes.Add(b);
             }
             var totalByteSize = sizeof(byte) * bytes.Count;
@@ -132,6 +153,9 @@ namespace Tortuga.Graphics
             return transferObjects;
         }
 
+        /// <summary>
+        /// Creates a new pipeline object using the pipeline input builder and descriptor sets set by the user
+        /// </summary>
         public void ReCompilePipeline()
         {
             if (_isDirty == false)
@@ -146,18 +170,27 @@ namespace Tortuga.Graphics
                 totalDescriptorSets.ToArray(),
                 _shader.Vertex,
                 _shader.Fragment,
-                InputBuilder.BindingDescriptions,
-                InputBuilder.AttributeDescriptions
+                _inputBuilder.BindingDescriptions,
+                _inputBuilder.AttributeDescriptions
             );
             _isDirty = false;
         }
 
+        /// <summary>
+        /// Update the material shader object
+        /// </summary>
+        /// <param name="shader">Shader object to use</param>
         public void UpdateShaders(Graphics.Shader shader)
         {
             _shader = shader;
             _isDirty = true;
         }
 
+        /// <summary>
+        /// Create a uniform buffer type descriptor set
+        /// </summary>
+        /// <param name="key">key to represent this descriptor set</param>
+        /// <param name="byteSizes">for each binding in the descriptor set the size of the buffer</param>
         public void CreateUniformData(string key, uint[] byteSizes)
         {
             if (_descriptorMapper.ContainsKey(key))
@@ -178,11 +211,11 @@ namespace Tortuga.Graphics
             var layout = new DescriptorSetLayout(createInfos.ToArray());
             var pool = new DescriptorSetPool(layout);
             var set = pool.AllocateDescriptorSet();
-            var buffers = new List<Buffer>();
+            var buffers = new List<API.Buffer>();
             foreach (var byteSize in byteSizes)
             {
                 buffers.Add(
-                    Buffer.CreateDevice(
+                    API.Buffer.CreateDevice(
                         byteSize,
                         VkBufferUsageFlags.UniformBuffer
                     )
@@ -201,12 +234,23 @@ namespace Tortuga.Graphics
             );
             _isDirty = true;
         }
+        /// <summary>
+        /// Update an existing descriptor set with an array
+        /// </summary>
+        /// <param name="key">key to represent this descriptor set</param>
+        /// <param name="binding">binding id for this descriptor set</param>
+        /// <param name="data">the array data for the descriptor set</param>
         public async Task UpdateUniformDataArray<T>(string key, int binding, T[] data) where T : struct
         {
             if (_descriptorMapper.ContainsKey(key) == false)
                 return;
             await _descriptorMapper[key].Buffers[binding].SetDataWithStaging(data);
         }
+        /// <summary>
+        /// Create a descriptor set with 1 binding. 
+        /// The data is represented by the template you pass (must be struct)
+        /// </summary>
+        /// <param name="key">key to represent this descriptor set</param>
         public void CreateUniformData<A>(string key) where A : struct
         {
             var sizes = new uint[]{
@@ -214,6 +258,11 @@ namespace Tortuga.Graphics
             };
             CreateUniformData(key, sizes);
         }
+        /// <summary>
+        /// Create a descriptor set with 2 binding. 
+        /// The data is represented by the template you pass (must be struct)
+        /// </summary>
+        /// <param name="key">key to represent this descriptor set</param>
         public void CreateUniformData<A, B>(string key) where A : struct
         {
             var sizes = new uint[]{
@@ -222,6 +271,11 @@ namespace Tortuga.Graphics
             };
             CreateUniformData(key, sizes);
         }
+        /// <summary>
+        /// Create a descriptor set with 3 binding. 
+        /// The data is represented by the template you pass (must be struct)
+        /// </summary>
+        /// <param name="key">key to represent this descriptor set</param>
         public void CreateUniformData<A, B, C>(string key) where A : struct
         {
             var sizes = new uint[]{
@@ -231,6 +285,12 @@ namespace Tortuga.Graphics
             };
             CreateUniformData(key, sizes);
         }
+        /// <summary>
+        /// Update a descriptor set with struct data
+        /// </summary>
+        /// <param name="key">key to represent this descriptor set</param>
+        /// <param name="binding">binding if for this descriptor set</param>
+        /// <param name="data">the data for the descriptor set</param>
         public async Task UpdateUniformData<T>(string key, int binding, T data) where T : struct
         {
             if (_descriptorMapper.ContainsKey(key) == false)
@@ -238,6 +298,11 @@ namespace Tortuga.Graphics
             await _descriptorMapper[key].Buffers[binding].SetDataWithStaging(new T[] { data });
         }
 
+        /// <summary>
+        /// Create a image type descriptor set
+        /// </summary>
+        /// <param name="key">the key representing this descriptor set</param>
+        /// <param name="mipLevels">the amount of bindings with the mip levels for each binding</param>
         public void CreateSampledImage(string key, uint[] mipLevels)
         {
             if (_descriptorMapper.ContainsKey(key))
@@ -288,6 +353,13 @@ namespace Tortuga.Graphics
             });
             _isDirty = true;
         }
+        /// <summary>
+        /// Update a descriptor set of sampled image type
+        /// </summary>
+        /// <param name="key">Key representing the descriptor set</param>
+        /// <param name="binding">the binding to update</param>
+        /// <param name="image">image to update the descriptor set binding with</param>
+        /// <returns>Task that will complete after the descriptor set has been updated</returns>
         public async Task UpdateSampledImage(string key, int binding, Image image)
         {
             if (_descriptorMapper.ContainsKey(key) == false)
@@ -325,7 +397,7 @@ namespace Tortuga.Graphics
                 };
             }
 
-            var staging = Buffer.CreateHost(
+            var staging = API.Buffer.CreateHost(
                 System.Convert.ToUInt32(Unsafe.SizeOf<ShaderPixel>() * image.Width * image.Height),
                 VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
             );
@@ -391,12 +463,18 @@ namespace Tortuga.Graphics
                 fence.Wait();
             });
         }
+        /// <summary>
+        /// Get uniform data from a descriptor set binding
+        /// </summary>
         public async Task<T> GetUniformData<T>(string key, int binding) where T : struct
         {
             if (_descriptorMapper.ContainsKey(key) == false)
                 throw new KeyNotFoundException();
             return (await _descriptorMapper[key].Buffers[binding].GetDataWithStaging<T>())[0];
         }
+        /// <summary>
+        /// Update a descriptor set uniform data async in rendering
+        /// </summary>
         internal BufferTransferObject UpdateUniformDataSemaphore<T>(string key, int binding, T data) where T : struct
         {
             if (_descriptorMapper.ContainsKey(key) == false)
@@ -404,7 +482,9 @@ namespace Tortuga.Graphics
             return _descriptorMapper[key].Buffers[binding].SetDataGetTransferObject(new T[] { data });
         }
 
-        private static Material _cachedErrorMaterial;
+        /// <summary>
+        /// Error material that is used in case there is an issue
+        /// </summary>
         public static Material ErrorMaterial
         {
             get
@@ -419,5 +499,6 @@ namespace Tortuga.Graphics
                 return _cachedErrorMaterial;
             }
         }
+        private static Material _cachedErrorMaterial;
     }
 }

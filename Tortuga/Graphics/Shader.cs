@@ -1,9 +1,10 @@
-
-
 using System.Collections.Generic;
 
 namespace Tortuga.Graphics
 {
+    /// <summary>
+    /// Shader object used for rendering
+    /// </summary>
     public class Shader
     {
         internal API.Shader Vertex => _vertex;
@@ -25,6 +26,12 @@ namespace Tortuga.Graphics
             _fragment = fragment;
         }
 
+        /// <summary>
+        /// Load a shader object using uncompiled files
+        /// </summary>
+        /// <param name="vertex">path to vertex shader file</param>
+        /// <param name="fragment">path to fragment shader file</param>
+        /// <returns>Shader object that can be used in a pipeline</returns>
         public static Shader Load(string vertex, string fragment)
         {
             var key = string.Format("{0}-{1}", vertex, fragment);

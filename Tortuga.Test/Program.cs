@@ -19,7 +19,7 @@ namespace Tortuga.Test
             }
 
             //load obj model
-            var sphereOBJ = await Utils.OBJLoader.Load("Assets/Models/Sphere.obj");
+            var sphereOBJ = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
             //load bricks material
             var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
 

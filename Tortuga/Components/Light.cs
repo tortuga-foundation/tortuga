@@ -3,18 +3,42 @@ using System.Numerics;
 
 namespace Tortuga.Components
 {
+    /// <summary>
+    /// Light component, used to create lighting
+    /// </summary>
     public class Light : Core.BaseComponent
     {
+        /// <summary>
+        /// Different types of light
+        /// </summary>
         public enum LightType
         {
+            /// <summary>
+            /// Point light
+            /// </summary>
             Point = 0,
+            /// <summary>
+            /// Directional light
+            /// </summary>
             Directional = 1
         }
 
+        /// <summary>
+        /// Color of the light
+        /// </summary>
         public Color Color;
+        /// <summary>
+        /// Type of light
+        /// </summary>
         public LightType Type;
+        /// <summary>
+        /// Intensity of the light
+        /// </summary>
         public float Intensity;
 
+        /// <summary>
+        /// Forward direction of the light
+        /// </summary>
         public Vector3 Forward
         {
             get
@@ -26,6 +50,9 @@ namespace Tortuga.Components
                 return transform.Forward;
             }
         }
+        /// <summary>
+        /// Position of the light
+        /// </summary>
         public Vector3 Position
         {
             get
@@ -54,7 +81,7 @@ namespace Tortuga.Components
             };
 
 #pragma warning disable 0649
-        public struct LightShaderInfo
+        internal struct LightShaderInfo
         {
             public Vector4 Position;
             public Vector4 Forward;
@@ -64,7 +91,7 @@ namespace Tortuga.Components
             public int Reserved1;
             public int Reserved2;
         }
-        public struct FullShaderInfo
+        internal struct FullShaderInfo
         {
             public LightShaderInfo Light0;
             public LightShaderInfo Light1;

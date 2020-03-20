@@ -3,7 +3,7 @@ using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    public class Sampler
+    internal class Sampler
     {
         public VkSampler Handle => _sampler;
 

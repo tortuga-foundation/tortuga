@@ -9,18 +9,31 @@ using System.Runtime.CompilerServices;
 
 namespace Tortuga.Components
 {
+    /// <summary>
+    /// This object is used to render a mesh with a material
+    /// </summary>
     public class RenderMesh : Core.BaseComponent
     {
+        /// <summary>
+        /// material to use for rendering
+        /// </summary>
         public Material Material
         {
-            set
-            {
-                _material = value;
-                Task.Run(() => SetMesh(_mesh));
-            }
+            set => _material = value;
             get => _material;
         }
-        public Graphics.Mesh Mesh => _mesh;
+        /// <summary>
+        /// Mesh data to use for rendering
+        /// NOTE: please use SetMesh for setting new mesh data
+        /// </summary>
+        public Graphics.Mesh Mesh
+        {
+            set => SetMesh(value).Wait();
+            get => _mesh;
+        }
+        /// <summary>
+        /// Is mesh static
+        /// </summary>
         public bool IsStatic
         {
             get
@@ -32,6 +45,9 @@ namespace Tortuga.Components
                 return transform.IsStatic;
             }
         }
+        /// <summary>
+        /// Get Model matrix of this mesh
+        /// </summary>
         public Matrix4x4 ModelMatrix
         {
             get
@@ -43,6 +59,9 @@ namespace Tortuga.Components
                 return transform.ToMatrix;
             }
         }
+        /// <summary>
+        /// Get Position of this mesh
+        /// </summary>
         public Vector3 Position
         {
             get
@@ -54,6 +73,9 @@ namespace Tortuga.Components
                 return transform.Position;
             }
         }
+        /// <summary>
+        /// Get Rotation of this mesh
+        /// </summary>
         public Vector4 Rotation
         {
             get
@@ -65,6 +87,9 @@ namespace Tortuga.Components
                 return new Vector4(transform.Rotation.X, transform.Rotation.Y, transform.Rotation.Z, transform.Rotation.W);
             }
         }
+        /// <summary>
+        /// Get Scale of this mesh
+        /// </summary>
         public Vector3 Scale
         {
             get
@@ -93,6 +118,9 @@ namespace Tortuga.Components
         private DescriptorSetPool.DescriptorSet _uniformDescriptorSet;
         private Graphics.API.Buffer _uniformBuffer;
 
+        /// <summary>
+        /// Initialize Component
+        /// </summary>
         public async override Task OnEnable()
         {
             await Task.Run(() =>
@@ -112,6 +140,10 @@ namespace Tortuga.Components
             });
         }
 
+        /// <summary>
+        /// Used to set mesh data async
+        /// </summary>
+        /// <param name="mesh">mesh data</param>
         public async Task SetMesh(Mesh mesh)
         {
             if (mesh == null)
@@ -136,11 +168,23 @@ namespace Tortuga.Components
             var bytes = new List<byte>();
             foreach (var vertex in mesh.Vertices)
             {
-                foreach (var b in Graphics.PipelineInputBuilder.AttributeElement.GetBytes(vertex.Position))
+                foreach (var b in BitConverter.GetBytes(vertex.Position.X))
                     bytes.Add(b);
-                foreach (var b in Graphics.PipelineInputBuilder.AttributeElement.GetBytes(vertex.TextureCoordinates))
+                foreach (var b in BitConverter.GetBytes(vertex.Position.Y))
                     bytes.Add(b);
-                foreach (var b in Graphics.PipelineInputBuilder.AttributeElement.GetBytes(vertex.Normal))
+                foreach (var b in BitConverter.GetBytes(vertex.Position.Z))
+                    bytes.Add(b);
+
+                foreach (var b in BitConverter.GetBytes(vertex.TextureCoordinates.X))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vertex.TextureCoordinates.Y))
+                    bytes.Add(b);
+
+                foreach (var b in BitConverter.GetBytes(vertex.Normal.X))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vertex.Normal.Y))
+                    bytes.Add(b);
+                foreach (var b in BitConverter.GetBytes(vertex.Normal.Z))
                     bytes.Add(b);
             }
             var vertexBufferSize = System.Convert.ToUInt32(sizeof(byte) * bytes.Count);
@@ -165,8 +209,8 @@ namespace Tortuga.Components
             this.RenderCommand.SetViewport(
                 System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
                 System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.Width)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Width))
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
+                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
             );
 
             var descriptorSets = new List<DescriptorSetPool.DescriptorSet>();

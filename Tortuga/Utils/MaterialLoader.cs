@@ -119,17 +119,17 @@ namespace Tortuga.Utils
                             if (binding.Image != null)
                             {
                                 mipLevels.Add(binding.MipLevel);
-                                images.Add(await ImageLoader.Load(binding.Image));
+                                images.Add(await Graphics.Image.Load(binding.Image));
                             }
                             else if (binding.BuildImage != null)
                             {
-                                var R = await ImageLoader.Load(binding.BuildImage["R"]);
+                                var R = await Graphics.Image.Load(binding.BuildImage["R"]);
                                 if (binding.BuildImage.ContainsKey("G"))
-                                    R.CopyChannel(await ImageLoader.Load(binding.BuildImage["G"]), Graphics.Image.Channel.G);
+                                    R.CopyChannel(await Graphics.Image.Load(binding.BuildImage["G"]), Graphics.Image.Channel.G);
                                 if (binding.BuildImage.ContainsKey("B"))
-                                    R.CopyChannel(await ImageLoader.Load(binding.BuildImage["B"]), Graphics.Image.Channel.B);
+                                    R.CopyChannel(await Graphics.Image.Load(binding.BuildImage["B"]), Graphics.Image.Channel.B);
                                 if (binding.BuildImage.ContainsKey("A"))
-                                    R.CopyChannel(await ImageLoader.Load(binding.BuildImage["A"]), Graphics.Image.Channel.A);
+                                    R.CopyChannel(await Graphics.Image.Load(binding.BuildImage["A"]), Graphics.Image.Channel.A);
                                 images.Add(R);
                                 mipLevels.Add(binding.MipLevel);
                             }

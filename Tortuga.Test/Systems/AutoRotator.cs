@@ -10,14 +10,6 @@ namespace Tortuga.Test
         private float _rotation = 0.0f;
         private float _multiplier = 0.05f;
 
-        public AutoRotator()
-        {
-        }
-        ~AutoRotator()
-        {
-
-        }
-
         public override void OnEnable() { }
         public override void OnDisable() { }
 

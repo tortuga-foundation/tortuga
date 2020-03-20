@@ -8,12 +8,18 @@ using System.Diagnostics;
 
 namespace Tortuga.Graphics
 {
+    /// <summary>
+    /// This can be used to create a GUI window
+    /// </summary>
     public class Window
     {
+        /// <summary>
+        /// returns acquired swapchain
+        /// </summary>
+        public uint SwapchainAcquiredImage => _swapchainImageIndex;
         internal Sdl2Window SdlHandle => _windowHandle;
         internal VkSurfaceKHR Surface => _surface;
         internal API.Swapchain Swapchain => _swapchain;
-        public uint SwapchainAcquiredImage => _swapchainImageIndex;
 
         private Sdl2Window _windowHandle;
         private VkSurfaceKHR _surface;
@@ -21,6 +27,16 @@ namespace Tortuga.Graphics
         private uint _swapchainImageIndex;
         private API.Fence _swapchianFence;
 
+        /// <summary>
+        /// constructor to create a window
+        /// </summary>
+        /// <param name="title">the title of the window</param>
+        /// <param name="x">x position of the window</param>
+        /// <param name="y">y position of the window</param>
+        /// <param name="width">the width of the window</param>
+        /// <param name="height">the height of the window</param>
+        /// <param name="flags">the sdl flags for the window</param>
+        /// <param name="threadProcessing">enable thread processing on window</param>
         public unsafe Window(
             string title,
             int x, int y,
@@ -82,6 +98,9 @@ namespace Tortuga.Graphics
             this._swapchianFence = new API.Fence();
         }
 
+        /// <summary>
+        /// de-constructor for the window
+        /// </summary>
         unsafe ~Window()
         {
             vkDestroySurfaceKHR(Engine.Instance.Vulkan.Handle, this._surface, null);
@@ -97,36 +116,62 @@ namespace Tortuga.Graphics
             }
         }
 
+        /// <summary>
+        /// Does this window exist or it has been destroyed
+        /// </summary>
         public bool Exists => _windowHandle.Exists;
+
+        /// <summary>
+        /// sets or gets if the window is resizeable
+        /// </summary>
         public bool Resizeable
         {
             get => _windowHandle.Resizable;
             set => _windowHandle.Resizable = value;
         }
+        /// <summary>
+        /// sets or gets the window's title
+        /// </summary>
         public string Title
         {
             get => _windowHandle.Title;
             set => _windowHandle.Title = value;
         }
+        /// <summary>
+        /// sets or gets if the window is visible
+        /// </summary>
         public bool Visible
         {
             get => _windowHandle.Visible;
             set => _windowHandle.Visible = value;
         }
+        /// <summary>
+        /// sets or gets the window width
+        /// </summary>
         public int Width
         {
             get => _windowHandle.Width;
             set => _windowHandle.Width = value;
         }
+        /// <summary>
+        /// sets or gets the window height
+        /// </summary>
         public int Height
         {
             get => _windowHandle.Height;
             set => _windowHandle.Height = value;
         }
 
+        /// <summary>
+        /// process window events and return it as a snapshot
+        /// </summary>
         public unsafe Veldrid.InputSnapshot PumpEvents()
             => _windowHandle.PumpEvents();
 
+
+        /// <summary>
+        /// Aquire swapchain image and store the referance in 'SwapchainAcquiredImage'
+        /// </summary>
         public unsafe void AcquireSwapchainImage()
         {
             _swapchianFence.Reset();
@@ -152,6 +197,9 @@ namespace Tortuga.Graphics
             _swapchainImageIndex = imageIndex;
         }
 
+        /// <summary>
+        /// present acquired swapchain
+        /// </summary>
         public unsafe void Present()
         {
             var swapchains = new API.NativeList<VkSwapchainKHR>();

@@ -22,7 +22,7 @@ struct PipelineLayout {
 
 namespace Tortuga.Graphics.API
 {
-    public struct DescriptorSetCreateInfo
+    internal struct DescriptorSetCreateInfo
     {
         public VkDescriptorType type;
         public VkShaderStageFlags stage;

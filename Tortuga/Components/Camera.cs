@@ -7,6 +7,9 @@ using Vulkan;
 
 namespace Tortuga.Components
 {
+    /// <summary>
+    /// camera component used to render the scene
+    /// </summary>
     public class Camera : Core.BaseComponent
     {
         internal struct CameraShaderInfo
@@ -19,43 +22,73 @@ namespace Tortuga.Components
             public int Height;
         };
 
+        /// <summary>
+        /// Type of camera
+        /// </summary>
         public enum ProjectionType
         {
+            /// <summary>
+            /// Perspective
+            /// </summary>
             Perspective,
+            /// <summary>
+            /// Orthographic
+            /// </summary>
             Orthographic
         }
 
         internal Framebuffer Framebuffer => _framebuffer;
         internal DescriptorSetPool.DescriptorSet CameraDescriptorSet => _cameraDescriptorSet;
-        public Tortuga.Rect Viewport = new Rect
+        /// <summary>
+        /// Viewport of the camera
+        /// </summary>
+        public Vector4 Viewport = new Vector4
         {
             X = 0,
             Y = 0,
-            Width = 1,
-            Height = 1
+            Z = 1,
+            W = 1
         };
-        public Tortuga.IntVector2D Resolution
+        /// <summary>
+        /// Camera resolution, this get's set automatically using Settings.Graphics.RenderResolutionScale
+        /// </summary>
+        public Vector2 Resolution
         {
             get
             {
-                return new IntVector2D
+                return new Vector2
                 {
-                    x = Convert.ToInt32(_framebuffer.Width),
-                    y = Convert.ToInt32(_framebuffer.Height)
+                    X = Convert.ToInt32(_framebuffer.Width),
+                    Y = Convert.ToInt32(_framebuffer.Height)
                 };
             }
             set
             {
                 _framebuffer = new Framebuffer(
                     Engine.Instance.MainRenderPass,
-                    Convert.ToUInt32(value.x), Convert.ToUInt32(value.y)
+                    Convert.ToUInt32(value.X), Convert.ToUInt32(value.Y)
                 );
             }
         }
+        /// <summary>
+        /// How cose can the camera see
+        /// </summary>
         public float NearClipPlane = 0.01f;
+        /// <summary>
+        /// How far can the camera see
+        /// </summary>
         public float FarClipPlane = 100.0f;
+        /// <summary>
+        /// Field of view for the camera
+        /// </summary>
         public float FieldOfView = 90.0f;
+        /// <summary>
+        /// The type of camera
+        /// </summary>
         public ProjectionType Projection = ProjectionType.Perspective;
+        /// <summary>
+        /// Is the camera static
+        /// </summary>
         public bool IsStatic
         {
             get
@@ -73,6 +106,9 @@ namespace Tortuga.Components
         private DescriptorSetPool.DescriptorSet _cameraDescriptorSet;
         private Tortuga.Graphics.API.Buffer _cameraBuffer;
 
+        /// <summary>
+        /// Initialize the camera
+        /// </summary>
         public override async Task OnEnable()
         {
             await Task.Run(() =>
@@ -93,23 +129,29 @@ namespace Tortuga.Components
             });
         }
 
-        public float ToRadians(float degree)
+        private float ToRadians(float degree)
         {
             return (degree / 360) * MathF.PI;
         }
 
+        /// <summary>
+        /// Get the projection matrix of the camera
+        /// </summary>
         public Matrix4x4 ProjectionMatrix
         {
             get
             {
                 if (this.Projection == ProjectionType.Perspective)
-                    return Matrix4x4.CreatePerspectiveFieldOfView(ToRadians(FieldOfView), (float)Resolution.x / (float)Resolution.y, NearClipPlane, FarClipPlane);
+                    return Matrix4x4.CreatePerspectiveFieldOfView(ToRadians(FieldOfView), Resolution.X / Resolution.Y, NearClipPlane, FarClipPlane);
                 else if (this.Projection == ProjectionType.Orthographic)
-                    return Matrix4x4.CreateOrthographic(Resolution.x, Resolution.y, NearClipPlane, FarClipPlane);
+                    return Matrix4x4.CreateOrthographic(Resolution.X, Resolution.Y, NearClipPlane, FarClipPlane);
 
                 throw new NotSupportedException("This type of projection is not supported by the camera");
             }
         }
+        /// <summary>
+        /// get the view matrix of the camera
+        /// </summary>
         public Matrix4x4 ViewMatrix
         {
             get
@@ -125,6 +167,9 @@ namespace Tortuga.Components
             }
         }
 
+        /// <summary>
+        /// update camera graphics buffers
+        /// </summary>
         public Task UpdateCameraBuffers()
         {
             return _cameraBuffer.SetDataWithStaging<CameraShaderInfo>(
@@ -136,8 +181,8 @@ namespace Tortuga.Components
                         View = ViewMatrix,
                         PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
                         PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
-                        Width = Resolution.x,
-                        Height = Resolution.y
+                        Width = Convert.ToInt32(MathF.Round(Resolution.X)),
+                        Height = Convert.ToInt32(MathF.Round(Resolution.Y))
                     }
                 }
             );
@@ -153,8 +198,8 @@ namespace Tortuga.Components
                         View = ViewMatrix,
                         PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
                         PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
-                        Width = Resolution.x,
-                        Height = Resolution.y
+                        Width = Convert.ToInt32(MathF.Round(Resolution.X)),
+                        Height = Convert.ToInt32(MathF.Round(Resolution.Y))
                     }
                 }
             );

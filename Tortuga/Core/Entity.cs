@@ -4,21 +4,35 @@ using System.Threading.Tasks;
 
 namespace Tortuga.Core
 {
+    /// <summary>
+    /// Entity class used to create objects in the tortuga engine
+    /// </summary>
     public class Entity
     {
         internal Action<Entity, BaseComponent> OnComponentAdded;
         internal Action<Entity, BaseComponent> OnComponentRemoved;
 
+        /// <summary>
+        /// Get all components attached to this entity
+        /// </summary>
         public Dictionary<Type, BaseComponent> Components => _components;
         private Dictionary<Type, BaseComponent> _components;
         private Dictionary<Type, BaseComponent> _markedForRemoval;
 
+        /// <summary>
+        /// Entity constructor
+        /// </summary>
         public Entity()
         {
             _components = new Dictionary<Type, BaseComponent>();
             _markedForRemoval = new Dictionary<Type, BaseComponent>();
         }
 
+        /// <summary>
+        /// Add a component to this entity
+        /// </summary>
+        /// <typeparam name="T">type of component</typeparam>
+        /// <returns>async task with the component as a result</returns>
         public async Task<T> AddComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
@@ -30,6 +44,10 @@ namespace Tortuga.Core
             return newComp;
         }
 
+        /// <summary>
+        /// Mark a component for removal in this entity
+        /// </summary>
+        /// <typeparam name="T">type of component</typeparam>
         public Task RemoveComponent<T>() where T : BaseComponent, new()
         {
             return Task.Run(() =>
@@ -39,6 +57,10 @@ namespace Tortuga.Core
             });
         }
 
+        /// <summary>
+        /// Remove a component from this entity imediately
+        /// </summary>
+        /// <typeparam name="T">type of component</typeparam>
         public async Task RemoveComponentImediate<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
@@ -51,6 +73,9 @@ namespace Tortuga.Core
                 _markedForRemoval.Remove(typeof(T));
         }
 
+        /// <summary>
+        /// Remove all components marked for removal
+        /// </summary>
         public async Task RemoveAllMarkedForRemoval()
         {
             foreach (var marked in _markedForRemoval)
@@ -65,6 +90,11 @@ namespace Tortuga.Core
             _markedForRemoval.Clear();
         }
 
+        /// <summary>
+        /// get an component attached to this entity
+        /// </summary>
+        /// <typeparam name="T">type of component</typeparam>
+        /// <returns>component instance</returns>
         public T GetComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)) == false)

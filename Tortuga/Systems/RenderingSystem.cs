@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Tortuga.Systems
 {
+    /// <summary>
+    /// This is the rendering system, responsible for rendering every mesh
+    /// </summary>
     public class RenderingSystem : Core.BaseSystem
     {
         private CommandPool _renderCommandPool;
@@ -14,6 +17,9 @@ namespace Tortuga.Systems
         private float _cameraResolutionScale => Settings.Graphics.RenderResolutionScale;
         private Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>> _previousMaterialInstance;
 
+        /// <summary>
+        /// Constructor to initialize the rendering system
+        /// </summary>
         public RenderingSystem()
         {
             _renderCommandPool = new CommandPool(Engine.Instance.MainDevice.GraphicsQueueFamily);
@@ -22,6 +28,9 @@ namespace Tortuga.Systems
             _syncSemaphore = new Semaphore();
         }
 
+        /// <summary>
+        /// Setup all meshes and static meshes for rendering
+        /// </summary>
         public override void OnEnable()
         {
             var fence = new Fence();
@@ -87,8 +96,16 @@ namespace Tortuga.Systems
                 fence.Wait();
         }
 
+        /// <summary>
+        /// nothing is performed here
+        /// </summary>
         public override void OnDisable() { }
 
+
+        /// <summary>
+        /// wait for previous render to finisha and render every mesh
+        /// </summary>
+        /// <returns>The task should be awaited on every frame as it creates draw commands for every mesh</returns>
         public override async Task Update()
         {
             await Task.Run(() =>
@@ -171,10 +188,10 @@ namespace Tortuga.Systems
 
                 foreach (var camera in cameras)
                 {
-                    var cameraRes = new IntVector2D
+                    var cameraRes = new System.Numerics.Vector2
                     {
-                        x = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Width * _cameraResolutionScale)),
-                        y = System.Convert.ToInt32(System.MathF.Round(Engine.Instance.MainWindow.Height * _cameraResolutionScale)),
+                        X = Engine.Instance.MainWindow.Width * _cameraResolutionScale,
+                        Y = Engine.Instance.MainWindow.Height * _cameraResolutionScale,
                     };
                     if (camera.Resolution != cameraRes)
                         camera.Resolution = cameraRes;
@@ -234,16 +251,16 @@ namespace Tortuga.Systems
                     var swapchain = Engine.Instance.MainWindow.Swapchain;
                     _renderCommand.BlitImage(
                         camera.Framebuffer.ColorImage.ImageHandle,
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.X)),
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Y)),
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.x * camera.Viewport.Width)),
-                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.y * camera.Viewport.Height)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.X)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.Y)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
+                        System.Convert.ToInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W)),
                         0,
                         swapchain.Images[Engine.Instance.MainWindow.SwapchainAcquiredImage],
                         System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.X)),
                         System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.Y)),
-                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.Width)),
-                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.Height)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.width * camera.Viewport.Z)),
+                        System.Convert.ToInt32(System.Math.Round(swapchain.Extent.height * camera.Viewport.W)),
                         0
                     );
                     _renderCommand.TransferImageLayout(camera.Framebuffer.ColorImage, VkImageLayout.TransferSrcOptimal, VkImageLayout.ColorAttachmentOptimal);

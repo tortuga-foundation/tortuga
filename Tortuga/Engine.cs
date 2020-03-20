@@ -7,12 +7,21 @@ using Tortuga.Input;
 
 namespace Tortuga
 {
+    /// <summary>
+    /// Engine Singleton class, this is required to run the engine
+    /// </summary>
     public class Engine
     {
+        /// <summary>
+        /// Referance to engine singleton instance
+        /// </summary>
         public static Engine Instance => _instance;
+        /// <summary>
+        /// Main window created by the engine
+        /// </summary>
+        public Window MainWindow => _mainWindow;
         internal VulkanInstance Vulkan => _vulkan;
         internal Device MainDevice => _vulkan.Devices[0];
-        public Window MainWindow => _mainWindow;
         internal RenderPass MainRenderPass => _mainRenderPass;
         internal DescriptorSetLayout CameraDescriptorLayout => _cameraDescriptorLayout;
         internal DescriptorSetLayout ModelDescriptorLayout => _modelDescriptorLayout;
@@ -26,6 +35,9 @@ namespace Tortuga
 
         private Core.Scene _activeScene;
 
+        /// <summary>
+        /// Engine constructor
+        /// </summary>
         public Engine()
         {
             //make sure this is a singleton
@@ -70,6 +82,10 @@ namespace Tortuga
             InputSystem.Initialize();
         }
 
+        /// <summary>
+        /// Main engine loop
+        /// </summary>
+        /// <returns>Returns task, if not using async await then please use task.Wait()</returns>
         public Task Run()
         {
             return Task.Run(() =>
@@ -115,17 +131,24 @@ namespace Tortuga
             });
         }
 
+        /// <summary>
+        /// Load a specific scene
+        /// </summary>
+        /// <param name="scene">Scene to load</param>
         public void LoadScene(Core.Scene scene)
         {
             if (_activeScene != null && _activeScene != new Core.Scene())
-                UnloadScene(_activeScene);
+                UnloadScene();
             
             _activeScene = scene;
             foreach (var system in this._activeScene.Systems)
                 system.Value.OnEnable();
         }
 
-        public void UnloadScene(Core.Scene scene)
+        /// <summary>
+        /// Unload a scene / clear all entities
+        /// </summary>
+        public void UnloadScene()
         {
             foreach (var system in this._activeScene.Systems)
                 system.Value.OnDisable();

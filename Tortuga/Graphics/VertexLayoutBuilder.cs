@@ -6,47 +6,138 @@ using System.Collections.Generic;
 
 namespace Tortuga.Graphics
 {
+    /// <summary>
+    /// This is used to tell the pipeline what kind of vertex / instance input it should expect
+    /// </summary>
     public class PipelineInputBuilder
     {
+        /// <summary>
+        /// Attributes the pipeline should expect
+        /// </summary>
         public class AttributeElement
         {
+            /// <summary>
+            /// Different type of attribute format type
+            /// </summary>
             public enum FormatType
             {
+                /// <summary>
+                /// 32-bit Float X 1
+                /// </summary>
                 Float1,
+                /// <summary>
+                /// 32-bit Float X 2
+                /// </summary>
                 Float2,
+                /// <summary>
+                /// 32-bit Float X 3
+                /// </summary>
                 Float3,
+                /// <summary>
+                /// 32-bit Float X 4
+                /// </summary>
                 Float4,
+                /// <summary>
+                /// 8-bit byte X 2
+                /// </summary>
                 Byte2Norm,
+                /// <summary>
+                /// 8-bit byte X 2
+                /// </summary>
                 Byte2,
+                /// <summary>
+                /// 8-bit signed byte X 2
+                /// </summary>
                 SByte2,
+                /// <summary>
+                /// 8-bit byte X 4
+                /// </summary>
                 Byte4Norm,
+                /// <summary>
+                /// 8-bit byte X 4
+                /// </summary>
                 Byte4,
+                /// <summary>
+                /// 8-bit signed byte X 4
+                /// </summary>
                 SByte4Norm,
+                /// <summary>
+                /// 8-bit signed byte X 4
+                /// </summary>
                 SByte4,
+                /// <summary>
+                /// 16-bit unsigned short X 2
+                /// </summary>
                 UShort2Norm,
+                /// <summary>
+                /// 16-bit unsigned short X 2
+                /// </summary>
                 UShort2,
+                /// <summary>
+                /// 16-bit unsigned short X 4
+                /// </summary>
                 UShort4Norm,
+                /// <summary>
+                /// 16-bit unsigned short X 4
+                /// </summary>
                 UShort4,
+                /// <summary>
+                /// 16-bit short X 4
+                /// </summary>
                 Short2Norm,
+                /// <summary>
+                /// 16-bit short X 4
+                /// </summary>
                 Short4,
+                /// <summary>
+                /// 32-bit uint X 1
+                /// </summary>
                 UInt1,
+                /// <summary>
+                /// 32-bit uint X 2
+                /// </summary>
                 UInt2,
+                /// <summary>
+                /// 32-bit uint X 3
+                /// </summary>
                 UInt3,
+                /// <summary>
+                /// 32-bit uint X 4
+                /// </summary>
                 UInt4,
+                /// <summary>
+                /// 32-bit int X 1
+                /// </summary>
                 Int1,
+                /// <summary>
+                /// 32-bit int X 2
+                /// </summary>
                 Int2,
+                /// <summary>
+                /// 32-bit int X 3
+                /// </summary>
                 Int3,
-                Int4,
-                Half1,
-                Half2,
-                Half4
+                /// <summary>
+                /// 32-bit int X 4
+                /// </summary>
+                Int4
             }
 
+            /// <summary>
+            /// byte size of this attribute
+            /// </summary>
             public uint Size => _size;
-            private uint _size;
+            /// <summary>
+            /// attributes vulkan format
+            /// </summary>
             internal VkFormat VulkanFormat => _vulkanFormat;
+            private uint _size;
             private VkFormat _vulkanFormat;
 
+            /// <summary>
+            /// Constructor to create an attribute element
+            /// </summary>
+            /// <param name="format">Format of the attribute element</param>
             public AttributeElement(FormatType format)
             {
                 switch (format)
@@ -156,63 +247,39 @@ namespace Tortuga.Graphics
                         throw new NotSupportedException();
                 }
             }
-
-            public static byte[] GetBytes(float val)
-            {
-                var totalBytes = new List<byte>();
-                foreach (var b in BitConverter.GetBytes(val))
-                    totalBytes.Add(b);
-                return totalBytes.ToArray();
-            }
-
-            public static byte[] GetBytes(Vector2 vector)
-            {
-                var totalBytes = new List<byte>();
-                foreach (var b in BitConverter.GetBytes(vector.X))
-                    totalBytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vector.Y))
-                    totalBytes.Add(b);
-                return totalBytes.ToArray();
-            }
-
-            public static byte[] GetBytes(Vector3 vector)
-            {
-                var totalBytes = new List<byte>();
-
-                foreach (var b in BitConverter.GetBytes(vector.X))
-                    totalBytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vector.Y))
-                    totalBytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vector.Z))
-                    totalBytes.Add(b);
-                return totalBytes.ToArray();
-            }
-
-            public static byte[] GetBytes(Vector4 vector)
-            {
-                var totalBytes = new List<byte>();
-
-                foreach (var b in BitConverter.GetBytes(vector.X))
-                    totalBytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vector.Y))
-                    totalBytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vector.Z))
-                    totalBytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vector.W))
-                    totalBytes.Add(b);
-                return totalBytes.ToArray();
-            }
         };
+
+        /// <summary>
+        /// Bindings the pipeline should expect
+        /// </summary>
         public class BindingElement
         {
+            /// <summary>
+            /// Different type of binding rates
+            /// </summary>
             public enum BindingType
             {
+                /// <summary>
+                /// Vertex Rate for the binding
+                /// </summary>
                 Vertex,
+                /// <summary>
+                /// Instance Rate for the binding
+                /// </summary>
                 Instance
             };
 
+            /// <summary>
+            /// The type of the binding
+            /// </summary>
             public BindingType Type;
+            /// <summary>
+            /// The attributes for this binding
+            /// </summary>
             public AttributeElement[] Elements;
+            /// <summary>
+            /// Total size of this binding 
+            /// </summary>
             public uint Size
             {
                 get
@@ -224,17 +291,32 @@ namespace Tortuga.Graphics
                 }
             }
         }
+
+        /// <summary>
+        /// Total bindings for this pipeline input builder
+        /// </summary>
         public BindingElement[] Bindings;
 
+        /// <summary>
+        /// An empty pipeline input builder
+        /// </summary>
         public PipelineInputBuilder()
         {
             Bindings = new BindingElement[] { };
         }
+
+        /// <summary>
+        /// Create a pipeline builder
+        /// </summary>
+        /// <param name="bindings">The bindings the pipeline should expect</param>
         public PipelineInputBuilder(BindingElement[] bindings)
         {
             Bindings = bindings;
         }
 
+        /// <summary>
+        /// Used to build the pipeline
+        /// </summary>
         internal NativeList<VkVertexInputBindingDescription> BindingDescriptions
         {
             get
@@ -261,6 +343,9 @@ namespace Tortuga.Graphics
             }
         }
 
+        /// <summary>
+        /// Used to build the pipeline
+        /// </summary>
         internal NativeList<VkVertexInputAttributeDescription> AttributeDescriptions
         {
             get
