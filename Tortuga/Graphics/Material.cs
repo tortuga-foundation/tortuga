@@ -61,7 +61,6 @@ namespace Tortuga.Graphics
             bool isInstanced = false
         )
         {
-
             _shader = shader;
             _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
             _isInstanced = isInstanced;
@@ -108,6 +107,23 @@ namespace Tortuga.Graphics
             else
                 _inputBuilder.Bindings = new PipelineInputBuilder.BindingElement[] { vertexBinding };
 
+            _isDirty = true;
+        }
+
+        /// <summary>
+        /// Constructor to create a basic material
+        /// </summary>
+        /// <param name="shader">Shader object used for this material</param>
+        /// <param name="pipelineInputBuilder">The pipeline input for this material</param>
+        public Material(
+            Graphics.Shader shader,
+            PipelineInputBuilder pipelineInputBuilder
+        )
+        {
+            _shader = shader;
+            _inputBuilder = pipelineInputBuilder;
+            _descriptorMapper = new Dictionary<string, DescriptorSetObject>();
+            _isInstanced = false;
             _isDirty = true;
         }
 
@@ -189,7 +205,7 @@ namespace Tortuga.Graphics
         }
 
         #region Uniform Buffer Descriptor Set
-        
+
         /// <summary>
         /// Create a uniform buffer type descriptor set
         /// </summary>
@@ -490,7 +506,7 @@ namespace Tortuga.Graphics
                 fence.Wait();
             });
         }
-        
+
         #endregion
 
         #region Error Material
