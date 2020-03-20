@@ -98,7 +98,6 @@ namespace Tortuga.Systems
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
                 var meshes = MyScene.GetComponents<Components.RenderMesh>();
-                var uis = Graphics.UI.UiRender.UiRenderers;
                 foreach (var mesh in meshes)
                 {
                     try
@@ -117,11 +116,6 @@ namespace Tortuga.Systems
                         }
                         catch (System.Exception) { }
                     }
-                }
-                foreach (var ui in uis)
-                {
-                    foreach (var t in ui.UpdateBuffers())
-                        transferCommands.Add(t.TransferCommand);
                 }
 
                 var materialInstancing = new Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>>();
@@ -231,9 +225,6 @@ namespace Tortuga.Systems
                         foreach (var task in secondaryCommandTask)
                             secondaryCmds.Add(task.Result);
                     }
-                    //build render command for each ui
-                    foreach (var ui in uis)
-                        secondaryCmds.Add(ui.BuildRenderCommand(camera));
                     if (secondaryCmds.Count > 0)
                         _renderCommand.ExecuteCommands(secondaryCmds.ToArray());
                     _renderCommand.EndRenderPass();

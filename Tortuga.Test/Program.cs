@@ -65,8 +65,6 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
-            var ui = new Tortuga.Test.UserInterface();
-
 
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
