@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using Tortuga.Graphics.UI;
 
 namespace Tortuga.Core
 {
@@ -20,6 +21,10 @@ namespace Tortuga.Core
         /// All the systems in the scene
         /// </summary>
         public Dictionary<Type, BaseSystem> Systems => _systems;
+        /// <summary>
+        /// List of user interface objects. This get's populated automatically when a ui element is created
+        /// </summary>
+        public List<UiElement> UserInterface = new List<UiElement>();
 
         private List<Entity> _entities;
         private Dictionary<Type, BaseComponent[]> _components;

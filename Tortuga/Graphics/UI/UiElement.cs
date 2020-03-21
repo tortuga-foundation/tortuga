@@ -10,11 +10,6 @@ namespace Tortuga.Graphics.UI
     public class UiElement
     {
         /// <summary>
-        /// Top Ui Elements with parent as null
-        /// </summary>
-        public static List<UiElement> ParentElements = new List<UiElement>();
-
-        /// <summary>
         /// parent to this ui element
         /// </summary>
         public UiElement Parent => _parent;
@@ -81,7 +76,8 @@ namespace Tortuga.Graphics.UI
             this.PositionYConstraint = null;
             this.ScaleXConstraint = null;
             this.ScaleYConstraint = null;
-            ParentElements.Add(this);
+            if (Engine.Instance.CurrentScene != null)
+                Engine.Instance.CurrentScene.UserInterface.Add(this);
         }
 
         /// <summary>
@@ -98,7 +94,8 @@ namespace Tortuga.Graphics.UI
                 return;
             element._parent = this;
             _children.Add(element);
-            ParentElements.Remove(element);
+            if (Engine.Instance.CurrentScene != null)
+                Engine.Instance.CurrentScene.UserInterface.Remove(this);
         }
         /// <summary>
         /// Set a child element's parent to null
@@ -114,7 +111,8 @@ namespace Tortuga.Graphics.UI
                 return;
             _children.Remove(element);
             element._parent = null;
-            ParentElements.Add(element);
+            if (Engine.Instance.CurrentScene != null)
+                Engine.Instance.CurrentScene.UserInterface.Add(this);
         }
 
         /// <summary>

@@ -33,6 +33,10 @@ namespace Tortuga
         private DescriptorSetLayout _cameraDescriptorLayout;
         private DescriptorSetLayout _modelDescriptorLayout;
 
+        /// <summary>
+        /// Returns currently active scene
+        /// </summary>
+        public Core.Scene CurrentScene => _activeScene;
         private Core.Scene _activeScene;
 
         /// <summary>
