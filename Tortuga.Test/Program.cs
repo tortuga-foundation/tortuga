@@ -72,6 +72,12 @@ namespace Tortuga.Test
             block.BorderRadius = 20;
             block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
             scene.AddUserInterface(block);
+            var slider = new Graphics.UI.UiSlider();
+            slider.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
+            slider.PositionYConstraint = new Graphics.UI.PixelConstraint(50.0f);
+            slider.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+            slider.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
+            block.Add(slider);
 
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();

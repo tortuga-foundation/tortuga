@@ -111,7 +111,7 @@ namespace Tortuga.Systems
                 if (renderable != null)
                     list.Add(renderable);
                 
-                foreach (var child in UserInterfaceDeepSearch(renderable.Children))
+                foreach (var child in UserInterfaceDeepSearch(element.Children))
                     list.Add(child);
             }
             return list;
