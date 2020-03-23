@@ -36,15 +36,15 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// The position of this Ui Element
         /// </summary>
-        public Vector2 Position;
+        public Vector2 Position = Vector2.Zero;
         /// <summary>
         /// The Scale of this Ui Element
         /// </summary>
-        public Vector2 Scale;
+        public Vector2 Scale = new Vector2(100, 100);
         /// <summary>
         /// The background color of this Ui element
         /// </summary>
-        public Color Background;
+        public Color Background = Color.White;
 
         /// <summary>
         /// Position X Constraints
@@ -76,8 +76,6 @@ namespace Tortuga.Graphics.UI
             this.PositionYConstraint = null;
             this.ScaleXConstraint = null;
             this.ScaleYConstraint = null;
-            if (Engine.Instance.CurrentScene != null)
-                Engine.Instance.CurrentScene.UserInterface.Add(this);
         }
 
         /// <summary>
@@ -94,8 +92,6 @@ namespace Tortuga.Graphics.UI
                 return;
             element._parent = this;
             _children.Add(element);
-            if (Engine.Instance.CurrentScene != null)
-                Engine.Instance.CurrentScene.UserInterface.Remove(this);
         }
         /// <summary>
         /// Set a child element's parent to null
@@ -111,8 +107,6 @@ namespace Tortuga.Graphics.UI
                 return;
             _children.Remove(element);
             element._parent = null;
-            if (Engine.Instance.CurrentScene != null)
-                Engine.Instance.CurrentScene.UserInterface.Add(this);
         }
 
         /// <summary>

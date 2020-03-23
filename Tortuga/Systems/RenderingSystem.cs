@@ -101,6 +101,22 @@ namespace Tortuga.Systems
         /// </summary>
         public override void OnDisable() { }
 
+        private List<Graphics.UI.UiRenderable> UserInterfaceDeepSearch(Graphics.UI.UiElement[] elements)
+        {
+            var list = new List<Graphics.UI.UiRenderable>();
+            foreach (var element in elements)
+            {
+                element.UpdatePositionsWithConstraints();
+                var renderable = element as Graphics.UI.UiRenderable;
+                if (renderable != null)
+                    list.Add(renderable);
+                
+                foreach (var child in UserInterfaceDeepSearch(renderable.Children))
+                    list.Add(child);
+            }
+            return list;
+        }
+
 
         /// <summary>
         /// wait for previous render to finisha and render every mesh
@@ -108,6 +124,7 @@ namespace Tortuga.Systems
         /// <returns>The task should be awaited on every frame as it creates draw commands for every mesh</returns>
         public override async Task Update()
         {
+            var uiSearchTask = Task.Run(() => Task.FromResult(UserInterfaceDeepSearch(MyScene.UserInterface)));
             await Task.Run(() =>
             {
                 var transferCommands = new List<CommandPool.Command>();
@@ -133,6 +150,17 @@ namespace Tortuga.Systems
                         }
                         catch (System.Exception) { }
                     }
+                }
+                uiSearchTask.Wait();
+                var uiElements = uiSearchTask.Result.ToArray();
+                foreach (var ui in uiElements)
+                {
+                    try
+                    {
+                        var command = ui.UpdateBuffer();
+                        transferCommands.Add(command.TransferCommand);
+                    }
+                    catch (System.Exception) { }
                 }
 
                 var materialInstancing = new Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>>();
@@ -196,7 +224,10 @@ namespace Tortuga.Systems
                     if (camera.Resolution != cameraRes)
                         camera.Resolution = cameraRes;
                     if (camera.IsStatic == false)
-                        transferCommands.Add(camera.UpdateCameraBuffersSemaphore().TransferCommand);
+                    {
+                        foreach (var t in camera.UpdateCameraBuffersSemaphore())
+                            transferCommands.Add(t.TransferCommand);
+                    }
 
                     //begin render pass for this camera
                     _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
@@ -233,7 +264,11 @@ namespace Tortuga.Systems
                             }
                         }
                     }
-
+                    foreach (var ui in uiElements)
+                    {
+                        var command = ui.RecordRenderCommand(camera);
+                        secondaryCommandTask.Add(command);
+                    }
                     Task.WaitAll(secondaryCommandTask.ToArray());
 
                     //execute all meshes command buffer

@@ -25,6 +25,8 @@ namespace Tortuga
         internal RenderPass MainRenderPass => _mainRenderPass;
         internal DescriptorSetLayout CameraDescriptorLayout => _cameraDescriptorLayout;
         internal DescriptorSetLayout ModelDescriptorLayout => _modelDescriptorLayout;
+        internal DescriptorSetLayout UiCameraDescriptorLayout => _uiCameraDescriptorLayout;
+        internal DescriptorSetLayout UiBaseDescriptorLayout => _uiBaseDescriptorLayout;
 
         private static Engine _instance = new Engine();
         private VulkanInstance _vulkan;
@@ -32,6 +34,8 @@ namespace Tortuga
         private RenderPass _mainRenderPass;
         private DescriptorSetLayout _cameraDescriptorLayout;
         private DescriptorSetLayout _modelDescriptorLayout;
+        private DescriptorSetLayout _uiCameraDescriptorLayout;
+        private DescriptorSetLayout _uiBaseDescriptorLayout;
 
         /// <summary>
         /// Returns currently active scene
@@ -47,7 +51,7 @@ namespace Tortuga
             //make sure this is a singleton
             if (Engine._instance != null)
                 throw new System.Exception("only 1 engine can be active at once");
-            
+
             //setup vulkan
             Engine._instance = this;
             this._vulkan = new VulkanInstance();
@@ -70,7 +74,7 @@ namespace Tortuga
             {
                 new DescriptorSetCreateInfo
                 {
-                    stage = VkShaderStageFlags.All,
+                    stage = VkShaderStageFlags.Vertex,
                     type = VkDescriptorType.UniformBuffer
                 }
             });
@@ -82,6 +86,21 @@ namespace Tortuga
                     type = VkDescriptorType.UniformBuffer
                 }
             });
+            _uiCameraDescriptorLayout = new DescriptorSetLayout(new DescriptorSetCreateInfo[]{
+                new DescriptorSetCreateInfo
+                {
+                    stage = VkShaderStageFlags.Vertex,
+                    type = VkDescriptorType.UniformBuffer
+                }
+            });
+            _uiBaseDescriptorLayout = new DescriptorSetLayout(new DescriptorSetCreateInfo[]{
+                new DescriptorSetCreateInfo
+                {
+                    stage = VkShaderStageFlags.Vertex,
+                    type = VkDescriptorType.UniformBuffer
+                }
+            });
+
             //initialize input event system
             InputSystem.Initialize();
         }
@@ -143,7 +162,7 @@ namespace Tortuga
         {
             if (_activeScene != null && _activeScene != new Core.Scene())
                 UnloadScene();
-            
+
             _activeScene = scene;
             foreach (var system in this._activeScene.Systems)
                 system.Value.OnEnable();

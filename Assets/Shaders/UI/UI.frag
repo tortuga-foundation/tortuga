@@ -1,10 +1,10 @@
 #version 460
 
-layout(set = 0, binding = 1) readonly uniform DATA
+layout(set = 1, binding = 0) readonly uniform DATA
 {
+    vec2 position;
+    vec2 scale;
     vec4 color;
-    vec4 rect;
-    vec4 borderRadius;
 } model;
 
 layout(location=0) in vec2 inUV;
@@ -12,39 +12,39 @@ layout(location=1) in vec2 inPosition;
 
 layout(location = 0) out vec4 outColor;
 
-bool BorderRadiusTest()
+bool BorderRadiusTest(vec4 borderRadius, vec2 position, vec2 scale)
 {
-    vec2 fragPosition = inPosition - vec2(model.rect.x, model.rect.y);
+    vec2 fragPosition = inPosition - vec2(position.x, position.y);
 
     //top left
-    if (fragPosition.x < model.borderRadius.x && fragPosition.y < model.borderRadius.x)
+    if (fragPosition.x < borderRadius.x && fragPosition.y < borderRadius.x)
     {
-        vec2 center = vec2(model.borderRadius.x);
-        if (length(center - fragPosition) > model.borderRadius.x) {
+        vec2 center = vec2(borderRadius.x);
+        if (length(center - fragPosition) > borderRadius.x) {
             return true;
         }
     }
     //top right
-    else if (fragPosition.x + model.borderRadius.y > model.rect.z && fragPosition.y < model.borderRadius.y)
+    else if (fragPosition.x + borderRadius.y > scale.x && fragPosition.y < borderRadius.y)
     {
-        vec2 center = vec2(model.rect.z - model.borderRadius.y, model.borderRadius.y);
-        if (length(center - fragPosition) > model.borderRadius.y) {
+        vec2 center = vec2(scale.x - borderRadius.y, borderRadius.y);
+        if (length(center - fragPosition) > borderRadius.y) {
             return true;
         }
     }
     //bottom left
-    else if (fragPosition.x < model.borderRadius.z && fragPosition.y + model.borderRadius.z > model.rect.w)
+    else if (fragPosition.x < borderRadius.z && fragPosition.y + borderRadius.z > scale.y)
     {
-        vec2 center = vec2(model.borderRadius.z, model.rect.w - model.borderRadius.z);
-        if (length(center - fragPosition) > model.borderRadius.z) {
+        vec2 center = vec2(borderRadius.z, scale.y - borderRadius.z);
+        if (length(center - fragPosition) > borderRadius.z) {
             return true;
         }
     }
     //bottom right
-    else if (fragPosition.x + model.borderRadius.w > model.rect.z && fragPosition.y + model.borderRadius.w > model.rect.w)
+    else if (fragPosition.x + borderRadius.w > scale.x && fragPosition.y + borderRadius.w > scale.y)
     {
-        vec2 center = vec2(model.rect.z - model.borderRadius.w, model.rect.w - model.borderRadius.w);
-        if (length(center - fragPosition) > model.borderRadius.w) {
+        vec2 center = vec2(scale.x - borderRadius.w, scale.y - borderRadius.w);
+        if (length(center - fragPosition) > borderRadius.w) {
             return true;
         }
     }
@@ -53,8 +53,5 @@ bool BorderRadiusTest()
 }
 
 void main() {
-    if (BorderRadiusTest())
-        discard;
-
-    outColor = vec4(model.color);
+    outColor = vec4(1.);
 }

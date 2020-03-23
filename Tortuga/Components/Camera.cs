@@ -39,6 +39,7 @@ namespace Tortuga.Components
 
         internal Framebuffer Framebuffer => _framebuffer;
         internal DescriptorSetPool.DescriptorSet CameraDescriptorSet => _cameraDescriptorSet;
+        internal DescriptorSetPool.DescriptorSet UiDescriptorSet => _uiDescriptorSet;
         /// <summary>
         /// Viewport of the camera
         /// </summary>
@@ -106,6 +107,10 @@ namespace Tortuga.Components
         private DescriptorSetPool.DescriptorSet _cameraDescriptorSet;
         private Tortuga.Graphics.API.Buffer _cameraBuffer;
 
+        private DescriptorSetPool _uiDescriptorPool;
+        private DescriptorSetPool.DescriptorSet _uiDescriptorSet;
+        private Tortuga.Graphics.API.Buffer _uiBuffer;
+
         /// <summary>
         /// Initialize the camera
         /// </summary>
@@ -126,6 +131,15 @@ namespace Tortuga.Components
                 _cameraDescriptorSet.BuffersUpdate(new Tortuga.Graphics.API.Buffer[]{
                     _cameraBuffer
                 });
+
+                //user interface
+                _uiBuffer = Tortuga.Graphics.API.Buffer.CreateDevice(
+                    Convert.ToUInt32(Unsafe.SizeOf<Matrix4x4>()),
+                    VkBufferUsageFlags.UniformBuffer
+                );
+                _uiDescriptorPool = new DescriptorSetPool(Engine.Instance.UiCameraDescriptorLayout);
+                _uiDescriptorSet = _uiDescriptorPool.AllocateDescriptorSet();
+                _uiDescriptorSet.BuffersUpdate(_uiBuffer);
             });
         }
 
@@ -170,9 +184,9 @@ namespace Tortuga.Components
         /// <summary>
         /// update camera graphics buffers
         /// </summary>
-        public Task UpdateCameraBuffers()
+        public async Task UpdateCameraBuffers()
         {
-            return _cameraBuffer.SetDataWithStaging<CameraShaderInfo>(
+            await _cameraBuffer.SetDataWithStaging<CameraShaderInfo>(
                 new CameraShaderInfo[]
                 {
                     new CameraShaderInfo
@@ -184,25 +198,51 @@ namespace Tortuga.Components
                         Width = Convert.ToInt32(MathF.Round(Resolution.X)),
                         Height = Convert.ToInt32(MathF.Round(Resolution.Y))
                     }
+                }
+            );
+            await _uiBuffer.SetDataWithStaging<Matrix4x4>(
+                new Matrix4x4[]{
+                    Matrix4x4.CreateOrthographicOffCenter(
+                        0.0f,
+                        Resolution.X,
+                        0.0f,
+                        Resolution.Y,
+                        -1.0f,
+                        1.0f
+                    )
                 }
             );
         }
-        internal BufferTransferObject UpdateCameraBuffersSemaphore()
+        internal BufferTransferObject[] UpdateCameraBuffersSemaphore()
         {
-            return _cameraBuffer.SetDataGetTransferObject<CameraShaderInfo>(
-                new CameraShaderInfo[]
-                {
-                    new CameraShaderInfo
+            return new BufferTransferObject[]{
+                _cameraBuffer.SetDataGetTransferObject<CameraShaderInfo>(
+                    new CameraShaderInfo[]
                     {
-                        Projection = ProjectionMatrix,
-                        View = ViewMatrix,
-                        PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
-                        PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
-                        Width = Convert.ToInt32(MathF.Round(Resolution.X)),
-                        Height = Convert.ToInt32(MathF.Round(Resolution.Y))
+                        new CameraShaderInfo
+                        {
+                            Projection = ProjectionMatrix,
+                            View = ViewMatrix,
+                            PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
+                            PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
+                            Width = Convert.ToInt32(MathF.Round(Resolution.X)),
+                            Height = Convert.ToInt32(MathF.Round(Resolution.Y))
+                        }
                     }
-                }
-            );
+                ),
+                _uiBuffer.SetDataGetTransferObject<Matrix4x4>(
+                    new Matrix4x4[]{
+                        Matrix4x4.CreateOrthographicOffCenter(
+                            0.0f,
+                            Resolution.X,
+                            0.0f,
+                            Resolution.Y,
+                            -1.0f,
+                            1.0f
+                        )
+                    }
+                )
+            };
         }
     }
 }

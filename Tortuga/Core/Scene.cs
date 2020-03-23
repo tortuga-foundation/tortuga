@@ -24,7 +24,8 @@ namespace Tortuga.Core
         /// <summary>
         /// List of user interface objects. This get's populated automatically when a ui element is created
         /// </summary>
-        public List<UiElement> UserInterface = new List<UiElement>();
+        public UiElement[] UserInterface => _userInterface.ToArray();
+        private List<UiElement> _userInterface = new List<UiElement>();
 
         private List<Entity> _entities;
         private Dictionary<Type, BaseComponent[]> _components;
@@ -151,6 +152,28 @@ namespace Tortuga.Core
             for (int i = 0; i < compArray.Length; i++)
                 rtn[i] = compArray[i] as T;
             return rtn;
+        }
+
+        /// <summary>
+        /// Add a user interface element to the scene
+        /// </summary>
+        public void AddUserInterface(UiElement element)
+        {
+            if (element.Parent != null)
+            {
+                Console.WriteLine("All ui elements added to the scene must have null parent (root user interfaces)");
+                return;
+            }
+
+            _userInterface.Add(element);
+        }
+
+        /// <summary>
+        /// Remove a user interface element that is added to the scene
+        /// </summary>
+        public void RemoveUserInterface(UiElement element)
+        {
+            _userInterface.Remove(element);
         }
     }
 }
