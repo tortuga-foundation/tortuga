@@ -32,8 +32,6 @@ Tortua is an open source game engine built using C# dot net core 3.0
 
 #### Sample Code:
 ```c#
-var engine = new Engine();
-
 //create new scene
 var scene = new Core.Scene();
 
@@ -46,20 +44,21 @@ var scene = new Core.Scene();
 }
 
 //load obj model
-var sphereOBJ = await OBJLoader.Load("Assets/Models/Sphere.obj");
+var sphereOBJ = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
 //load bricks material
-var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.json");
+var bricksMaterial = await Graphics.Material.Load("Assets/Material/Bricks.json");
 
 //light
 {
     var entity = new Core.Entity();
     var transform = await entity.AddComponent<Components.Transform>();
     transform.Position = new Vector3(0, 0, -7);
+    transform.IsStatic = true;
     //add light component
     var light = await entity.AddComponent<Components.Light>();
-    light.Intensity = 1.0f;
+    light.Intensity = 200.0f;
     light.Type = Components.Light.LightType.Point;
-    light.Color = Color.White;
+    light.Color = System.Drawing.Color.White;
     scene.AddEntity(entity);
 }
 
@@ -70,49 +69,54 @@ var bricksMaterial = await Utils.MaterialLoader.Load("Assets/Material/Bricks.jso
     transform.Position = new Vector3(0, 0, -10);
     transform.IsStatic = false;
     //add mesh component
-    var mesh = await entity.AddComponent<Components.Mesh>();
-    await mesh.SetVertices(sphereOBJ.ToGraphicsVertices);
-    await mesh.SetIndices(sphereOBJ.ToGraphicsIndex);
-    mesh.ActiveMaterial = bricksMaterial;
+    var mesh = await entity.AddComponent<Components.RenderMesh>();
+    mesh.Material = bricksMaterial;
+    await mesh.SetMesh(sphereOBJ); //this operation is async and might not be done instantly
 
     scene.AddEntity(entity);
 }
+
+//sphere 2
+{
+    var entity = new Core.Entity();
+    var transform = await entity.AddComponent<Components.Transform>();
+    transform.Position = new Vector3(3, 0, -10);
+    transform.IsStatic = false;
+    //add mesh component
+    var mesh = await entity.AddComponent<Components.RenderMesh>();
+    mesh.Material = bricksMaterial;
+    await mesh.SetMesh(sphereOBJ); //this operation is async and might not be done instantly
+
+    scene.AddEntity(entity);
+}
+var block = new Graphics.UI.UiRenderable();
+block.PositionXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(310.0f);
+block.PositionYConstraint = new Graphics.UI.PixelConstraint(10.0f);
+block.ScaleXConstraint = new Graphics.UI.PixelConstraint(300.0f);
+block.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+block.BorderRadius = 20;
+block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
+scene.AddUserInterface(block);
 
 //add systems to the scene
 scene.AddSystem<Systems.RenderingSystem>();
 scene.AddSystem<AutoRotator>();
 scene.AddSystem<LightMovement>();
 
-engine.LoadScene(scene); //set this scene as currently active
-await engine.Run();
+Engine.Instance.LoadScene(scene); //set this scene as currently active
+await Engine.Instance.Run();
 ```
 
 #### Material JSON
 ```json
 {
   "Type": "Material",
-  "Light": true,
+  "IsInstanced": false,
   "Shaders": {
     "Vertex": "Assets/Shaders/Default/Default.vert",
     "Fragment": "Assets/Shaders/Default/Default.frag"
   },
-  "PipelineInput": [
-    {
-      "Type": "Vertex",
-      "Values": ["Float3", "Float2", "Float3"],
-      "Content": ["VertexPosition", "VertexUV", "VertexNormal"]
-    },
-    {
-      "Type": "Instance",
-      "Values": ["Float3", "Float4", "Float3"],
-      "Content": ["ObjectPosition", "ObjectRotation", "ObjectScale"]
-    }
-  ],
   "DescriptorSets": [
-    {
-      "Type": "UniformData",
-      "Name": "MODEL"
-    },
     {
       "Type": "UniformData",
       "Name": "LIGHT"
@@ -136,19 +140,19 @@ await engine.Run();
       "Name": "Textures",
       "Bindings": [
         {
-          "Value": "Assets/Images/Bricks/Albedo.jpg",
+          "Image": "Assets/Images/Bricks/Albedo.jpg",
           "MipLevel": 1
         },
         {
-          "Value": "Assets/Images/Bricks/Normal.jpg",
+          "Image": "Assets/Images/Bricks/Normal.jpg",
           "MipLevel": 1
         },
         {
-          "Value": [
-            "Assets/Images/Bricks/Metalness.jpg",
-            "Assets/Images/Bricks/Roughness.jpg",
-            "Assets/Images/Bricks/AmbientOclusion.jpg"
-          ],
+          "BuildImage": {
+            "R": "Assets/Images/Bricks/Metalness.jpg",
+            "G": "Assets/Images/Bricks/Roughness.jpg",
+            "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+          },
           "MipLevel": 1
         }
       ]
