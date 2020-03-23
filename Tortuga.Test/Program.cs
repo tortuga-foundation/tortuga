@@ -78,14 +78,27 @@ namespace Tortuga.Test
                 block.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
                 block.BorderRadius = 20;
                 block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
-                
+
+                //create a vertical layout group
+                var layout = new Graphics.UI.UiVerticalLayout();
+                layout.PositionXConstraint = new Graphics.UI.PixelConstraint(20.0f);
+                layout.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
+                layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(40.0f);
+                layout.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(40.0f);
+                layout.Spacing = 20.0f;
+                block.Add(layout);
+
                 // create a slider element that is a child of the block
                 var slider = new Graphics.UI.UiSlider();
-                slider.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
-                slider.PositionYConstraint = new Graphics.UI.PixelConstraint(50.0f);
-                slider.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+                slider.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
                 slider.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-                block.Add(slider);
+                layout.Add(slider);
+
+                // create a slider element that is a child of the block
+                var slider2 = new Graphics.UI.UiSlider();
+                slider2.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                slider2.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
+                layout.Add(slider2);
             }
 
             //add systems to the scene

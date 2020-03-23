@@ -142,7 +142,7 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Apply constraints to the position and scale
         /// </summary>
-        public void UpdatePositionsWithConstraints()
+        public virtual void UpdatePositionsWithConstraints()
         {
             var parentScale = new Vector2(
                 Engine.Instance.MainWindow.Width,
