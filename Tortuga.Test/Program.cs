@@ -64,20 +64,29 @@ namespace Tortuga.Test
 
                 scene.AddEntity(entity);
             }
-            var block = new Graphics.UI.UiRenderable();
-            block.PositionXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(310.0f);
-            block.PositionYConstraint = new Graphics.UI.PixelConstraint(10.0f);
-            block.ScaleXConstraint = new Graphics.UI.PixelConstraint(300.0f);
-            block.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
-            block.BorderRadius = 20;
-            block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
-            scene.AddUserInterface(block);
-            var slider = new Graphics.UI.UiSlider();
-            slider.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
-            slider.PositionYConstraint = new Graphics.UI.PixelConstraint(50.0f);
-            slider.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
-            slider.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-            block.Add(slider);
+
+            //user interface
+            {
+                //create a new ui block element and add it to the scene
+                var block = new Graphics.UI.UiRenderable();
+                scene.AddUserInterface(block);
+
+                //setup block
+                block.PositionXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(310.0f);
+                block.PositionYConstraint = new Graphics.UI.PixelConstraint(10.0f);
+                block.ScaleXConstraint = new Graphics.UI.PixelConstraint(300.0f);
+                block.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+                block.BorderRadius = 20;
+                block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
+                
+                // create a slider element that is a child of the block
+                var slider = new Graphics.UI.UiSlider();
+                slider.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
+                slider.PositionYConstraint = new Graphics.UI.PixelConstraint(50.0f);
+                slider.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+                slider.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
+                block.Add(slider);
+            }
 
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
