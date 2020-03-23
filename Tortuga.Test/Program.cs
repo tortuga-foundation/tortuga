@@ -51,7 +51,7 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
-            //sphere 2z
+            //sphere 2
             {
                 var entity = new Core.Entity();
                 var transform = await entity.AddComponent<Components.Transform>();
