@@ -65,6 +65,12 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
             var block = new Graphics.UI.UiRenderable();
+            block.PositionXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(310.0f);
+            block.PositionYConstraint = new Graphics.UI.PixelConstraint(10.0f);
+            block.ScaleXConstraint = new Graphics.UI.PixelConstraint(300.0f);
+            block.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+            block.BorderRadius = 20;
+            block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
             scene.AddUserInterface(block);
 
             //add systems to the scene

@@ -96,7 +96,7 @@ namespace Tortuga
             _uiBaseDescriptorLayout = new DescriptorSetLayout(new DescriptorSetCreateInfo[]{
                 new DescriptorSetCreateInfo
                 {
-                    stage = VkShaderStageFlags.Vertex,
+                    stage = VkShaderStageFlags.Vertex | VkShaderStageFlags.Fragment,
                     type = VkDescriptorType.UniformBuffer
                 }
             });

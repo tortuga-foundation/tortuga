@@ -54,6 +54,7 @@ namespace Tortuga
             public static DebugType DebugLevel = DebugType.ErrorAndWarnings;
             /// <summary>
             /// Set front face for vulkan pipeline
+            /// WARNING: adjusting this might break UI elements
             /// </summary>
             public static FrontFaceType FrontFace = FrontFaceType.CounterClockwise;
         }

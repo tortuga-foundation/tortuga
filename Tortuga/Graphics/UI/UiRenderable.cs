@@ -16,6 +16,7 @@ namespace Tortuga.Graphics.UI
             public Vector2 Position;
             public Vector2 Scale;
             public Vector4 Color;
+            public Vector4 BorderRadius;
         }
 
         /// <summary>
@@ -70,6 +71,12 @@ namespace Tortuga.Graphics.UI
                             Background.G / 255.0f,
                             Background.B / 255.0f,
                             Background.A / 255.0f
+                        ),
+                        BorderRadius = new Vector4(
+                            this.BorderRadiusTopLeft,
+                            this.BorderRadiusTopRight,
+                            this.BorderRadiusBottomLeft,
+                            this.BorderRadiusBottomRight
                         )
                     }
                 }
@@ -85,7 +92,7 @@ namespace Tortuga.Graphics.UI
                 descriptorSets.Add(set);
 
             Material.ReCompilePipeline();
-            
+
             _renderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
             _renderCommand.BindPipeline(Material.Pipeline);
             _renderCommand.BindDescriptorSets(Material.Pipeline, descriptorSets.ToArray());

@@ -63,6 +63,36 @@ namespace Tortuga.Graphics.UI
         /// </summary>
         public Constraint ScaleYConstraint;
 
+        /// <summary>
+        /// Can be used to set border radius for all corners
+        /// </summary>
+        public float BorderRadius
+        {
+            set
+            {
+                this.BorderRadiusTopLeft = value;
+                this.BorderRadiusTopRight = value;
+                this.BorderRadiusBottomLeft = value;
+                this.BorderRadiusBottomRight = value;
+            }
+        }
+        /// <summary>
+        /// Stores the border radius for top left corner
+        /// </summary>
+        public float BorderRadiusTopLeft;
+        /// <summary>
+        /// stores the border radius of the top right corner
+        /// </summary>
+        public float BorderRadiusTopRight;
+        /// <summary>
+        /// Stores the border radius of bottom left corner
+        /// </summary>
+        public float BorderRadiusBottomLeft;
+        /// <summary>
+        /// stores the border radius of bottom right corner
+        /// </summary>
+        public float BorderRadiusBottomRight;
+
         private UiElement _parent;
         private List<UiElement> _children;
 
