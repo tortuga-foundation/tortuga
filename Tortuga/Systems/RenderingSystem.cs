@@ -119,7 +119,7 @@ namespace Tortuga.Systems
 
 
         /// <summary>
-        /// wait for previous render to finisha and render every mesh
+        /// wait for previous render to finish and render every mesh
         /// </summary>
         /// <returns>The task should be awaited on every frame as it creates draw commands for every mesh</returns>
         public override async Task Update()

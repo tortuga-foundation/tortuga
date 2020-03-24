@@ -19,11 +19,14 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Creates a Ui Material
         /// </summary>
-        public UiMaterial(Shader shader)
+        public UiMaterial(Shader shader, PipelineInputBuilder pipelineInputBuilder = null)
         {
             _shader = shader;
-            _pipelineInput = new PipelineInputBuilder();
             _isDirty = true;
+            if (pipelineInputBuilder == null)
+                _pipelineInput = new PipelineInputBuilder();
+            else
+                _pipelineInput = pipelineInputBuilder;
         }
 
         /// <summary>
@@ -42,7 +45,7 @@ namespace Tortuga.Graphics.UI
             _pipeline = new API.Pipeline(layouts.ToArray(), _shader, _pipelineInput);
             _isDirty = false;
         }
-    
+
         /// <summary>
         /// Change shader being used
         /// </summary>

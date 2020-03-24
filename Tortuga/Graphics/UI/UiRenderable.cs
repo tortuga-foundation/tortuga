@@ -22,12 +22,7 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Material used for rendering
         /// </summary>
-        public UiMaterial Material = new UiMaterial(
-            Shader.Load(
-                "Assets/Shaders/UI/UI.vert",
-                "Assets/Shaders/UI/UI.frag"
-            )
-        );
+        protected UiMaterial _material;
 
         private API.DescriptorSetPool _descriptorPool;
         private API.DescriptorSetPool.DescriptorSet _descriptorSet;
@@ -56,6 +51,7 @@ namespace Tortuga.Graphics.UI
                 Engine.Instance.MainDevice.GraphicsQueueFamily
             );
             _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
+            _material = UiResources.Materials.Block;
         }
 
         internal API.BufferTransferObject UpdateBuffer()
@@ -88,14 +84,14 @@ namespace Tortuga.Graphics.UI
             var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
             descriptorSets.Add(camera.UiDescriptorSet);
             descriptorSets.Add(_descriptorSet);
-            foreach (var set in Material.DescriptorSets)
+            foreach (var set in _material.DescriptorSets)
                 descriptorSets.Add(set);
 
-            Material.ReCompilePipeline();
+            _material.ReCompilePipeline();
 
             _renderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
-            _renderCommand.BindPipeline(Material.Pipeline);
-            _renderCommand.BindDescriptorSets(Material.Pipeline, descriptorSets.ToArray());
+            _renderCommand.BindPipeline(_material.Pipeline);
+            _renderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
             _renderCommand.SetViewport(
                 System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
                 System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
