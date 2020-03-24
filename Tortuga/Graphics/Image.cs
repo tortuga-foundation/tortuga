@@ -170,7 +170,7 @@ namespace Tortuga.Graphics
                     loader.Pixels = new Color[img.Width * img.Height];
                     for (int i = 0; i < img.Width; i++)
                         for (int j = 0; j < img.Height; j++)
-                            loader.Pixels[(i * img.Height) + j] = img.GetPixel(i, j);
+                            loader.Pixels[(j * img.Width) + i] = img.GetPixel(i, j);
                 }
                 catch (Exception e)
                 {

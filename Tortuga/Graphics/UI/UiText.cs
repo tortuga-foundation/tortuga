@@ -38,8 +38,6 @@ namespace Tortuga.Graphics.UI
         }
         private UiFont _font;
 
-        private float _fontSize;
-
         private API.Buffer _vertexBuffer;
         private API.Buffer _indexBuffer;
         private string _bufferText;
@@ -56,7 +54,6 @@ namespace Tortuga.Graphics.UI
             var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
             task.Wait();
             Text = "Hello World";
-            _fontSize = 5.0f;
         }
 
         internal override API.BufferTransferObject[] UpdateBuffer()

@@ -19,7 +19,7 @@ layout(location=0) out vec2 outUV;
 
 void main()
 {
-    gl_Position = projection * vec4(inPosition, 1, 1);
+    gl_Position = projection * vec4(inPosition + model.position, 1, 1);
 
     //outputs
 	outUV = inUv;
