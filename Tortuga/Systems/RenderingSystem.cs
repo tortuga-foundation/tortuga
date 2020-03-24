@@ -110,7 +110,7 @@ namespace Tortuga.Systems
                 var renderable = element as Graphics.UI.UiRenderable;
                 if (renderable != null)
                     list.Add(renderable);
-                
+
                 foreach (var child in UserInterfaceDeepSearch(element.Children))
                     list.Add(child);
             }
@@ -158,7 +158,8 @@ namespace Tortuga.Systems
                     try
                     {
                         var command = ui.UpdateBuffer();
-                        transferCommands.Add(command.TransferCommand);
+                        foreach (var c in command)
+                            transferCommands.Add(c.TransferCommand);
                     }
                     catch (System.Exception) { }
                 }

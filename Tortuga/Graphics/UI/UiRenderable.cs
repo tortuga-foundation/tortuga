@@ -24,6 +24,8 @@ namespace Tortuga.Graphics.UI
         /// </summary>
         protected UiMaterial _material;
 
+        internal API.DescriptorSetPool.DescriptorSet DescriptorSet => _descriptorSet;
+        internal API.CommandPool.Command RenderCommand => _renderCommand;
         private API.DescriptorSetPool _descriptorPool;
         private API.DescriptorSetPool.DescriptorSet _descriptorSet;
         private API.Buffer _descriptorbuffer;
@@ -54,32 +56,34 @@ namespace Tortuga.Graphics.UI
             _material = UiResources.Materials.Block;
         }
 
-        internal API.BufferTransferObject UpdateBuffer()
+        internal virtual API.BufferTransferObject[] UpdateBuffer()
         {
-            return _descriptorbuffer.SetDataGetTransferObject(
-                new ShaderData[]{
-                    new ShaderData
-                    {
-                        Position = AbsolutePosition,
-                        Scale = Scale,
-                        Color = new Vector4(
-                            Background.R / 255.0f,
-                            Background.G / 255.0f,
-                            Background.B / 255.0f,
-                            Background.A / 255.0f
-                        ),
-                        BorderRadius = new Vector4(
-                            this.BorderRadiusTopLeft,
-                            this.BorderRadiusTopRight,
-                            this.BorderRadiusBottomLeft,
-                            this.BorderRadiusBottomRight
-                        )
+            return new API.BufferTransferObject[]{
+                _descriptorbuffer.SetDataGetTransferObject(
+                    new ShaderData[]{
+                        new ShaderData
+                        {
+                            Position = AbsolutePosition,
+                            Scale = Scale,
+                            Color = new Vector4(
+                                Background.R / 255.0f,
+                                Background.G / 255.0f,
+                                Background.B / 255.0f,
+                                Background.A / 255.0f
+                            ),
+                            BorderRadius = new Vector4(
+                                this.BorderRadiusTopLeft,
+                                this.BorderRadiusTopRight,
+                                this.BorderRadiusBottomLeft,
+                                this.BorderRadiusBottomRight
+                            )
+                        }
                     }
-                }
-            );
+                )
+            };
         }
 
-        internal Task<API.CommandPool.Command> RecordRenderCommand(Components.Camera camera)
+        internal virtual Task<API.CommandPool.Command> RecordRenderCommand(Components.Camera camera)
         {
             var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
             descriptorSets.Add(camera.UiDescriptorSet);

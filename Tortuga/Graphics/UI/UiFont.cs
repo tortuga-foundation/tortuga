@@ -19,35 +19,35 @@ namespace Tortuga.Graphics.UI
             /// <summary>
             /// Character code
             /// </summary>
-            public int Identifier { private set; get; }
+            public int Identifier { set; get; }
             /// <summary>
             /// X position of the character in the atlas
             /// </summary>
-            public int X { private set; get; }
+            public int X { set; get; }
             /// <summary>
             /// Y position of the character in the atlas
             /// </summary>
-            public int Y { private set; get; }
+            public int Y { set; get; }
             /// <summary>
             /// The height of the character in the atlas
             /// </summary>
-            public int Height { private set; get; }
+            public int Height { set; get; }
             /// <summary>
             /// The width of the character in the atlas
             /// </summary>
-            public int Width { private set; get; }
+            public int Width { set; get; }
             /// <summary>
             /// The X offset of the character in the atlas
             /// </summary>
-            public int OffsetX { private set; get; }
+            public int OffsetX { set; get; }
             /// <summary>
             /// The y offset of the character in the atlas
             /// </summary>
-            public int OffsetY { private set; get; }
+            public int OffsetY { set; get; }
             /// <summary>
             /// How many pixels to go forward after the character
             /// </summary>
-            public int AdvanceX { private set; get; }
+            public int AdvanceX { set; get; }
         }
 
         /// <summary>
@@ -132,7 +132,7 @@ namespace Tortuga.Graphics.UI
         {
             var textContent = File.ReadAllText(path);
             var loaded = JsonSerializer.Deserialize<FontJSON>(textContent);
-            
+
             //setup font
             var font = new UiFont();
             font.Base = loaded.Config.Base;
@@ -145,7 +145,6 @@ namespace Tortuga.Graphics.UI
             font.Size = loaded.Config.Size;
             font.Smooth = loaded.Config.Smooth;
             font.TextureFile = loaded.Config.TextureFile;
-            
             font.Symbols = loaded.Symbols.ToArray();
             font.Atlas = await Image.Load(loaded.Config.TextureFile);
             return font;

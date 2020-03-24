@@ -98,6 +98,10 @@ namespace Tortuga.Test
                 slider2.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
                 slider2.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
                 layout.Add(slider2);
+
+                var text = new Graphics.UI.UiText();
+                text.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                layout.Add(text);
             }
 
             //add systems to the scene
