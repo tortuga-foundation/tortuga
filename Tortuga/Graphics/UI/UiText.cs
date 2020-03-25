@@ -61,6 +61,20 @@ namespace Tortuga.Graphics.UI
         private float _lineSpacing;
 
         /// <summary>
+        /// If turned on then words won't be split into multiple lines
+        /// </summary>
+        public bool WordWrap
+        {
+            get => _wordWrap;
+            set
+            {
+                _wordWrap = value;
+                _isDirty = true;
+            }
+        }
+        private bool _wordWrap;
+
+        /// <summary>
         /// font used for rendering text
         /// </summary>
         public UiFont Font
@@ -90,10 +104,62 @@ namespace Tortuga.Graphics.UI
             _material.CreateSampledImage("Font", new uint[] { 1 });
             var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
             task.Wait();
-            _text = "Hello World";
+            _text = "Hello World Hello World";
             _fontSize = 24.0f;
             _lineSpacing = 5.0f;
+            _wordWrap = true;
             _isDirty = true;
+        }
+
+        private Vertex[] BuildVertices(Vector2 offset, UiFont.Symbol symbol, float multiplier, Graphics.Image atlas)
+        {
+            return new Vertex[]
+            {
+                new Vertex
+                {
+                    Position = new Vector2(
+                        (offset.X + symbol.OffsetX) * multiplier,
+                        (offset.Y + symbol.OffsetY) * multiplier
+                    ),
+                    TextureCoordinates = new Vector2(
+                        (float)symbol.X / (float)atlas.Width,
+                        (float)symbol.Y / (float)atlas.Height
+                    )
+                },
+                new Vertex
+                {
+                    Position = new Vector2(
+                        (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
+                        (offset.Y + symbol.OffsetY) * multiplier
+                    ),
+                    TextureCoordinates = new Vector2(
+                        (float)(symbol.X + symbol.Width) / (float)atlas.Width,
+                        (float)symbol.Y / (float)atlas.Height
+                    )
+                },
+                new Vertex
+                {
+                    Position = new Vector2(
+                        (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
+                        (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
+                    ),
+                    TextureCoordinates = new Vector2(
+                        (float)(symbol.X + symbol.Width) / (float)atlas.Width,
+                        (float)(symbol.Y + symbol.Height) / (float)atlas.Height
+                    )
+                },
+                new Vertex
+                {
+                    Position = new Vector2(
+                        (offset.X + symbol.OffsetX) * multiplier,
+                        (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
+                    ),
+                    TextureCoordinates = new Vector2(
+                        (float)symbol.X / (float)atlas.Width,
+                        (float)(symbol.Y + symbol.Height) / (float)atlas.Height
+                    )
+                },
+            };
         }
 
         internal override API.BufferTransferObject[] UpdateBuffer()
@@ -109,74 +175,48 @@ namespace Tortuga.Graphics.UI
             Vector2 offset = Vector2.Zero;
             var atlas = _font.Atlas;
             float multiplier = 0.01f * _fontSize;
+            var verticesInWord = new List<int>();
+            float lastWordXPos = 0;
+            float wordAdvance = 0;
             foreach (char c in Text)
             {
                 var symbol = Array.Find(_font.Symbols, (UiFont.Symbol s) => s.Identifier == c);
                 if (symbol == null)
                     continue;
+
                 if ((offset.X + symbol.OffsetX + symbol.Width) * multiplier > this.Scale.X)
                 {
-                    offset.X = 0;
                     offset.Y += _fontSize * _lineSpacing;
+                    offset.X = wordAdvance;
+                    foreach (var vertexIndex in verticesInWord)
+                    {
+                        var vertex = vertices[vertexIndex];
+                        vertex.Position.X -= lastWordXPos;
+                        vertex.Position.Y += offset.Y * multiplier;
+                        vertices[vertexIndex] = vertex;
+                    }
                 }
                 if (offset.Y * multiplier > this.Scale.Y)
                     continue;
 
-                vertices.Add(
-                    new Vertex
-                    {
-                        Position = new Vector2(
-                            (offset.X + symbol.OffsetX) * multiplier,
-                            (offset.Y + symbol.OffsetY) * multiplier
-                        ),
-                        TextureCoordinates = new Vector2(
-                            (float)symbol.X / (float)atlas.Width,
-                            (float)symbol.Y / (float)atlas.Height
-                        )
-                    }
-                );
+                foreach (var vertex in BuildVertices(offset, symbol, multiplier, atlas))
+                    vertices.Add(vertex);
 
-                vertices.Add(
-                    new Vertex
-                    {
-                        Position = new Vector2(
-                            (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
-                            (offset.Y + symbol.OffsetY) * multiplier
-                        ),
-                        TextureCoordinates = new Vector2(
-                            (float)(symbol.X + symbol.Width) / (float)atlas.Width,
-                            (float)symbol.Y / (float)atlas.Height
-                        )
-                    }
-                );
+                if (symbol.Identifier == ' ')
+                {
+                    verticesInWord.Clear();
+                    lastWordXPos = (offset.X + symbol.AdvanceX) * multiplier;
+                    wordAdvance = 0;
+                }
+                else
+                {
+                    verticesInWord.Add(vertices.Count - 4);
+                    verticesInWord.Add(vertices.Count - 3);
+                    verticesInWord.Add(vertices.Count - 2);
+                    verticesInWord.Add(vertices.Count - 1);
+                    wordAdvance += symbol.AdvanceX;
+                }
 
-                vertices.Add(
-                    new Vertex
-                    {
-                        Position = new Vector2(
-                            (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
-                            (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
-                        ),
-                        TextureCoordinates = new Vector2(
-                            (float)(symbol.X + symbol.Width) / (float)atlas.Width,
-                            (float)(symbol.Y + symbol.Height) / (float)atlas.Height
-                        )
-                    }
-                );
-
-                vertices.Add(
-                    new Vertex
-                    {
-                        Position = new Vector2(
-                            (offset.X + symbol.OffsetX) * multiplier,
-                            (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
-                        ),
-                        TextureCoordinates = new Vector2(
-                            (float)symbol.X / (float)atlas.Width,
-                            (float)(symbol.Y + symbol.Height) / (float)atlas.Height
-                        )
-                    }
-                );
                 indices.Add((ushort)(verticesCount + 0));
                 indices.Add((ushort)(verticesCount + 2));
                 indices.Add((ushort)(verticesCount + 1));
