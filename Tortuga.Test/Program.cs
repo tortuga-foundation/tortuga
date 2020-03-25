@@ -101,6 +101,7 @@ namespace Tortuga.Test
 
                 var text = new Graphics.UI.UiText();
                 text.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                text.ScaleYConstraint = new Graphics.UI.PixelConstraint(100.0f);
                 layout.Add(text);
             }
 

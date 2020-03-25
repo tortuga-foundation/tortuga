@@ -23,7 +23,7 @@ namespace Tortuga.Graphics.UI
         /// </summary>
         public string Text
         {
-            get =>_text;
+            get => _text;
             set
             {
                 _text = value;
@@ -45,6 +45,20 @@ namespace Tortuga.Graphics.UI
             }
         }
         private float _fontSize;
+
+        /// <summary>
+        /// The space between each line
+        /// </summary>
+        public float LineSpacing
+        {
+            get => _lineSpacing;
+            set
+            {
+                _lineSpacing = value;
+                _isDirty = true;
+            }
+        }
+        private float _lineSpacing;
 
         /// <summary>
         /// font used for rendering text
@@ -76,8 +90,9 @@ namespace Tortuga.Graphics.UI
             _material.CreateSampledImage("Font", new uint[] { 1 });
             var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
             task.Wait();
-            Text = "Hello World";
+            _text = "Hello World";
             _fontSize = 24.0f;
+            _lineSpacing = 5.0f;
             _isDirty = true;
         }
 
@@ -98,6 +113,13 @@ namespace Tortuga.Graphics.UI
             {
                 var symbol = Array.Find(_font.Symbols, (UiFont.Symbol s) => s.Identifier == c);
                 if (symbol == null)
+                    continue;
+                if ((offset.X + symbol.OffsetX + symbol.Width) * multiplier > this.Scale.X)
+                {
+                    offset.X = 0;
+                    offset.Y += _fontSize * _lineSpacing;
+                }
+                if (offset.Y * multiplier > this.Scale.Y)
                     continue;
 
                 vertices.Add(
