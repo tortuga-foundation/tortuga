@@ -21,7 +21,30 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// The text to display
         /// </summary>
-        public string Text;
+        public string Text
+        {
+            get =>_text;
+            set
+            {
+                _text = value;
+                _isDirty = true;
+            }
+        }
+        private string _text;
+
+        /// <summary>
+        /// Determains the size of the text
+        /// </summary>
+        public float FontSize
+        {
+            get => _fontSize;
+            set
+            {
+                _fontSize = value;
+                _isDirty = true;
+            }
+        }
+        private float _fontSize;
 
         /// <summary>
         /// font used for rendering text
@@ -40,8 +63,8 @@ namespace Tortuga.Graphics.UI
 
         private API.Buffer _vertexBuffer;
         private API.Buffer _indexBuffer;
-        private string _bufferText;
         private uint _indexCount;
+        private bool _isDirty;
 
         /// <summary>
         /// Constructor for Ui Text
@@ -54,21 +77,23 @@ namespace Tortuga.Graphics.UI
             var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
             task.Wait();
             Text = "Hello World";
+            _fontSize = 24.0f;
+            _isDirty = true;
         }
 
         internal override API.BufferTransferObject[] UpdateBuffer()
         {
             var baseTransferObject = base.UpdateBuffer();
 
-            if (Text == string.Empty || Text == _bufferText)
+            if (Text == string.Empty || _isDirty == false)
                 return baseTransferObject;
 
             var vertices = new List<Vertex>();
             var indices = new List<ushort>();
             uint verticesCount = 0;
             Vector2 offset = Vector2.Zero;
-            _bufferText = Text;
             var atlas = _font.Atlas;
+            float multiplier = 0.01f * _fontSize;
             foreach (char c in Text)
             {
                 var symbol = Array.Find(_font.Symbols, (UiFont.Symbol s) => s.Identifier == c);
@@ -79,8 +104,8 @@ namespace Tortuga.Graphics.UI
                     new Vertex
                     {
                         Position = new Vector2(
-                            offset.X + symbol.OffsetX,
-                            offset.Y + symbol.OffsetY
+                            (offset.X + symbol.OffsetX) * multiplier,
+                            (offset.Y + symbol.OffsetY) * multiplier
                         ),
                         TextureCoordinates = new Vector2(
                             (float)symbol.X / (float)atlas.Width,
@@ -93,8 +118,8 @@ namespace Tortuga.Graphics.UI
                     new Vertex
                     {
                         Position = new Vector2(
-                            offset.X + symbol.OffsetX + symbol.Width,
-                            offset.Y + symbol.OffsetY
+                            (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
+                            (offset.Y + symbol.OffsetY) * multiplier
                         ),
                         TextureCoordinates = new Vector2(
                             (float)(symbol.X + symbol.Width) / (float)atlas.Width,
@@ -107,8 +132,8 @@ namespace Tortuga.Graphics.UI
                     new Vertex
                     {
                         Position = new Vector2(
-                            offset.X + symbol.OffsetX + symbol.Width,
-                            offset.Y + symbol.OffsetY + symbol.Height
+                            (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
+                            (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
                         ),
                         TextureCoordinates = new Vector2(
                             (float)(symbol.X + symbol.Width) / (float)atlas.Width,
@@ -121,8 +146,8 @@ namespace Tortuga.Graphics.UI
                     new Vertex
                     {
                         Position = new Vector2(
-                            offset.X + symbol.OffsetX,
-                            offset.Y + symbol.OffsetY + symbol.Height
+                            (offset.X + symbol.OffsetX) * multiplier,
+                            (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
                         ),
                         TextureCoordinates = new Vector2(
                             (float)symbol.X / (float)atlas.Width,
@@ -158,6 +183,7 @@ namespace Tortuga.Graphics.UI
             Array.Resize(ref baseTransferObject, baseTransferObject.Length + 2);
             baseTransferObject[baseTransferObject.Length - 2] = vertexT;
             baseTransferObject[baseTransferObject.Length - 1] = indexT;
+            _isDirty = false;
             return baseTransferObject;
         }
 
