@@ -99,10 +99,9 @@ namespace Tortuga.Test
                 slider2.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
                 layout.Add(slider2);
 
-                var text = new Graphics.UI.UiText();
-                text.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-                text.ScaleYConstraint = new Graphics.UI.PixelConstraint(100.0f);
-                layout.Add(text);
+                var button = new Graphics.UI.UiButton();
+                button.Background = System.Drawing.Color.Red;
+                layout.Add(button);
             }
 
             //add systems to the scene

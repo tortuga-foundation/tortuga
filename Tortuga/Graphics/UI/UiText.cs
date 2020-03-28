@@ -18,6 +18,17 @@ namespace Tortuga.Graphics.UI
             public Vector2 TextureCoordinates;
         }
 
+        private class LineStructure
+        {
+            public int PixelSize = 0;
+            public List<WordStructure> Words = new List<WordStructure>();
+        }
+        private class WordStructure
+        {
+            public int PixelSize = 0;
+            public List<UiFont.Symbol> Symbols = new List<UiFont.Symbol>();
+        }
+
         /// <summary>
         /// The text to display
         /// </summary>
@@ -41,10 +52,12 @@ namespace Tortuga.Graphics.UI
             set
             {
                 _fontSize = value;
+                _fontSizeMultipler = 0.02f * value;
                 _isDirty = true;
             }
         }
         private float _fontSize;
+        private float _fontSizeMultipler;
 
         /// <summary>
         /// The space between each line
@@ -89,6 +102,34 @@ namespace Tortuga.Graphics.UI
         }
         private UiFont _font;
 
+        /// <summary>
+        /// The text horizontal alignment
+        /// </summary>
+        public UiHorizontalAlignment HorizontalAlignment
+        {
+            get => _horizontalAlignment;
+            set
+            {
+                _horizontalAlignment = value;
+                _isDirty = true;
+            }
+        }
+        private UiHorizontalAlignment _horizontalAlignment;
+
+        /// <summary>
+        /// The text vertical alignment
+        /// </summary>
+        public UiVerticalAlignment VerticalAlignment
+        {
+            get => _verticalAlignment;
+            set
+            {
+                _verticalAlignment = value;
+                _isDirty = true;
+            }
+        }
+        private UiVerticalAlignment _verticalAlignment;
+
         private API.Buffer _vertexBuffer;
         private API.Buffer _indexBuffer;
         private uint _indexCount;
@@ -104,22 +145,22 @@ namespace Tortuga.Graphics.UI
             _material.CreateSampledImage("Font", new uint[] { 1 });
             var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
             task.Wait();
-            _text = "Hello World Hello World";
-            _fontSize = 24.0f;
-            _lineSpacing = 5.0f;
-            _wordWrap = true;
+            Text = "Hello World";
+            FontSize = 24.0f;
+            LineSpacing = 100.0f;
+            WordWrap = true;
             _isDirty = true;
         }
 
-        private Vertex[] BuildVertices(Vector2 offset, UiFont.Symbol symbol, float multiplier, Graphics.Image atlas)
+        private Vertex[] BuildVertices(Vector2 cursor, UiFont.Symbol symbol, float fontSize, Graphics.Image atlas)
         {
             return new Vertex[]
             {
                 new Vertex
                 {
                     Position = new Vector2(
-                        (offset.X + symbol.OffsetX) * multiplier,
-                        (offset.Y + symbol.OffsetY) * multiplier
+                        (cursor.X + symbol.OffsetX) * fontSize,
+                        (cursor.Y + symbol.OffsetY) * fontSize
                     ),
                     TextureCoordinates = new Vector2(
                         (float)symbol.X / (float)atlas.Width,
@@ -129,8 +170,8 @@ namespace Tortuga.Graphics.UI
                 new Vertex
                 {
                     Position = new Vector2(
-                        (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
-                        (offset.Y + symbol.OffsetY) * multiplier
+                        (cursor.X + symbol.OffsetX + symbol.Width) * fontSize,
+                        (cursor.Y + symbol.OffsetY) * fontSize
                     ),
                     TextureCoordinates = new Vector2(
                         (float)(symbol.X + symbol.Width) / (float)atlas.Width,
@@ -140,8 +181,8 @@ namespace Tortuga.Graphics.UI
                 new Vertex
                 {
                     Position = new Vector2(
-                        (offset.X + symbol.OffsetX + symbol.Width) * multiplier,
-                        (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
+                        (cursor.X + symbol.OffsetX + symbol.Width) * fontSize,
+                        (cursor.Y + symbol.OffsetY + symbol.Height) * fontSize
                     ),
                     TextureCoordinates = new Vector2(
                         (float)(symbol.X + symbol.Width) / (float)atlas.Width,
@@ -151,8 +192,8 @@ namespace Tortuga.Graphics.UI
                 new Vertex
                 {
                     Position = new Vector2(
-                        (offset.X + symbol.OffsetX) * multiplier,
-                        (offset.Y + symbol.OffsetY + symbol.Height) * multiplier
+                        (cursor.X + symbol.OffsetX) * fontSize,
+                        (cursor.Y + symbol.OffsetY + symbol.Height) * fontSize
                     ),
                     TextureCoordinates = new Vector2(
                         (float)symbol.X / (float)atlas.Width,
@@ -160,6 +201,61 @@ namespace Tortuga.Graphics.UI
                     )
                 },
             };
+        }
+
+        private LineStructure[] BuildLines(string text)
+        {
+            var lines = new List<LineStructure>();
+            var currentLine = new LineStructure();
+            var currentWord = new WordStructure();
+            foreach (char c in text)
+            {
+                if (c == '\n')
+                {
+                    lines.Add(currentLine);
+                    currentLine = new LineStructure();
+                    continue;
+                }
+
+                var symbol = Array.Find(_font.Symbols, (UiFont.Symbol s) => s.Identifier == c);
+                if (symbol == null)
+                    continue;
+
+                if ((currentLine.PixelSize + currentWord.PixelSize + symbol.AdvanceX) * _fontSizeMultipler > Scale.X)
+                {
+                    if (this.WordWrap)
+                    {
+                        lines.Add(currentLine);
+                        currentLine = new LineStructure();
+                    }
+                    else
+                    {
+                        currentLine.Words.Add(currentWord);
+                        currentLine.PixelSize += currentWord.PixelSize;
+                        lines.Add(currentLine);
+                        currentLine = new LineStructure();
+                        currentWord = new WordStructure();
+                    }
+                }
+                currentWord.PixelSize += symbol.AdvanceX;
+                currentWord.Symbols.Add(symbol);
+
+                if (c == ' ')
+                {
+                    currentLine.Words.Add(currentWord);
+                    currentLine.PixelSize += currentWord.PixelSize;
+                    currentWord = new WordStructure();
+                }
+            }
+            if (currentWord.PixelSize > 0)
+            {
+                currentLine.Words.Add(currentWord);
+                currentLine.PixelSize += currentWord.PixelSize;
+            }
+            if (currentLine.PixelSize > 0)
+                lines.Add(currentLine);
+
+            return lines.ToArray();
         }
 
         internal override API.BufferTransferObject[] UpdateBuffer()
@@ -172,62 +268,45 @@ namespace Tortuga.Graphics.UI
             var vertices = new List<Vertex>();
             var indices = new List<ushort>();
             uint verticesCount = 0;
-            Vector2 offset = Vector2.Zero;
-            var atlas = _font.Atlas;
-            float multiplier = 0.01f * _fontSize;
-            var verticesInWord = new List<int>();
-            float lastWordXPos = 0;
-            float wordAdvance = 0;
-            foreach (char c in Text)
-            {
-                var symbol = Array.Find(_font.Symbols, (UiFont.Symbol s) => s.Identifier == c);
-                if (symbol == null)
-                    continue;
 
-                if ((offset.X + symbol.OffsetX + symbol.Width) * multiplier > this.Scale.X)
+            var lines = BuildLines(_text);
+            var cursor = Vector2.Zero;
+            if (VerticalAlignment == UiVerticalAlignment.Top)
+                cursor.Y = 0;
+            else if (VerticalAlignment == UiVerticalAlignment.Center)
+                cursor.Y = ((Scale.Y / _fontSizeMultipler) - ((lines.Length + 1) * LineSpacing)) / 2.0f;
+            else if (VerticalAlignment == UiVerticalAlignment.Bottom)
+                cursor.Y = (Scale.Y / _fontSizeMultipler) - ((lines.Length + 1) * LineSpacing);
+            foreach (var line in lines)
+            {
+                if (HorizontalAlignment == UiHorizontalAlignment.Left)
+                    cursor.X = 0;
+                else if (HorizontalAlignment == UiHorizontalAlignment.Center)
+                    cursor.X = ((Scale.X / _fontSizeMultipler) - line.PixelSize) / 2.0f;
+                else if (HorizontalAlignment == UiHorizontalAlignment.Right)
+                    cursor.X = (Scale.X / _fontSizeMultipler) - line.PixelSize;
+
+                foreach (var word in line.Words)
                 {
-                    offset.Y += _fontSize * _lineSpacing;
-                    offset.X = wordAdvance;
-                    foreach (var vertexIndex in verticesInWord)
+                    foreach (var symbol in word.Symbols)
                     {
-                        var vertex = vertices[vertexIndex];
-                        vertex.Position.X -= lastWordXPos;
-                        vertex.Position.Y += offset.Y * multiplier;
-                        vertices[vertexIndex] = vertex;
+                        foreach (var vertex in BuildVertices(cursor, symbol, _fontSizeMultipler, _font.Atlas))
+                            vertices.Add(vertex);
+
+                        indices.Add((ushort)(verticesCount + 0));
+                        indices.Add((ushort)(verticesCount + 2));
+                        indices.Add((ushort)(verticesCount + 1));
+
+                        indices.Add((ushort)(verticesCount + 0));
+                        indices.Add((ushort)(verticesCount + 3));
+                        indices.Add((ushort)(verticesCount + 2));
+                        cursor.X += symbol.AdvanceX;
+                        verticesCount += 4;
                     }
                 }
-                if (offset.Y * multiplier > this.Scale.Y)
-                    continue;
-
-                foreach (var vertex in BuildVertices(offset, symbol, multiplier, atlas))
-                    vertices.Add(vertex);
-
-                if (symbol.Identifier == ' ')
-                {
-                    verticesInWord.Clear();
-                    lastWordXPos = (offset.X + symbol.AdvanceX) * multiplier;
-                    wordAdvance = 0;
-                }
-                else
-                {
-                    verticesInWord.Add(vertices.Count - 4);
-                    verticesInWord.Add(vertices.Count - 3);
-                    verticesInWord.Add(vertices.Count - 2);
-                    verticesInWord.Add(vertices.Count - 1);
-                    wordAdvance += symbol.AdvanceX;
-                }
-
-                indices.Add((ushort)(verticesCount + 0));
-                indices.Add((ushort)(verticesCount + 2));
-                indices.Add((ushort)(verticesCount + 1));
-
-                indices.Add((ushort)(verticesCount + 0));
-                indices.Add((ushort)(verticesCount + 3));
-                indices.Add((ushort)(verticesCount + 2));
-
-                offset.X += symbol.AdvanceX;
-                verticesCount += 4;
+                cursor.Y += LineSpacing;
             }
+
             if (vertices.Count == 0 || indices.Count == 0)
                 return baseTransferObject;
             _vertexBuffer = API.Buffer.CreateDevice(
@@ -248,7 +327,6 @@ namespace Tortuga.Graphics.UI
             _isDirty = false;
             return baseTransferObject;
         }
-
         internal override Task<API.CommandPool.Command> RecordRenderCommand(Components.Camera camera)
         {
             var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
