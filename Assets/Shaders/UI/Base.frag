@@ -59,6 +59,8 @@ float BorderRadiusTest(vec4 borderRadius, vec2 position, vec2 scale)
 
 void main() {
     float borderTestAlpha = BorderRadiusTest(model.borderRadius, model.position, model.scale);
+    if (borderTestAlpha < 0.01)
+        discard;
 
     outColor = model.color;
     outColor.a *= borderTestAlpha;
