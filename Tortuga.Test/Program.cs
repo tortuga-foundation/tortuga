@@ -100,7 +100,6 @@ namespace Tortuga.Test
                 layout.Add(slider2);
 
                 var button = new Graphics.UI.UiButton();
-                button.Background = System.Drawing.Color.Red;
                 layout.Add(button);
             }
 

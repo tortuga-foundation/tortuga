@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Drawing;
 using Vulkan;
 
 namespace Tortuga.Graphics.UI
@@ -103,6 +104,15 @@ namespace Tortuga.Graphics.UI
         private UiFont _font;
 
         /// <summary>
+        /// The font color
+        /// </summary>
+        public Color TextColor
+        {
+            get => Background;
+            set => Background = value;
+        }
+
+        /// <summary>
         /// The text horizontal alignment
         /// </summary>
         public UiHorizontalAlignment HorizontalAlignment
@@ -143,9 +153,10 @@ namespace Tortuga.Graphics.UI
             _font = UiResources.Font.Roboto;
             _material = UiResources.Materials.Text;
             _material.CreateSampledImage("Font", new uint[] { 1 });
-            var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
-            task.Wait();
+            var task1 = _material.UpdateSampledImage("Font", 0, Font.Atlas);
+            task1.Wait();
             Text = "Hello World";
+            TextColor = Color.Black;
             FontSize = 24.0f;
             LineSpacing = 100.0f;
             WordWrap = true;
@@ -274,9 +285,9 @@ namespace Tortuga.Graphics.UI
             if (VerticalAlignment == UiVerticalAlignment.Top)
                 cursor.Y = 0;
             else if (VerticalAlignment == UiVerticalAlignment.Center)
-                cursor.Y = ((Scale.Y / _fontSizeMultipler) - ((lines.Length + 1) * LineSpacing)) / 2.0f;
+                cursor.Y = ((Scale.Y / _fontSizeMultipler) - (lines.Length * LineSpacing) - FontSize - 20) / 2.0f;
             else if (VerticalAlignment == UiVerticalAlignment.Bottom)
-                cursor.Y = (Scale.Y / _fontSizeMultipler) - ((lines.Length + 1) * LineSpacing);
+                cursor.Y = (Scale.Y / _fontSizeMultipler) - (lines.Length * LineSpacing) - FontSize - 20;
             foreach (var line in lines)
             {
                 if (HorizontalAlignment == UiHorizontalAlignment.Left)
