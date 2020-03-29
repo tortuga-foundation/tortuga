@@ -62,9 +62,18 @@ namespace Tortuga.Graphics.UI
         public ButtonStateType State => _state;
         private ButtonStateType _state;
 
-        private Action OnMouseEnter;
-        private Action OnMouseExit;
-        private Action OnActive;
+        /// <summary>
+        /// Triggers when mouse enters the button
+        /// </summary>
+        public Action OnMouseEnter;
+        /// <summary>
+        /// Triggers when mouse leaves the button
+        /// </summary>
+        public Action OnMouseExit;
+        /// <summary>
+        /// Triggers when button is clicked
+        /// </summary>
+        public Action OnActive;
 
         /// <summary>
         /// Returns true if mouse is inside the ui element
@@ -89,7 +98,7 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Constructor for Ui button
         /// </summary>
-        /// <param name="OnClick">What happens if the button is clicked</param>
+        /// <param name="text">The string text that will appear inside the button, You can change this using setter</param>
         public UiButton(string text = "Button")
         {
             _text = new UiText();
