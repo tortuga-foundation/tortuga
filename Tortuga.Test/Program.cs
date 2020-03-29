@@ -94,12 +94,15 @@ namespace Tortuga.Test
                 slider.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
                 layout.Add(slider);
 
+                //create a second slider element
                 var slider2 = new Graphics.UI.UiSlider();
                 slider2.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
                 slider2.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
                 layout.Add(slider2);
 
+                //create a button element
                 var button = new Graphics.UI.UiButton();
+                button.OnActive += () => System.Console.WriteLine("Hello World");
                 layout.Add(button);
             }
 

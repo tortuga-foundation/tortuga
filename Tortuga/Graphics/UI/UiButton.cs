@@ -102,7 +102,7 @@ namespace Tortuga.Graphics.UI
         public UiButton(string text = "Button")
         {
             _text = new UiText();
-            _text.FontSize = 14.0f;
+            _text.FontSize = 12.0f;
             _text.PositionXConstraint = new PixelConstraint(0.0f);
             _text.PositionYConstraint = new PixelConstraint(0.0f);
             _text.ScaleXConstraint = new PercentConstraint(1.0f);
