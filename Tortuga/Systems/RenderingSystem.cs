@@ -250,7 +250,8 @@ namespace Tortuga.Systems
                     //build render command for each mesh
                     var secondaryCommandTask = new List<Task<CommandPool.Command>>();
                     {
-                        meshInstancingTask.Wait();
+                        if (meshInstancingTask.IsCompleted == false)
+                            meshInstancingTask.Wait();
                         foreach (var material in materialInstancing)
                         {
                             foreach (var mesh in material.Value)
@@ -279,7 +280,8 @@ namespace Tortuga.Systems
                             }
                         }
                     }
-                    userInterfaceBuffers.Wait();
+                    if (userInterfaceBuffers.IsCompleted == false)
+                        userInterfaceBuffers.Wait();
                     foreach (var ui in userInterfaceBuffers.Result)
                     {
                         var command = ui.RecordRenderCommand(camera);
@@ -323,7 +325,8 @@ namespace Tortuga.Systems
                     VkImageLayout.TransferDstOptimal, VkImageLayout.PresentSrcKHR
                 );
                 _renderCommand.End();
-                meshBuffers.Wait();
+                if (meshBuffers.IsCompleted == false)
+                    meshBuffers.Wait();
                 var syncSemaphores = new Semaphore[0];
                 if (transferCommands.Count > 0)
                 {
