@@ -17,6 +17,40 @@ namespace Tortuga.Graphics.UI
             public Vector2 Scale;
             public Vector4 Color;
             public Vector4 BorderRadius;
+
+            public override bool Equals(object obj)
+            {
+                return base.Equals(obj);
+            }
+
+            public override int GetHashCode()
+            {
+                return base.GetHashCode();
+            }
+
+            public override string ToString()
+            {
+                return base.ToString();
+            }
+
+            public static bool operator ==(ShaderData A, ShaderData B)
+            {
+                return (
+                    A.Position == B.Position &&
+                    A.Scale == B.Scale &&
+                    A.Color == B.Color &&
+                    A.BorderRadius == B.BorderRadius
+                );
+            }
+            public static bool operator !=(ShaderData A, ShaderData B)
+            {
+                return (
+                    A.Position != B.Position ||
+                    A.Scale != B.Scale ||
+                    A.Color != B.Color ||
+                    A.BorderRadius != B.BorderRadius
+                );
+            }
         }
 
         /// <summary>
@@ -54,10 +88,15 @@ namespace Tortuga.Graphics.UI
             );
             _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
             _material = UiResources.Materials.Block;
+            _isDirty = true;
         }
 
         internal virtual API.BufferTransferObject[] UpdateBuffer()
         {
+            if (_isDirty == false)
+                return new API.BufferTransferObject[] { };
+
+            _isDirty = false;
             return new API.BufferTransferObject[]{
                 _descriptorbuffer.SetDataGetTransferObject(
                     new ShaderData[]{

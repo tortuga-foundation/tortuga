@@ -38,8 +38,10 @@ namespace Tortuga.Graphics.UI
             get => _text;
             set
             {
+                if (_text != value)
+                    _isDirty = true;
+
                 _text = value;
-                _isDirty = true;
             }
         }
         private string _text;
@@ -52,9 +54,11 @@ namespace Tortuga.Graphics.UI
             get => _fontSize;
             set
             {
+                if (_fontSize != value)
+                    _isDirty = true;
+
                 _fontSize = value;
                 _fontSizeMultipler = 0.02f * value;
-                _isDirty = true;
             }
         }
         private float _fontSize;
@@ -68,8 +72,10 @@ namespace Tortuga.Graphics.UI
             get => _lineSpacing;
             set
             {
+                if (_lineSpacing != value)
+                    _isDirty = true;
+
                 _lineSpacing = value;
-                _isDirty = true;
             }
         }
         private float _lineSpacing;
@@ -82,8 +88,10 @@ namespace Tortuga.Graphics.UI
             get => _wordWrap;
             set
             {
+                if (_wordWrap != value)
+                    _isDirty = true;
+
                 _wordWrap = value;
-                _isDirty = true;
             }
         }
         private bool _wordWrap;
@@ -96,6 +104,9 @@ namespace Tortuga.Graphics.UI
             get => _font;
             set
             {
+                if (_font != value)
+                    _isDirty = true;
+
                 _font = value;
                 var task = _material.UpdateSampledImage("Font", 0, Font.Atlas);
                 task.Wait();
@@ -120,8 +131,10 @@ namespace Tortuga.Graphics.UI
             get => _horizontalAlignment;
             set
             {
+                if (_horizontalAlignment != value)
+                    _isDirty = true;
+
                 _horizontalAlignment = value;
-                _isDirty = true;
             }
         }
         private UiHorizontalAlignment _horizontalAlignment;
@@ -134,8 +147,9 @@ namespace Tortuga.Graphics.UI
             get => _verticalAlignment;
             set
             {
+                if (_verticalAlignment != value)
+                    _isDirty = true;
                 _verticalAlignment = value;
-                _isDirty = true;
             }
         }
         private UiVerticalAlignment _verticalAlignment;
@@ -143,7 +157,6 @@ namespace Tortuga.Graphics.UI
         private API.Buffer _vertexBuffer;
         private API.Buffer _indexBuffer;
         private uint _indexCount;
-        private bool _isDirty;
 
         /// <summary>
         /// Constructor for Ui Text
@@ -160,7 +173,6 @@ namespace Tortuga.Graphics.UI
             FontSize = 24.0f;
             LineSpacing = 100.0f;
             WordWrap = true;
-            _isDirty = true;
         }
 
         private Vertex[] BuildVertices(Vector2 cursor, UiFont.Symbol symbol, float fontSize, Graphics.Image atlas)
@@ -335,7 +347,6 @@ namespace Tortuga.Graphics.UI
             Array.Resize(ref baseTransferObject, baseTransferObject.Length + 2);
             baseTransferObject[baseTransferObject.Length - 2] = vertexT;
             baseTransferObject[baseTransferObject.Length - 1] = indexT;
-            _isDirty = false;
             return baseTransferObject;
         }
         internal override Task<API.CommandPool.Command> RecordRenderCommand(Components.Camera camera)

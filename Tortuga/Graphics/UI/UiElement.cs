@@ -13,10 +13,12 @@ namespace Tortuga.Graphics.UI
         /// parent to this ui element
         /// </summary>
         public UiElement Parent => _parent;
+        private UiElement _parent;
         /// <summary>
         /// All children of this ui element
         /// </summary>
         public UiElement[] Children => _children.ToArray();
+        private List<UiElement> _children;
 
         /// <summary>
         /// Returns the absolute position of this ui element
@@ -26,25 +28,57 @@ namespace Tortuga.Graphics.UI
             get
             {
                 var parentPosition = Vector2.Zero;
-
                 if (_parent != null)
                     parentPosition = _parent.AbsolutePosition;
-
-                return this.Position + parentPosition;
+                if (_absolutePosition != this.Position + parentPosition)
+                    _isDirty = true;
+                _absolutePosition = this.Position + parentPosition;
+                return _absolutePosition;
             }
         }
+        private Vector2 _absolutePosition;
         /// <summary>
         /// The position of this Ui Element
         /// </summary>
-        public Vector2 Position = Vector2.Zero;
+        public Vector2 Position
+        {
+            get => _position;
+            set
+            {
+                if (_position != value)
+                    _isDirty = true;
+                _position = value;
+            }
+        }
+        private Vector2 _position;
         /// <summary>
         /// The Scale of this Ui Element
         /// </summary>
-        public Vector2 Scale = new Vector2(100, 100);
+        public Vector2 Scale
+        {
+            get => _scale;
+            set
+            {
+                if (_scale != value)
+                    _isDirty = true;
+                _scale = value;
+            }
+        }
+        private Vector2 _scale;
         /// <summary>
         /// The background color of this Ui element
         /// </summary>
-        public Color Background = Color.White;
+        public Color Background
+        {
+            get => _background;
+            set
+            {
+                if (_background != value)
+                    _isDirty = true;
+                _background = value;
+            }
+        }
+        private Color _background;
 
         /// <summary>
         /// Position X Constraints
@@ -74,27 +108,70 @@ namespace Tortuga.Graphics.UI
                 this.BorderRadiusTopRight = value;
                 this.BorderRadiusBottomLeft = value;
                 this.BorderRadiusBottomRight = value;
+                _isDirty = true;
             }
         }
         /// <summary>
         /// Stores the border radius for top left corner
         /// </summary>
-        public float BorderRadiusTopLeft;
+        public float BorderRadiusTopLeft
+        {
+            get => _borderRadiusTopLeft;
+            set
+            {
+                if (_borderRadiusTopLeft != value)
+                    _isDirty = true;
+                _borderRadiusTopLeft = value;
+            }
+        }
+        private float _borderRadiusTopLeft;
         /// <summary>
         /// stores the border radius of the top right corner
         /// </summary>
-        public float BorderRadiusTopRight;
+        public float BorderRadiusTopRight
+        {
+            get => _borderRadiusTopRight;
+            set
+            {
+                if (_borderRadiusTopRight != value)
+                    _isDirty = true;
+                _borderRadiusTopRight = value;
+            }
+        }
+        private float _borderRadiusTopRight;
         /// <summary>
         /// Stores the border radius of bottom left corner
         /// </summary>
-        public float BorderRadiusBottomLeft;
+        public float BorderRadiusBottomLeft
+        {
+            get => _borderRadiusBottomLeft;
+            set
+            {
+                if (_borderRadiusBottomLeft != value)
+                    _isDirty = true;
+                _borderRadiusBottomLeft = value;
+            }
+        }
+        private float _borderRadiusBottomLeft;
         /// <summary>
         /// stores the border radius of bottom right corner
         /// </summary>
-        public float BorderRadiusBottomRight;
+        public float BorderRadiusBottomRight
+        {
+            get => _borderRadiusBottomRight;
+            set
+            {
+                if (_borderRadiusBottomRight != value)
+                    _isDirty = true;
+                _borderRadiusBottomRight = value;
+            }
+        }
+        private float _borderRadiusBottomRight;
 
-        private UiElement _parent;
-        private List<UiElement> _children;
+        /// <summary>
+        /// If set to true, then ui element will update gpu buffers
+        /// </summary>
+        protected bool _isDirty;
 
         /// <summary>
         /// Create a new ui element
@@ -106,6 +183,10 @@ namespace Tortuga.Graphics.UI
             this.PositionYConstraint = null;
             this.ScaleXConstraint = null;
             this.ScaleYConstraint = null;
+            _isDirty = true;
+            _background = Color.White;
+            _position = Vector2.Zero;
+            _scale = new Vector2(100, 100);
         }
 
         /// <summary>
@@ -152,6 +233,7 @@ namespace Tortuga.Graphics.UI
             if (_parent != null)
                 parentScale = _parent.Scale;
 
+            var position = this.Position;
             if (this.PositionXConstraint != null)
             {
                 float pixel = 0.0f;
@@ -173,7 +255,7 @@ namespace Tortuga.Graphics.UI
                             pixel -= val.Value;
                     }
                 }
-                this.Position.X = pixel;
+                position.X = pixel;
             }
 
             if (this.PositionYConstraint != null)
@@ -197,8 +279,10 @@ namespace Tortuga.Graphics.UI
                             pixel -= val.Value;
                     }
                 }
-                this.Position.Y = pixel;
+                position.Y = pixel;
             }
+            this.Position = position;
+            var scale = this.Scale;
 
             if (this.ScaleXConstraint != null)
             {
@@ -221,7 +305,7 @@ namespace Tortuga.Graphics.UI
                             pixel -= val.Value;
                     }
                 }
-                this.Scale.X = pixel;
+                scale.X = pixel;
             }
 
             if (this.ScaleYConstraint != null)
@@ -245,8 +329,17 @@ namespace Tortuga.Graphics.UI
                             pixel -= val.Value;
                     }
                 }
-                this.Scale.Y = pixel;
+                scale.Y = pixel;
             }
+            this.Scale = scale;
+        }
+
+        /// <summary>
+        /// Ask's for the ui element to be updated on next frame
+        /// </summary>
+        public void ReDraw()
+        {
+            _isDirty = true;
         }
     }
 }
