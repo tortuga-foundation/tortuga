@@ -93,6 +93,9 @@ namespace Tortuga.Graphics.UI
 
         internal virtual API.BufferTransferObject[] UpdateBuffer()
         {
+            // this can set _isDirty to true if the absolute position has changed
+            var position = AbsolutePosition;
+
             if (_isDirty == false)
                 return new API.BufferTransferObject[] { };
 
@@ -102,7 +105,7 @@ namespace Tortuga.Graphics.UI
                     new ShaderData[]{
                         new ShaderData
                         {
-                            Position = AbsolutePosition,
+                            Position = position,
                             Scale = Scale,
                             Color = new Vector4(
                                 Background.R / 255.0f,

@@ -31,8 +31,10 @@ namespace Tortuga.Graphics.UI
                 if (_parent != null)
                     parentPosition = _parent.AbsolutePosition;
                 if (_absolutePosition != this.Position + parentPosition)
+                {
+                    _absolutePosition = this.Position + parentPosition;
                     _isDirty = true;
-                _absolutePosition = this.Position + parentPosition;
+                }
                 return _absolutePosition;
             }
         }
@@ -203,6 +205,7 @@ namespace Tortuga.Graphics.UI
                 return;
             element._parent = this;
             _children.Add(element);
+            _isDirty = true;
         }
         /// <summary>
         /// Set a child element's parent to null
@@ -218,6 +221,7 @@ namespace Tortuga.Graphics.UI
                 return;
             _children.Remove(element);
             element._parent = null;
+            _isDirty = true;
         }
 
         /// <summary>
@@ -283,7 +287,6 @@ namespace Tortuga.Graphics.UI
             }
             this.Position = position;
             var scale = this.Scale;
-
             if (this.ScaleXConstraint != null)
             {
                 float pixel = 0.0f;

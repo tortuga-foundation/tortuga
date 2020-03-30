@@ -147,7 +147,8 @@ namespace Tortuga.Systems
                             try
                             {
                                 var command = mesh.UpdateUniformBuffer();
-                                transferCommands.Add(command.TransferCommand);
+                                if (command.TransferCommand != null)
+                                    transferCommands.Add(command.TransferCommand);
                             }
                             catch (System.Exception) { }
                         }
@@ -162,7 +163,8 @@ namespace Tortuga.Systems
                         try
                         {
                             foreach (var cmd in ui.UpdateBuffer())
-                                transferCommands.Add(cmd.TransferCommand);
+                                if (cmd.TransferCommand != null)
+                                    transferCommands.Add(cmd.TransferCommand);
                         }
                         catch (System.Exception) { }
                     }
@@ -235,7 +237,10 @@ namespace Tortuga.Systems
                     if (camera.IsStatic == false)
                     {
                         foreach (var t in camera.UpdateCameraBuffersSemaphore())
-                            transferCommands.Add(t.TransferCommand);
+                        {
+                            if (t.TransferCommand != null)
+                                transferCommands.Add(t.TransferCommand);
+                        }
                     }
 
                     //begin render pass for this camera

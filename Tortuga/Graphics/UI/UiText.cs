@@ -285,7 +285,7 @@ namespace Tortuga.Graphics.UI
         {
             var baseTransferObject = base.UpdateBuffer();
 
-            if (Text == string.Empty || _isDirty == false)
+            if (Text == string.Empty || baseTransferObject.Length < 1)
                 return baseTransferObject;
 
             var vertices = new List<Vertex>();
