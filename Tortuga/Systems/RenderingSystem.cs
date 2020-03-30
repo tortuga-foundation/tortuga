@@ -124,7 +124,6 @@ namespace Tortuga.Systems
         /// <returns>The task should be awaited on every frame as it creates draw commands for every mesh</returns>
         public override async Task Update()
         {
-            var uiSearchTask = Task.Run(() => Task.FromResult(UserInterfaceDeepSearch(MyScene.UserInterface)));
             await Task.Run(() =>
             {
                 var transferCommands = new List<CommandPool.Command>();
@@ -132,73 +131,82 @@ namespace Tortuga.Systems
                 var cameras = MyScene.GetComponents<Components.Camera>();
                 var lights = MyScene.GetComponents<Components.Light>();
                 var meshes = MyScene.GetComponents<Components.RenderMesh>();
-                foreach (var mesh in meshes)
+                var meshBuffers = Task.Run(() =>
                 {
-                    try
-                    {
-                        var meshLights = mesh.RenderingLights(lights);
-                        var command = mesh.Material.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
-                        transferCommands.Add(command.TransferCommand);
-                    }
-                    catch (System.Exception) { }
-                    if (mesh.IsStatic == false)
+                    foreach (var mesh in meshes)
                     {
                         try
                         {
-                            var command = mesh.UpdateUniformBuffer();
+                            var meshLights = mesh.RenderingLights(lights);
+                            var command = mesh.Material.UpdateUniformDataSemaphore("LIGHT", 0, meshLights);
                             transferCommands.Add(command.TransferCommand);
                         }
                         catch (System.Exception) { }
+                        if (mesh.IsStatic == false)
+                        {
+                            try
+                            {
+                                var command = mesh.UpdateUniformBuffer();
+                                transferCommands.Add(command.TransferCommand);
+                            }
+                            catch (System.Exception) { }
+                        }
                     }
-                }
-                uiSearchTask.Wait();
-                var uiElements = uiSearchTask.Result.ToArray();
-                foreach (var ui in uiElements)
+                });
+                var userInterfaceBuffers = Task.Run(() =>
                 {
-                    try
+                    var uiElements = UserInterfaceDeepSearch(MyScene.UserInterface);
+                    var uiBufferTask = new List<BufferTransferObject[]>();
+                    foreach (var ui in uiElements)
                     {
-                        var command = ui.UpdateBuffer();
-                        foreach (var c in command)
-                            transferCommands.Add(c.TransferCommand);
+                        try
+                        {
+                            foreach (var cmd in ui.UpdateBuffer())
+                                transferCommands.Add(cmd.TransferCommand);
+                        }
+                        catch (System.Exception) { }
                     }
-                    catch (System.Exception) { }
-                }
+                    return Task.FromResult(uiElements);
+                });
 
                 var materialInstancing = new Dictionary<Graphics.Material, Dictionary<Graphics.Mesh, List<Components.RenderMesh>>>();
-                foreach (var mesh in meshes)
+                var meshInstancingTask = Task.Run(() =>
                 {
-                    if (materialInstancing.ContainsKey(mesh.Material) == false)
-                        materialInstancing[mesh.Material] = new Dictionary<Graphics.Mesh, List<Components.RenderMesh>>();
-                    if (materialInstancing[mesh.Material].ContainsKey(mesh.Mesh) == false)
-                        materialInstancing[mesh.Material][mesh.Mesh] = new List<Components.RenderMesh>();
-
-                    materialInstancing[mesh.Material][mesh.Mesh].Add(mesh);
-                }
-                foreach (var material in materialInstancing)
-                {
-                    if (material.Key.IsInstanced == false)
-                        continue;
-
-                    foreach (var mesh in material.Value)
+                    foreach (var mesh in meshes)
                     {
-                        if (_previousMaterialInstance[material.Key][mesh.Key].Count == mesh.Value.Count)
-                        {
-                            bool isDynamic = false;
-                            foreach (var meshRender in mesh.Value)
-                            {
-                                if (meshRender.IsStatic == false)
-                                    isDynamic = true;
-                            }
-                            if (!isDynamic)
-                                continue;
-                        }
+                        if (materialInstancing.ContainsKey(mesh.Material) == false)
+                            materialInstancing[mesh.Material] = new Dictionary<Graphics.Mesh, List<Components.RenderMesh>>();
+                        if (materialInstancing[mesh.Material].ContainsKey(mesh.Mesh) == false)
+                            materialInstancing[mesh.Material][mesh.Mesh] = new List<Components.RenderMesh>();
 
-                        var commands = material.Key.BuildInstanceBuffers(mesh.Value.ToArray());
-                        foreach (var t in commands)
-                            transferCommands.Add(t.TransferCommand);
+                        materialInstancing[mesh.Material][mesh.Mesh].Add(mesh);
                     }
-                }
-                _previousMaterialInstance = materialInstancing;
+                    foreach (var material in materialInstancing)
+                    {
+                        if (material.Key.IsInstanced == false)
+                            continue;
+
+                        foreach (var mesh in material.Value)
+                        {
+                            if (_previousMaterialInstance[material.Key][mesh.Key].Count == mesh.Value.Count)
+                            {
+                                bool isDynamic = false;
+                                foreach (var meshRender in mesh.Value)
+                                {
+                                    if (meshRender.IsStatic == false)
+                                        isDynamic = true;
+                                }
+                                if (!isDynamic)
+                                    continue;
+                            }
+
+                            var commands = material.Key.BuildInstanceBuffers(mesh.Value.ToArray());
+                            foreach (var t in commands)
+                                transferCommands.Add(t.TransferCommand);
+                        }
+                    }
+                    _previousMaterialInstance = materialInstancing;
+                });
 
                 //if previous frame has not finished rendering wait for it to finish before rendering next frame
                 _renderWaitFence.Wait();
@@ -237,6 +245,7 @@ namespace Tortuga.Systems
                     //build render command for each mesh
                     var secondaryCommandTask = new List<Task<CommandPool.Command>>();
                     {
+                        meshInstancingTask.Wait();
                         foreach (var material in materialInstancing)
                         {
                             foreach (var mesh in material.Value)
@@ -265,7 +274,8 @@ namespace Tortuga.Systems
                             }
                         }
                     }
-                    foreach (var ui in uiElements)
+                    userInterfaceBuffers.Wait();
+                    foreach (var ui in userInterfaceBuffers.Result)
                     {
                         var command = ui.RecordRenderCommand(camera);
                         secondaryCommandTask.Add(command);
@@ -308,6 +318,7 @@ namespace Tortuga.Systems
                     VkImageLayout.TransferDstOptimal, VkImageLayout.PresentSrcKHR
                 );
                 _renderCommand.End();
+                meshBuffers.Wait();
                 var syncSemaphores = new Semaphore[0];
                 if (transferCommands.Count > 0)
                 {
