@@ -10,6 +10,10 @@ namespace Tortuga.Graphics.UI
     public class UiElement
     {
         /// <summary>
+        /// If false the ui will be skipped
+        /// </summary>
+        public bool IsEnabled;
+        /// <summary>
         /// parent to this ui element
         /// </summary>
         public UiElement Parent => _parent;
@@ -185,6 +189,7 @@ namespace Tortuga.Graphics.UI
             this.PositionYConstraint = null;
             this.ScaleXConstraint = null;
             this.ScaleYConstraint = null;
+            this.IsEnabled = true;
             _isDirty = true;
             _background = Color.White;
             _position = Vector2.Zero;

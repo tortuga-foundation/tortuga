@@ -106,6 +106,9 @@ namespace Tortuga.Systems
             var list = new List<Graphics.UI.UiRenderable>();
             foreach (var element in elements)
             {
+                if (element.IsEnabled == false)
+                    continue;
+
                 element.UpdatePositionsWithConstraints();
                 var renderable = element as Graphics.UI.UiRenderable;
                 if (renderable != null)
