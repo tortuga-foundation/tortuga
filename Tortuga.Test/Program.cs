@@ -104,6 +104,9 @@ namespace Tortuga.Test
                 var button = new Graphics.UI.UiButton();
                 button.OnActive += () => System.Console.WriteLine("Hello World");
                 layout.Add(button);
+
+                var textField = new Graphics.UI.UiTextField();
+                layout.Add(textField);
             }
 
             //add systems to the scene
