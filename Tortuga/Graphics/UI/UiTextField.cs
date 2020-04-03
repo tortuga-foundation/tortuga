@@ -10,6 +10,25 @@ namespace Tortuga.Graphics.UI
     public class UiTextField : UiElement
     {
         /// <summary>
+        /// Different types of text field
+        /// </summary>
+        public enum TypeOfTextField
+        {
+            /// <summary>
+            /// This is a normal text field which can have any character
+            /// </summary>
+            Normal,
+            /// <summary>
+            /// This is a float text field which can must have a float
+            /// </summary>
+            Float,
+            /// <summary>
+            /// This is a int text field which can must have a integer
+            /// </summary>
+            Int
+        }
+
+        /// <summary>
         /// Returns true if mouse is inside the ui element
         /// </summary>
         public bool IsMouseInsideRect
@@ -39,6 +58,58 @@ namespace Tortuga.Graphics.UI
         {
             get => _text.Text;
             set => _text.Text = value;
+        }
+
+        /// <summary>
+        /// The type of text filed, for more information look at `TypeOfTextField`
+        /// </summary>
+        public TypeOfTextField Type
+        {
+            get => _type;
+            set
+            {
+                ClearCursor();
+                if (value == TypeOfTextField.Int)
+                {
+                    if (!Int32.TryParse(Text, out int result))
+                        Text = "0";
+                }
+                else if (value == TypeOfTextField.Float)
+                {
+                    if (!Single.TryParse(Text, out float result))
+                        Text = "0";
+                }
+                _type = value;
+            }
+        }
+        private TypeOfTextField _type;
+
+        /// <summary>
+        /// Convert this text field to a float value
+        /// </summary>
+        /// <value></value>
+        public float ValueFloat
+        {
+            get
+            {
+                if (Single.TryParse(Text, out float val))
+                    return val;
+
+                return 0.0f;
+            }
+        }
+        /// <summary>
+        /// Convert the text in this text field to an integer
+        /// </summary>
+        public int ValueInt
+        {
+            get
+            {
+                if (Int32.TryParse(Text, out int val))
+                    return val;
+
+                return 0;
+            }
         }
 
         private UiText _text;
