@@ -44,6 +44,9 @@ namespace Tortuga.Graphics.UI
         private UiText _text;
         private UiRenderable _block;
         private Vector2 _mousePosition;
+        private int _cursorPosition;
+        private bool _displayingCursor;
+        private float _timeElapsed;
 
         /// <summary>
         /// Constructor for ui text field
@@ -97,14 +100,32 @@ namespace Tortuga.Graphics.UI
         private void OnMouseButtonDown(MouseButton button)
         {
             if (button == MouseButton.Left)
-                IsFocused = IsMouseInsideRect;
+            {
+                if (IsMouseInsideRect)
+                {
+                    if (!IsFocused)
+                    {
+                        IsFocused = true;
+                        _cursorPosition = Text.Length;
+                    }
+                }
+                else
+                {
+                    IsFocused = false;
+                    ClearCursor();
+                }
+            }
         }
 
         private void OnCharPress(char character)
         {
             if (!IsFocused)
                 return;
-            Text += character;
+            Text = this.Text.Insert(
+                _cursorPosition,
+                character.ToString()
+            );
+            _cursorPosition++;
         }
 
         private void OnKeyDown(KeyCode key)
@@ -114,8 +135,36 @@ namespace Tortuga.Graphics.UI
 
             if (key == KeyCode.BackSpace)
             {
-                if (this.Text.Length > 0)
-                    this.Text = this.Text.Substring(0, this.Text.Length - 1);
+                if (_cursorPosition > 0)
+                {
+                    ClearCursor();
+                    _cursorPosition--;
+                    this.Text = this.Text.Remove(_cursorPosition, 1);
+                }
+            }
+            else if (key == KeyCode.Delete)
+            {
+                if (_cursorPosition < Text.Length - 1)
+                {
+                    ClearCursor();
+                    this.Text = this.Text.Remove(_cursorPosition, 1);
+                }
+            }
+            else if (key == KeyCode.Left)
+            {
+                if (_cursorPosition > 0)
+                {
+                    ClearCursor();
+                    _cursorPosition--;
+                }
+            }
+            else if (key == KeyCode.Right)
+            {
+                if (_cursorPosition < Text.Length - 1)
+                {
+                    ClearCursor();
+                    _cursorPosition++;
+                }
             }
         }
 
@@ -124,7 +173,40 @@ namespace Tortuga.Graphics.UI
         /// </summary>
         public override void UpdatePositionsWithConstraints()
         {
+            if (IsFocused)
+            {
+                if (MathF.Round(_timeElapsed) / 40.0f > 1.0f)
+                {
+                    if (_displayingCursor == false)
+                    {
+                        Text = Text.Insert(
+                            _cursorPosition,
+                            "|"
+                        );
+                        _displayingCursor = true;
+                    }
+                    else if (_displayingCursor)
+                    {
+                        this.Text = this.Text.Remove(_cursorPosition, 1);
+                        _displayingCursor = false;
+                    }
+                    _timeElapsed = 0.0f;
+                }
+                else
+                    _timeElapsed += Time.DeltaTime;
+            }
+
             base.UpdatePositionsWithConstraints();
+        }
+
+        private void ClearCursor()
+        {
+            if (_displayingCursor)
+            {
+                this.Text = this.Text.Remove(_cursorPosition, 1);
+                _displayingCursor = false;
+                _timeElapsed = 0.0f;
+            }
         }
     }
 }
