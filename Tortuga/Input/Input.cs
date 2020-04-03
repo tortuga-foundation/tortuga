@@ -17,6 +17,10 @@ namespace Tortuga.Input
         /// This get's called every time a key is released on keyboard
         /// </summary>
         public static Action<KeyCode> OnKeyUp;
+        /// <summary>
+        /// Triggers when a character is pressed on the keyboard
+        /// </summary>
+        public static Action<Char> OnCharacterPress;
 
         /// <summary>
         /// Checks if a specific key is being held right now
@@ -62,6 +66,8 @@ namespace Tortuga.Input
         private static Dictionary<MouseButton, bool> _isMouseButtonPressed = new Dictionary<MouseButton, bool>();
         internal static void ProcessEvents(Veldrid.InputSnapshot snapshot)
         {
+            foreach (var c in snapshot.KeyCharPresses)
+                OnCharacterPress?.Invoke(c);
             foreach (var keyEvent in snapshot.KeyEvents)
             {
                 var key = (KeyCode)keyEvent.Key;
