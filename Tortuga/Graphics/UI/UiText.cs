@@ -61,6 +61,10 @@ namespace Tortuga.Graphics.UI
                 _fontSizeMultipler = 0.02f * value;
             }
         }
+        /// <summary>
+        /// Convert font symbol size to screen size
+        /// </summary>
+        public float FontSizeMultiplier => _fontSizeMultipler;
         private float _fontSize;
         private float _fontSizeMultipler;
 

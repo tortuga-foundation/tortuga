@@ -179,6 +179,25 @@ namespace Tortuga.Graphics.UI
                         IsFocused = true;
                         _cursorPosition = Text.Length;
                     }
+                    else
+                    {
+                        ClearCursor();
+                        var relativePosition = _mousePosition.X - AbsolutePosition.X - 5.0f;
+                        float textPosition = 0.0f;
+                        for (_cursorPosition = 0; _cursorPosition < Text.Length; _cursorPosition++)
+                        {
+                            var symbol = Array.Find(
+                                _text.Font.Symbols,
+                                (UiFont.Symbol symbol) => symbol.Identifier == Text[_cursorPosition]
+                            );
+                            if (symbol == null)
+                                continue;
+                            if (textPosition < relativePosition)
+                                textPosition += symbol.AdvanceX * _text.FontSizeMultiplier;
+                            else
+                                break;
+                        }
+                    }
                 }
                 else
                 {
@@ -244,28 +263,32 @@ namespace Tortuga.Graphics.UI
         /// </summary>
         public override void UpdatePositionsWithConstraints()
         {
-            if (IsFocused)
+            try
             {
-                if (MathF.Round(_timeElapsed) / 40.0f > 1.0f)
+                if (IsFocused)
                 {
-                    if (_displayingCursor == false)
+                    if (MathF.Round(_timeElapsed) / 40.0f > 1.0f)
                     {
-                        Text = Text.Insert(
-                            _cursorPosition,
-                            "|"
-                        );
-                        _displayingCursor = true;
+                        if (_displayingCursor == false)
+                        {
+                            Text = Text.Insert(
+                                _cursorPosition,
+                                "|"
+                            );
+                            _displayingCursor = true;
+                        }
+                        else if (_displayingCursor)
+                        {
+                            this.Text = this.Text.Remove(_cursorPosition, 1);
+                            _displayingCursor = false;
+                        }
+                        _timeElapsed = 0.0f;
                     }
-                    else if (_displayingCursor)
-                    {
-                        this.Text = this.Text.Remove(_cursorPosition, 1);
-                        _displayingCursor = false;
-                    }
-                    _timeElapsed = 0.0f;
+                    else
+                        _timeElapsed += Time.DeltaTime;
                 }
-                else
-                    _timeElapsed += Time.DeltaTime;
             }
+            catch (System.Exception) { }
 
             base.UpdatePositionsWithConstraints();
         }
