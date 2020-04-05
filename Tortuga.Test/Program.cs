@@ -13,6 +13,7 @@ namespace Tortuga.Test
             //camera
             {
                 var entity = new Core.Entity();
+                entity.Name = "Camera";
                 var camera = await entity.AddComponent<Components.Camera>();
                 camera.FieldOfView = 90;
                 scene.AddEntity(entity);
@@ -26,6 +27,7 @@ namespace Tortuga.Test
             //light
             {
                 var entity = new Core.Entity();
+                entity.Name = "Light";
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -7);
                 transform.IsStatic = true;
@@ -40,6 +42,7 @@ namespace Tortuga.Test
             //sphere 1
             {
                 var entity = new Core.Entity();
+                entity.Name = "sphere 1";
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;
@@ -54,6 +57,7 @@ namespace Tortuga.Test
             //sphere 2
             {
                 var entity = new Core.Entity();
+                entity.Name = "sphere 2";
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(3, 0, -10);
                 transform.IsStatic = false;
@@ -81,32 +85,31 @@ namespace Tortuga.Test
 
                 //create a vertical layout group
                 var layout = new Graphics.UI.UiVerticalLayout();
-                layout.PositionXConstraint = new Graphics.UI.PixelConstraint(20.0f);
+                layout.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
                 layout.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-                layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(40.0f);
-                layout.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(40.0f);
-                layout.Spacing = 20.0f;
+                layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                layout.ScaleYConstraint = new Graphics.UI.PixelConstraint(200.0f);
+                layout.Spacing = 0.0f;
                 block.Add(layout);
 
-                // create a slider element that is a child of the block
-                var slider = new Graphics.UI.UiSlider();
-                slider.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-                slider.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-                layout.Add(slider);
-
-                //create a second slider element
-                var slider2 = new Graphics.UI.UiSlider();
-                slider2.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-                slider2.ScaleYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-                layout.Add(slider2);
-
-                //create a button element
-                var button = new Graphics.UI.UiButton();
-                button.OnActive += () => System.Console.WriteLine("Hello World");
-                layout.Add(button);
-
-                var textField = new Graphics.UI.UiTextField();
-                layout.Add(textField);
+                for (int i = 0; i < scene.Entities.Count; i++)
+                {
+                    var entity = scene.Entities[i];
+                    var button = new Graphics.UI.UiButton();
+                    button.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                    button.ScaleYConstraint = new Graphics.UI.PixelConstraint(40);
+                    button.BorderRadius = 0.0f;
+                    button.Text.FontSize = 10.0f;
+                    button.Text.HorizontalAlignment = Graphics.UI.UiHorizontalAlignment.Left;
+                    button.Text.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
+                    button.Text.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
+                    if (i % 2 == 0)
+                        button.NormalBackground = System.Drawing.Color.FromArgb(255, 10, 10, 10);
+                    else
+                        button.NormalBackground = System.Drawing.Color.FromArgb(255, 30, 30, 30);
+                    button.Text.Text = entity.Name;
+                    layout.Add(button);
+                }
             }
 
             //add systems to the scene

@@ -9,6 +9,10 @@ namespace Tortuga.Core
     /// </summary>
     public class Entity
     {
+        /// <summary>
+        /// A name identifier for the entity
+        /// </summary>
+        public string Name;
         internal Action<Entity, BaseComponent> OnComponentAdded;
         internal Action<Entity, BaseComponent> OnComponentRemoved;
 
@@ -24,6 +28,7 @@ namespace Tortuga.Core
         /// </summary>
         public Entity()
         {
+            Name = "My Entity";
             _components = new Dictionary<Type, BaseComponent>();
             _markedForRemoval = new Dictionary<Type, BaseComponent>();
         }

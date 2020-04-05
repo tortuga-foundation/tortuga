@@ -93,14 +93,16 @@ namespace Tortuga.Graphics.UI
 
         internal virtual API.BufferTransferObject[] UpdateBuffer()
         {
-            // this can set _isDirty to true if the absolute position has changed
-            var position = AbsolutePosition;
+            try
+            {
+                // this can set _isDirty to true if the absolute position has changed
+                var position = AbsolutePosition;
 
-            if (_isDirty == false)
-                return new API.BufferTransferObject[] { };
+                if (_isDirty == false)
+                    return new API.BufferTransferObject[] { };
 
-            _isDirty = false;
-            return new API.BufferTransferObject[]{
+                _isDirty = false;
+                return new API.BufferTransferObject[]{
                 _descriptorbuffer.SetDataGetTransferObject(
                     new ShaderData[]{
                         new ShaderData
@@ -123,29 +125,42 @@ namespace Tortuga.Graphics.UI
                     }
                 )
             };
+            }
+            catch (System.Exception)
+            {
+                return new API.BufferTransferObject[0];
+            }
         }
 
         internal virtual Task<API.CommandPool.Command> RecordRenderCommand(Components.Camera camera)
         {
-            var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
-            descriptorSets.Add(camera.UiDescriptorSet);
-            descriptorSets.Add(_descriptorSet);
-            foreach (var set in _material.DescriptorSets)
-                descriptorSets.Add(set);
+            try
+            {
+                var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
+                descriptorSets.Add(camera.UiDescriptorSet);
+                descriptorSets.Add(_descriptorSet);
+                foreach (var set in _material.DescriptorSets)
+                    descriptorSets.Add(set);
 
-            _material.ReCompilePipeline();
+                _material.ReCompilePipeline();
 
-            _renderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
-            _renderCommand.BindPipeline(_material.Pipeline);
-            _renderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
-            _renderCommand.SetViewport(
-                System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
-                System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
-                System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
-            );
-            _renderCommand.Draw(6);
-            _renderCommand.End();
+                _renderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
+                _renderCommand.BindPipeline(_material.Pipeline);
+                _renderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
+                _renderCommand.SetViewport(
+                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
+                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
+                    System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
+                    System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
+                );
+                _renderCommand.Draw(6);
+                _renderCommand.End();
+            }
+            catch (System.Exception)
+            {
+                _renderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
+                _renderCommand.End();
+            }
             return Task.FromResult(_renderCommand);
         }
     }

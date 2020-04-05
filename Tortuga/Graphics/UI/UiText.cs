@@ -289,96 +289,111 @@ namespace Tortuga.Graphics.UI
         {
             var baseTransferObject = base.UpdateBuffer();
 
-            if (Text == string.Empty || baseTransferObject.Length < 1)
-                return baseTransferObject;
-
-            var vertices = new List<Vertex>();
-            var indices = new List<ushort>();
-            uint verticesCount = 0;
-
-            var lines = BuildLines(_text);
-            var cursor = Vector2.Zero;
-            if (VerticalAlignment == UiVerticalAlignment.Top)
-                cursor.Y = 0;
-            else if (VerticalAlignment == UiVerticalAlignment.Center)
-                cursor.Y = ((Scale.Y / _fontSizeMultipler) - (lines.Length * LineSpacing) - FontSize - 20) / 2.0f;
-            else if (VerticalAlignment == UiVerticalAlignment.Bottom)
-                cursor.Y = (Scale.Y / _fontSizeMultipler) - (lines.Length * LineSpacing) - FontSize - 20;
-            foreach (var line in lines)
+            try
             {
-                if (HorizontalAlignment == UiHorizontalAlignment.Left)
-                    cursor.X = 0;
-                else if (HorizontalAlignment == UiHorizontalAlignment.Center)
-                    cursor.X = ((Scale.X / _fontSizeMultipler) - line.PixelSize) / 2.0f;
-                else if (HorizontalAlignment == UiHorizontalAlignment.Right)
-                    cursor.X = (Scale.X / _fontSizeMultipler) - line.PixelSize;
+                if (Text == string.Empty || baseTransferObject.Length < 1)
+                    return baseTransferObject;
 
-                foreach (var word in line.Words)
+                var vertices = new List<Vertex>();
+                var indices = new List<ushort>();
+                uint verticesCount = 0;
+
+                var lines = BuildLines(_text);
+                var cursor = Vector2.Zero;
+                if (VerticalAlignment == UiVerticalAlignment.Top)
+                    cursor.Y = 0;
+                else if (VerticalAlignment == UiVerticalAlignment.Center)
+                    cursor.Y = ((Scale.Y / _fontSizeMultipler) - (lines.Length * LineSpacing) - FontSize - 20) / 2.0f;
+                else if (VerticalAlignment == UiVerticalAlignment.Bottom)
+                    cursor.Y = (Scale.Y / _fontSizeMultipler) - (lines.Length * LineSpacing) - FontSize - 20;
+                foreach (var line in lines)
                 {
-                    foreach (var symbol in word.Symbols)
+                    if (HorizontalAlignment == UiHorizontalAlignment.Left)
+                        cursor.X = 0;
+                    else if (HorizontalAlignment == UiHorizontalAlignment.Center)
+                        cursor.X = ((Scale.X / _fontSizeMultipler) - line.PixelSize) / 2.0f;
+                    else if (HorizontalAlignment == UiHorizontalAlignment.Right)
+                        cursor.X = (Scale.X / _fontSizeMultipler) - line.PixelSize;
+
+                    foreach (var word in line.Words)
                     {
-                        foreach (var vertex in BuildVertices(cursor, symbol, _fontSizeMultipler, _font.Atlas))
-                            vertices.Add(vertex);
+                        foreach (var symbol in word.Symbols)
+                        {
+                            foreach (var vertex in BuildVertices(cursor, symbol, _fontSizeMultipler, _font.Atlas))
+                                vertices.Add(vertex);
 
-                        indices.Add((ushort)(verticesCount + 0));
-                        indices.Add((ushort)(verticesCount + 2));
-                        indices.Add((ushort)(verticesCount + 1));
+                            indices.Add((ushort)(verticesCount + 0));
+                            indices.Add((ushort)(verticesCount + 2));
+                            indices.Add((ushort)(verticesCount + 1));
 
-                        indices.Add((ushort)(verticesCount + 0));
-                        indices.Add((ushort)(verticesCount + 3));
-                        indices.Add((ushort)(verticesCount + 2));
-                        cursor.X += symbol.AdvanceX;
-                        verticesCount += 4;
+                            indices.Add((ushort)(verticesCount + 0));
+                            indices.Add((ushort)(verticesCount + 3));
+                            indices.Add((ushort)(verticesCount + 2));
+                            cursor.X += symbol.AdvanceX;
+                            verticesCount += 4;
+                        }
                     }
+                    cursor.Y += LineSpacing;
                 }
-                cursor.Y += LineSpacing;
-            }
 
-            if (vertices.Count == 0 || indices.Count == 0)
+                if (vertices.Count == 0 || indices.Count == 0)
+                    return baseTransferObject;
+                _vertexBuffer = API.Buffer.CreateDevice(
+                    Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * vertices.Count),
+                    VkBufferUsageFlags.VertexBuffer
+                );
+                _indexBuffer = API.Buffer.CreateDevice(
+                    Convert.ToUInt32(sizeof(ushort) * indices.Count),
+                    VkBufferUsageFlags.IndexBuffer
+                );
+                _indexCount = Convert.ToUInt32(indices.Count);
+                var vertexT = _vertexBuffer.SetDataGetTransferObject(vertices.ToArray());
+                var indexT = _indexBuffer.SetDataGetTransferObject(indices.ToArray());
+
+                Array.Resize(ref baseTransferObject, baseTransferObject.Length + 2);
+                baseTransferObject[baseTransferObject.Length - 2] = vertexT;
+                baseTransferObject[baseTransferObject.Length - 1] = indexT;
                 return baseTransferObject;
-            _vertexBuffer = API.Buffer.CreateDevice(
-                Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * vertices.Count),
-                VkBufferUsageFlags.VertexBuffer
-            );
-            _indexBuffer = API.Buffer.CreateDevice(
-                Convert.ToUInt32(sizeof(ushort) * indices.Count),
-                VkBufferUsageFlags.IndexBuffer
-            );
-            _indexCount = Convert.ToUInt32(indices.Count);
-            var vertexT = _vertexBuffer.SetDataGetTransferObject(vertices.ToArray());
-            var indexT = _indexBuffer.SetDataGetTransferObject(indices.ToArray());
-
-            Array.Resize(ref baseTransferObject, baseTransferObject.Length + 2);
-            baseTransferObject[baseTransferObject.Length - 2] = vertexT;
-            baseTransferObject[baseTransferObject.Length - 1] = indexT;
-            return baseTransferObject;
+            }
+            catch (Exception)
+            {
+                return baseTransferObject;
+            }
         }
         internal override Task<API.CommandPool.Command> RecordRenderCommand(Components.Camera camera)
         {
-            var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
-            descriptorSets.Add(camera.UiDescriptorSet);
-            descriptorSets.Add(this.DescriptorSet);
-            foreach (var set in _material.DescriptorSets)
-                descriptorSets.Add(set);
-
-            _material.ReCompilePipeline();
-
-            this.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
-            if (Text != string.Empty && _vertexBuffer != null && _indexBuffer != null)
+            try
             {
-                this.RenderCommand.BindPipeline(_material.Pipeline);
-                this.RenderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
-                this.RenderCommand.SetViewport(
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
-                    System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
-                    System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
-                );
-                this.RenderCommand.BindVertexBuffer(_vertexBuffer);
-                this.RenderCommand.BindIndexBuffer(_indexBuffer);
-                this.RenderCommand.DrawIndexed(_indexCount);
+                var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
+                descriptorSets.Add(camera.UiDescriptorSet);
+                descriptorSets.Add(this.DescriptorSet);
+                foreach (var set in _material.DescriptorSets)
+                    descriptorSets.Add(set);
+
+                _material.ReCompilePipeline();
+
+                this.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
+                if (Text != string.Empty && _vertexBuffer != null && _indexBuffer != null)
+                {
+                    this.RenderCommand.BindPipeline(_material.Pipeline);
+                    this.RenderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
+                    this.RenderCommand.SetViewport(
+                        System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
+                        System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
+                        System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
+                        System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
+                    );
+                    this.RenderCommand.BindVertexBuffer(_vertexBuffer);
+                    this.RenderCommand.BindIndexBuffer(_indexBuffer);
+                    this.RenderCommand.DrawIndexed(_indexCount);
+                }
+                this.RenderCommand.End();
             }
-            this.RenderCommand.End();
+            catch (System.Exception)
+            {
+                this.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
+                this.RenderCommand.End();
+            }
             return Task.FromResult(this.RenderCommand);
         }
     }
