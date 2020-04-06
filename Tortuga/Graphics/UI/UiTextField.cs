@@ -7,7 +7,7 @@ namespace Tortuga.Graphics.UI
     /// <summary>
     /// Text field ui element
     /// </summary>
-    public class UiTextField : UiElement
+    public class UiTextField : UiInteractable
     {
         /// <summary>
         /// Different types of text field
@@ -26,24 +26,6 @@ namespace Tortuga.Graphics.UI
             /// This is a int text field which can must have a integer
             /// </summary>
             Int
-        }
-
-        /// <summary>
-        /// Returns true if mouse is inside the ui element
-        /// </summary>
-        public bool IsMouseInsideRect
-        {
-            get
-            {
-                var absPos = AbsolutePosition;
-
-                return (
-                    _mousePosition.X >= absPos.X &&
-                    _mousePosition.Y >= absPos.Y &&
-                    _mousePosition.X <= absPos.X + Scale.X &&
-                    _mousePosition.Y <= absPos.Y + Scale.Y
-                );
-            }
         }
 
         /// <summary>
@@ -114,7 +96,6 @@ namespace Tortuga.Graphics.UI
 
         private UiText _text;
         private UiRenderable _block;
-        private Vector2 _mousePosition;
         private int _cursorPosition;
         private bool _displayingCursor;
         private float _timeElapsed;
@@ -122,7 +103,7 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Constructor for ui text field
         /// </summary>
-        public UiTextField(string value = "", string placeholder = "")
+        public UiTextField(string value = "", string placeholder = "") : base()
         {
             _isDirty = true;
 
@@ -146,30 +127,15 @@ namespace Tortuga.Graphics.UI
 
             this.ScaleXConstraint = new PercentConstraint(1.0f);
             this.ScaleYConstraint = new PixelConstraint(30.0f);
-
-            InputSystem.OnMousePositionChanged += OnMousePositionChanged;
-            InputSystem.OnMouseButtonDown += OnMouseButtonDown;
-            InputSystem.OnKeyDown += OnKeyDown;
-            InputSystem.OnCharacterPress += OnCharPress;
         }
+
         /// <summary>
-        /// Deconstructor for Ui TextField
+        /// Get's called when mouse button is pressed down
         /// </summary>
-        ~UiTextField()
+        /// <param name="button">The identifier of the button that was pressed</param>
+        protected override void OnMouseButtonDown(MouseButton button)
         {
-            InputSystem.OnMousePositionChanged -= OnMousePositionChanged;
-            InputSystem.OnMouseButtonDown -= OnMouseButtonDown;
-            InputSystem.OnKeyDown -= OnKeyDown;
-            InputSystem.OnCharacterPress -= OnCharPress;
-        }
-
-        private void OnMousePositionChanged(Vector2 position)
-        {
-            _mousePosition = position;
-        }
-
-        private void OnMouseButtonDown(MouseButton button)
-        {
+            base.OnMouseButtonDown(button);
             if (button == MouseButton.Left)
             {
                 if (IsMouseInsideRect)
@@ -207,8 +173,13 @@ namespace Tortuga.Graphics.UI
             }
         }
 
-        private void OnCharPress(char character)
+        /// <summary>
+        /// Get's called when a character was pressed on the keyboard
+        /// </summary>
+        /// <param name="character">the character that was pressed on the keyboard</param>
+        protected override void OnCharacterPress(char character)
         {
+            base.OnCharacterPress(character);
             if (!IsFocused)
                 return;
             Text = this.Text.Insert(
@@ -218,8 +189,13 @@ namespace Tortuga.Graphics.UI
             _cursorPosition++;
         }
 
-        private void OnKeyDown(KeyCode key)
+        /// <summary>
+        /// Get's called when a keyboard key is pressed
+        /// </summary>
+        /// <param name="key">The identifier of the keyboard key that was pressed</param>
+        protected override void OnKeyDown(KeyCode key)
         {
+            base.OnKeyDown(key);
             if (!IsFocused)
                 return;
 
