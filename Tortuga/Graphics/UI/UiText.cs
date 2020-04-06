@@ -170,7 +170,7 @@ namespace Tortuga.Graphics.UI
         {
             _font = UiResources.Font.Roboto;
             _material = UiResources.Materials.Text;
-            _material.CreateSampledImage("Font", new uint[] { 1 });
+            _material.CreateSampledImage("Font", new uint[] { 10 });
             var task1 = _material.UpdateSampledImage("Font", 0, Font.Atlas);
             task1.Wait();
             Text = "Hello World";

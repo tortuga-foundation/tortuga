@@ -1,6 +1,4 @@
-using Tortuga.Graphics.UI.Base;
-
-namespace Tortuga.Graphics.UI
+namespace Tortuga.Graphics.UI.Base
 {
     /// <summary>
     /// Contains resources used to render user interface
