@@ -4,7 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Vulkan;
 
-namespace Tortuga.Graphics.UI
+namespace Tortuga.Graphics.UI.Base
 {
     /// <summary>
     /// Renderable Ui Component

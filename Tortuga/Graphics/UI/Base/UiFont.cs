@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Tortuga.Graphics.UI
+namespace Tortuga.Graphics.UI.Base
 {
     /// <summary>
     /// Represents a font, can be used to render ui text

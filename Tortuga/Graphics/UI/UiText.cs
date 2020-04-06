@@ -5,6 +5,7 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Drawing;
 using Vulkan;
+using Tortuga.Graphics.UI.Base;
 
 namespace Tortuga.Graphics.UI
 {

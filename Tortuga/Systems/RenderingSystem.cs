@@ -2,6 +2,7 @@ using Vulkan;
 using Tortuga.Graphics.API;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tortuga.Graphics.UI.Base;
 
 namespace Tortuga.Systems
 {
@@ -101,16 +102,16 @@ namespace Tortuga.Systems
         /// </summary>
         public override void OnDisable() { }
 
-        private List<Graphics.UI.UiRenderable> UserInterfaceDeepSearch(Graphics.UI.UiElement[] elements)
+        private List<UiRenderable> UserInterfaceDeepSearch(UiElement[] elements)
         {
-            var list = new List<Graphics.UI.UiRenderable>();
+            var list = new List<UiRenderable>();
             foreach (var element in elements)
             {
                 if (element.IsEnabled == false)
                     continue;
 
                 element.UpdatePositionsWithConstraints();
-                var renderable = element as Graphics.UI.UiRenderable;
+                var renderable = element as UiRenderable;
                 if (renderable != null)
                     list.Add(renderable);
 

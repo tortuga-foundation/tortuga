@@ -72,7 +72,7 @@ namespace Tortuga.Test
             //user interface
             {
                 //create a new ui block element and add it to the scene
-                var block = new Graphics.UI.UiRenderable();
+                var block = new Graphics.UI.UiBlock();
                 scene.AddUserInterface(block);
 
                 //setup block

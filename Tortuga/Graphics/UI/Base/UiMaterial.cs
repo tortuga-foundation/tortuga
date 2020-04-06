@@ -3,7 +3,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using Vulkan;
 
-namespace Tortuga.Graphics.UI
+namespace Tortuga.Graphics.UI.Base
 {
     /// <summary>
     /// This is a material class specialized for rendering user interface

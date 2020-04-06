@@ -2,7 +2,7 @@ using System;
 using System.Numerics;
 using Tortuga.Input;
 
-namespace Tortuga.Graphics.UI
+namespace Tortuga.Graphics.UI.Base
 {
     /// <summary>
     /// Base class for creating a interactable user interface element

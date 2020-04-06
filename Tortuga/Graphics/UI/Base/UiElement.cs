@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 
-namespace Tortuga.Graphics.UI
+namespace Tortuga.Graphics.UI.Base
 {
     /// <summary>
     /// Main ui element
