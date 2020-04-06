@@ -8,7 +8,7 @@ namespace Tortuga.Graphics.UI
     /// <summary>
     /// Creates a button element
     /// </summary>
-    public class UiButton : UiRenderable
+    public class UiButton : UiInteractable
     {
         /// <summary>
         /// Type of button states
@@ -76,30 +76,10 @@ namespace Tortuga.Graphics.UI
         public Action OnActive;
 
         /// <summary>
-        /// Returns true if mouse is inside the ui element
-        /// </summary>
-        public bool IsMouseInsideRect
-        {
-            get
-            {
-                var absPos = AbsolutePosition;
-
-                return (
-                    _mousePosition.X >= absPos.X &&
-                    _mousePosition.Y >= absPos.Y &&
-                    _mousePosition.X <= absPos.X + Scale.X &&
-                    _mousePosition.Y <= absPos.Y + Scale.Y
-                );
-            }
-        }
-
-        private Vector2 _mousePosition = Vector2.Zero;
-
-        /// <summary>
         /// Constructor for Ui button
         /// </summary>
         /// <param name="text">The string text that will appear inside the button, You can change this using setter</param>
-        public UiButton(string text = "Button")
+        public UiButton(string text = "Button") : base()
         {
             _text = new UiText();
             _text.FontSize = 12.0f;
@@ -121,23 +101,15 @@ namespace Tortuga.Graphics.UI
             this.NormalBackground = Color.LightSlateGray;
             this.HoverBackground = Color.PaleVioletRed;
             this.ActiveBackground = Color.DarkRed;
-
-            InputSystem.OnMousePositionChanged += OnMousePositionChanged;
-            InputSystem.OnMouseButtonDown += OnMouseButtonDown;
-            InputSystem.OnMouseButtonUp += OnMouseButtonUp;
         }
 
         /// <summary>
-        /// De-Constructor for ui button
-        /// </summary> 
-        ~UiButton()
+        /// Get's called when mouse position changes
+        /// </summary>
+        /// <param name="position">New mouse position</param>
+        protected override void OnMousePositionChanged(Vector2 position)
         {
-            InputSystem.OnMousePositionChanged -= OnMousePositionChanged;
-        }
-
-        private void OnMousePositionChanged(Vector2 mousePosition)
-        {
-            _mousePosition = mousePosition;
+            base.OnMousePositionChanged(position);
             if (IsMouseInsideRect && _state == ButtonStateType.Normal)
             {
                 OnMouseEnter?.Invoke();
@@ -150,8 +122,13 @@ namespace Tortuga.Graphics.UI
             }
         }
 
-        private void OnMouseButtonUp(MouseButton button)
+        /// <summary>
+        /// Get's called when mouse button is released
+        /// </summary>
+        /// <param name="button">The identifier of the button that was released</param>
+        protected override void OnMouseButtonUp(MouseButton button)
         {
+            base.OnMouseButtonUp(button);
             if (button == MouseButton.Left && _state == ButtonStateType.Active)
             {
                 if (IsMouseInsideRect)
@@ -164,74 +141,36 @@ namespace Tortuga.Graphics.UI
             }
         }
 
-        private void OnMouseButtonDown(MouseButton button)
+        /// <summary>
+        /// Get's called when mouse button is pressed down
+        /// </summary>
+        /// <param name="button">The identifier of the button that was pressed</param>
+        protected override void OnMouseButtonDown(MouseButton button)
         {
+            base.OnMouseButtonDown(button);
             if (IsMouseInsideRect && button == MouseButton.Left)
                 _state = ButtonStateType.Active;
         }
 
-        private Color SmoothTransition(Color oldColor, Color newColor, float amount)
+        /// <summary>
+        /// Apply constraints to the position and scale with the background color for the button
+        /// </summary>
+        public override void UpdatePositionsWithConstraints()
         {
-            float r = oldColor.R;
-            float g = oldColor.G;
-            float b = oldColor.B;
-            float a = oldColor.A;
-
-            if (r != newColor.R)
-                r += amount * (newColor.R - r);
-
-            if (g != newColor.G)
-                g += amount * (newColor.G - g);
-
-            if (b != newColor.B)
-                b += amount * (newColor.B - b);
-
-            if (a != newColor.A)
-                a += amount * (newColor.A - a);
-
-            //safe color clamping
+            try
             {
-                if (r > 255)
-                    r = 255;
-                else if (r < 0)
-                    r = 0;
-
-                if (g > 255)
-                    g = 255;
-                else if (g < 0)
-                    g = 0;
-
-                if (b > 255)
-                    b = 255;
-                else if (b < 0)
-                    b = 0;
-
-                if (a > 255)
-                    a = 255;
-                else if (a < 0)
-                    a = 0;
+                if (_state == ButtonStateType.Normal)
+                    Background = NormalBackground;
+                else if (_state == ButtonStateType.Hover)
+                    Background = HoverBackground;
+                else if (_state == ButtonStateType.Active)
+                    Background = ActiveBackground;
+                else if (_state == ButtonStateType.Disabled)
+                    Background = DisabledBackground;
             }
+            catch (System.Exception) { }
 
-            return Color.FromArgb(
-                Convert.ToInt32(MathF.Round(a)),
-                Convert.ToInt32(MathF.Round(r)),
-                Convert.ToInt32(MathF.Round(g)),
-                Convert.ToInt32(MathF.Round(b))
-            );
-        }
-
-        internal override API.BufferTransferObject[] UpdateBuffer()
-        {
-            if (_state == ButtonStateType.Normal)
-                Background = SmoothTransition(Background, NormalBackground, Time.DeltaTime * 0.1f);
-            else if (_state == ButtonStateType.Hover)
-                Background = SmoothTransition(Background, HoverBackground, Time.DeltaTime * 0.1f);
-            else if (_state == ButtonStateType.Active)
-                Background = SmoothTransition(Background, ActiveBackground, Time.DeltaTime * 0.1f);
-            else if (_state == ButtonStateType.Disabled)
-                Background = SmoothTransition(Background, DisabledBackground, Time.DeltaTime * 0.1f);
-
-            return base.UpdateBuffer();
+            base.UpdatePositionsWithConstraints();
         }
     }
 }

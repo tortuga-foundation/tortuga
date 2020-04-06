@@ -377,12 +377,24 @@ namespace Tortuga.Graphics.UI
                 {
                     this.RenderCommand.BindPipeline(_material.Pipeline);
                     this.RenderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
-                    this.RenderCommand.SetViewport(
-                        System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
-                        System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
-                        System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
-                        System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
-                    );
+                    int viewportX = System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X));
+                    int viewportY = System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y));
+                    uint viewportWidth = System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z));
+                    uint viewportHeight = System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W));
+                    this.RenderCommand.SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                    if (this.Mask == null)
+                        this.RenderCommand.SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+                    else
+                    {
+                        var maskPosition = Mask.AbsolutePosition;
+                        var maskScale = Mask.Scale;
+                        this.RenderCommand.SetScissor(
+                            System.Convert.ToInt32(System.Math.Round(maskPosition.X)),
+                            System.Convert.ToInt32(System.Math.Round(maskPosition.Y)),
+                            System.Convert.ToUInt32(System.Math.Round(maskScale.X)),
+                            System.Convert.ToUInt32(System.Math.Round(maskScale.Y))
+                        );
+                    }
                     this.RenderCommand.BindVertexBuffer(_vertexBuffer);
                     this.RenderCommand.BindIndexBuffer(_indexBuffer);
                     this.RenderCommand.DrawIndexed(_indexCount);

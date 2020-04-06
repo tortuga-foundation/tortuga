@@ -7,7 +7,7 @@ namespace Tortuga.Graphics.UI
     /// <summary>
     /// Creates a slider ui element
     /// </summary>
-    public class UiSlider : UiElement
+    public class UiSlider : UiInteractable
     {
         /// <summary>
         /// Left value of the slider
@@ -38,23 +38,6 @@ namespace Tortuga.Graphics.UI
             get => _value;
         }
         /// <summary>
-        /// Returns true if mouse is inside the ui element
-        /// </summary>
-        public bool IsMouseInsideRect
-        {
-            get
-            {
-                var absPos = AbsolutePosition;
-
-                return (
-                    _mousePosition.X >= absPos.X &&
-                    _mousePosition.Y >= absPos.Y &&
-                    _mousePosition.X <= absPos.X + Scale.X &&
-                    _mousePosition.Y <= absPos.Y + Scale.Y
-                );
-            }
-        }
-        /// <summary>
         /// Slider user interface element
         /// </summary>
         public UiRenderable Thumb => _thumb;
@@ -64,7 +47,6 @@ namespace Tortuga.Graphics.UI
         public UiRenderable Slider => _slider;
 
         private float _value;
-        private Vector2 _mousePosition;
         private bool _isMouseButtonDown;
         private bool _isDraging;
         private UiRenderable _thumb;
@@ -73,7 +55,7 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Constructor for creating a ui slider element
         /// </summary>
-        public UiSlider()
+        public UiSlider() : base()
         {
             _thumb = new UiRenderable();
             _thumb.Background = Color.FromArgb(255, 240, 68, 34);
@@ -97,23 +79,30 @@ namespace Tortuga.Graphics.UI
 
             _isMouseButtonDown = false;
             _isDraging = false;
-            InputSystem.OnMousePositionChanged += OnMousePositionChanged;
-            InputSystem.OnMouseButtonDown += OnMouseDown;
-            InputSystem.OnMouseButtonUp += OnMouseUp;
         }
 
-        private void OnMouseUp(MouseButton mouseButtons)
+        /// <summary>
+        /// Get's called when mouse button is released
+        /// </summary>
+        /// <param name="button">The identifier of the button that was released</param>
+        protected override void OnMouseButtonUp(MouseButton button)
         {
-            if (mouseButtons == MouseButton.Left)
+            base.OnMouseButtonUp(button);
+            if (button == MouseButton.Left)
             {
                 _isMouseButtonDown = false;
                 _isDraging = false;
             }
         }
 
-        private void OnMouseDown(MouseButton mouseButtons)
+        /// <summary>
+        /// Get's called when mouse button is pressed down
+        /// </summary>
+        /// <param name="button">The identifier of the button that was pressed</param>
+        protected override void OnMouseButtonDown(MouseButton button)
         {
-            if (mouseButtons == MouseButton.Left)
+            base.OnMouseButtonDown(button);
+            if (button == MouseButton.Left)
             {
                 _isMouseButtonDown = true;
                 if (IsMouseInsideRect)
@@ -125,16 +114,13 @@ namespace Tortuga.Graphics.UI
         }
 
         /// <summary>
-        /// Deconstructor for Ui slider
+        /// Get's called when mouse position changes
         /// </summary>
-        ~UiSlider()
+        /// <param name="position">New mouse position</param>
+        protected override void OnMousePositionChanged(Vector2 position)
         {
-            InputSystem.OnMousePositionChanged -= OnMousePositionChanged;
-        }
-
-        private void OnMousePositionChanged(Vector2 mousePosition)
-        {
-            _mousePosition = mousePosition;
+            base.OnMousePositionChanged(position);
+            _mousePosition = position;
             if (_isDraging && _isMouseButtonDown)
                 UpdateSliderValueWithMousePosition();
         }

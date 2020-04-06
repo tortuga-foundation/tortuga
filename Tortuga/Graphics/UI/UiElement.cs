@@ -200,7 +200,7 @@ namespace Tortuga.Graphics.UI
         /// Add a ui element as a child of this ui element
         /// </summary>
         /// <param name="element">element to add as a child</param>
-        public void Add(UiElement element)
+        public virtual void Add(UiElement element)
         {
             if (_children.FindIndex(
                 0, _children.Count,
@@ -216,7 +216,7 @@ namespace Tortuga.Graphics.UI
         /// Set a child element's parent to null
         /// </summary>
         /// <param name="element">child element to remove</param>
-        public void Remove(UiElement element)
+        public virtual void Remove(UiElement element)
         {
             if (
                 _children.FindIndex(0, _children.Count,

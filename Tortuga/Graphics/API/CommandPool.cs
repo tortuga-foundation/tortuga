@@ -393,7 +393,7 @@ namespace Tortuga.Graphics.API
             public unsafe void TransferImageLayout(Image image, VkImageLayout oldLayout, VkImageLayout newLayout, uint mipLevel = 0)
                 => TransferImageLayout(image.ImageHandle, image.Format, oldLayout, newLayout, mipLevel, image.MipLevel);
 
-            public unsafe void SetViewport(int x, int y, uint width, uint height)
+            public unsafe void SetScissor(int x, int y, uint width, uint height)
             {
                 var scissor = new VkRect2D
                 {
@@ -407,7 +407,10 @@ namespace Tortuga.Graphics.API
                     }
                 };
                 vkCmdSetScissor(_handle, 0, 1, &scissor);
+            }
 
+            public unsafe void SetViewport(int x, int y, uint width, uint height)
+            {
                 var viewport = new VkViewport
                 {
                     x = x,

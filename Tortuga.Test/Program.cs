@@ -92,8 +92,18 @@ namespace Tortuga.Test
                 layout.Spacing = 0.0f;
                 block.Add(layout);
 
+                var layoutMask = new Graphics.UI.UiVerticalLayout();
+                layoutMask.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
+                layoutMask.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
+                layoutMask.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                layoutMask.ScaleYConstraint = new Graphics.UI.PixelConstraint(100.0f);
+                block.Add(layoutMask);
+
+
                 for (int i = 0; i < scene.Entities.Count; i++)
                 {
+                    int color = i % 2 == 0 ? 10 : 5;
+
                     var entity = scene.Entities[i];
                     var button = new Graphics.UI.UiButton();
                     button.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
@@ -103,11 +113,11 @@ namespace Tortuga.Test
                     button.Text.HorizontalAlignment = Graphics.UI.UiHorizontalAlignment.Left;
                     button.Text.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
                     button.Text.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
-                    if (i % 2 == 0)
-                        button.NormalBackground = System.Drawing.Color.FromArgb(255, 10, 10, 10);
-                    else
-                        button.NormalBackground = System.Drawing.Color.FromArgb(255, 30, 30, 30);
                     button.Text.Text = entity.Name;
+                    button.Text.TextColor = System.Drawing.Color.White;
+                    button.NormalBackground = System.Drawing.Color.FromArgb(255, color, color, color);
+                    button.HoverBackground = System.Drawing.Color.FromArgb(255, 50, 50, 50);
+                    button.Mask = layoutMask;
                     layout.Add(button);
                 }
             }

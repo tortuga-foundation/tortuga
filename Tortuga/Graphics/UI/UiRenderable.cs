@@ -54,6 +54,25 @@ namespace Tortuga.Graphics.UI
         }
 
         /// <summary>
+        /// If element is outside mask then it will not be rendered
+        /// </summary>
+        public UiElement Mask
+        {
+            get => _mask;
+            set
+            {
+                foreach (var child in this.Children)
+                {
+                    var renderChild = child as UiRenderable;
+                    if (renderChild != null)
+                        renderChild.Mask = value;
+                }
+                _mask = value;
+            }
+        }
+        private UiElement _mask;
+
+        /// <summary>
         /// Material used for rendering
         /// </summary>
         protected UiMaterial _material;
@@ -89,6 +108,7 @@ namespace Tortuga.Graphics.UI
             _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
             _material = UiResources.Materials.Block;
             _isDirty = true;
+            Mask = null;
         }
 
         internal virtual API.BufferTransferObject[] UpdateBuffer()
@@ -143,16 +163,27 @@ namespace Tortuga.Graphics.UI
                     descriptorSets.Add(set);
 
                 _material.ReCompilePipeline();
-
                 _renderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer);
                 _renderCommand.BindPipeline(_material.Pipeline);
                 _renderCommand.BindDescriptorSets(_material.Pipeline, descriptorSets.ToArray());
-                _renderCommand.SetViewport(
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X)),
-                    System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y)),
-                    System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z)),
-                    System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W))
-                );
+                int viewportX = System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X));
+                int viewportY = System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y));
+                uint viewportWidth = System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z));
+                uint viewportHeight = System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W));
+                _renderCommand.SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);
+                if (this.Mask == null)
+                    _renderCommand.SetScissor(viewportX, viewportY, viewportWidth, viewportHeight);
+                else
+                {
+                    var maskPosition = Mask.AbsolutePosition;
+                    var maskScale = Mask.Scale;
+                    _renderCommand.SetScissor(
+                        System.Convert.ToInt32(System.Math.Round(maskPosition.X)),
+                        System.Convert.ToInt32(System.Math.Round(maskPosition.Y)),
+                        System.Convert.ToUInt32(System.Math.Round(maskScale.X)),
+                        System.Convert.ToUInt32(System.Math.Round(maskScale.Y))
+                    );
+                }
                 _renderCommand.Draw(6);
                 _renderCommand.End();
             }
@@ -162,6 +193,18 @@ namespace Tortuga.Graphics.UI
                 _renderCommand.End();
             }
             return Task.FromResult(_renderCommand);
+        }
+    
+        /// <summary>
+        /// Add a ui element as a child of this ui element
+        /// </summary>
+        /// <param name="element">element to add as a child</param>
+        public override void Add(UiElement element)
+        {
+            var renderChild = element as UiRenderable;
+            if (renderChild != null)
+                renderChild.Mask = Mask;
+            base.Add(element);
         }
     }
 }
