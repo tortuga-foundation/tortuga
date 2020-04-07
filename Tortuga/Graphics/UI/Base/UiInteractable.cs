@@ -18,8 +18,18 @@ namespace Tortuga.Graphics.UI.Base
             get
             {
                 var absPos = AbsolutePosition;
+                if (this.Mask == null)
+                {
+                    return (
+                        //make sure mouse is inside interactable component
+                        _mousePosition.X >= absPos.X &&
+                        _mousePosition.Y >= absPos.Y &&
+                        _mousePosition.X <= absPos.X + Scale.X &&
+                        _mousePosition.Y <= absPos.Y + Scale.Y
+                    );
+                }
+                
                 var mask = this.Mask.AbsolutePosition;
-
                 return (
                     //make sure mouse is inside interactable component
                     _mousePosition.X >= absPos.X &&
