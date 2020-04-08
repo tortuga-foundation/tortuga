@@ -88,24 +88,16 @@ namespace Tortuga.Test
                 layout.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
                 layout.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
                 layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-                layout.ScaleYConstraint = new Graphics.UI.PixelConstraint(200.0f);
+                layout.ScaleYConstraint = new Graphics.UI.ContentAutoFitConstraint();
                 layout.Spacing = 0.0f;
 
                 var scrollRect = new Graphics.UI.UiScrollRect();
                 scrollRect.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
                 scrollRect.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
                 scrollRect.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-                scrollRect.ScaleYConstraint = new Graphics.UI.PixelConstraint(100.0f);
+                scrollRect.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f / 3.0f);
                 scrollRect.Viewport = layout;
-                scrollRect.Add(layout);
                 block.Add(scrollRect);
-
-                var layoutMask = new Graphics.UI.UiVerticalLayout();
-                layoutMask.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
-                layoutMask.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-                layoutMask.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-                layoutMask.ScaleYConstraint = new Graphics.UI.PixelConstraint(100.0f);
-                block.Add(layoutMask);
 
 
                 for (int i = 0; i < scene.Entities.Count; i++)
@@ -125,7 +117,6 @@ namespace Tortuga.Test
                     button.Text.TextColor = System.Drawing.Color.White;
                     button.NormalBackground = System.Drawing.Color.FromArgb(255, color, color, color);
                     button.HoverBackground = System.Drawing.Color.FromArgb(255, 50, 50, 50);
-                    button.Mask = layoutMask;
                     layout.Add(button);
                 }
             }

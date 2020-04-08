@@ -13,7 +13,17 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// The element to scroll
         /// </summary>
-        public UiElement Viewport;
+        public UiElement Viewport
+        {
+            get => _viewport;
+            set
+            {
+                _viewport = value;
+                _viewport.Mask = _mask;
+                this.Add(_viewport);
+            }
+        }
+        private UiElement _viewport;
         /// <summary>
         /// Scroll amount for the Rect
         /// </summary>
@@ -47,6 +57,13 @@ namespace Tortuga.Graphics.UI
         /// </summary>
         public UiScrollRect()
         {
+            _mask = new UiElement();
+            _mask.PositionXConstraint = new PercentConstraint(0.0f);
+            _mask.PositionYConstraint = new PercentConstraint(0.0f);
+            _mask.ScaleXConstraint = new PercentConstraint(1.0f);
+            _mask.ScaleYConstraint = new PercentConstraint(1.0f);
+            this.Add(_mask);
+
             InputSystem.OnMousePositionChanged += OnMousePositionChanged;
             InputSystem.OnWheelDeltaChange += OnMouseWheelDeltaChanged;
         }
@@ -67,7 +84,12 @@ namespace Tortuga.Graphics.UI
                 if (Scroll.Y > 0)
                     Scroll.Y = 0;
                 else if (Scroll.Y < Scale.Y - Viewport.Scale.Y)
-                    Scroll.Y = Scale.Y - Viewport.Scale.Y;
+                {
+                    if (Scale.Y < Viewport.Scale.Y)
+                        Scroll.Y = Scale.Y - Viewport.Scale.Y;
+                    else
+                        Scroll.Y = 0.0f;
+                }
             }
         }
 

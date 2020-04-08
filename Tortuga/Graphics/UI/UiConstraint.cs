@@ -14,7 +14,11 @@ namespace Tortuga.Graphics.UI
         /// <summary>
         /// Percent Constraint
         /// </summary>
-        Percent
+        Percent,
+        /// <summary>
+        /// Auto fit content
+        /// </summary>
+        ContentAutoFit
     }
 
     /// <summary>
@@ -142,6 +146,25 @@ namespace Tortuga.Graphics.UI
                 Operator = ConstraintOperators.Add,
                 Type = ConstraintType.Percent,
                 Value = value
+            });
+        }
+    }
+
+    /// <summary>
+    /// Used to auto resize the width or height of a Ui element
+    /// </summary>
+    public class ContentAutoFitConstraint: Constraint
+    {
+        /// <summary>
+        /// constructor for content auto fit constraint
+        /// </summary>
+        public ContentAutoFitConstraint()
+        {
+            this._values.Add(new ConstraintValue
+            {
+                Operator = ConstraintOperators.Add,
+                Type = ConstraintType.ContentAutoFit,
+                Value = 0
             });
         }
     }

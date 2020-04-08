@@ -104,6 +104,28 @@ namespace Tortuga.Graphics.UI.Base
         public Constraint ScaleYConstraint;
 
         /// <summary>
+        /// If element is outside mask then it will not be rendered
+        /// </summary>
+        public UiElement Mask
+        {
+            get => _mask;
+            set
+            {
+                foreach (var child in this.Children)
+                {
+                    var renderChild = child as UiRenderable;
+                    if (renderChild != null)
+                        renderChild.Mask = value;
+                }
+                _mask = value;
+            }
+        }
+        /// <summary>
+        /// Where mask is stored
+        /// </summary>
+        protected UiElement _mask;
+
+        /// <summary>
         /// Can be used to set border radius for all corners
         /// </summary>
         public float BorderRadius
@@ -209,6 +231,7 @@ namespace Tortuga.Graphics.UI.Base
             )
                 return;
             element._parent = this;
+            element.Mask = _mask;
             _children.Add(element);
             _isDirty = true;
         }
@@ -312,6 +335,20 @@ namespace Tortuga.Graphics.UI.Base
                         else if (val.Operator == ConstraintOperators.Subtract)
                             pixel -= val.Value;
                     }
+                    else if (val.Type == ConstraintType.ContentAutoFit)
+                    {
+                        float maximumWidth = 0.0f;
+                        foreach (var child in Children)
+                        {
+                            if (child.Position.X + child.Scale.X > maximumWidth)
+                                maximumWidth = child.Position.X + child.Scale.X;
+                        }
+
+                        if (val.Operator == ConstraintOperators.Add)
+                            pixel += maximumWidth;
+                        else if (val.Operator == ConstraintOperators.Subtract)
+                            pixel -= maximumWidth;
+                    }
                 }
                 scale.X = pixel;
             }
@@ -335,6 +372,20 @@ namespace Tortuga.Graphics.UI.Base
                             pixel += val.Value;
                         else if (val.Operator == ConstraintOperators.Subtract)
                             pixel -= val.Value;
+                    }
+                    else if (val.Type == ConstraintType.ContentAutoFit)
+                    {
+                        float maximumHeight = 0.0f;
+                        foreach (var child in Children)
+                        {
+                            if (child.Position.Y + child.Scale.Y > maximumHeight)
+                                maximumHeight = child.Position.Y + child.Scale.Y;
+                        }
+
+                        if (val.Operator == ConstraintOperators.Add)
+                            pixel += maximumHeight;
+                        else if (val.Operator == ConstraintOperators.Subtract)
+                            pixel -= maximumHeight;
                     }
                 }
                 scale.Y = pixel;

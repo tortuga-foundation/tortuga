@@ -54,25 +54,6 @@ namespace Tortuga.Graphics.UI.Base
         }
 
         /// <summary>
-        /// If element is outside mask then it will not be rendered
-        /// </summary>
-        public UiElement Mask
-        {
-            get => _mask;
-            set
-            {
-                foreach (var child in this.Children)
-                {
-                    var renderChild = child as UiRenderable;
-                    if (renderChild != null)
-                        renderChild.Mask = value;
-                }
-                _mask = value;
-            }
-        }
-        private UiElement _mask;
-
-        /// <summary>
         /// Material used for rendering
         /// </summary>
         protected UiMaterial _material;
