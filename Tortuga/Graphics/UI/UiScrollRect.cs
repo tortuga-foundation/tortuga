@@ -80,7 +80,7 @@ namespace Tortuga.Graphics.UI
         {
             if (IsMouseInsideRect)
             {
-                Scroll.Y += wheel;
+                Scroll.Y += wheel * 10.0f;
                 if (Scroll.Y > 0)
                     Scroll.Y = 0;
                 else if (Scroll.Y < Scale.Y - Viewport.Scale.Y)
