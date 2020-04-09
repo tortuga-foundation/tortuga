@@ -167,10 +167,7 @@ namespace Tortuga.Graphics.UI
             base.OnMousePositionChanged(position);
             _mousePosition = position;
             if (_isDraging && _isMouseButtonDown)
-            {
-                if (IsMouseInsideRect)
-                    UpdateSliderValueWithMousePosition();
-            }
+                UpdateSliderValueWithMousePosition();
         }
 
         private void UpdateSliderValueWithMousePosition()
