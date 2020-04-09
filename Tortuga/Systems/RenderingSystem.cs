@@ -210,7 +210,10 @@ namespace Tortuga.Systems
 
                                 var commands = material.Key.BuildInstanceBuffers(mesh.Value.ToArray());
                                 foreach (var t in commands)
-                                    transferCommands.Add(t.TransferCommand);
+                                {
+                                    if (t.TransferCommand != null && t.TransferCommand.Handle != null)
+                                        transferCommands.Add(t.TransferCommand);
+                                }
                             }
                         }
                         _previousMaterialInstance = materialInstancing;
@@ -244,7 +247,7 @@ namespace Tortuga.Systems
                         {
                             foreach (var t in camera.UpdateCameraBuffersSemaphore())
                             {
-                                if (t.TransferCommand != null)
+                                if (t.TransferCommand != null && t.TransferCommand.Handle != null)
                                     transferCommands.Add(t.TransferCommand);
                             }
                         }
