@@ -129,11 +129,15 @@ namespace Tortuga.Graphics.UI
         private void OnHorizontalValueChanged(float val)
         {
             Scroll.X = val * (Scale.X - Viewport.Scale.X);
+            if (Single.IsNaN(Scroll.X))
+                Scroll.X = 0.0f;
         }
 
         private void OnVerticalValueChanged(float val)
         {
             Scroll.Y = val * (Scale.Y - Viewport.Scale.Y);
+            if (Single.IsNaN(Scroll.Y))
+                Scroll.Y = 0.0f;
         }
 
         private void OnMouseWheelDeltaChanged(float wheel)
@@ -152,7 +156,11 @@ namespace Tortuga.Graphics.UI
                 }
                 _verticalScrollbar.OnValueChanged -= OnVerticalValueChanged;
                 _verticalScrollbar.Value = Scroll.Y / (Scale.Y - Viewport.Scale.Y);
-                _verticalScrollbar.OnValueChanged += OnVerticalValueChanged; 
+                if (Single.IsNaN(Scroll.X))
+                    Scroll.X = 0.0f;
+                if (Single.IsNaN(Scroll.Y))
+                    Scroll.Y = 0.0f;
+                _verticalScrollbar.OnValueChanged += OnVerticalValueChanged;
             }
         }
 
