@@ -87,7 +87,7 @@ namespace Tortuga.Test
                 var layout = new Graphics.UI.UiVerticalLayout();
                 layout.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
                 layout.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-                layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
+                layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(5.0f);
                 layout.ScaleYConstraint = new Graphics.UI.ContentAutoFitConstraint();
                 layout.Spacing = 0.0f;
 
@@ -98,7 +98,6 @@ namespace Tortuga.Test
                 scrollRect.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f / 3.0f);
                 scrollRect.Viewport = layout;
                 block.Add(scrollRect);
-
 
                 for (int i = 0; i < scene.Entities.Count; i++)
                 {

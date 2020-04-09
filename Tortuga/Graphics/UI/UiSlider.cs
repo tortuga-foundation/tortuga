@@ -2,6 +2,7 @@ using System.Drawing;
 using System.Numerics;
 using Tortuga.Input;
 using Tortuga.Graphics.UI.Base;
+using System;
 
 namespace Tortuga.Graphics.UI
 {
@@ -10,6 +11,11 @@ namespace Tortuga.Graphics.UI
     /// </summary>
     public class UiSlider : UiInteractable
     {
+        /// <summary>
+        /// Get's called when value is changed
+        /// </summary>
+        public Action<float> OnValueChanged;
+
         /// <summary>
         /// Different types of sliders
         /// </summary>
@@ -56,6 +62,7 @@ namespace Tortuga.Graphics.UI
 
                 _value = value / (1.0f - offset);
                 _value = MinValue + (_value * (MaxValue - MinValue));
+                OnValueChanged?.Invoke(_value);
             }
             get => _value;
         }

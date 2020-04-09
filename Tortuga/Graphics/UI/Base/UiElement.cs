@@ -231,7 +231,8 @@ namespace Tortuga.Graphics.UI.Base
             )
                 return;
             element._parent = this;
-            element.Mask = _mask;
+            if (this._mask != null)
+                element.Mask = _mask;
             _children.Add(element);
             _isDirty = true;
         }
