@@ -5,7 +5,6 @@
     <Authors>Zeeshan</Authors>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <DocumentationFile>bin\Tortuga.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
