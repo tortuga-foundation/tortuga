@@ -14,6 +14,12 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 - Vulkan
 - SDL (With Vulkan Support)
 
+## Using the package in your project
+
+You can use nuget to install the package `TortugaEngine`
+
+`nuget install TortugaEngine`
+
 ## How to Run
 
 1. `dotnet restore tortuga.sln`
