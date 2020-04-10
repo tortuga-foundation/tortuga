@@ -8,8 +8,6 @@
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="4.7.0"/>
     <PackageReference Include="Veldrid.Sdl2" Version="4.7.0"/>
-    <Reference Include="Vulkan">
-      <HintPath>../Vulkan/vk.dll</HintPath>
-    </Reference>
+    <PackageReference Include="Vk" Version="1.0.22"/>
   </ItemGroup>
 </Project>
