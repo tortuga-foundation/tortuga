@@ -120,6 +120,9 @@ namespace Tortuga.Test
                 }
             }
 
+            var clip = Tortuga.Audio.AudioClip.Load("Assets/Audio/Sample1.mp3");
+            
+
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<AutoRotator>();
