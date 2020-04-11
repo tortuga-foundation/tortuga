@@ -36,7 +36,6 @@ namespace Tortuga.Graphics
         /// <param name="width">the width of the window</param>
         /// <param name="height">the height of the window</param>
         /// <param name="flags">the sdl flags for the window</param>
-        /// <param name="threadProcessing">enable thread processing on window</param>
         public unsafe Window(
             string title,
             int x, int y,

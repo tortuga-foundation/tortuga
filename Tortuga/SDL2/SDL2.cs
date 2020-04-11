@@ -1,11 +1,9 @@
+#pragma warning disable 1591
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Tortuga.SDL2
 {
-    /// <summary>
-    /// SDL2 Native
-    /// </summary>
     public static unsafe partial class SDL2Native
     {
         private static readonly NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
@@ -18,7 +16,7 @@ namespace Tortuga.SDL2
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                name = "libSDL2-2.0.so";
+                name = "libSDL2-2.0.so.0";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
@@ -41,10 +39,6 @@ namespace Tortuga.SDL2
 
         private delegate string SDL_GetError_t();
         private static SDL_GetError_t s_sdl_getError = LoadFunction<SDL_GetError_t>("SDL_GetError");
-        /// <summary>
-        /// returns the SDL error if an sdl error occurred
-        /// </summary>
-        /// <returns></returns>
         public static string SDL_GetError() => s_sdl_getError();
     }
 }

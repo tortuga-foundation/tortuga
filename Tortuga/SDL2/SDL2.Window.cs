@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 using System;
 
 namespace Tortuga.SDL2
@@ -6,16 +7,6 @@ namespace Tortuga.SDL2
     {
         private delegate SDL_Window SDL_CreateWindow_t(string title, int x, int y, int w, int h, SDL_WindowFlags flags);
         private static SDL_CreateWindow_t s_sdl_createWindow = LoadFunction<SDL_CreateWindow_t>("SDL_CreateWindow");
-        /// <summary>
-        /// Create SDL2 Window
-        /// </summary>
-        /// <param name="title">Title</param>
-        /// <param name="x">window x position</param>
-        /// <param name="y">window y position</param>
-        /// <param name="w">window width</param>
-        /// <param name="h">window height</param>
-        /// <param name="flags">window flags</param>
-        /// <returns>returns SDL_Window object</returns>
         public static SDL_Window SDL_CreateWindow(string title, int x, int y, int w, int h, SDL_WindowFlags flags) => s_sdl_createWindow(title, x, y, w, h, flags);
 
         private delegate void SDL_DestroyWindow_t(SDL_Window window);

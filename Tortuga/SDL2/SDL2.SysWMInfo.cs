@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 using System;
 
 namespace Tortuga.SDL2
@@ -8,7 +9,6 @@ namespace Tortuga.SDL2
         private static readonly SDL_GetWindowWMInfo_t s_getWindowWMInfo = LoadFunction<SDL_GetWindowWMInfo_t>("SDL_GetWindowWMInfo");
         public static int SDL_GetWMWindowInfo(SDL_Window window, SDL_SysWMinfo* info) => s_getWindowWMInfo(window, info);
     }
-
     public struct SDL_SysWMinfo
     {
         public SDL_version version;
@@ -24,17 +24,8 @@ namespace Tortuga.SDL2
 
     public struct Win32WindowInfo
     {
-        /// <summary>
-        /// The window handle.
-        /// </summary>
         public IntPtr window;
-        /// <summary>
-        /// The window device context.
-        /// </summary>
         public IntPtr hdc;
-        /// <summary>
-        /// The instance handle.
-        /// </summary>
         public IntPtr hinstance;
     }
 
