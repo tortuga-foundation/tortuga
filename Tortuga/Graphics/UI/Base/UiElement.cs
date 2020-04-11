@@ -230,6 +230,8 @@ namespace Tortuga.Graphics.UI.Base
                 ) != -1
             )
                 return;
+            if (element._parent != null)
+                element._parent.Remove(element);
             element._parent = this;
             if (this._mask != null)
                 element.Mask = _mask;
