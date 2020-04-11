@@ -208,8 +208,9 @@ namespace Tortuga.Components
             this.RenderCommand.Begin(VkCommandBufferUsageFlags.RenderPassContinue, camera.Framebuffer, 0);
 
             //viewport and scissor
-            int viewportX = System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Width * camera.Viewport.X));
-            int viewportY = System.Convert.ToInt32(System.Math.Round(Engine.Instance.MainWindow.Height * camera.Viewport.Y));
+            var windowSize = Engine.Instance.MainWindow.Size;
+            int viewportX = System.Convert.ToInt32(System.Math.Round(windowSize.X * camera.Viewport.X));
+            int viewportY = System.Convert.ToInt32(System.Math.Round(windowSize.Y * camera.Viewport.Y));
             uint viewportWidth = System.Convert.ToUInt32(System.Math.Round(camera.Resolution.X * camera.Viewport.Z));
             uint viewportHeight = System.Convert.ToUInt32(System.Math.Round(camera.Resolution.Y * camera.Viewport.W));
             this.RenderCommand.SetViewport(viewportX, viewportY, viewportWidth, viewportHeight);

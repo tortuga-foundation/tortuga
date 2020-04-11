@@ -64,8 +64,9 @@ namespace Tortuga.Input
         private static float _wheelDelta = 0.0f;
         private static Dictionary<KeyCode, bool> _isKeyPressed = new Dictionary<KeyCode, bool>();
         private static Dictionary<MouseButton, bool> _isMouseButtonPressed = new Dictionary<MouseButton, bool>();
-        internal static void ProcessEvents(Veldrid.InputSnapshot snapshot)
+        internal static void ProcessEvents()
         {
+            /*
             foreach (var c in snapshot.KeyCharPresses)
                 OnCharacterPress?.Invoke(c);
             foreach (var keyEvent in snapshot.KeyEvents)
@@ -114,6 +115,7 @@ namespace Tortuga.Input
             if (snapshot.WheelDelta != 0)
                 OnWheelDeltaChange?.Invoke(snapshot.WheelDelta);
             _wheelDelta = snapshot.WheelDelta;
+            */
         }
         internal static void Initialize()
         {
