@@ -4,6 +4,6 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="TortugaEngine" Version="0.0.1"/>
+    <ProjectReference Include="..\Tortuga\Tortuga.csproj" />
   </ItemGroup>
 </Project>
