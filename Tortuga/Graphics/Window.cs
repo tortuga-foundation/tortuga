@@ -170,12 +170,19 @@ namespace Tortuga.Graphics
         }
         
 
-        ///// <summary>
-        ///// process window events and return it as a snapshot
-        ///// </summary>
-        //public unsafe Veldrid.InputSnapshot PumpEvents()
-        //    => _windowHandle.PumpEvents();
-//
+        /// <summary>
+        /// process window events and return it as a snapshot
+        /// </summary>
+        public unsafe void PumpEvents()
+        {
+            SDL_PumpEvents();
+            SDL_Event ev;
+            while (SDL_PollEvent(&ev) != 0)
+            {
+                Input.InputSystem.ProcessEvents(ev);
+            }
+        }
+
 
         /// <summary>
         /// Aquire swapchain image and store the referance in 'SwapchainAcquiredImage'

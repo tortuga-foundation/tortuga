@@ -64,7 +64,7 @@ namespace Tortuga.Input
         private static float _wheelDelta = 0.0f;
         private static Dictionary<KeyCode, bool> _isKeyPressed = new Dictionary<KeyCode, bool>();
         private static Dictionary<MouseButton, bool> _isMouseButtonPressed = new Dictionary<MouseButton, bool>();
-        internal static void ProcessEvents()
+        internal static void ProcessEvents(SDL2.SDL_Event ev)
         {
             /*
             foreach (var c in snapshot.KeyCharPresses)

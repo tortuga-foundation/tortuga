@@ -122,8 +122,7 @@ namespace Tortuga
                     try
                     {
                         Time.LastFramesTicks = Time.StopWatch.ElapsedTicks;
-                        //var events = this._mainWindow.PumpEvents();
-                        //InputSystem.ProcessEvents(events);
+                        this._mainWindow.PumpEvents();
                         this._mainWindow.AcquireSwapchainImage();
                         if (_activeScene != null)
                         {
