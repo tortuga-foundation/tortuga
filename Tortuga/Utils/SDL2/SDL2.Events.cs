@@ -3,7 +3,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Tortuga.SDL2
+namespace Tortuga.Utils.SDL2
 {
     public static unsafe partial class SDL2Native
     {

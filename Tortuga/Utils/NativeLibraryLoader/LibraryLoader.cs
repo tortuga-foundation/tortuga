@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace NativeLibraryLoader
+namespace Tortuga.Utils.NativeLibraryLoader
 {
     /// <summary>
     /// Exposes functionality for loading native libraries and function pointers.

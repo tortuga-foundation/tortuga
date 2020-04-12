@@ -1,7 +1,7 @@
 #pragma warning disable 1591
 using System;
 
-namespace Tortuga.SDL2
+namespace Tortuga.Utils.SDL2
 {
     /// <summary>
     /// A transparent wrapper over a pointer representing an SDL Joystick ID object.

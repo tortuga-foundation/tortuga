@@ -1,11 +1,10 @@
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.Extensions.DependencyModel;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace NativeLibraryLoader
+namespace Tortuga.Utils.NativeLibraryLoader
 {
     /// <summary>
     /// Enumerates possible library load targets.

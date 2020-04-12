@@ -1,5 +1,5 @@
 #pragma warning disable 1591
-namespace Tortuga.SDL2
+namespace Tortuga.Utils.SDL2
 {
 
     /// <summary>

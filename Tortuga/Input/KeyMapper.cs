@@ -1,4 +1,4 @@
-using Tortuga.SDL2;
+using Tortuga.Utils.SDL2;
 
 namespace Tortuga.Input
 {

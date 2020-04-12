@@ -1,7 +1,7 @@
 using System;
 using System.Numerics;
 using System.Collections.Generic;
-using Tortuga.SDL2;
+using Tortuga.Utils.SDL2;
 using System.Runtime.CompilerServices;
 using System.Text;
 

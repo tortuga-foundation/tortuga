@@ -1,10 +1,10 @@
 using System;
 using Vulkan;
 using System.Numerics;
-using Tortuga.SDL2;
+using Tortuga.Utils.SDL2;
 using System.Runtime.CompilerServices;
 using static Vulkan.VulkanNative;
-using static Tortuga.SDL2.SDL2Native;
+using static Tortuga.Utils.SDL2.SDL2Native;
 using System.Diagnostics;
 
 namespace Tortuga.Graphics

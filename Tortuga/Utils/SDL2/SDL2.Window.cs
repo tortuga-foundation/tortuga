@@ -1,7 +1,7 @@
 #pragma warning disable 1591
 using System;
 
-namespace Tortuga.SDL2
+namespace Tortuga.Utils.SDL2
 {
     public static unsafe partial class SDL2Native
     {

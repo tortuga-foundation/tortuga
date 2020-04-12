@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace NativeLibraryLoader
+namespace Tortuga.Utils.NativeLibraryLoader
 {
     internal static class Libdl
     {

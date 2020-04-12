@@ -4,8 +4,7 @@ using Vulkan;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Tortuga.Input;
-using Tortuga.SDL2;
-using static Tortuga.SDL2.SDL2Native;
+using Tortuga.Utils.SDL2;
 
 namespace Tortuga
 {

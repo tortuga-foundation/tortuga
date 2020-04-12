@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace Tortuga.SDL2
+namespace Tortuga.Utils.SDL2
 {
     public static unsafe partial class SDL2Native
     {
-        private static readonly NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
-        private static NativeLibraryLoader.NativeLibrary LoadSdl2()
+        private static readonly Tortuga.Utils.NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
+        private static Tortuga.Utils.NativeLibraryLoader.NativeLibrary LoadSdl2()
         {
             string name;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -28,7 +28,7 @@ namespace Tortuga.SDL2
                 name = "SDL2";
             }
 
-            var lib = new NativeLibraryLoader.NativeLibrary(name);
+            var lib = new Tortuga.Utils.NativeLibraryLoader.NativeLibrary(name);
             return lib;
         }
 
