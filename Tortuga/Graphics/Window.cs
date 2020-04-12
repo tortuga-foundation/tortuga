@@ -102,6 +102,7 @@ namespace Tortuga.Graphics
         unsafe ~Window()
         {
             _exists = false;
+            SDL_DestroyWindow(_windowHandle);
             vkDestroySurfaceKHR(Engine.Instance.Vulkan.Handle, this._surface, null);
         }
 
@@ -178,11 +179,16 @@ namespace Tortuga.Graphics
             SDL_PumpEvents();
             SDL_Event ev;
             while (SDL_PollEvent(&ev) != 0)
-            {
                 Input.InputSystem.ProcessEvents(ev);
-            }
         }
 
+        /// <summary>
+        /// Closes the window
+        /// </summary>
+        public unsafe void Close()
+        {
+            _exists = false;
+        }
 
         /// <summary>
         /// Aquire swapchain image and store the referance in 'SwapchainAcquiredImage'

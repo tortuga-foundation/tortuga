@@ -193,9 +193,10 @@ namespace Tortuga.Graphics.UI
         /// Get's called when a keyboard key is pressed
         /// </summary>
         /// <param name="key">The identifier of the keyboard key that was pressed</param>
-        protected override void OnKeyDown(KeyCode key)
+        /// <param name="modifiers">The modifiers being pressed with the key</param>
+        protected override void OnKeyDown(KeyCode key, ModifierKeys modifiers)
         {
-            base.OnKeyDown(key);
+            base.OnKeyDown(key, modifiers);
             if (!IsFocused)
                 return;
 

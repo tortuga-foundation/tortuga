@@ -113,7 +113,7 @@ namespace Tortuga.Graphics.UI
             this.HorizontalScrollBarDisplayType = ScrollBarDisplayType.AutoHide;
 
             InputSystem.OnMousePositionChanged += OnMousePositionChanged;
-            InputSystem.OnWheelDeltaChange += OnMouseWheelDeltaChanged;
+            InputSystem.OnMouseWheelChange += OnMouseWheelDeltaChanged;
         }
         /// <summary>
         /// De-constructor for ui ui scroll rect
@@ -123,7 +123,7 @@ namespace Tortuga.Graphics.UI
             _verticalScrollbar.OnValueChanged -= OnVerticalValueChanged;
             _horizontalScrollbar.OnValueChanged -= OnHorizontalValueChanged;
             InputSystem.OnMousePositionChanged -= OnMousePositionChanged;
-            InputSystem.OnWheelDeltaChange -= OnMouseWheelDeltaChanged;
+            InputSystem.OnMouseWheelChange -= OnMouseWheelDeltaChanged;
         }
 
         private void OnHorizontalValueChanged(float val)
@@ -140,11 +140,11 @@ namespace Tortuga.Graphics.UI
                 Scroll.Y = 0.0f;
         }
 
-        private void OnMouseWheelDeltaChanged(float wheel)
+        private void OnMouseWheelDeltaChanged(Vector2 wheel)
         {
             if (IsMouseInsideRect)
             {
-                Scroll.Y += wheel * 10.0f;
+                Scroll.Y += wheel.Y * 10.0f;
                 if (Scroll.Y > 0)
                     Scroll.Y = 0;
                 else if (Scroll.Y < Scale.Y - Viewport.Scale.Y)

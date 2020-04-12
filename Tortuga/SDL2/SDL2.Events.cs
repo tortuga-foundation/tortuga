@@ -1,4 +1,5 @@
 #pragma warning disable 1591
+#pragma warning disable 169
 using System;
 using System.Runtime.InteropServices;
 
@@ -455,6 +456,166 @@ namespace Tortuga.SDL2
         public uint direction;
     }
 
+    /// <summary>
+    /// Joystick event
+    /// </summary>
+    public struct SDL_JoyAxisEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp; 
+        public SDL_JoystickID which;
+        byte axis;
+        short value;
+    }
+
+    /// <summary>
+    /// Joystick ball event
+    /// </summary>
+    public struct SDL_JoyBallEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+        byte ball;
+        short xrel;
+        short yrel;
+    }
+
+    /// <summary>
+    /// Joystick hat events
+    /// </summary>
+    public struct SDL_JoyHatEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+        byte hat;
+        byte value;
+    }
+
+    /// <summary>
+    /// A structure that contains joystick button event information.
+    /// </summary>
+    public struct SDL_JoyButtonEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+        byte button;
+        byte state;
+    }
+
+    /// <summary>
+    /// A structure that contains joystick device event information.
+    /// </summary>
+    public struct SDL_JoyDeviceEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+    }
+
+    /// <summary>
+    /// A structure that contains game controller axis motion event information.
+    /// </summary>
+    public struct SDL_ControllerAxisEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+        byte axis;
+        short value;
+    }
+
+    /// <summary>
+    /// A structure that contains game controller button event information.
+    /// </summary>
+    public struct SDL_ControllerButtonEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+        byte button;
+        byte state;
+    }
+
+    /// <summary>
+    /// A structure that contains controller device event information.
+    /// </summary>
+    public struct SDL_ControllerDeviceEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+    }
+
+    /// <summary>
+    /// A structure that contains Audio device event information.
+    /// </summary>
+    public struct SDL_AudioDeviceEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_JoystickID which;
+        byte iscapture;
+    }
+
+    /// <summary>
+    /// A structure that contains finger touch event information.
+    /// </summary>
+    public struct SDL_TouchFingerEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_TouchID touchId;
+        public SDL_FingerID fingerId;
+        public float x;
+        public float y;
+        public float dx;
+        public float dy;
+        public float pressure;
+    }
+
+    /// <summary>
+    /// A structure that contains multiple finger gesture event information.
+    /// </summary>
+    public struct SDL_MultiGestureEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_TouchID touchId;
+        public float dTheta;
+        public float dDist;
+        public float x;
+        public float y;
+        ushort numFingers;
+    }
+
+    /// <summary>
+    /// A structure that contains complex gesture event information.
+    /// </summary>
+    public struct SDL_DollarGestureEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public SDL_TouchID touchId;
+        public SDL_GestureID gestureId;
+        public uint numFingers;
+        public float error;
+        public float x;
+        public float y;
+    }
+
+    /// <summary>
+    /// A structure that contains an event used to request a file open by the system.
+    /// </summary>
+    public struct SDL_DropEvent
+    {
+        public SDL_EventType type;
+        public uint timestamp;
+        public string file;
+        public uint windowID;
+    }
 
     [Flags]
     public enum ButtonState : uint
