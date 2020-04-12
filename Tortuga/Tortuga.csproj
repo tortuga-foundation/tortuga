@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>TortugaEngine</PackageId>
-    <Version>0.0.1</Version>
+    <Version>0.0.2</Version>
     <Authors>Zeeshan</Authors>
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Tortuga.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="System.Drawing.Common" Version="4.7.0"/>
-    <PackageReference Include="Vk" Version="1.0.22"/>
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="5.0.0-preview.2.20160.6"/>
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.2-runtime.20160.6"/>
+    <PackageReference Include="System.Drawing.Common" Version="4.7.0"/>
+    <PackageReference Include="Vk" Version="1.0.22"/>
   </ItemGroup>
 </Project>
