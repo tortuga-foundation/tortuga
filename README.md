@@ -12,7 +12,10 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 
 - Dot Net Core 3.0
 - Vulkan
-- SDL (With Vulkan Support)
+- SDL2
+
+If tortuga cannot find your library you can adjust the name of the file from 
+`Tortuga/SDL2/SDL2.cs`
 
 ## Using the package in your project
 
