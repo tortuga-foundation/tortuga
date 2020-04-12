@@ -9,7 +9,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Drawing.Common" Version="4.7.0"/>
-    <PackageReference Include="Veldrid.Sdl2" Version="4.7.0"/>
     <PackageReference Include="Vk" Version="1.0.22"/>
+    <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="5.0.0-preview.2.20160.6"/>
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.2-runtime.20160.6"/>
   </ItemGroup>
 </Project>

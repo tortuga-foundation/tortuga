@@ -236,11 +236,7 @@ namespace Tortuga.Systems
 
                     foreach (var camera in cameras)
                     {
-                        var cameraRes = new System.Numerics.Vector2
-                        {
-                            X = Engine.Instance.MainWindow.Width * _cameraResolutionScale,
-                            Y = Engine.Instance.MainWindow.Height * _cameraResolutionScale,
-                        };
+                        var cameraRes = Engine.Instance.MainWindow.Size * _cameraResolutionScale;
                         if (camera.Resolution != cameraRes)
                             camera.Resolution = cameraRes;
                         if (camera.IsStatic == false)

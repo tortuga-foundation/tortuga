@@ -55,7 +55,7 @@ namespace Tortuga.Graphics.UI.Base
         /// </summary>
         public UiInteractable()
         {
-            InputSystem.OnCharacterPress += OnCharacterPress;
+            InputSystem.OnTextInput += OnCharacterPress;
             InputSystem.OnKeyDown += OnKeyDown;
             InputSystem.OnKeyUp += OnKeyUp;
             InputSystem.OnMousePositionChanged += OnMousePositionChanged;
@@ -67,7 +67,7 @@ namespace Tortuga.Graphics.UI.Base
         /// </summary>
         ~UiInteractable()
         {
-            InputSystem.OnCharacterPress -= OnCharacterPress;
+            InputSystem.OnTextInput -= OnCharacterPress;
             InputSystem.OnKeyDown -= OnKeyDown;
             InputSystem.OnKeyUp -= OnKeyUp;
             InputSystem.OnMousePositionChanged -= OnMousePositionChanged;
@@ -104,7 +104,8 @@ namespace Tortuga.Graphics.UI.Base
         /// Get's called when a keyboard key is released
         /// </summary>
         /// <param name="key">The identifier of the keyboard key that was released</param>
-        protected virtual void OnKeyUp(KeyCode key)
+        /// <param name="modifiers">The modifiers being pressed with the key</param>
+        protected virtual void OnKeyUp(KeyCode key, ModifierKeys modifiers)
         {
         }
 
@@ -113,7 +114,8 @@ namespace Tortuga.Graphics.UI.Base
         /// Get's called when a keyboard key is pressed
         /// </summary>
         /// <param name="key">The identifier of the keyboard key that was pressed</param>
-        protected virtual void OnKeyDown(KeyCode key)
+        /// <param name="modifiers">The modifiers being pressed with the key</param>
+        protected virtual void OnKeyDown(KeyCode key, ModifierKeys modifiers)
         {
         }
 

@@ -32,6 +32,7 @@ namespace Tortuga.Graphics.API
         public unsafe Swapchain(Window window)
         {
             _window = window;
+            var windowSize = window.Size;
             //get device presentation queue
             _queuesSupportingPresentation = new bool[Engine.Instance.MainDevice.QueueFamilyProperties.Count];
             for (int i = 0; i < Engine.Instance.MainDevice.QueueFamilyProperties.Count; i++)
@@ -152,8 +153,8 @@ namespace Tortuga.Graphics.API
             {
                 VkExtent2D actualExtent = new VkExtent2D
                 {
-                    width = Convert.ToUInt32(window.SdlHandle.Width),
-                    height = Convert.ToUInt32(window.SdlHandle.Height)
+                    width = Convert.ToUInt32(windowSize.X),
+                    height = Convert.ToUInt32(windowSize.Y)
                 };
                 actualExtent.width = Clamp(
                     actualExtent.width,
@@ -192,7 +193,10 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to create swapchain");
             _swapchain = swapchain;
 
-            SetupSwapchainImages(window.Width, window.Height);
+            SetupSwapchainImages(
+                Convert.ToInt32(windowSize.X), 
+                Convert.ToInt32(windowSize.Y)
+            );
         }
 
         unsafe ~Swapchain()
@@ -254,6 +258,7 @@ namespace Tortuga.Graphics.API
 
         public unsafe void Resize()
         {
+            var windowSize = _window.Size;
             //get surface capabilities
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
             if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
@@ -271,8 +276,8 @@ namespace Tortuga.Graphics.API
             {
                 VkExtent2D actualExtent = new VkExtent2D
                 {
-                    width = Convert.ToUInt32(_window.SdlHandle.Width),
-                    height = Convert.ToUInt32(_window.SdlHandle.Height)
+                    width = Convert.ToUInt32(windowSize.X),
+                    height = Convert.ToUInt32(windowSize.Y)
                 };
                 actualExtent.width = Clamp(
                     actualExtent.width,
@@ -307,7 +312,10 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to create swapchain");
             _swapchain = swapchain;
 
-            SetupSwapchainImages(_window.Width, _window.Height);
+            SetupSwapchainImages(
+                Convert.ToInt32(windowSize.X), 
+                Convert.ToInt32(windowSize.Y)
+            );
         }
     }
 }

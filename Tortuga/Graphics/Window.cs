@@ -1,9 +1,10 @@
 using System;
 using Vulkan;
-using Veldrid.Sdl2;
+using System.Numerics;
+using Tortuga.Utils.SDL2;
 using System.Runtime.CompilerServices;
 using static Vulkan.VulkanNative;
-using static Veldrid.Sdl2.Sdl2Native;
+using static Tortuga.Utils.SDL2.SDL2Native;
 using System.Diagnostics;
 
 namespace Tortuga.Graphics
@@ -17,11 +18,10 @@ namespace Tortuga.Graphics
         /// returns acquired swapchain
         /// </summary>
         public uint SwapchainAcquiredImage => _swapchainImageIndex;
-        internal Sdl2Window SdlHandle => _windowHandle;
         internal VkSurfaceKHR Surface => _surface;
         internal API.Swapchain Swapchain => _swapchain;
 
-        private Sdl2Window _windowHandle;
+        private IntPtr _windowHandle;
         private VkSurfaceKHR _surface;
         private API.Swapchain _swapchain;
         private uint _swapchainImageIndex;
@@ -36,27 +36,25 @@ namespace Tortuga.Graphics
         /// <param name="width">the width of the window</param>
         /// <param name="height">the height of the window</param>
         /// <param name="flags">the sdl flags for the window</param>
-        /// <param name="threadProcessing">enable thread processing on window</param>
         public unsafe Window(
             string title,
             int x, int y,
             int width, int height,
-            SDL_WindowFlags flags,
-            bool threadProcessing)
+            SDL_WindowFlags flags)
         {
-            this._windowHandle = new Veldrid.Sdl2.Sdl2Window(
+            this._windowHandle = SDL_CreateWindow(
                 title,
                 x, y,
                 width, height,
-                flags,
-                threadProcessing
+                flags
             );
+            _exists = true;
 
             //create surface
             var sdlVersion = SDLVersion;
             SDL_SysWMinfo sysWindowInfo;
             sysWindowInfo.version = sdlVersion;
-            if (SDL_GetWMWindowInfo(_windowHandle.SdlWindowHandle, &sysWindowInfo) == 0)
+            if (SDL_GetWMWindowInfo(_windowHandle, &sysWindowInfo) == 0)
                 throw new InvalidOperationException("couldn't retrive sdl window info");
             VkResult err;
             VkSurfaceKHR surface;
@@ -66,7 +64,7 @@ namespace Tortuga.Graphics
                 var surfaceInfo = VkWin32SurfaceCreateInfoKHR.New();
                 var processHandle = Process.GetCurrentProcess().SafeHandle.DangerousGetHandle();
                 surfaceInfo.hinstance = processHandle;
-                surfaceInfo.hwnd = win32Info.Sdl2Window;
+                surfaceInfo.hwnd = win32Info.window;
                 err = vkCreateWin32SurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.X11)
@@ -76,7 +74,7 @@ namespace Tortuga.Graphics
                 surfaceInfo.dpy = (Vulkan.Xlib.Display*)x11Info.display;
                 surfaceInfo.window = new Vulkan.Xlib.Window
                 {
-                    Value = x11Info.Sdl2Window
+                    Value = x11Info.window
                 };
                 err = vkCreateXlibSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
@@ -103,6 +101,8 @@ namespace Tortuga.Graphics
         /// </summary>
         unsafe ~Window()
         {
+            _exists = false;
+            SDL_DestroyWindow(_windowHandle);
             vkDestroySurfaceKHR(Engine.Instance.Vulkan.Handle, this._surface, null);
         }
 
@@ -119,55 +119,76 @@ namespace Tortuga.Graphics
         /// <summary>
         /// Does this window exist or it has been destroyed
         /// </summary>
-        public bool Exists => _windowHandle.Exists;
+        public bool Exists => _exists;
+        private bool _exists;
 
         /// <summary>
         /// sets or gets if the window is resizeable
         /// </summary>
         public bool Resizeable
         {
-            get => _windowHandle.Resizable;
-            set => _windowHandle.Resizable = value;
+            get => (SDL_GetWindowFlags(_windowHandle) & SDL_WindowFlags.Resizable) != 0;
         }
         /// <summary>
         /// sets or gets the window's title
         /// </summary>
         public string Title
         {
-            get => _windowHandle.Title;
-            set => _windowHandle.Title = value;
+            get => SDL_GetWindowTitle(_windowHandle);
+            set => SDL_SetWindowTitle(_windowHandle, value);
         }
         /// <summary>
         /// sets or gets if the window is visible
         /// </summary>
         public bool Visible
         {
-            get => _windowHandle.Visible;
-            set => _windowHandle.Visible = value;
+            get => (SDL_GetWindowFlags(_windowHandle) & SDL_WindowFlags.Shown) != 0;
+            set
+            {
+                if (value)
+                    SDL_ShowWindow(_windowHandle);
+                else
+                    SDL_HideWindow(_windowHandle);
+            }
         }
         /// <summary>
-        /// sets or gets the window width
+        /// Window width and height
         /// </summary>
-        public int Width
+        public unsafe Vector2 Size
         {
-            get => _windowHandle.Width;
-            set => _windowHandle.Width = value;
+            get 
+            {
+                int w, h;
+                SDL_GetWindowSize(_windowHandle, &w, &h);
+                return new Vector2(w, h);
+            }
+            set
+            {
+                int w = Convert.ToInt32(MathF.Round(value.X));
+                int h = Convert.ToInt32(MathF.Round(value.Y));
+                SDL_SetWindowSize(_windowHandle, w, h);
+            }
         }
-        /// <summary>
-        /// sets or gets the window height
-        /// </summary>
-        public int Height
-        {
-            get => _windowHandle.Height;
-            set => _windowHandle.Height = value;
-        }
+        
 
         /// <summary>
         /// process window events and return it as a snapshot
         /// </summary>
-        public unsafe Veldrid.InputSnapshot PumpEvents()
-            => _windowHandle.PumpEvents();
+        public unsafe void PumpEvents()
+        {
+            SDL_PumpEvents();
+            SDL_Event ev;
+            while (SDL_PollEvent(&ev) != 0)
+                Input.InputSystem.ProcessEvents(ev);
+        }
 
+        /// <summary>
+        /// Closes the window
+        /// </summary>
+        public unsafe void Close()
+        {
+            _exists = false;
+        }
 
         /// <summary>
         /// Aquire swapchain image and store the referance in 'SwapchainAcquiredImage'

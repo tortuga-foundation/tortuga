@@ -186,6 +186,7 @@ namespace Tortuga.Components
         /// </summary>
         public async Task UpdateCameraBuffers()
         {
+            var windowSize = Engine.Instance.MainWindow.Size;
             await _cameraBuffer.SetDataWithStaging<CameraShaderInfo>(
                 new CameraShaderInfo[]
                 {
@@ -193,8 +194,8 @@ namespace Tortuga.Components
                     {
                         Projection = ProjectionMatrix,
                         View = ViewMatrix,
-                        PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
-                        PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
+                        PositionX = Convert.ToInt32(Math.Round(windowSize.X * Viewport.X)),
+                        PositionY = Convert.ToInt32(Math.Round(windowSize.Y * Viewport.Y)),
                         Width = Convert.ToInt32(MathF.Round(Resolution.X)),
                         Height = Convert.ToInt32(MathF.Round(Resolution.Y))
                     }
@@ -215,6 +216,7 @@ namespace Tortuga.Components
         }
         internal BufferTransferObject[] UpdateCameraBuffersSemaphore()
         {
+            var windowSize = Engine.Instance.MainWindow.Size;
             return new BufferTransferObject[]{
                 _cameraBuffer.SetDataGetTransferObject<CameraShaderInfo>(
                     new CameraShaderInfo[]
@@ -223,8 +225,8 @@ namespace Tortuga.Components
                         {
                             Projection = ProjectionMatrix,
                             View = ViewMatrix,
-                            PositionX = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Width * Viewport.X)),
-                            PositionY = Convert.ToInt32(Math.Round(Engine.Instance.MainWindow.Height * Viewport.Y)),
+                            PositionX = Convert.ToInt32(Math.Round(windowSize.X * Viewport.X)),
+                            PositionY = Convert.ToInt32(Math.Round(windowSize.Y * Viewport.Y)),
                             Width = Convert.ToInt32(MathF.Round(Resolution.X)),
                             Height = Convert.ToInt32(MathF.Round(Resolution.Y))
                         }

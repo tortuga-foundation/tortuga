@@ -260,10 +260,7 @@ namespace Tortuga.Graphics.UI.Base
         /// </summary>
         public virtual void UpdatePositionsWithConstraints()
         {
-            var parentScale = new Vector2(
-                Engine.Instance.MainWindow.Width,
-                Engine.Instance.MainWindow.Height
-            );
+            var parentScale = Engine.Instance.MainWindow.Size;
 
             if (_parent != null)
                 parentScale = _parent.Scale;

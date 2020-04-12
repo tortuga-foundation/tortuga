@@ -4,6 +4,7 @@ using Vulkan;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Tortuga.Input;
+using Tortuga.Utils.SDL2;
 
 namespace Tortuga
 {
@@ -57,14 +58,14 @@ namespace Tortuga
             this._vulkan = new VulkanInstance();
 
             //setup window
-            Veldrid.Sdl2.SDL_WindowFlags windowFlags = Veldrid.Sdl2.SDL_WindowFlags.AllowHighDpi;
+            var windowFlags = SDL_WindowFlags.AllowHighDpi;
             if (Settings.Window.Type == Settings.Window.WindowType.ResizeableWindow)
-                windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Resizable;
+                windowFlags |= SDL_WindowFlags.Resizable;
             else if (Settings.Window.Type == Settings.Window.WindowType.Fullscreen)
-                windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Fullscreen;
+                windowFlags |= SDL_WindowFlags.Fullscreen;
             else if (Settings.Window.Type == Settings.Window.WindowType.Borderless)
-                windowFlags |= Veldrid.Sdl2.SDL_WindowFlags.Borderless;
-            _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, windowFlags, true);
+                windowFlags |= SDL_WindowFlags.Borderless;
+            _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, windowFlags);
 
             //setup render pass
             _mainRenderPass = new RenderPass();
@@ -120,8 +121,7 @@ namespace Tortuga
                     try
                     {
                         Time.LastFramesTicks = Time.StopWatch.ElapsedTicks;
-                        var events = this._mainWindow.PumpEvents();
-                        InputSystem.ProcessEvents(events);
+                        this._mainWindow.PumpEvents();
                         this._mainWindow.AcquireSwapchainImage();
                         if (_activeScene != null)
                         {
