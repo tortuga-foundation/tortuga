@@ -6,8 +6,10 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DocumentationFile>bin\Tortuga.XML</DocumentationFile>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="$(PackageLicenseFile)"/>
     <PackageReference Include="Microsoft.DotNet.PlatformAbstractions" Version="5.0.0-preview.2.20160.6"/>
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="5.0.0-preview.2-runtime.20160.6"/>
     <PackageReference Include="System.Drawing.Common" Version="4.7.0"/>
