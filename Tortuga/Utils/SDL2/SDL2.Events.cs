@@ -613,7 +613,7 @@ namespace Tortuga.Utils.SDL2
     {
         public SDL_EventType type;
         public uint timestamp;
-        public unsafe char* file;
+        public string file;
         public uint windowID;
     }
 

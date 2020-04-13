@@ -10,6 +10,25 @@ using System.Diagnostics;
 namespace Tortuga.Graphics
 {
     /// <summary>
+    /// Type of message box
+    /// </summary>
+    public enum MessageBoxFlags
+    {
+        /// <summary>
+        /// Error type of message box
+        /// </summary>
+        Error = 16,
+        /// <summary>
+        /// Warning type of message box
+        /// </summary>
+        Warning = 32,
+        /// <summary>
+        /// Information type of message box
+        /// </summary>
+        Information = 64
+    }
+
+    /// <summary>
     /// This can be used to create a GUI window
     /// </summary>
     public class Window
@@ -256,6 +275,23 @@ namespace Tortuga.Graphics
             var presentResponse = vkQueuePresentKHR(_swapchain.DevicePresentQueueFamily.Queues[0], &presentInfo);
             if (presentResponse != VkResult.Success && presentResponse != VkResult.ErrorOutOfDateKHR)
                 throw new Exception("failed to present swapchain image");
+        }
+
+        /// <summary>
+        /// Display's a message box
+        /// </summary>
+        /// <param name="flags">Type of message box</param>
+        /// <param name="title">Title</param>
+        /// <param name="message">Message to display</param>
+        /// <param name="shouldPause">If true it will stop the program until message box is delt with</param>
+        public unsafe void ShowMessageBox(MessageBoxFlags flags, string title, string message, bool shouldPause = false)
+        {
+            var t1 = System.Threading.Tasks.Task.Run(() => 
+            {
+                SDL_ShowSimpleMessageBox((uint)flags, title, message);
+            });
+            if (shouldPause)
+                t1.Wait();
         }
     }
 }
