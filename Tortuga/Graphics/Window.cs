@@ -102,7 +102,7 @@ namespace Tortuga.Graphics
                 err = vkCreateMirSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else
-                throw new PlatformNotSupportedException("this platform is not currently supported");
+                throw new PlatformNotSupportedException("This platform (window manager) is currently not supported");
             
             if (err != VkResult.Success)
                 throw new Exception("failed to create window surface");
