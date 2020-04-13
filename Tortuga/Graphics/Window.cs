@@ -86,8 +86,24 @@ namespace Tortuga.Graphics
                 surfaceInfo.surface = (Vulkan.Wayland.wl_surface*)waylandInfo.surface;
                 err = vkCreateWaylandSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
+            else if (sysWindowInfo.subsystem == SysWMType.Android)
+            {
+                var androidInfo = Unsafe.Read<AndroidWindowInfo>(&sysWindowInfo.info);
+                var surfaceInfo = VkAndroidSurfaceCreateInfoKHR.New();
+                surfaceInfo.window = (Vulkan.Android.ANativeWindow*)androidInfo.window;
+                err = vkCreateAndroidSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+            }
+            else if (sysWindowInfo.subsystem == SysWMType.Mir)
+            {
+                var mirInfo = Unsafe.Read<MirWindowInfo>(&sysWindowInfo.info);
+                var surfaceInfo = VkMirSurfaceCreateInfoKHR.New();
+                surfaceInfo.connection = (Vulkan.Mir.MirConnection*)mirInfo.connection;
+                surfaceInfo.mirSurface = (Vulkan.Mir.MirSurface*)mirInfo.mirSurface;
+                err = vkCreateMirSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+            }
             else
                 throw new PlatformNotSupportedException("this platform is not currently supported");
+            
             if (err != VkResult.Success)
                 throw new Exception("failed to create window surface");
 

@@ -43,6 +43,17 @@ namespace Tortuga.Utils.SDL2
         public IntPtr surface;
     }
 
+    public struct AndroidWindowInfo
+    {
+        public IntPtr window;
+    }
+
+    public struct MirWindowInfo
+    {
+        public IntPtr connection;
+        public IntPtr mirSurface;
+    }
+
     public enum SysWMType
     {
         Unknown,
