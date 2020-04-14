@@ -92,26 +92,13 @@ namespace Tortuga.Input
                 case SDL_EventType.FingerUp:
                 case SDL_EventType.FingerMotion:
                     var fingerMotionEvent = Unsafe.Read<SDL_TouchFingerEvent>(&ev);
-                    break;
-                case SDL_EventType.DollarGesture:
-                    var dollarRecordEvent = Unsafe.Read<SDL_DollarGestureEvent>(&ev);
-                    break;
-                case SDL_EventType.DollarRecord:
-                    break;
-                case SDL_EventType.MultiGesture:
-                    var multiGestureEvent = Unsafe.Read<SDL_MultiGestureEvent>(&ev);
-                    break;
-                case SDL_EventType.ClipboardUpdate:
+                    ProcessFingerMotionEvent(fingerMotionEvent);
                     break;
                 case SDL_EventType.DropFile:
                 case SDL_EventType.DropTest:
                 case SDL_EventType.DropBegin:
                 case SDL_EventType.DropComplete:
                     var dropEvent = Unsafe.Read<SDL_DropEvent>(&ev);
-                    break;
-                case SDL_EventType.AudioDeviceAdded:
-                case SDL_EventType.AudioDeviceRemoved:
-                    var audioDeviceEvent = Unsafe.Read<SDL_AudioDeviceEvent>(&ev);
                     break;
             }
         }
@@ -128,6 +115,20 @@ namespace Tortuga.Input
             _touches = new List<SDL_TouchID>();
             _fingers = new List<SDL_FingerID>();
         }
+
+        #region Drop
+
+        /// <summary>
+        /// get's called when a user drops file in the window
+        /// </summary>
+        public static Action<string> OnDrop;
+
+        private static void ProcessDropEvent(SDL_DropEvent ev)
+        {
+            OnDrop?.Invoke(ev.file);
+        }
+
+        #endregion
 
         #region Finger Motion Event
 
@@ -558,17 +559,33 @@ namespace Tortuga.Input
         /// </summary>
         public struct JoyAxiesEvent
         {
-
+            /// <summary>
+            /// Unique joy identifier
+            /// </summary>
+            public int JoyId;
+            /// <summary>
+            /// Unique axies identifier for joy
+            /// </summary>
+            public int AxisId;
+            /// <summary>
+            /// Current value of the axies
+            /// </summary>
+            public int Value;
         }
 
         /// <summary>
         /// Get's called when an Axis get's changed on a joystick
         /// </summary>
-        public static Action<int, int, int> OnJoyAxis;
+        public static Action<JoyAxiesEvent> OnJoyAxis;
 
         private static void ProcessJoyAxisEvent(SDL_JoyAxisEvent ev)
         {
-            OnJoyAxis?.Invoke(_joysticks.FindIndex((SDL_JoystickID j) => ev.which == j), ev.axis, ev.value);
+            OnJoyAxis?.Invoke(new JoyAxiesEvent()
+            {
+                JoyId = _joysticks.FindIndex((SDL_JoystickID j) => ev.which == j),
+                AxisId = ev.axis,
+                Value = ev.value
+            });
         }
 
         #endregion
@@ -730,12 +747,12 @@ namespace Tortuga.Input
         /// <summary>
         /// Get's called when the window is resized by the user
         /// </summary>
-        public static Action<int, int> OnWindowResized;
+        public static Action<Vector2> OnWindowResized;
 
         /// <summary>
         /// Get's called when the window size changes 
         /// </summary>
-        public static Action<int, int> OnWindowSizeChanged;
+        public static Action<Vector2> OnWindowSizeChanged;
 
         /// <summary>
         /// Get's called when window is minimized
@@ -762,10 +779,10 @@ namespace Tortuga.Input
             switch (ev.@event)
             {
                 case SDL_WindowEventID.Resized:
-                    OnWindowResized?.Invoke(ev.data1, ev.data2);
+                    OnWindowResized?.Invoke(new Vector2(ev.data1, ev.data2));
                     break;
                 case SDL_WindowEventID.SizeChanged:
-                    OnWindowSizeChanged?.Invoke(ev.data1, ev.data2);
+                    OnWindowSizeChanged?.Invoke(new Vector2(ev.data1, ev.data2));
                     break;
                 case SDL_WindowEventID.Minimized:
                     OnWindowMinimized?.Invoke();
