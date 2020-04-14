@@ -1,11 +1,12 @@
 #pragma warning disable 1591
 #pragma warning disable 169
+#pragma warning disable 649
 using System;
 using System.Runtime.InteropServices;
 
 namespace Tortuga.Utils.SDL2
 {
-    public static unsafe partial class SDL2Native
+    internal static unsafe partial class SDL2Native
     {
         private delegate void SDL_PumpEvents_t();
         private static SDL_PumpEvents_t s_sdl_pumpEvents = LoadFunction<SDL_PumpEvents_t>("SDL_PumpEvents");
@@ -17,7 +18,7 @@ namespace Tortuga.Utils.SDL2
     }
 
     [StructLayout(LayoutKind.Explicit)]
-    public struct SDL_Event
+    internal struct SDL_Event
     {
         [FieldOffset(0)]
         public SDL_EventType type;
@@ -28,7 +29,7 @@ namespace Tortuga.Utils.SDL2
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct SDL_WindowEvent
+    internal struct SDL_WindowEvent
     {
         /// <summary>
         /// ::SDL_WINDOWEVENT
@@ -56,7 +57,7 @@ namespace Tortuga.Utils.SDL2
         public int data2;
     }
 
-    public enum SDL_WindowEventID : byte
+    internal enum SDL_WindowEventID : byte
     {
         /// <summary>
         /// Never Used
@@ -133,7 +134,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// The types of events that can be delivered.
     /// </summary>
-    public enum SDL_EventType
+    internal enum SDL_EventType
     {
         /// <summary>
         /// Unused (do not remove)
@@ -349,7 +350,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// Mouse motion event structure (event.motion.*)
     /// </summary>
-    public struct SDL_MouseMotionEvent
+    internal struct SDL_MouseMotionEvent
     {
         public SDL_EventType type;
         public uint timestamp;
@@ -386,7 +387,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// Mouse button event structure (event.button.*)
     /// </summary>
-    public struct SDL_MouseButtonEvent
+    internal struct SDL_MouseButtonEvent
     {
         /// <summary>
         /// SDL_MOUSEBUTTONDOWN or ::SDL_MOUSEBUTTONUP.
@@ -427,7 +428,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// Mouse wheel event structure (event.wheel.*).
     /// </summary>
-    public struct SDL_MouseWheelEvent
+    internal struct SDL_MouseWheelEvent
     {
         /// <summary>
         /// SDL_MOUSEWHEEL.
@@ -459,56 +460,56 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// Joystick event
     /// </summary>
-    public struct SDL_JoyAxisEvent
+    internal struct SDL_JoyAxisEvent
     {
         public SDL_EventType type;
         public uint timestamp; 
         public SDL_JoystickID which;
-        byte axis;
-        short value;
+        public byte axis;
+        public short value;
     }
 
     /// <summary>
     /// Joystick ball event
     /// </summary>
-    public struct SDL_JoyBallEvent
+    internal struct SDL_JoyBallEvent
     {
         public SDL_EventType type;
         public uint timestamp;
         public SDL_JoystickID which;
-        byte ball;
-        short xrel;
-        short yrel;
+        public byte ball;
+        public short xrel;
+        public short yrel;
     }
 
     /// <summary>
     /// Joystick hat events
     /// </summary>
-    public struct SDL_JoyHatEvent
+    internal struct SDL_JoyHatEvent
     {
         public SDL_EventType type;
         public uint timestamp;
         public SDL_JoystickID which;
-        byte hat;
-        byte value;
+        public byte hat;
+        public byte value;
     }
 
     /// <summary>
     /// A structure that contains joystick button event information.
     /// </summary>
-    public struct SDL_JoyButtonEvent
+    internal struct SDL_JoyButtonEvent
     {
         public SDL_EventType type;
         public uint timestamp;
         public SDL_JoystickID which;
-        byte button;
-        byte state;
+        public byte button;
+        public byte state;
     }
 
     /// <summary>
     /// A structure that contains joystick device event information.
     /// </summary>
-    public struct SDL_JoyDeviceEvent
+    internal struct SDL_JoyDeviceEvent
     {
         public SDL_EventType type;
         public uint timestamp;
@@ -518,52 +519,52 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// A structure that contains game controller axis motion event information.
     /// </summary>
-    public struct SDL_ControllerAxisEvent
+    internal struct SDL_ControllerAxisEvent
     {
         public SDL_EventType type;
         public uint timestamp;
-        public SDL_JoystickID which;
-        byte axis;
-        short value;
+        public int which;
+        public byte axis;
+        public short value;
     }
 
     /// <summary>
     /// A structure that contains game controller button event information.
     /// </summary>
-    public struct SDL_ControllerButtonEvent
+    internal struct SDL_ControllerButtonEvent
     {
         public SDL_EventType type;
         public uint timestamp;
-        public SDL_JoystickID which;
-        byte button;
-        byte state;
+        public int which;
+        public byte button;
+        public byte state;
     }
 
     /// <summary>
     /// A structure that contains controller device event information.
     /// </summary>
-    public struct SDL_ControllerDeviceEvent
+    internal struct SDL_ControllerDeviceEvent
     {
         public SDL_EventType type;
         public uint timestamp;
-        public SDL_JoystickID which;
+        public int which;
     }
 
     /// <summary>
     /// A structure that contains Audio device event information.
     /// </summary>
-    public struct SDL_AudioDeviceEvent
+    internal struct SDL_AudioDeviceEvent
     {
         public SDL_EventType type;
         public uint timestamp;
-        public SDL_JoystickID which;
-        byte iscapture;
+        public uint which;
+        public byte iscapture;
     }
 
     /// <summary>
     /// A structure that contains finger touch event information.
     /// </summary>
-    public struct SDL_TouchFingerEvent
+    internal struct SDL_TouchFingerEvent
     {
         public SDL_EventType type;
         public uint timestamp;
@@ -579,7 +580,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// A structure that contains multiple finger gesture event information.
     /// </summary>
-    public struct SDL_MultiGestureEvent
+    internal struct SDL_MultiGestureEvent
     {
         public SDL_EventType type;
         public uint timestamp;
@@ -588,13 +589,13 @@ namespace Tortuga.Utils.SDL2
         public float dDist;
         public float x;
         public float y;
-        ushort numFingers;
+        public ushort numFingers;
     }
 
     /// <summary>
     /// A structure that contains complex gesture event information.
     /// </summary>
-    public struct SDL_DollarGestureEvent
+    internal struct SDL_DollarGestureEvent
     {
         public SDL_EventType type;
         public uint timestamp;
@@ -609,7 +610,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// A structure that contains an event used to request a file open by the system.
     /// </summary>
-    public struct SDL_DropEvent
+    internal struct SDL_DropEvent
     {
         public SDL_EventType type;
         public uint timestamp;
@@ -618,7 +619,7 @@ namespace Tortuga.Utils.SDL2
     }
 
     [Flags]
-    public enum ButtonState : uint
+    internal enum ButtonState : uint
     {
         Left = 1 << 0,
         Middle = 1 << 1,
@@ -630,7 +631,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// Keyboard button event structure (event.key.*).
     /// </summary>
-    public struct SDL_KeyboardEvent
+    internal struct SDL_KeyboardEvent
     {
         /// <summary>
         /// ::SDL_KEYDOWN or ::SDL_KEYUP
@@ -658,7 +659,7 @@ namespace Tortuga.Utils.SDL2
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct SDL_Keysym
+    internal struct SDL_Keysym
     {
         /// <summary>
         /// SDL physical key code.
@@ -675,7 +676,7 @@ namespace Tortuga.Utils.SDL2
         private uint __unused;
     }
 
-    public enum SDL_MouseButton : byte
+    internal enum SDL_MouseButton : byte
     {
         Left = 1,
         Middle = 2,
@@ -687,7 +688,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// Keyboard text input event structure (event.text.*)
     /// </summary>
-    public unsafe struct SDL_TextInputEvent
+    internal unsafe struct SDL_TextInputEvent
     {
         public const int MaxTextSize = 32;
 

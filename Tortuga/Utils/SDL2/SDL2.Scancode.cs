@@ -10,7 +10,7 @@ namespace Tortuga.Utils.SDL2
     /// The values in this enumeration are based on the USB usage page standard:
     /// http://www.usb.org/developers/devclass_docs/Hut1_12v2.pdf
     /// </summary>
-    public enum SDL_Scancode
+    internal enum SDL_Scancode
     {
         SDL_SCANCODE_UNKNOWN = 0,
 

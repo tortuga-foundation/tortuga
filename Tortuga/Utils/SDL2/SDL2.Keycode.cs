@@ -3,7 +3,7 @@ using System;
 
 namespace Tortuga.Utils.SDL2
 {
-    public enum SDL_Keycode
+    internal enum SDL_Keycode
     {
         SDLK_UNKNOWN = 0,
 
@@ -274,7 +274,7 @@ namespace Tortuga.Utils.SDL2
     /// Enumeration of valid key mods (possibly OR'd together).
     /// </summary>
     [Flags]
-    public enum SDL_Keymod
+    internal enum SDL_Keymod
     {
         None = 0x0000,
         LeftShift = 0x0001,

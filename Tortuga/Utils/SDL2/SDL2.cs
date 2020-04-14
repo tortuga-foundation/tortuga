@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace Tortuga.Utils.SDL2
 {
-    public static unsafe partial class SDL2Native
+    internal static unsafe partial class SDL2Native
     {
         private static readonly Tortuga.Utils.NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
         private static Tortuga.Utils.NativeLibraryLoader.NativeLibrary LoadSdl2()

@@ -1,41 +1,42 @@
 #pragma warning disable 1591
+#pragma warning disable 649
 using System;
 
 namespace Tortuga.Utils.SDL2
 {
-    public static unsafe partial class SDL2Native
+    internal static unsafe partial class SDL2Native
     {
         private delegate int SDL_GetWindowWMInfo_t(SDL_Window window, SDL_SysWMinfo* info);
         private static readonly SDL_GetWindowWMInfo_t s_getWindowWMInfo = LoadFunction<SDL_GetWindowWMInfo_t>("SDL_GetWindowWMInfo");
         public static int SDL_GetWMWindowInfo(SDL_Window window, SDL_SysWMinfo* info) => s_getWindowWMInfo(window, info);
     }
-    public struct SDL_SysWMinfo
+    internal struct SDL_SysWMinfo
     {
         public SDL_version version;
         public SysWMType subsystem;
         public WindowInfo info;
     }
 
-    public unsafe struct WindowInfo
+    internal unsafe struct WindowInfo
     {
         public const int WindowInfoSizeInBytes = 100;
         private fixed byte bytes[WindowInfoSizeInBytes];
     }
 
-    public struct Win32WindowInfo
+    internal struct Win32WindowInfo
     {
         public IntPtr window;
         public IntPtr hdc;
         public IntPtr hinstance;
     }
 
-    public struct X11WindowInfo
+    internal struct X11WindowInfo
     {
         public IntPtr display;
         public IntPtr window;
     }
 
-    public struct WaylandWindowInfo
+    internal struct WaylandWindowInfo
     {
 
         public IntPtr display;
@@ -43,18 +44,18 @@ namespace Tortuga.Utils.SDL2
         public IntPtr surface;
     }
 
-    public struct AndroidWindowInfo
+    internal struct AndroidWindowInfo
     {
         public IntPtr window;
     }
 
-    public struct MirWindowInfo
+    internal struct MirWindowInfo
     {
         public IntPtr connection;
         public IntPtr mirSurface;
     }
 
-    public enum SysWMType
+    internal enum SysWMType
     {
         Unknown,
         Windows,

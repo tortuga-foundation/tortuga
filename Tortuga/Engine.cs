@@ -58,14 +58,7 @@ namespace Tortuga
             this._vulkan = new VulkanInstance();
 
             //setup window
-            var windowFlags = SDL_WindowFlags.AllowHighDpi;
-            if (Settings.Window.Type == Settings.Window.WindowType.ResizeableWindow)
-                windowFlags |= SDL_WindowFlags.Resizable;
-            else if (Settings.Window.Type == Settings.Window.WindowType.Fullscreen)
-                windowFlags |= SDL_WindowFlags.Fullscreen;
-            else if (Settings.Window.Type == Settings.Window.WindowType.Borderless)
-                windowFlags |= SDL_WindowFlags.Borderless;
-            _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, windowFlags);
+            _mainWindow = new Window("tortuga", 0, 0, 1920, 1080, Settings.Window.Type);
 
             //setup render pass
             _mainRenderPass = new RenderPass();

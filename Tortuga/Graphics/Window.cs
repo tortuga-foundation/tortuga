@@ -54,13 +54,21 @@ namespace Tortuga.Graphics
         /// <param name="y">y position of the window</param>
         /// <param name="width">the width of the window</param>
         /// <param name="height">the height of the window</param>
-        /// <param name="flags">the sdl flags for the window</param>
+        /// <param name="type">the type of window to create</param>
         public unsafe Window(
             string title,
             int x, int y,
             int width, int height,
-            SDL_WindowFlags flags)
+            Settings.Window.WindowType type)
         {
+            var flags = SDL_WindowFlags.AllowHighDpi;
+            if (type == Settings.Window.WindowType.Borderless)
+                flags |= SDL_WindowFlags.Borderless;
+            else if (type == Settings.Window.WindowType.Fullscreen)
+                flags |= SDL_WindowFlags.Fullscreen;
+            else if (type == Settings.Window.WindowType.ResizeableWindow)
+                flags |= SDL_WindowFlags.Resizable;
+                
             this._windowHandle = SDL_CreateWindow(
                 title,
                 x, y,

@@ -3,7 +3,7 @@ using System;
 
 namespace Tortuga.Utils.SDL2
 {
-    public static unsafe partial class SDL2Native
+    internal static unsafe partial class SDL2Native
     {
         private delegate SDL_Window SDL_CreateWindow_t(string title, int x, int y, int w, int h, SDL_WindowFlags flags);
         private static SDL_CreateWindow_t s_sdl_createWindow = LoadFunction<SDL_CreateWindow_t>("SDL_CreateWindow");
@@ -91,7 +91,7 @@ namespace Tortuga.Utils.SDL2
     }
 
     [Flags]
-    public enum SDL_WindowFlags : uint
+    internal enum SDL_WindowFlags : uint
     {
         /// <summary>
         /// fullscreen window.
@@ -172,7 +172,7 @@ namespace Tortuga.Utils.SDL2
         PopupMenu = 0x00080000
     }
 
-    public enum SDL_FullscreenMode : uint
+    internal enum SDL_FullscreenMode : uint
     {
         Windowed = 0,
         Fullscreen = 0x00000001,

@@ -5,7 +5,7 @@ namespace Tortuga.Input
     /// <summary>
     /// Used for mapping keys
     /// </summary>
-    public static class KeyMapper
+    internal static class KeyMapper
     {
         /// <summary>
         /// Map SDL keysym to Keycode key

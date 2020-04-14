@@ -6,7 +6,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// A transparent wrapper over a pointer representing an SDL Window object.
     /// </summary>
-    public struct SDL_Window
+    internal struct SDL_Window
     {
         public readonly IntPtr NativePointer;
         public SDL_Window(IntPtr pointer)
