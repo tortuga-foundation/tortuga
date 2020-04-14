@@ -260,14 +260,7 @@ namespace Tortuga.Input
         /// <returns>Tortuga modifier</returns>
         public static ModifierKeys MapModifiers(SDL_Keymod mod)
         {
-            var mods = ModifierKeys.None;
-            if ((mod & (SDL_Keymod.LeftShift | SDL_Keymod.RightShift)) != 0)
-                mods |= ModifierKeys.Shift;
-            if ((mod & (SDL_Keymod.LeftAlt | SDL_Keymod.RightAlt)) != 0)
-                mods |= ModifierKeys.Alt;
-            if ((mod & (SDL_Keymod.LeftControl | SDL_Keymod.RightControl)) != 0)
-                mods |= ModifierKeys.Control;
-            return mods;
+            return (ModifierKeys)mod;
         }
     
         /// <summary>
@@ -277,21 +270,7 @@ namespace Tortuga.Input
         /// <returns>tortuga mouse button</returns>
         public static MouseButton MapMouseButton(SDL_MouseButton button)
         {
-            switch (button)
-            {
-                case SDL_MouseButton.Left:
-                    return MouseButton.Left;
-                case SDL_MouseButton.Middle:
-                    return MouseButton.Middle;
-                case SDL_MouseButton.Right:
-                    return MouseButton.Right;
-                case SDL_MouseButton.X1:
-                    return MouseButton.Button1;
-                case SDL_MouseButton.X2:
-                    return MouseButton.Button2;
-                default:
-                    return MouseButton.Left;
-            }
+            return (MouseButton)button;
         }
     }
 }

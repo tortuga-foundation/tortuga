@@ -3,60 +3,28 @@ namespace Tortuga.Input
     /// <summary>
     /// Mouse buttons
     /// </summary>
-    public enum MouseButton
+    public enum MouseButton : byte
     {
         /// <summary>
         /// Left Mouse Button
         /// </summary>
-        Left = 0,
+        Left = 1,
         /// <summary>
         /// Middle Mouse Button
         /// </summary>
-        Middle = 1,
+        Middle = 2,
         /// <summary>
         /// Right Mouse Button
         /// </summary>
-        Right = 2,
+        Right = 3,
         /// <summary>
         /// Mouse Button1
         /// </summary>
-        Button1 = 3,
+        Button1 = 4,
         /// <summary>
         /// Mouse Button2
         /// </summary>
-        Button2 = 4,
-        /// <summary>
-        /// Mouse Button3
-        /// </summary>
-        Button3 = 5,
-        /// <summary>
-        /// Mouse Button4
-        /// </summary>
-        Button4 = 6,
-        /// <summary>
-        /// Mouse Button5
-        /// </summary>
-        Button5 = 7,
-        /// <summary>
-        /// Mouse Button6
-        /// </summary>
-        Button6 = 8,
-        /// <summary>
-        /// Mouse Button7
-        /// </summary>
-        Button7 = 9,
-        /// <summary>
-        /// Mouse Button8
-        /// </summary>
-        Button8 = 10,
-        /// <summary>
-        /// Mouse Button9
-        /// </summary>
-        Button9 = 11,
-        /// <summary>
-        /// Last mouse button
-        /// </summary>
-        LastButton = 12
+        Button2 = 5,
     }
 
     /// <summary>
@@ -66,21 +34,57 @@ namespace Tortuga.Input
     public enum ModifierKeys
     {
         /// <summary>
-        /// None
+        /// No modifier keys were pressed
         /// </summary>
         None = 0,
         /// <summary>
-        /// Alt
+        /// LeftShift
         /// </summary>
-        Alt = 1,
+        LeftShift = 1,
         /// <summary>
-        /// Control
+        /// RightShift
         /// </summary>
-        Control = 2,
+        RightShift = 2,
         /// <summary>
-        /// Shift
+        /// LeftControl
         /// </summary>
-        Shift = 4,
+        LeftControl = 64,
+        /// <summary>
+        /// RightControl
+        /// </summary>
+        RightControl = 128,
+        /// <summary>
+        /// LeftAlt
+        /// </summary>
+        LeftAlt = 256,
+        /// <summary>
+        /// RightAlt
+        /// </summary>
+        RightAlt = 512,
+        /// <summary>
+        /// LeftGui
+        /// </summary>
+        LeftGui = 1024,
+        /// <summary>
+        /// RightGui
+        /// </summary>
+        RightGui = 2048,
+        /// <summary>
+        /// Num
+        /// </summary>
+        Num = 4096,
+        /// <summary>
+        /// Caps
+        /// </summary>
+        Caps = 8192,
+        /// <summary>
+        /// Mode
+        /// </summary>
+        Mode = 16384,
+        /// <summary>
+        /// Reserved
+        /// </summary>
+        Reserved = 32768
     }
 
     /// <summary>
