@@ -6,29 +6,43 @@ namespace Tortuga.Utils.SDL2
 {
     internal static unsafe partial class SDL2Native
     {
-        private static readonly Tortuga.Utils.NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
-        private static Tortuga.Utils.NativeLibraryLoader.NativeLibrary LoadSdl2()
+        private static string[] GetLibName()
         {
-            string name;
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                name = "SDL2.dll";
+                return new string[]{
+                    "SDL2.dll"
+                };
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                name = "libSDL2-2.0.so.0";
+                return new string[]{
+                    "libSDL2.so",
+                    "libSDL2-2.0.so",
+                    "libSDL2-2.0.so.0",
+                };
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                name = "libsdl2.dylib";
+                return new string[]{
+                    "libsdl2.dylib",
+                    "sdl2.dylib"
+                };
             }
             else
             {
                 Debug.WriteLine("Unknown SDL platform. Attempting to load \"SDL2\"");
-                name = "SDL2";
+                return new string[]{
+                    "SDL2"
+                };
             }
+        }
 
-            var lib = new Tortuga.Utils.NativeLibraryLoader.NativeLibrary(name);
+        private static readonly Tortuga.Utils.NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
+        private static Tortuga.Utils.NativeLibraryLoader.NativeLibrary LoadSdl2()
+        {
+            var lib = new Tortuga.Utils.NativeLibraryLoader.NativeLibrary(GetLibName());
+            System.Console.WriteLine("Loaded SDL2");
             return lib;
         }
 
