@@ -18,7 +18,6 @@ public class Audio
     }
     ~Audio()
     {
-        alcMakeContextCurrent(null);
         alcDestroyContext(_context);
         alcCloseDevice(_device);
     }
