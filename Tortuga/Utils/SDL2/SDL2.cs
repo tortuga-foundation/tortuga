@@ -31,7 +31,6 @@ namespace Tortuga.Utils.SDL2
             }
             else
             {
-                Debug.WriteLine("Unknown SDL platform. Attempting to load \"SDL2\"");
                 return new string[]{
                     "SDL2"
                 };
