@@ -1,5 +1,3 @@
-#pragma warning disable 1591
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace Tortuga.Utils.SDL2
@@ -37,17 +35,17 @@ namespace Tortuga.Utils.SDL2
             }
         }
 
-        private static readonly Tortuga.Utils.NativeLibraryLoader.NativeLibrary s_sdl2Lib = LoadSdl2();
-        private static Tortuga.Utils.NativeLibraryLoader.NativeLibrary LoadSdl2()
+        private static readonly NativeLibraryLoader.NativeLibrary _lib = LoadSdl2();
+        private static NativeLibraryLoader.NativeLibrary LoadSdl2()
         {
-            var lib = new Tortuga.Utils.NativeLibraryLoader.NativeLibrary(GetLibName());
+            var lib = new NativeLibraryLoader.NativeLibrary(GetLibName());
             System.Console.WriteLine("Loaded SDL2");
             return lib;
         }
 
         private static T LoadFunction<T>(string name)
         {
-            return s_sdl2Lib.LoadFunction<T>(name);
+            return _lib.LoadFunction<T>(name);
         }
 
         private delegate string SDL_GetError_t();

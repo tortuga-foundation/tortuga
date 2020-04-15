@@ -1,5 +1,3 @@
-#pragma warning disable 1591
-
 namespace Tortuga.Utils.SDL2
 {
     internal static unsafe partial class SDL2Native

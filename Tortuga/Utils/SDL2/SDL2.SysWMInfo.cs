@@ -1,4 +1,3 @@
-#pragma warning disable 1591
 #pragma warning disable 649
 using System;
 
