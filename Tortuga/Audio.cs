@@ -14,7 +14,7 @@ public class Audio
     
         alGenBuffers(1, out uint[] buffers);
         alGenSources(1, out uint[] sources);
-        alSourcei(source[0], AL_BUFFER, );
+        //alSourcei(source[0], AL_BUFFER, );
     }
     ~Audio()
     {
