@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Text;
-using System.Collections.Generic;
+using Tortuga.Utils;
 
 namespace Tortuga.Audio
 {
@@ -29,13 +29,14 @@ namespace Tortuga.Audio
         /// <summary>
         /// Samples / audio data
         /// </summary>
-        public byte[] Samples;
+        public NativeList<byte> Samples;
 
         /// <summary>
         /// Constructor for audio clip
         /// </summary>
         /// <param name="numberOfChannels">Amount of channels</param>
         /// <param name="sampleRate">sample rate for the audio clip</param>
+        /// <param name="bitsPerSample">The amount of bits in one sample, usually 8 or 16</param>
         public AudioClip(int numberOfChannels, int sampleRate, int bitsPerSample)
         {
             _numberOfChannels = numberOfChannels;
@@ -84,8 +85,13 @@ namespace Tortuga.Audio
                 throw new FormatException("Wave file is not correctly formatted");
             var subChunk2Size = BitConverter.ToInt32(CopyBytes(bytes, 40, 4));
 
+            var rawData = CopyBytes(bytes, 44, bytes.Length - 44);
             var data = new AudioClip(numChannels, sampleRate, bitsPerSample);
-            data.Samples = CopyBytes(bytes, 44, bytes.Length - 44);
+            data.Samples = new NativeList<byte>();
+            data.Samples.Count = (uint)rawData.Length;
+            for (int i = 0; i < rawData.Length; i++)
+                data.Samples[i] = rawData[i];
+
             return data;
         }
 

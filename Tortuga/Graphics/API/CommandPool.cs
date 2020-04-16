@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Vulkan;
+using Tortuga.Utils;
 using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API

@@ -4,7 +4,6 @@ using Vulkan;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Tortuga.Input;
-using Tortuga.Utils.SDL2;
 
 namespace Tortuga
 {
@@ -43,7 +42,6 @@ namespace Tortuga
         /// </summary>
         public Core.Scene CurrentScene => _activeScene;
         private Core.Scene _activeScene;
-        private Audio.AudioSource _audioSource;
 
         /// <summary>
         /// Engine constructor
@@ -100,8 +98,6 @@ namespace Tortuga
             InputSystem.Initialize();
             var clip = Tortuga.Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
             clip.Wait();
-            _audioSource = new Audio.AudioSource();
-            _audioSource.Play(clip.Result);
         }
 
         /// <summary>

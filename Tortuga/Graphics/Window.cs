@@ -3,9 +3,10 @@ using Vulkan;
 using System.Numerics;
 using Tortuga.Utils.SDL2;
 using System.Runtime.CompilerServices;
+using System.Diagnostics;
+using Tortuga.Utils;
 using static Vulkan.VulkanNative;
 using static Tortuga.Utils.SDL2.SDL2Native;
-using System.Diagnostics;
 
 namespace Tortuga.Graphics
 {
@@ -266,12 +267,12 @@ namespace Tortuga.Graphics
         /// </summary>
         public unsafe void Present()
         {
-            var swapchains = new API.NativeList<VkSwapchainKHR>();
-            var imageIndices = new API.NativeList<uint>();
+            var swapchains = new NativeList<VkSwapchainKHR>();
+            var imageIndices = new NativeList<uint>();
             swapchains.Add(_swapchain.Handle);
             imageIndices.Add(_swapchainImageIndex);
 
-            var waitSemaphores = new API.NativeList<VkSemaphore>();
+            var waitSemaphores = new NativeList<VkSemaphore>();
 
             var presentInfo = VkPresentInfoKHR.New();
             presentInfo.swapchainCount = swapchains.Count;

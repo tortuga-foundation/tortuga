@@ -1,8 +1,6 @@
 using Vulkan;
 using System;
-using Tortuga.Graphics.API;
-using System.Numerics;
-using System.Collections.Generic;
+using Tortuga.Utils;
 
 namespace Tortuga.Graphics
 {

@@ -1,20 +1,19 @@
 using System;
-using System.Numerics;
 using Tortuga.Utils.OpenAL;
-using Tortuga.Graphics.API;
 using static Tortuga.Utils.OpenAL.OpenALNative;
 
 namespace Tortuga.Audio
 {
-    public class AudioSource
+    public class AudioBuffer
     {
-        private ALCdevice _device;
-        private ALCcontext _context;
-        private uint _source;
+        //private ALCdevice _device;
+        //private ALCcontext _context;
+        //private uint _source;
         private uint _buffer;
 
-        public unsafe AudioSource()
+        public unsafe AudioBuffer(AudioClip clip)
         {
+            /*
             _device = alcOpenDevice(null);
             _context = alcCreateContext(_device);
             alcMakeContextCurrent(_context);
@@ -36,12 +35,21 @@ namespace Tortuga.Audio
             alSourcei(source, ALParams.Looping, 0);
             Console.WriteLine(alGetError());
             _source = source;
+            */
+            alGenBuffers(1, out uint buffer);
+            alBufferData(
+                buffer, 
+                GetALFormat(clip.NumberOfChannels, clip.BitsPerSample), 
+                new IntPtr(clip.Samples.Data.ToPointer()),
+                (int)clip.Samples.Count,
+                clip.SampleRate
+            );
 
         }
-        ~AudioSource()
+        ~AudioBuffer()
         {
-            alcDestroyContext(_context);
-            alcCloseDevice(_device);
+            //alcDestroyContext(_context);
+            //alcCloseDevice(_device);
         }
 
         private ALFormat GetALFormat(int channels, int bitsPerSample)
@@ -71,23 +79,18 @@ namespace Tortuga.Audio
             //setup buffer
             alGenBuffers(1, out uint buffer);
             Console.WriteLine(alGetError());
-            var samples = new NativeList<byte>((uint)clip.Samples.Length);
-            samples.Count = (uint)clip.Samples.Length;
-            for (int i = 0; i < samples.Count; i++)
-                samples[i] = clip.Samples[i];
-
             alBufferData(
                 buffer, 
                 GetALFormat(clip.NumberOfChannels, clip.BitsPerSample), 
-                new IntPtr(samples.Data.ToPointer()),
-                clip.Samples.Length, 
+                new IntPtr(clip.Samples.Data.ToPointer()),
+                (int)clip.Samples.Count, 
                 clip.SampleRate
             );
             Console.WriteLine(alGetError());            
-            alSourcei(_source, ALParams.Buffer, (int)buffer);
+            //alSourcei(_source, ALParams.Buffer, (int)buffer);
             Console.WriteLine(alGetError());
             _buffer = buffer;
-            alSourcePlay(_source);
+            //alSourcePlay(_source);
             Console.WriteLine(alGetError());
         }
     }

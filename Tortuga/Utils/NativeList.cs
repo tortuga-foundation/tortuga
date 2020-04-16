@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -6,9 +7,9 @@ using System.Runtime.InteropServices;
 #if !VALIDATE
 using System.Diagnostics;
 #endif
-namespace Tortuga.Graphics.API
+namespace Tortuga.Utils
 {
-    internal unsafe class NativeList<T> : IEnumerable<T>, IDisposable where T : struct
+    public unsafe class NativeList<T> : IEnumerable<T>, IDisposable where T : struct
     {
         private byte* _dataPtr;
         private uint _elementCapacity;
@@ -450,7 +451,7 @@ namespace Tortuga.Graphics.API
         }
     }
 
-    internal struct ReadOnlyNativeListView<T> : IEnumerable<T> where T : struct
+    public struct ReadOnlyNativeListView<T> : IEnumerable<T> where T : struct
     {
         private readonly NativeList<T> _list;
         private readonly uint _start;
