@@ -60,7 +60,11 @@ namespace Tortuga.Utils.OpenAL
 
         private delegate void alGenBuffers_T2(int size, out uint buffers);
         private static alGenBuffers_T2 _2alGenBuffers = LoadFunction<alGenBuffers_T2>("alGenBuffers");
-        public static void alGenBuffers(int size, out uint buffers) => _2alGenBuffers(size, out buffers);
+        public static void alGenBuffers(out uint buffers) => _2alGenBuffers(1, out buffers);
+
+        private delegate void alDeleteBuffers_T(int size, uint[] buffers);
+        private static alDeleteBuffers_T _alDeleteBuffers = LoadFunction<alDeleteBuffers_T>("alDeleteBuffers");
+        public static void alDeleteBuffers(int size, uint[] buffers) => _alDeleteBuffers(size, buffers);
 
         private delegate void alBufferData_T(uint buffer, ALFormat format, IntPtr data, int size, int frequence);
         private static alBufferData_T _alBufferData = LoadFunction<alBufferData_T>("alBufferData");
@@ -72,7 +76,11 @@ namespace Tortuga.Utils.OpenAL
 
         private delegate void alGenSources_T2(int size, out uint sources);
         private static alGenSources_T2 _2alGenSources = LoadFunction<alGenSources_T2>("alGenSources");
-        public static void alGenSources(int size, out uint sources) => _2alGenSources(size, out sources);
+        public static void alGenSources(out uint sources) => _2alGenSources(1, out sources);
+
+        private delegate void alDeleteSources_T(int size, uint[] sources);
+        private static alDeleteSources_T _alDeleteSources = LoadFunction<alDeleteSources_T>("alDeleteSources");
+        public static void alDeleteSources(int size, uint[] sources) => _alDeleteSources(size, sources);
 
         private delegate void alSourcePlay_T(uint source);
         private static alSourcePlay_T _alSourcePlay = LoadFunction<alSourcePlay_T>("alSourcePlay");
@@ -86,6 +94,14 @@ namespace Tortuga.Utils.OpenAL
         private static alSourcef_T _alSourcef = LoadFunction<alSourcef_T>("alSourcef");
         public static void alSourcef(uint source, ALParams param, float value) => _alSourcef(source, param, value);
 
+        private delegate void alGetSourcef_T(uint source, ALParams param, out float value);
+        private static alGetSourcef_T _alGetSourcef = LoadFunction<alGetSourcef_T>("alGetSourcef");
+        public static void alGetSourcef(uint source, ALParams param, out float value) => _alGetSourcef(source, param, out value);
+
+        private delegate void alGetSource3f_T(uint source, ALParams param, out float x, out float y, out float z);
+        private static alGetSource3f_T _alGetSource3f = LoadFunction<alGetSource3f_T>("alGetSourcef");
+        public static void alGetSource3f(uint source, ALParams param, out float x, out float y, out float z) => _alGetSource3f(source, param, out x, out y, out z);
+
         private delegate void alSource3f_T(uint source, ALParams param, float x, float y, float z);
         private static alSource3f_T _alSource3f = LoadFunction<alSource3f_T>("alSource3f");
         public static void alSource3f(uint source, ALParams param, Vector3 vec) => _alSource3f(source, param, vec.X, vec.Y, vec.Z);
@@ -97,5 +113,9 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alListener3f_T(ALParams param, float x, float y, float z);
         private static alListener3f_T _alListener3f = LoadFunction<alListener3f_T>("alListener3f");
         public static void alListener3f(ALParams param, Vector3 vec) => _alListener3f(param, vec.X, vec.Y, vec.Z);
+
+        private delegate void alGetListener3f_T(ALParams param, out float x, out float y, out float z);
+        private static alGetListener3f_T _alGetListener3f = LoadFunction<alGetListener3f_T>("alGetListener3f");
+        public static void alGetListener3f(ALParams param, out float x, out float y, out float z) => _alGetListener3f(param, out x, out y, out z);
     }
 }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Text;
 using Tortuga.Utils;
+using System.Collections.Generic;
 
 namespace Tortuga.Audio
 {
@@ -45,47 +46,62 @@ namespace Tortuga.Audio
         }
 
         private static byte[] CopyBytes(byte[] full, int offset, int size)
+
+        
         {
             var data = new byte[size];
             Array.Copy(full, offset, data, 0, size);
             return data;
         }
 
+        private struct WaveChunk
+        {
+            public string Id;
+            public int Size;
+            public byte[] bytes;
+        }
+        private static List<WaveChunk> GetWaveChuncks(byte[] bytes)
+        {
+            var data = new List<WaveChunk>();
+            int cursor = 0;
+            while (cursor < bytes.Length)
+            {
+                var id = Encoding.ASCII.GetString(CopyBytes(bytes, cursor + 0, 4));
+                var size = BitConverter.ToInt32(CopyBytes(bytes, cursor + 4, 4));
+                var chunkData = CopyBytes(bytes, cursor + 8, size);
+                data.Add(new WaveChunk
+                {
+                    Id = id,
+                    Size = size,
+                    bytes = chunkData
+                });
+                cursor += 8 + size;
+            }
+            return data;
+        }
+
         private static AudioClip WaveLoader(string file)
         {
             var bytes = File.ReadAllBytes(file);
-            if (bytes.Length < 44)
-                throw new FormatException("Wave file is not correctly formatted");
-            var chunkId = Encoding.ASCII.GetString(CopyBytes(bytes, 0, 4));
-            if (chunkId != "RIFF")
-                throw new FormatException("Wave file is not correctly formatted");
-            var chunkSize = BitConverter.ToInt32(CopyBytes(bytes, 4, 4));
-            var format = Encoding.ASCII.GetString(CopyBytes(bytes, 8, 4));
+            var chuncks = GetWaveChuncks(bytes);
+
+            var riff = chuncks.Find((WaveChunk c) => c.Id == "RIFF");
+            var format = Encoding.ASCII.GetString(CopyBytes(riff.bytes, 0, 4));
             if (format != "WAVE")
                 throw new FormatException("Wave file is not correctly formatted");
-            var subChunk1Id = Encoding.ASCII.GetString(CopyBytes(bytes, 12, 4));
-            if (subChunk1Id != "fmt ")
-                throw new FormatException("Wave file is not correctly formatted");
-            var subChunk1Size = BitConverter.ToInt32(CopyBytes(bytes, 16, 4));
-            if (subChunk1Size != 16)
-                throw new FormatException("Wave file is not correctly formatted");
-            var audioFormat = BitConverter.ToInt16(CopyBytes(bytes, 20, 2));
-            if (audioFormat != 1)
-                throw new NotSupportedException("compressed wav files are not supported");
-            var numChannels = BitConverter.ToInt16(CopyBytes(bytes, 22, 2));
-            var sampleRate = BitConverter.ToInt32(CopyBytes(bytes, 24, 4));
-            var byteRate = BitConverter.ToInt32(CopyBytes(bytes, 28, 4));
-            var blockAlign = BitConverter.ToInt16(CopyBytes(bytes, 32, 2));
-            var bitsPerSample = BitConverter.ToInt16(CopyBytes(bytes, 34, 2));
-            if (bitsPerSample != 8 && bitsPerSample != 16)
-                throw new FormatException("Bit's per sample must be 8 or 16");
-            
-            var subChunk2Id = Encoding.ASCII.GetString(CopyBytes(bytes, 36, 4));
-            if (subChunk2Id != "data")
-                throw new FormatException("Wave file is not correctly formatted");
-            var subChunk2Size = BitConverter.ToInt32(CopyBytes(bytes, 40, 4));
 
-            var rawData = CopyBytes(bytes, 44, bytes.Length - 44);
+            var subChuncks = GetWaveChuncks(CopyBytes(riff.bytes, 4, riff.bytes.Length - 4));
+            var fmt = subChuncks.Find((WaveChunk w) => w.Id == "fmt ");
+            var audioFormat = BitConverter.ToInt16(CopyBytes(fmt.bytes, 0, 2));
+            var numChannels = BitConverter.ToInt16(CopyBytes(fmt.bytes, 2, 2));
+            var sampleRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 4, 4));
+            var byteRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 8, 4));
+            var blockAlign = BitConverter.ToInt16(CopyBytes(fmt.bytes, 12, 2));
+            var bitsPerSample = BitConverter.ToInt16(CopyBytes(fmt.bytes, 14, 2));
+
+            var dataChunk = subChuncks.Find((WaveChunk w) => w.Id == "data");
+            var rawData = dataChunk.bytes;
+
             var data = new AudioClip(numChannels, sampleRate, bitsPerSample);
             data.Samples = new NativeList<byte>();
             data.Samples.Count = (uint)rawData.Length;

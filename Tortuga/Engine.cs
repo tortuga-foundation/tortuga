@@ -4,6 +4,7 @@ using Vulkan;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using Tortuga.Input;
+using Tortuga.Audio.API;
 
 namespace Tortuga
 {
@@ -22,14 +23,16 @@ namespace Tortuga
         public Window MainWindow => _mainWindow;
         internal VulkanInstance Vulkan => _vulkan;
         internal Device MainDevice => _vulkan.Devices[0];
+        internal AudioDevice Audio => _audioDevice;
         internal RenderPass MainRenderPass => _mainRenderPass;
         internal DescriptorSetLayout CameraDescriptorLayout => _cameraDescriptorLayout;
         internal DescriptorSetLayout ModelDescriptorLayout => _modelDescriptorLayout;
         internal DescriptorSetLayout UiCameraDescriptorLayout => _uiCameraDescriptorLayout;
         internal DescriptorSetLayout UiBaseDescriptorLayout => _uiBaseDescriptorLayout;
 
-        private static Engine _instance = new Engine();
+        private static Engine _instance;
         private VulkanInstance _vulkan;
+        private AudioDevice _audioDevice;
         private Window _mainWindow;
         private RenderPass _mainRenderPass;
         private DescriptorSetLayout _cameraDescriptorLayout;
@@ -43,10 +46,7 @@ namespace Tortuga
         public Core.Scene CurrentScene => _activeScene;
         private Core.Scene _activeScene;
 
-        /// <summary>
-        /// Engine constructor
-        /// </summary>
-        public Engine()
+        private Engine()
         {
             //make sure this is a singleton
             if (Engine._instance != null)
@@ -96,8 +96,7 @@ namespace Tortuga
 
             //initialize input event system
             InputSystem.Initialize();
-            var clip = Tortuga.Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
-            clip.Wait();
+            _audioDevice = new AudioDevice();
         }
 
         /// <summary>
@@ -171,6 +170,14 @@ namespace Tortuga
                 system.Value.OnDisable();
 
             _activeScene = new Core.Scene();
+        }
+
+        /// <summary>
+        /// Initialize the engine
+        /// </summary>
+        public static void Init()
+        {
+            _instance = new Engine();
         }
     }
 }

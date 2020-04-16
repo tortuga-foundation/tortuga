@@ -7,6 +7,8 @@ namespace Tortuga.Test
     {
         static async Task Main(string[] args)
         {
+            Engine.Init();
+
             //create new scene
             var scene = new Core.Scene();
 
@@ -14,6 +16,17 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "Camera";
+                var listener = await entity.AddComponent<Components.AudioListener>();
+                listener.Position = Vector3.Zero;
+                listener.Velocity = Vector3.Zero;
+                var source = await entity.AddComponent<Components.AudioSource>();
+                source.Position = Vector3.Zero;
+                source.Velocity = Vector3.Zero;
+                source.Pitch = 1.0f;
+                source.Gain = 1.0f;
+                source.Loop = false;
+                source.Clip = await Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
+                source.Play();
                 var camera = await entity.AddComponent<Components.Camera>();
                 camera.FieldOfView = 90;
                 scene.AddEntity(entity);
