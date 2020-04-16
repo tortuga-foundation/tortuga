@@ -43,7 +43,7 @@ namespace Tortuga
         /// </summary>
         public Core.Scene CurrentScene => _activeScene;
         private Core.Scene _activeScene;
-        private Audio _audio;
+        private Audio.AudioSource _audioSource;
 
         /// <summary>
         /// Engine constructor
@@ -98,7 +98,10 @@ namespace Tortuga
 
             //initialize input event system
             InputSystem.Initialize();
-            _audio = new Audio();
+            var clip = Tortuga.Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
+            clip.Wait();
+            _audioSource = new Audio.AudioSource();
+            _audioSource.Play(clip.Result);
         }
 
         /// <summary>
