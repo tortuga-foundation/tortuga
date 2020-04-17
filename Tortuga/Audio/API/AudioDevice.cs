@@ -17,11 +17,54 @@ namespace Tortuga.Audio.API
             _context = alcCreateContext(_device);
             alcMakeContextCurrent(_context);
             alHandleError("failed to setup open al context: ");
+            UpdateDistanceModel();
+            UpdateSpeedOfSound();
+
         }
         ~AudioDevice()
         {
             alcDestroyContext(_context);
             alcCloseDevice(_device);
+        }
+
+        public void UpdateDoplerFactor()
+        {
+            alDopplerFactor(Settings.Audio.DoplerFactor);
+            alHandleError("failed to update dopler factor");
+        }
+
+        public void UpdateSpeedOfSound()
+        {
+            alSpeedOfSound(Settings.Audio.SpeedOfSound);
+            alHandleError("failed to update speed of sound");
+        }
+
+        public void UpdateDistanceModel()
+        {
+            if (Settings.Audio.DistanceModel == Settings.AudioDistanceModel.LinearDistance)
+            {
+                if (Settings.Audio.IsDistanceModelClamped)
+                    alDistanceModel(ALDistanceModel.LinearDistanceClamped);
+                else
+                    alDistanceModel(ALDistanceModel.LinearDistance);
+            }
+            else if (Settings.Audio.DistanceModel == Settings.AudioDistanceModel.ExponentDistance)
+            {
+                if (Settings.Audio.IsDistanceModelClamped)
+                    alDistanceModel(ALDistanceModel.ExponentDistanceClamped);
+                else
+                    alDistanceModel(ALDistanceModel.ExponentDistance);
+            }
+            else if (Settings.Audio.DistanceModel == Settings.AudioDistanceModel.InverseDistance)
+            {
+                if (Settings.Audio.IsDistanceModelClamped)
+                    alDistanceModel(ALDistanceModel.InverseDistanceClamped);
+                else
+                    alDistanceModel(ALDistanceModel.InverseDistance);
+            }
+            else
+                alDistanceModel(ALDistanceModel.None);
+            alHandleError("failed to assign distance model: ");
         }
     }
 }

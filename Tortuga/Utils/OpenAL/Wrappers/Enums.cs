@@ -79,4 +79,15 @@ namespace Tortuga.Utils.OpenAL
         Channels = 0x2003,
         Size = 0x2004
     }
+
+    internal enum ALDistanceModel
+    {
+        None = 0xD000,
+        InverseDistance = 0xD001,
+        InverseDistanceClamped = 0xD002,
+        LinearDistance = 0xD003,
+        LinearDistanceClamped = 0xD004,
+        ExponentDistance = 0xD005,
+        ExponentDistanceClamped = 0xD006
+    }
 }

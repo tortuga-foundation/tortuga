@@ -139,5 +139,19 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alGetListenerfv_T(ALParams param, out float[] vals);
         private static alGetListenerfv_T _alGetListenerfv = LoadFunction<alGetListenerfv_T>("alGetListenerfv");
         public static void alGetListenerfv(ALParams param, out float[] vals) => _alGetListenerfv(param, out vals);
+    
+        private delegate void alDistanceModel_T(ALDistanceModel model);
+        private static alDistanceModel_T _alDistanceModel = LoadFunction<alDistanceModel_T>("alDistanceModel");
+        public static void alDistanceModel(ALDistanceModel model) => _alDistanceModel(model);
+    
+        private delegate void alSpeedOfSound_T(float val);
+        private static alSpeedOfSound_T _alSpeedOfSound = LoadFunction<alSpeedOfSound_T>("alSpeedOfSound");
+        public static void alSpeedOfSound(float val) => _alSpeedOfSound(val);
+    
+        private delegate void alDopplerFactor_T(float val);
+        private static alDopplerFactor_T _alDopplerFactor = LoadFunction<alDopplerFactor_T>("alDopplerFactor");
+        public static void alDopplerFactor(float val) => _alDopplerFactor(val);
+    
+        
     }
 }
