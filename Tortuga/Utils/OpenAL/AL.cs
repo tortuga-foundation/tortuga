@@ -101,11 +101,11 @@ namespace Tortuga.Utils.OpenAL
         public static void alSourcef(uint source, ALParams param, float value) => _alSourcef(source, param, value);
 
         private delegate void alGetSourcef_T(uint source, ALParams param, out float value);
-        private static alGetSourcef_T _alGetSourcef = LoadFunction<alGetSourcef_T>("alGetSourcef");
+        private static alGetSourcef_T _alGetSourcef = LoadFunction<alGetSourcef_T>("alGetSource3f");
         public static void alGetSourcef(uint source, ALParams param, out float value) => _alGetSourcef(source, param, out value);
 
         private delegate void alGetSource3f_T(uint source, ALParams param, out float x, out float y, out float z);
-        private static alGetSource3f_T _alGetSource3f = LoadFunction<alGetSource3f_T>("alGetSourcef");
+        private static alGetSource3f_T _alGetSource3f = LoadFunction<alGetSource3f_T>("alGetSource3f");
         public static void alGetSource3f(uint source, ALParams param, out float x, out float y, out float z) => _alGetSource3f(source, param, out x, out y, out z);
 
         private delegate void alSource3f_T(uint source, ALParams param, float x, float y, float z);
