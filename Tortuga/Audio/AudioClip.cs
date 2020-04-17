@@ -98,6 +98,8 @@ namespace Tortuga.Audio
             var byteRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 8, 4));
             var blockAlign = BitConverter.ToInt16(CopyBytes(fmt.bytes, 12, 2));
             var bitsPerSample = BitConverter.ToInt16(CopyBytes(fmt.bytes, 14, 2));
+            if (bitsPerSample != 8 && bitsPerSample != 16)
+                throw new NotSupportedException("bits per sample must be 8 or 16");
 
             var dataChunk = subChuncks.Find((WaveChunk w) => w.Id == "data");
             var rawData = dataChunk.bytes;

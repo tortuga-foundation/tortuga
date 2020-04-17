@@ -14,13 +14,18 @@ namespace Tortuga.Audio.API
         public AudioDevice()
         {
             _device = alcOpenDevice(null);
+            alHandleError("failed to create open al device: ");
             _context = alcCreateContext(_device);
+            alHandleError("failed to create open al context: ");
             alcMakeContextCurrent(_context);
+            alHandleError("failed to setup open al context: ");
         }
         ~AudioDevice()
         {
             alcDestroyContext(_context);
+            alHandleError("failed to destroy open al context: ");
             alcCloseDevice(_device);
+            alHandleError("failed to destroy open al device: ");
         }
     }
 }

@@ -53,6 +53,12 @@ namespace Tortuga.Utils.OpenAL
         private delegate int alGetError_T();
         private static alGetError_T _alGetError = LoadFunction<alGetError_T>("alGetError");
         public static ALError alGetError() => (ALError)_alGetError();
+        public static void alHandleError(string message)
+        {
+            var err = alGetError();
+            if (err != ALError.None)
+                throw new Exception(message + err.ToString());
+        }
 
         private delegate void alGenBuffers_T1(int size, uint[] buffers);
         private static alGenBuffers_T1 _1alGenBuffers = LoadFunction<alGenBuffers_T1>("alGenBuffers");
@@ -104,7 +110,7 @@ namespace Tortuga.Utils.OpenAL
 
         private delegate void alSource3f_T(uint source, ALParams param, float x, float y, float z);
         private static alSource3f_T _alSource3f = LoadFunction<alSource3f_T>("alSource3f");
-        public static void alSource3f(uint source, ALParams param, Vector3 vec) => _alSource3f(source, param, vec.X, vec.Y, vec.Z);
+        public static void alSource3f(uint source, ALParams param, float x, float y, float z) => _alSource3f(source, param, x, y, z);
 
         private delegate void alSourcefv_T(uint source, ALParams param, float[] vals);
         private static alSourcefv_T _alSourcefv = LoadFunction<alSourcefv_T>("alSourcefv");
@@ -120,7 +126,7 @@ namespace Tortuga.Utils.OpenAL
 
         private delegate void alListener3f_T(ALParams param, float x, float y, float z);
         private static alListener3f_T _alListener3f = LoadFunction<alListener3f_T>("alListener3f");
-        public static void alListener3f(ALParams param, Vector3 vec) => _alListener3f(param, vec.X, vec.Y, vec.Z);
+        public static void alListener3f(ALParams param, float x, float y, float z) => _alListener3f(param, x, y, z);
 
         private delegate void alGetListener3f_T(ALParams param, out float x, out float y, out float z);
         private static alGetListener3f_T _alGetListener3f = LoadFunction<alGetListener3f_T>("alGetListener3f");

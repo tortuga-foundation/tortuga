@@ -1,3 +1,4 @@
+using System;
 using System.Numerics;
 using Tortuga.Utils.OpenAL;
 using static Tortuga.Utils.OpenAL.OpenALNative;
@@ -18,9 +19,14 @@ namespace Tortuga.Components
             {
                 Vector3 val;
                 alGetListener3f(ALParams.Position, out val.X, out val.Y, out val.Z);
+                alHandleError("failed to get listener position");
                 return val;
             }
-            set => alListener3f(ALParams.Position, value);
+            set
+            {
+                alListener3f(ALParams.Position, value.X, value.Y, value.Z);
+                alHandleError("failed to set listener position");
+            }
         }
 
         /// <summary>
@@ -32,9 +38,14 @@ namespace Tortuga.Components
             {
                 Vector3 val;
                 alGetListener3f(ALParams.Velocity, out val.X, out val.Y, out val.Z);
+                alHandleError("failed to get listener velocity");
                 return val;
             }
-            set => alListener3f(ALParams.Velocity, value);
+            set
+            {
+                alListener3f(ALParams.Velocity, value.X, value.Y, value.Z);
+                alHandleError("failed to set listener velocity");
+            }
         } 
     
         /// <summary>
@@ -48,6 +59,7 @@ namespace Tortuga.Components
                 forward.X, forward.Y, forward.Z,
                 up.X, up.Y, up.Z 
             });
+            alHandleError("failed to set listener orientation: ");
         }
 
         /// <summary>
@@ -60,6 +72,7 @@ namespace Tortuga.Components
             alGetListenerfv(ALParams.Orientation, out float[] vals);
             forward = new Vector3(vals[0], vals[1], vals[2]);
             up = new Vector3(vals[3], vals[4], vals[5]);
+            alHandleError("failed to get listener orientation: ");
         }
     }
 }

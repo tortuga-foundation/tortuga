@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using static Tortuga.Utils.OpenAL.OpenALNative;
 
 namespace Tortuga.Systems
 {
@@ -37,9 +38,9 @@ namespace Tortuga.Systems
                     var transform = source.MyEntity.GetComponent<Components.Transform>();
                     if (transform != null)
                     {
-                        source.Velocity = (transform.Position - source.Position) * Time.DeltaTime;
-                        source.Position = transform.Position;
-                        source.SetOrientation(transform.Up, transform.Forward);
+                    source.Velocity = (transform.Position - source.Position) * Time.DeltaTime;
+                    source.Position = transform.Position;
+                    source.SetOrientation(transform.Up, transform.Forward);
                     }
                 }
                 var audioListener = MyScene.GetComponents<Components.AudioListener>();

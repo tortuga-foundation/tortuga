@@ -23,6 +23,7 @@ namespace Tortuga.Components
                 _clip = value;
                 _buffer = new AudioBuffer(_clip);
                 alSourcei(_source, ALParams.Buffer, (int)_buffer.Handle);
+                alHandleError("could not set source audio clip: ");
             }
         }
         private AudioClip _clip;
@@ -34,6 +35,7 @@ namespace Tortuga.Components
             get
             {
                 alGetSourcei(_source, ALParams.Looping, out int val);
+                alHandleError("could not get source audio loop: ");
                 return val == 1;
             }
             set
@@ -42,6 +44,7 @@ namespace Tortuga.Components
                     alSourcei(_source, ALParams.Looping, 1);
                 else
                     alSourcei(_source, ALParams.Looping, 0);
+                alHandleError("could not set source loop: ");
             }
         }
         /// <summary>
@@ -52,9 +55,14 @@ namespace Tortuga.Components
             get
             {
                 alGetSourcef(_source, ALParams.Pitch, out float val);
+                alHandleError("could not get source audio pitch: ");
                 return val;
             }
-            set => alSourcef(_source, ALParams.Pitch, value);
+            set
+            {
+                alSourcef(_source, ALParams.Pitch, value);
+                alHandleError("could not set source pitch: ");
+            }
         }
         /// <summary>
         /// Audio source gain
@@ -64,9 +72,14 @@ namespace Tortuga.Components
             get
             {
                 alGetSourcef(_source, ALParams.Gain, out float val);
+                alHandleError("could not get source audio gain: ");
                 return val;
             }
-            set => alSourcef(_source, ALParams.Gain, value);
+            set
+            {
+                alSourcef(_source, ALParams.Gain, value);
+                alHandleError("could not set source gain: ");
+            }
         }
 
         /// <summary>
@@ -77,6 +90,7 @@ namespace Tortuga.Components
             get
             {
                 alGetSourcei(_source, ALParams.SourceRelative, out int val);
+                alHandleError("could not get source audio 3D mode: ");
                 return val == 1;
             }
             set
@@ -85,6 +99,7 @@ namespace Tortuga.Components
                     alSourcei(_source, ALParams.SourceRelative, 1);
                 else
                     alSourcei(_source, ALParams.SourceRelative, 0);
+                alHandleError("could not set source 3D mode: ");
             }
         }
 
@@ -96,9 +111,14 @@ namespace Tortuga.Components
             get
             {
                 alGetSource3f(_source, ALParams.Position, out float x, out float y, out float z);
+                alHandleError("could not get source audio position: ");
                 return new Vector3(x, y, z);
             }
-            set => alSource3f(_source, ALParams.Position, value);
+            set
+            {
+                alSource3f(_source, ALParams.Position, value.X, value.Y, value.Z);
+                alHandleError("could not set source position: ");
+            }
         }
         /// <summary>
         /// Audio source velocity
@@ -108,9 +128,14 @@ namespace Tortuga.Components
             get
             {
                 alGetSource3f(_source, ALParams.Velocity, out float x, out float y, out float z);
+                alHandleError("could not get source audio velocity: ");
                 return new Vector3(x, y, z);
             }
-            set => alSource3f(_source, ALParams.Velocity, value);
+            set
+            {
+                alSource3f(_source, ALParams.Velocity, value.X, value.Y, value.Z);
+                alHandleError("could not set source velocity: ");
+            }
         }
 
         private uint _source;
@@ -122,6 +147,8 @@ namespace Tortuga.Components
         public AudioSource()
         {
             alGenSources(out _source);
+            alHandleError("failed to generate audio source: ");
+            this.Is3D = true;
             this.Loop = false;
             this.Gain = 1.0f;
             this.Pitch = 1.0f;
@@ -161,6 +188,7 @@ namespace Tortuga.Components
                 forward.X, forward.Y, forward.Z,
                 up.X, up.Y, up.Z 
             });
+            alHandleError("could not set source audio orientation: ");
         }
 
         /// <summary>
@@ -173,6 +201,7 @@ namespace Tortuga.Components
             alGetSourcefv(_source, ALParams.Orientation, out float[] vals);
             forward = new Vector3(vals[0], vals[1], vals[2]);
             up = new Vector3(vals[3], vals[4], vals[5]);
+            alHandleError("could not get source audio orientation: ");
         }
     }
 }

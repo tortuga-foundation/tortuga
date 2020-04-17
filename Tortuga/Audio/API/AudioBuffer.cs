@@ -19,6 +19,7 @@ namespace Tortuga.Audio.API
         public unsafe AudioBuffer(AudioClip clip)
         {
             alGenBuffers(out uint buffer);
+            alHandleError("failed to generate audio clip buffers: ");
             _buffer = buffer;
             alBufferData(
                 _buffer, 
@@ -27,9 +28,7 @@ namespace Tortuga.Audio.API
                 (int)clip.Samples.Count,
                 clip.SampleRate
             );
-            var error = alGetError();
-            if (error != ALError.None)
-                throw new FormatException("Audio clip is not formatted correctly");
+            alHandleError("failed set audio clip data to open al buffers: ");
         }
         /// <summary>
         /// De-Constructor for AudioBuffer
@@ -37,6 +36,7 @@ namespace Tortuga.Audio.API
         ~AudioBuffer()
         {
             alDeleteBuffers(1, new uint[]{ _buffer });
+            alHandleError("failed to delete open al buffers: ");
         }
 
         private ALFormat GetALFormat(int channels, int bitsPerSample)

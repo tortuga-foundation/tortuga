@@ -19,14 +19,6 @@ namespace Tortuga.Test
                 var listener = await entity.AddComponent<Components.AudioListener>();
                 listener.Position = Vector3.Zero;
                 listener.Velocity = Vector3.Zero;
-                var source = await entity.AddComponent<Components.AudioSource>();
-                source.Position = Vector3.Zero;
-                source.Velocity = Vector3.Zero;
-                source.Pitch = 1.0f;
-                source.Gain = 1.0f;
-                source.Loop = false;
-                source.Clip = await Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
-                source.Play();
                 var camera = await entity.AddComponent<Components.Camera>();
                 camera.FieldOfView = 90;
                 scene.AddEntity(entity);
@@ -56,6 +48,14 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "sphere 1";
+                var source = await entity.AddComponent<Components.AudioSource>();
+                source.Position = Vector3.Zero;
+                source.Velocity = Vector3.Zero;
+                source.Pitch = 1.0f;
+                source.Gain = 1.0f;
+                source.Loop = false;
+                source.Clip = await Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
+                source.Play();
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;
@@ -135,6 +135,7 @@ namespace Tortuga.Test
 
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
+            scene.AddSystem<Systems.AudioSystem>();
             scene.AddSystem<AutoRotator>();
             scene.AddSystem<LightMovement>();
 
