@@ -70,6 +70,25 @@ namespace Tortuga.Components
         }
 
         /// <summary>
+        /// If true audio source will use position, velocity and orientation
+        /// </summary>
+        public bool Is3D
+        {
+            get
+            {
+                alGetSourcei(_source, ALParams.SourceRelative, out int val);
+                return val == 1;
+            }
+            set
+            {
+                if (value)
+                    alSourcei(_source, ALParams.SourceRelative, 1);
+                else
+                    alSourcei(_source, ALParams.SourceRelative, 0);
+            }
+        }
+
+        /// <summary>
         /// Audio source position
         /// </summary>
         public Vector3 Position
@@ -94,7 +113,6 @@ namespace Tortuga.Components
             set => alSource3f(_source, ALParams.Velocity, value);
         }
 
-
         private uint _source;
         private AudioBuffer _buffer;
 
@@ -109,6 +127,7 @@ namespace Tortuga.Components
             this.Pitch = 1.0f;
             this.Position = Vector3.Zero;
             this.Velocity = Vector3.Zero;
+            this.SetOrientation(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
         }
         /// <summary>
         /// De-Constructor for audio source
@@ -129,6 +148,31 @@ namespace Tortuga.Components
                 return;
             }
             alSourcePlay(_source);
+        }
+    
+        /// <summary>
+        /// Set's the audio source orientation
+        /// </summary>
+        /// <param name="up">up vector</param>
+        /// <param name="forward">forward vector</param>
+        public void SetOrientation(Vector3 up, Vector3 forward)
+        {
+            alSourcefv(_source, ALParams.Orientation, new float[]{
+                forward.X, forward.Y, forward.Z,
+                up.X, up.Y, up.Z 
+            });
+        }
+
+        /// <summary>
+        /// Get's the audio source orientation
+        /// </summary>
+        /// <param name="up">up vector</param>
+        /// <param name="forward">forward vector</param>
+        public void GetOrientation(out Vector3 up, out Vector3 forward)
+        {
+            alGetSourcefv(_source, ALParams.Orientation, out float[] vals);
+            forward = new Vector3(vals[0], vals[1], vals[2]);
+            up = new Vector3(vals[3], vals[4], vals[5]);
         }
     }
 }

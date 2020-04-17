@@ -106,6 +106,14 @@ namespace Tortuga.Utils.OpenAL
         private static alSource3f_T _alSource3f = LoadFunction<alSource3f_T>("alSource3f");
         public static void alSource3f(uint source, ALParams param, Vector3 vec) => _alSource3f(source, param, vec.X, vec.Y, vec.Z);
 
+        private delegate void alSourcefv_T(uint source, ALParams param, float[] vals);
+        private static alSourcefv_T _alSourcefv = LoadFunction<alSourcefv_T>("alSourcefv");
+        public static void alSourcefv(uint source, ALParams param, float[] vals) => _alSourcefv(source, param, vals);
+
+        private delegate void alGetSourcefv_T(uint source, ALParams param, out float[] vals);
+        private static alGetSourcefv_T _alGetSourcefv = LoadFunction<alGetSourcefv_T>("alSourcefv");
+        public static void alGetSourcefv(uint source, ALParams param, out float[] vals) => _alGetSourcefv(source, param, out vals);
+
         private delegate void alGetSourcei_T(uint source, ALParams param, out int value);
         private static alGetSourcei_T _alGetSourcei = LoadFunction<alGetSourcei_T>("alGetSourcei");
         public static void alGetSourcei(uint source, ALParams param, out int value) => _alGetSourcei(source, param, out value);
@@ -117,5 +125,13 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alGetListener3f_T(ALParams param, out float x, out float y, out float z);
         private static alGetListener3f_T _alGetListener3f = LoadFunction<alGetListener3f_T>("alGetListener3f");
         public static void alGetListener3f(ALParams param, out float x, out float y, out float z) => _alGetListener3f(param, out x, out y, out z);
+
+        private delegate void alListenerfv_T(ALParams param, float[] vals);
+        private static alListenerfv_T _alListenerfv = LoadFunction<alListenerfv_T>("alListenerfv");
+        public static void alListenerfv(ALParams param, float[] vals) => _alListenerfv(param, vals);
+
+        private delegate void alGetListenerfv_T(ALParams param, out float[] vals);
+        private static alGetListenerfv_T _alGetListenerfv = LoadFunction<alGetListenerfv_T>("alGetListenerfv");
+        public static void alGetListenerfv(ALParams param, out float[] vals) => _alGetListenerfv(param, out vals);
     }
 }
