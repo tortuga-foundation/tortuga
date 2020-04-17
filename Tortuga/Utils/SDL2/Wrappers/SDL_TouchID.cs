@@ -46,7 +46,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// A transparent wrapper over a pointer representing an SDL Finger ID object.
     /// </summary>
-    public struct SDL_FingerID
+    internal struct SDL_FingerID
     {
         public readonly IntPtr NativePointer;
         public SDL_FingerID(IntPtr pointer)
@@ -86,7 +86,7 @@ namespace Tortuga.Utils.SDL2
     /// <summary>
     /// A transparent wrapper over a pointer representing an SDL Gesture ID object.
     /// </summary>
-    public struct SDL_GestureID
+    internal struct SDL_GestureID
     {
         public readonly IntPtr NativePointer;
         public SDL_GestureID(IntPtr pointer)
