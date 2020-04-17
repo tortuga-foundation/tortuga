@@ -45,14 +45,14 @@ namespace Tortuga.Audio.API
 
             if (bitsPerSample == 16)
             {
-                if (channels > 1)
+                if (stereo)
                     return ALFormat.Stereo16;
                 else
                     return ALFormat.Mono16;
             }
             else if (bitsPerSample == 8)
             {
-                if (channels > 1)
+                if (stereo)
                     return ALFormat.Stereo8;
                 else
                     return ALFormat.Mono8;
