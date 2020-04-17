@@ -155,5 +155,9 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alSourceStop_T(uint source);
         private static alSourceStop_T _alSourceStop = LoadFunction<alSourceStop_T>("alSourceStop");
         public static void alSourceStop(uint source) => _alSourceStop(source);
+
+        private delegate void alSourcePause_T(uint source);
+        private static alSourcePause_T _alSourcePause = LoadFunction<alSourcePause_T>("alSourcePause");
+        public static void alSourcePause(uint source) => _alSourcePause(source);
     }
 }

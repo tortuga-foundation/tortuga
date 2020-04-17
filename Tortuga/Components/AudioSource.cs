@@ -233,6 +233,18 @@ namespace Tortuga.Components
             alSourceStop(_source);
             alHandleError("failed to stop source: ");
         }
+
+        /// <summary>
+        /// Pause audio source playback
+        /// </summary>
+        public void Pause()
+        {
+            if (_clip == null || _buffer == null)
+                return;
+            
+            alSourcePause(_source);
+            alHandleError("failed to pause source: ");
+        }
     
         /// <summary>
         /// Set's the audio source orientation
