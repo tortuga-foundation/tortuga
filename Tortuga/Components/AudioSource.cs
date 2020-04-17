@@ -205,6 +205,7 @@ namespace Tortuga.Components
         ~AudioSource()
         {
             alDeleteSources(1, new uint[]{ _source });
+            alHandleError("failed to destroy source: ");
         }
 
         /// <summary>
@@ -218,6 +219,7 @@ namespace Tortuga.Components
                 return;
             }
             alSourcePlay(_source);
+            alHandleError("failed to play source: ");
         }
 
         /// <summary>
@@ -229,6 +231,7 @@ namespace Tortuga.Components
                 return;
             
             alSourceStop(_source);
+            alHandleError("failed to stop source: ");
         }
     
         /// <summary>
