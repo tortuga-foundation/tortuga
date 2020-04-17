@@ -1,5 +1,4 @@
 using System;
-using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace Tortuga.Utils.OpenAL
@@ -60,13 +59,9 @@ namespace Tortuga.Utils.OpenAL
                 throw new Exception(message + err.ToString());
         }
 
-        private delegate void alGenBuffers_T1(int size, uint[] buffers);
-        private static alGenBuffers_T1 _1alGenBuffers = LoadFunction<alGenBuffers_T1>("alGenBuffers");
-        public static void alGenBuffers(int size, uint[] buffers) => _1alGenBuffers(size, buffers);
-
-        private delegate void alGenBuffers_T2(int size, out uint buffers);
-        private static alGenBuffers_T2 _2alGenBuffers = LoadFunction<alGenBuffers_T2>("alGenBuffers");
-        public static void alGenBuffers(out uint buffers) => _2alGenBuffers(1, out buffers);
+        private delegate void alGenBuffers_T(int size, out uint buffers);
+        private static alGenBuffers_T _alGenBuffers = LoadFunction<alGenBuffers_T>("alGenBuffers");
+        public static void alGenBuffers(out uint buffers) => _alGenBuffers(1, out buffers);
 
         private delegate void alDeleteBuffers_T(int size, uint[] buffers);
         private static alDeleteBuffers_T _alDeleteBuffers = LoadFunction<alDeleteBuffers_T>("alDeleteBuffers");
@@ -76,13 +71,9 @@ namespace Tortuga.Utils.OpenAL
         private static alBufferData_T _alBufferData = LoadFunction<alBufferData_T>("alBufferData");
         public static void alBufferData(uint buffer, ALFormat format, IntPtr data, int size, int frequence) => _alBufferData(buffer, format, data, size, frequence);
     
-        private delegate void alGenSources_T1(int size, uint[] sources);
-        private static alGenSources_T1 _1alGenSources = LoadFunction<alGenSources_T1>("alGenSources");
-        public static void alGenSources(int size, uint[] sources) => _1alGenSources(size, sources);
-
-        private delegate void alGenSources_T2(int size, out uint sources);
-        private static alGenSources_T2 _2alGenSources = LoadFunction<alGenSources_T2>("alGenSources");
-        public static void alGenSources(out uint sources) => _2alGenSources(1, out sources);
+        private delegate void alGenSources_T(int size, out uint sources);
+        private static alGenSources_T _alGenSources = LoadFunction<alGenSources_T>("alGenSources");
+        public static void alGenSources(out uint sources) => _alGenSources(1, out sources);
 
         private delegate void alDeleteSources_T(int size, uint[] sources);
         private static alDeleteSources_T _alDeleteSources = LoadFunction<alDeleteSources_T>("alDeleteSources");
