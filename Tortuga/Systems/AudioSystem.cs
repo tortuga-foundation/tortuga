@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using static Tortuga.Utils.OpenAL.OpenALNative;
 
 namespace Tortuga.Systems
 {
@@ -21,6 +20,7 @@ namespace Tortuga.Systems
         /// </summary>
         public override void OnEnable()
         {
+            UpdatePositionVelocityAndOrientation();
         }
 
         /// <summary>
@@ -28,38 +28,41 @@ namespace Tortuga.Systems
         /// </summary>
         public override Task Update()
         {
-            return Task.Run(() => {
-                var audioSource = MyScene.GetComponents<Components.AudioSource>();
-                foreach (var source in audioSource)
-                {
-                    if (source.Is3D == false)
-                        continue;
+            return Task.Run(() => UpdatePositionVelocityAndOrientation());
+        }
 
-                    var transform = source.MyEntity.GetComponent<Components.Transform>();
-                    if (transform != null)
-                    {
-                        source.Velocity = (transform.Position - source.Position) * Time.DeltaTime;
-                        source.Position = transform.Position;
-                        source.SetOrientation(transform.Up, transform.Forward);
-                    }
-                }
-                var audioListener = MyScene.GetComponents<Components.AudioListener>();
-                if (audioListener.Length > 1)
-                    Console.WriteLine("WARN: There must be only 1 audio listener");
-                
-                if (audioListener.Length != 0)
-                {
-                    var listener = audioListener[0];
+        private void UpdatePositionVelocityAndOrientation()
+        {
+            var audioSource = MyScene.GetComponents<Components.AudioSource>();
+            foreach (var source in audioSource)
+            {
+                if (source.Is3D == false)
+                    continue;
 
-                    var transform = listener.MyEntity.GetComponent<Components.Transform>();
-                    if (transform != null)
-                    {
-                        listener.Velocity = (transform.Position - listener.Position) * Time.DeltaTime;
-                        listener.Position = transform.Position;
-                        listener.SetOrientation(transform.Up, transform.Forward);
-                    }
+                var transform = source.MyEntity.GetComponent<Components.Transform>();
+                if (transform != null)
+                {
+                    source.Velocity = (transform.Position - source.Position) * Time.DeltaTime;
+                    source.Position = transform.Position;
+                    source.SetOrientation(transform.Up, transform.Forward);
                 }
-            });
+            }
+            var audioListener = MyScene.GetComponents<Components.AudioListener>();
+            if (audioListener.Length > 1)
+                Console.WriteLine("WARN: There must be only 1 audio listener");
+            
+            if (audioListener.Length != 0)
+            {
+                var listener = audioListener[0];
+
+                var transform = listener.MyEntity.GetComponent<Components.Transform>();
+                if (transform != null)
+                {
+                    listener.Velocity = (transform.Position - listener.Position) * Time.DeltaTime;
+                    listener.Position = transform.Position;
+                    listener.SetOrientation(transform.Up, transform.Forward);
+                }
+            }
         }
     }
 }
