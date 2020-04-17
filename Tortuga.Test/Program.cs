@@ -51,6 +51,7 @@ namespace Tortuga.Test
                 var source = await entity.AddComponent<Components.AudioSource>();
                 source.Position = Vector3.Zero;
                 source.Velocity = Vector3.Zero;
+                source.Is3D = true;
                 source.Pitch = 1.0f;
                 source.Gain = 1.0f;
                 source.Loop = false;
