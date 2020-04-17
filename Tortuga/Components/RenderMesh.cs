@@ -106,7 +106,7 @@ namespace Tortuga.Components
         internal CommandPool.Command RenderCommand => _renderCommand;
         internal Graphics.API.Buffer VertexBuffers => _vertexBuffers;
         internal Graphics.API.Buffer IndexBuffer => _indexBuffer;
-        internal uint IndicesCount => Mesh.IndicesLength;
+        internal uint IndicesCount => Convert.ToUInt32(Mesh.Indices.Length);
 
         private Graphics.Material _material;
         private Graphics.Mesh _mesh;
@@ -149,14 +149,14 @@ namespace Tortuga.Components
             if (mesh == null)
                 return;
 
-            if (mesh.IndicesLength == 0 || mesh.Vertices.Length == 0)
+            if (mesh.Indices.Length == 0 || mesh.Vertices.Length == 0)
                 return;
 
             //index buffer
-            if (_mesh == null || _mesh.IndicesLength != mesh.IndicesLength)
+            if (_mesh == null || _mesh.Indices.Length != mesh.Indices.Length)
             {
                 _indexBuffer = Graphics.API.Buffer.CreateDevice(
-                    sizeof(ushort) * mesh.IndicesLength,
+                    Convert.ToUInt32(sizeof(ushort) * mesh.Indices.Length),
                     VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
                 );
             }

@@ -120,7 +120,10 @@ namespace Tortuga.Audio
         /// <returns>returns a audio clip object</returns>
         public static Task<AudioClip> Load(string file)
         {
-            if (file.EndsWith(".wav"))
+            if (File.Exists(file) == false)
+                throw new FileNotFoundException("cannot locate file");
+
+            if (file.ToLower().EndsWith(".wav"))
                 return Task.FromResult(WaveLoader(file));
             else
                 throw new NotSupportedException("this type of audio format is not supported");
