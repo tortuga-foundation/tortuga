@@ -91,14 +91,16 @@ namespace Tortuga.Components
             {
                 alGetSourcei(_source, ALParams.SourceRelative, out int val);
                 alHandleError("could not get source audio 3D mode: ");
-                if (_clip.NumberOfChannels > 1)
-                    Console.WriteLine("WARN: Audio Clip must be mono (1 channel) for 3D to work");
                 return val == 1;
             }
             set
             {
                 if (value)
+                {
                     alSourcei(_source, ALParams.SourceRelative, 1);
+                    if (_clip.NumberOfChannels > 1)
+                        Console.WriteLine("WARN: Audio Clip must be mono (1 channel) for 3D to work");
+                }
                 else
                     alSourcei(_source, ALParams.SourceRelative, 0);
                 alHandleError("could not set source 3D mode: ");
