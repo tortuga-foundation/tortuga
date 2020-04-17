@@ -15,9 +15,6 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 - SDL2
 - Open AL
 
-If tortuga cannot find your library you can adjust the name of the file from 
-`Tortuga/SDL2/SDL2.cs`
-
 ## Using the package in your project
 
 You can use nuget to install the package `TortugaEngine`
