@@ -82,35 +82,42 @@ namespace Tortuga.Audio
 
         private static AudioClip WaveLoader(string file)
         {
-            var bytes = File.ReadAllBytes(file);
-            var chuncks = GetWaveChuncks(bytes);
+            try 
+            {
+                var bytes = File.ReadAllBytes(file);
+                var chuncks = GetWaveChuncks(bytes);
 
-            var riff = chuncks.Find((WaveChunk c) => c.Id == "RIFF");
-            var format = Encoding.ASCII.GetString(CopyBytes(riff.bytes, 0, 4));
-            if (format != "WAVE")
-                throw new FormatException("Wave file is not correctly formatted");
+                var riff = chuncks.Find((WaveChunk c) => c.Id == "RIFF");
+                var format = Encoding.ASCII.GetString(CopyBytes(riff.bytes, 0, 4));
+                if (format != "WAVE")
+                    throw new FormatException("wave file is not correctly formatted");
 
-            var subChuncks = GetWaveChuncks(CopyBytes(riff.bytes, 4, riff.bytes.Length - 4));
-            var fmt = subChuncks.Find((WaveChunk w) => w.Id == "fmt ");
-            var audioFormat = BitConverter.ToInt16(CopyBytes(fmt.bytes, 0, 2));
-            var numChannels = BitConverter.ToInt16(CopyBytes(fmt.bytes, 2, 2));
-            var sampleRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 4, 4));
-            var byteRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 8, 4));
-            var blockAlign = BitConverter.ToInt16(CopyBytes(fmt.bytes, 12, 2));
-            var bitsPerSample = BitConverter.ToInt16(CopyBytes(fmt.bytes, 14, 2));
-            if (bitsPerSample != 8 && bitsPerSample != 16)
-                throw new NotSupportedException("bits per sample must be 8 or 16");
+                var subChuncks = GetWaveChuncks(CopyBytes(riff.bytes, 4, riff.bytes.Length - 4));
+                var fmt = subChuncks.Find((WaveChunk w) => w.Id == "fmt ");
+                var audioFormat = BitConverter.ToInt16(CopyBytes(fmt.bytes, 0, 2));
+                var numChannels = BitConverter.ToInt16(CopyBytes(fmt.bytes, 2, 2));
+                var sampleRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 4, 4));
+                var byteRate = BitConverter.ToInt32(CopyBytes(fmt.bytes, 8, 4));
+                var blockAlign = BitConverter.ToInt16(CopyBytes(fmt.bytes, 12, 2));
+                var bitsPerSample = BitConverter.ToInt16(CopyBytes(fmt.bytes, 14, 2));
+                if (bitsPerSample != 8 && bitsPerSample != 16)
+                    throw new NotSupportedException("bits per sample must be 8 or 16");
 
-            var dataChunk = subChuncks.Find((WaveChunk w) => w.Id == "data");
-            var rawData = dataChunk.bytes;
+                var dataChunk = subChuncks.Find((WaveChunk w) => w.Id == "data");
+                var rawData = dataChunk.bytes;
 
-            var data = new AudioClip(numChannels, sampleRate, bitsPerSample);
-            data.Samples = new NativeList<byte>();
-            data.Samples.Count = (uint)rawData.Length;
-            for (int i = 0; i < rawData.Length; i++)
-                data.Samples[i] = rawData[i];
-
-            return data;
+                var data = new AudioClip(numChannels, sampleRate, bitsPerSample);
+                data.Samples = new NativeList<byte>();
+                data.Samples.Count = (uint)rawData.Length;
+                for (int i = 0; i < rawData.Length; i++)
+                    data.Samples[i] = rawData[i];
+                
+                return data;
+            }
+            catch (Exception)
+            {
+                throw new FormatException("wave file is not correctly formatted");
+            }
         }
 
         /// <summary>
