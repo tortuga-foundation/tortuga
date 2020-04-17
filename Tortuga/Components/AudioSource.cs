@@ -219,6 +219,17 @@ namespace Tortuga.Components
             }
             alSourcePlay(_source);
         }
+
+        /// <summary>
+        /// Stop audio source
+        /// </summary>
+        public void Stop()
+        {
+            if (_clip == null || _buffer == null)
+                return;
+            
+            alSourceStop(_source);
+        }
     
         /// <summary>
         /// Set's the audio source orientation

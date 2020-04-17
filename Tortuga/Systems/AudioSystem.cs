@@ -9,14 +9,17 @@ namespace Tortuga.Systems
     public class AudioSystem : Core.BaseSystem
     {
         /// <summary>
-        /// Not used
+        /// Called when system is disabled
         /// </summary>
         public override void OnDisable()
         {
+            var audioSource = MyScene.GetComponents<Components.AudioSource>();
+            foreach (var source in audioSource)
+                source.Stop();
         }
 
         /// <summary>
-        /// Not used
+        /// Called when system is activated
         /// </summary>
         public override void OnEnable()
         {

@@ -152,6 +152,8 @@ namespace Tortuga.Utils.OpenAL
         private static alDopplerFactor_T _alDopplerFactor = LoadFunction<alDopplerFactor_T>("alDopplerFactor");
         public static void alDopplerFactor(float val) => _alDopplerFactor(val);
     
-        
+        private delegate void alSourceStop_T(uint source);
+        private static alSourceStop_T _alSourceStop = LoadFunction<alSourceStop_T>("alSourceStop");
+        public static void alSourceStop(uint source) => _alSourceStop(source);
     }
 }
