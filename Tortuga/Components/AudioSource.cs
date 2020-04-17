@@ -98,7 +98,7 @@ namespace Tortuga.Components
                 if (value)
                 {
                     alSourcei(_source, ALParams.SourceRelative, 1);
-                    if (_clip.NumberOfChannels > 1)
+                    if (_clip != null && _clip.NumberOfChannels > 1)
                         Console.WriteLine("WARN: Audio Clip must be mono (1 channel) for 3D to work");
                 }
                 else
