@@ -140,6 +140,43 @@ namespace Tortuga.Components
             }
         }
 
+        /// <summary>
+        /// The rolloff rate for the source
+        /// </summary>
+        public float RollOffFactor
+        {
+            get
+            {
+                alGetSourcef(_source, ALParams.RolloffFactor, out float val);
+                alHandleError("could not get source roll off factor: ");
+                return val;
+            }
+            set
+            {
+                alSourcef(_source, ALParams.RolloffFactor, value);
+                alHandleError("could not set source roll off factor: ");
+            }
+
+        }
+
+        /// <summary>
+        /// Used to set the distance where there will no longer be any attenuation of the source
+        /// </summary>
+        public float MaxDistance
+        {
+            get
+            {
+                alGetSourcef(_source, ALParams.MaxDistance, out float val);
+                alHandleError("could not get source max distance: ");
+                return val;
+            }
+            set
+            {
+                alSourcef(_source, ALParams.MaxDistance, value);
+                alHandleError("could not set source max distance: ");
+            }
+        }
+
         private uint _source;
         private AudioBuffer _buffer;
 
@@ -154,6 +191,8 @@ namespace Tortuga.Components
             this.Loop = false;
             this.Gain = 1.0f;
             this.Pitch = 1.0f;
+            this.RollOffFactor = 1.0f;
+            this.MaxDistance = 100.0f;
             this.Position = Vector3.Zero;
             this.Velocity = Vector3.Zero;
             this.SetOrientation(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
