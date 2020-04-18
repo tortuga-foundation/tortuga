@@ -17,14 +17,14 @@ namespace Tortuga.Components
         {
             get
             {
-                Vector3 val;
-                alGetListener3f(ALParams.Position, out val.X, out val.Y, out val.Z);
+                var val = new float[3];
+                alGetListenerfv(ALListener.Position, val);
                 alHandleError("failed to get listener position");
-                return val;
+                return new Vector3(val[0], val[1], val[2]);
             }
             set
             {
-                alListener3f(ALParams.Position, value.X, value.Y, value.Z);
+                alListenerfv(ALListener.Position, new float[]{ value.X, value.Y, value.Z });
                 alHandleError("failed to set listener position");
             }
         }
@@ -36,14 +36,14 @@ namespace Tortuga.Components
         {
             get
             {
-                Vector3 val;
-                alGetListener3f(ALParams.Velocity, out val.X, out val.Y, out val.Z);
+                var val = new float[3];
+                alGetListenerfv(ALListener.Velocity, val);
                 alHandleError("failed to get listener velocity");
-                return val;
+                return new Vector3(val[0], val[1], val[2]);
             }
             set
             {
-                alListener3f(ALParams.Velocity, value.X, value.Y, value.Z);
+                alListenerfv(ALListener.Velocity, new float[]{ value.X, value.Y, value.Z });
                 alHandleError("failed to set listener velocity");
             }
         } 
@@ -55,7 +55,7 @@ namespace Tortuga.Components
         /// <param name="forward">forward vector</param>
         public void SetOrientation(Vector3 up, Vector3 forward)
         {
-            alListenerfv(ALParams.Orientation, new float[]{
+            alListenerfv(ALListener.Orientation, new float[]{
                 forward.X, forward.Y, forward.Z,
                 up.X, up.Y, up.Z 
             });
@@ -69,7 +69,8 @@ namespace Tortuga.Components
         /// <param name="forward">forward vector</param>
         public void GetOrientation(out Vector3 up, out Vector3 forward)
         {
-            alGetListenerfv(ALParams.Orientation, out float[] vals);
+            var vals = new float[6];
+            alGetListenerfv(ALListener.Orientation, vals);
             forward = new Vector3(vals[0], vals[1], vals[2]);
             up = new Vector3(vals[3], vals[4], vals[5]);
             alHandleError("failed to get listener orientation: ");

@@ -48,8 +48,8 @@ namespace Tortuga.Utils.OpenAL
         Extensions = 0xB004
     }
 
-    internal enum ALParams
-    {
+    internal enum ALSource
+    { 
         SourceRelative = 0x202,
         ConeInnerAngle = 0x1001,
         ConeOuterAngle = 0x1002,
@@ -85,8 +85,15 @@ namespace Tortuga.Utils.OpenAL
         ConeOuterGainHF = 0x20009,
         DirectFilterGainHFAuto = 0x2000A,
         AuxiliarySendFilterGainAuto = 0x2000B,
-        AuxiliarySendFilterGainHFAuto = 0x2000C
+        AuxiliarySendFilterGainHFAuto = 0x2000C,
+    }
 
+    internal enum ALListener
+    {
+        Position = 0x1004,
+        Velocity = 0x1006,
+        Orientation = 0x100F,
+        MetersPerUnit = 0x20004,
     }
 
     internal enum ALDistanceModel
@@ -241,6 +248,7 @@ namespace Tortuga.Utils.OpenAL
 
     internal enum ALEffect
     {
+        Type = 0x8001,
         None = 0x0000,
         Reverb = 0x0001,
         Chorus = 0x0002,
@@ -257,19 +265,26 @@ namespace Tortuga.Utils.OpenAL
         ReverbEAX = 0x8000
     }
 
-    internal enum ALLowPass
+    internal enum ALAuxiliaryEffectSlot
+    {
+        Effect = 0x0001,
+        Gain = 0x0002,
+        AxuiliarySendAuto = 0x0003
+    }
+
+    internal enum ALLowPassFilter
     {
         Gain = 0x0001,
         GainHF = 0x0002
     }
 
-    internal enum ALHighPass
+    internal enum ALHighPassFilter
     {
         Gain = 0x0001,
         GainLF = 0x0002
     }
 
-    internal enum BandPass
+    internal enum ALBandPassFilter
     {
         Gain = 0x0001,
         GainLF = 0x0002,
@@ -278,6 +293,7 @@ namespace Tortuga.Utils.OpenAL
 
     internal enum ALFilter
     {
+        Type = 0x8001,
         None = 0x0000,
         LowPass = 0x0001,
         HighPass = 0x0002,

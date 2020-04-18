@@ -17,9 +17,11 @@ namespace Tortuga.Audio.API
             _context = alcCreateContext(_device);
             alcMakeContextCurrent(_context);
             alHandleError("failed to setup open al context: ");
+            if (alcIsExtensionPresent(_device, "ALC_EXT_EFX") == false)
+                throw new NotSupportedException("your system does not support open al efx extension");
+            alHandleError("failed to setup open al: ");
             UpdateDistanceModel();
             UpdateSpeedOfSound();
-
         }
         ~AudioDevice()
         {

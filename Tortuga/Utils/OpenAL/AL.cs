@@ -5,6 +5,8 @@ namespace Tortuga.Utils.OpenAL
 {
     internal unsafe static partial class OpenALNative
     {
+        #region library loader
+
         public static string[] GetLibName()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -48,7 +50,11 @@ namespace Tortuga.Utils.OpenAL
         {
             return _lib.LoadFunction<T>(name);
         }
+
+        #endregion
     
+        #region error handling
+
         private delegate int alGetError_T();
         private static alGetError_T _alGetError = LoadFunction<alGetError_T>("alGetError");
         public static ALError alGetError() => (ALError)_alGetError();
@@ -58,6 +64,10 @@ namespace Tortuga.Utils.OpenAL
             if (err != ALError.None)
                 throw new Exception(message + err.ToString());
         }
+
+        #endregion
+
+        #region buffers
 
         private delegate void alGenBuffers_T(int size, out uint buffers);
         private static alGenBuffers_T _alGenBuffers = LoadFunction<alGenBuffers_T>("alGenBuffers");
@@ -70,7 +80,11 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alBufferData_T(uint buffer, ALFormat format, IntPtr data, int size, int frequence);
         private static alBufferData_T _alBufferData = LoadFunction<alBufferData_T>("alBufferData");
         public static void alBufferData(uint buffer, ALFormat format, IntPtr data, int size, int frequence) => _alBufferData(buffer, format, data, size, frequence);
-    
+
+        #endregion
+
+        #region source
+
         private delegate void alGenSources_T(int size, out uint sources);
         private static alGenSources_T _alGenSources = LoadFunction<alGenSources_T>("alGenSources");
         public static void alGenSources(out uint sources) => _alGenSources(1, out sources);
@@ -79,58 +93,62 @@ namespace Tortuga.Utils.OpenAL
         private static alDeleteSources_T _alDeleteSources = LoadFunction<alDeleteSources_T>("alDeleteSources");
         public static void alDeleteSources(int size, uint[] sources) => _alDeleteSources(size, sources);
 
+        #endregion
+
+        #region source playback
+
         private delegate void alSourcePlay_T(uint source);
         private static alSourcePlay_T _alSourcePlay = LoadFunction<alSourcePlay_T>("alSourcePlay");
         public static void alSourcePlay(uint source) => _alSourcePlay(source);
 
-        private delegate void alSourcei_T(uint source, ALParams param, int value);
-        private static alSourcei_T _alSourcei = LoadFunction<alSourcei_T>("alSourcei");
-        public static void alSourcei(uint source, ALParams param, int value) => _alSourcei(source, param, value);
+        private delegate void alSourceStop_T(uint source);
+        private static alSourceStop_T _alSourceStop = LoadFunction<alSourceStop_T>("alSourceStop");
+        public static void alSourceStop(uint source) => _alSourceStop(source);
 
-        private delegate void alSourcef_T(uint source, ALParams param, float value);
-        private static alSourcef_T _alSourcef = LoadFunction<alSourcef_T>("alSourcef");
-        public static void alSourcef(uint source, ALParams param, float value) => _alSourcef(source, param, value);
+        private delegate void alSourcePause_T(uint source);
+        private static alSourcePause_T _alSourcePause = LoadFunction<alSourcePause_T>("alSourcePause");
+        public static void alSourcePause(uint source) => _alSourcePause(source);
 
-        private delegate void alGetSourcef_T(uint source, ALParams param, out float value);
-        private static alGetSourcef_T _alGetSourcef = LoadFunction<alGetSourcef_T>("alGetSource3f");
-        public static void alGetSourcef(uint source, ALParams param, out float value) => _alGetSourcef(source, param, out value);
+        #endregion
 
-        private delegate void alGetSource3f_T(uint source, ALParams param, out float x, out float y, out float z);
-        private static alGetSource3f_T _alGetSource3f = LoadFunction<alGetSource3f_T>("alGetSource3f");
-        public static void alGetSource3f(uint source, ALParams param, out float x, out float y, out float z) => _alGetSource3f(source, param, out x, out y, out z);
+        #region source floats
 
-        private delegate void alSource3f_T(uint source, ALParams param, float x, float y, float z);
-        private static alSource3f_T _alSource3f = LoadFunction<alSource3f_T>("alSource3f");
-        public static void alSource3f(uint source, ALParams param, float x, float y, float z) => _alSource3f(source, param, x, y, z);
-
-        private delegate void alSourcefv_T(uint source, ALParams param, float[] vals);
+        private delegate void alSourcefv_T(uint source, int param, float[] vals);
         private static alSourcefv_T _alSourcefv = LoadFunction<alSourcefv_T>("alSourcefv");
-        public static void alSourcefv(uint source, ALParams param, float[] vals) => _alSourcefv(source, param, vals);
+        public static void alSourcefv(uint source, ALSource param, float[] vals) => _alSourcefv(source, (int)param, vals);
 
-        private delegate void alGetSourcefv_T(uint source, ALParams param, out float[] vals);
+        private delegate void alGetSourcefv_T(uint source, int param, float[] vals);
         private static alGetSourcefv_T _alGetSourcefv = LoadFunction<alGetSourcefv_T>("alSourcefv");
-        public static void alGetSourcefv(uint source, ALParams param, out float[] vals) => _alGetSourcefv(source, param, out vals);
+        public static void alGetSourcefv(uint source, ALSource param, float[] vals) => _alGetSourcefv(source, (int)param, vals);
 
-        private delegate void alGetSourcei_T(uint source, ALParams param, out int value);
-        private static alGetSourcei_T _alGetSourcei = LoadFunction<alGetSourcei_T>("alGetSourcei");
-        public static void alGetSourcei(uint source, ALParams param, out int value) => _alGetSourcei(source, param, out value);
+        #endregion 
 
-        private delegate void alListener3f_T(ALParams param, float x, float y, float z);
-        private static alListener3f_T _alListener3f = LoadFunction<alListener3f_T>("alListener3f");
-        public static void alListener3f(ALParams param, float x, float y, float z) => _alListener3f(param, x, y, z);
+        #region source ints
 
-        private delegate void alGetListener3f_T(ALParams param, out float x, out float y, out float z);
-        private static alGetListener3f_T _alGetListener3f = LoadFunction<alGetListener3f_T>("alGetListener3f");
-        public static void alGetListener3f(ALParams param, out float x, out float y, out float z) => _alGetListener3f(param, out x, out y, out z);
+        private delegate void alSourceiv_T(uint source, int param, int[] value);
+        private static alSourceiv_T _alSourceiv = LoadFunction<alSourceiv_T>("alSourceiv");
+        public static void alSourceiv(uint source, ALSource param, int[] value) => _alSourceiv(source, (int)param, value);
 
-        private delegate void alListenerfv_T(ALParams param, float[] vals);
+        private delegate void alGetSourceiv_T(uint source, int param, int[] value);
+        private static alGetSourceiv_T _alGetSourceiv = LoadFunction<alGetSourceiv_T>("alGetSourcei");
+        public static void alGetSourceiv(uint source, ALSource param, int[] value) => _alGetSourceiv(source, (int)param, value);
+
+        #endregion
+
+        #region listener floats
+
+        private delegate void alListenerfv_T(ALListener param, float[] vals);
         private static alListenerfv_T _alListenerfv = LoadFunction<alListenerfv_T>("alListenerfv");
-        public static void alListenerfv(ALParams param, float[] vals) => _alListenerfv(param, vals);
+        public static void alListenerfv(ALListener param, float[] vals) => _alListenerfv(param, vals);
 
-        private delegate void alGetListenerfv_T(ALParams param, out float[] vals);
+        private delegate void alGetListenerfv_T(ALListener param, float[] vals);
         private static alGetListenerfv_T _alGetListenerfv = LoadFunction<alGetListenerfv_T>("alGetListenerfv");
-        public static void alGetListenerfv(ALParams param, out float[] vals) => _alGetListenerfv(param, out vals);
+        public static void alGetListenerfv(ALListener param, float[] vals) => _alGetListenerfv(param, vals);
     
+        #endregion
+
+        #region global settings
+
         private delegate void alDistanceModel_T(ALDistanceModel model);
         private static alDistanceModel_T _alDistanceModel = LoadFunction<alDistanceModel_T>("alDistanceModel");
         public static void alDistanceModel(ALDistanceModel model) => _alDistanceModel(model);
@@ -143,12 +161,6 @@ namespace Tortuga.Utils.OpenAL
         private static alDopplerFactor_T _alDopplerFactor = LoadFunction<alDopplerFactor_T>("alDopplerFactor");
         public static void alDopplerFactor(float val) => _alDopplerFactor(val);
     
-        private delegate void alSourceStop_T(uint source);
-        private static alSourceStop_T _alSourceStop = LoadFunction<alSourceStop_T>("alSourceStop");
-        public static void alSourceStop(uint source) => _alSourceStop(source);
-
-        private delegate void alSourcePause_T(uint source);
-        private static alSourcePause_T _alSourcePause = LoadFunction<alSourcePause_T>("alSourcePause");
-        public static void alSourcePause(uint source) => _alSourcePause(source);
+        #endregion
     }
 }
