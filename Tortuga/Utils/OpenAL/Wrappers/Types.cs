@@ -269,7 +269,8 @@ namespace Tortuga.Utils.OpenAL
     {
         Effect = 0x0001,
         Gain = 0x0002,
-        AxuiliarySendAuto = 0x0003
+        AxuiliarySendAuto = 0x0003,
+        MaxSends = 0x20003
     }
 
     internal enum ALLowPassFilter

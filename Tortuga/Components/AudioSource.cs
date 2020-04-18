@@ -199,6 +199,7 @@ namespace Tortuga.Components
 
         private uint _source;
         private AudioBuffer _buffer;
+        private Distortion _efx;
 
         /// <summary>
         /// Constructor for audio source
@@ -207,6 +208,11 @@ namespace Tortuga.Components
         {
             alGenSources(out _source);
             alHandleError("failed to generate audio source: ");
+            _efx = new Distortion();
+            _efx.Edge = 1.0f;
+            _efx.Gain = 1.0f;
+            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)_efx.AuxiliarySlot, 0, 0 });
+            alHandleError("failed to setup effect on a audio source: ");
             _effects = new List<AudioEffect>();
             this.Is3D = true;
             this.Loop = false;

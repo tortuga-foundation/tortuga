@@ -8,6 +8,7 @@ namespace Tortuga.Audio.API
     /// </summary>
     public abstract class AudioEffect
     {
+        internal uint AuxiliarySlot => _aux;
         internal uint Handle => _effect;
         /// <summary>
         /// open al effect handler
@@ -23,12 +24,17 @@ namespace Tortuga.Audio.API
         /// </summary>
         public AudioEffect()
         {
-            alGenEffects(out uint effect);
+            alGenEffects(out _effect);
             alHandleError("failed to generate effect");
-            _effect = effect;
-            alGenAuxiliaryEffectSlots(out uint aux);
+            alGenAuxiliaryEffectSlots(out _aux);
             alHandleError("failed to generate effect auxiliary slot");
-            _aux = aux;
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.AxuiliarySendAuto, new int[]{ 1 });
+            alHandleError("failed to setup effect slot: ");
+
+            if (alIsEffect(_effect) == false)
+                throw new System.Exception("failed to create open al effect");
         }
         /// <summary>
         /// de-constructor for audio effect
@@ -53,7 +59,6 @@ namespace Tortuga.Audio.API
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Reverb });
             alHandleError("failed to setup reverb: ");
-            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
         }
     }
 
@@ -62,6 +67,38 @@ namespace Tortuga.Audio.API
     /// </summary>
     public class Distortion : AudioEffect
     {
+        public float Edge
+        {
+            get
+            {
+                var val = new float[1];
+                alGetEffectfv(_effect, ALDistortion.Edge, val);
+                alHandleError("failed to get distortion effect edge: ");
+                return val[0];
+            }
+            set
+            {
+                alGetEffectfv(_effect, ALDistortion.Edge, new float[]{ value });
+                alHandleError("failed to set distortion effect edge: ");
+            }
+        }
+
+        public float Gain
+        {
+            get
+            {
+                var val = new float[1];
+                alGetEffectfv(_effect, ALDistortion.Gain, val);
+                alHandleError("failed to get distortion effect gain: ");
+                return val[0];
+            }
+            set
+            {
+                alEffectfv(_effect, ALDistortion.Gain, new float[]{ value });
+                alHandleError("failed to set distortion effect gain: ");
+            }
+        }
+
         /// <summary>
         /// constructor for distortion
         /// </summary>

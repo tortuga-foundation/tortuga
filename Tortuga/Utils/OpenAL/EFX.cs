@@ -11,13 +11,17 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alDeleteEffects_T(int size, uint[] effects);
         private static alDeleteEffects_T _alDeleteEffects = LoadFunction<alDeleteEffects_T>("alDeleteEffects");
         public static void alDeleteEffects(uint effect) => _alDeleteEffects(1, new uint[]{ effect });
+
+        private delegate bool alIsEffect_T(uint effect);
+        private static alIsEffect_T _alIsEffect = LoadFunction<alIsEffect_T>("alIsEffect");
+        public static bool alIsEffect(uint effect) => _alIsEffect(effect);
     
         #endregion
 
         #region effect ints
 
         private delegate void alEffectiv_T(uint effect, ALEffect param, int[] val);
-        private static alEffectiv_T _alEffectiv = LoadFunction<alEffectiv_T>("alEffecti");
+        private static alEffectiv_T _alEffectiv = LoadFunction<alEffectiv_T>("alEffectiv");
         public static void alEffectiv(uint effect, ALEffect param, int[] val) => _alEffectiv(effect, param, val);
     
         private delegate void alGetEffectiv_T(uint effect, ALEffect param, out int[] val);
@@ -28,13 +32,15 @@ namespace Tortuga.Utils.OpenAL
 
         #region effect float
 
-        private delegate void alEffectfv_T(uint effect, ALEffect param, float[] val);
-        private static alEffectfv_T _alEffectfv = LoadFunction<alEffectfv_T>("alEffecti");
-        public static void alEffectfv(uint effect, ALEffect param, float[] val) => _alEffectfv(effect, param, val);
+        private delegate void alEffectfv_T(uint effect, int param, float[] val);
+        private static alEffectfv_T _alEffectfv = LoadFunction<alEffectfv_T>("alEffectfv");
+        public static void alEffectfv(uint effect, ALEffect param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALDistortion param, float[] val) => _alEffectfv(effect, (int)param, val);
     
-        private delegate void alGetEffectfv_T(uint effect, ALEffect param, out float[] val);
+        private delegate void alGetEffectfv_T(uint effect, int param, float[] val);
         private static alGetEffectfv_T _alGetEffectfv = LoadFunction<alGetEffectfv_T>("alGetEffectfv");
-        public static void alGetEffectfv(uint effect, ALEffect param, out float[] val) => _alGetEffectfv(effect, param, out val);
+        public static void alGetEffectfv(uint effect, ALEffect param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALDistortion param, float[] val) => _alGetEffectfv(effect, (int)param, val);
 
         #endregion
 

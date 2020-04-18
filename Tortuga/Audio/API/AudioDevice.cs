@@ -14,7 +14,7 @@ namespace Tortuga.Audio.API
         public AudioDevice()
         {
             _device = alcOpenDevice(null);
-            _context = alcCreateContext(_device);
+            _context = alcCreateContext(_device, null);
             alcMakeContextCurrent(_context);
             alHandleError("failed to setup open al context: ");
             if (alcIsExtensionPresent(_device, "ALC_EXT_EFX") == false)

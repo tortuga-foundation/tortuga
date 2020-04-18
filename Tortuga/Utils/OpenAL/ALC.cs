@@ -16,9 +16,9 @@ namespace Tortuga.Utils.OpenAL
     
         #region context
 
-        private delegate ALCcontext alcCreateContext_T(ALCdevice device, int* attrlist);
+        private delegate ALCcontext alcCreateContext_T(ALCdevice device, int[] attrlist);
         private static alcCreateContext_T _alcCreateContext = LoadFunction<alcCreateContext_T>("alcCreateContext");
-        public static ALCcontext alcCreateContext(ALCdevice device) => _alcCreateContext(device, null);
+        public static ALCcontext alcCreateContext(ALCdevice device, int[] attributes) => _alcCreateContext(device, attributes);
     
         private delegate bool alcMakeContextCurrent_T(ALCcontext context);
         private static alcMakeContextCurrent_T _alcMakeContextCurrent = LoadFunction<alcMakeContextCurrent_T>("alcMakeContextCurrent");
