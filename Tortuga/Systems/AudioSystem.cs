@@ -24,6 +24,9 @@ namespace Tortuga.Systems
         public override void OnEnable()
         {
             UpdatePositionVelocityAndOrientation();
+            var audioSource = MyScene.GetComponents<Components.AudioSource>();
+            foreach (var source in audioSource)
+                source.Play();
         }
 
         /// <summary>

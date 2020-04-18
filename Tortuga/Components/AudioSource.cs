@@ -14,6 +14,10 @@ namespace Tortuga.Components
     public class AudioSource : Core.BaseComponent
     {
         /// <summary>
+        /// automatically play's when AudioSystem is initialized
+        /// </summary>
+        public bool PlayOnEnable;
+        /// <summary>
         /// Audio clip used by the source
         /// </summary>
         public AudioClip Clip
