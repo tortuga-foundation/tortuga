@@ -53,7 +53,7 @@ namespace Tortuga.Test
                 source.Velocity = Vector3.Zero;
                 source.Is3D = true;
                 source.Loop = true;
-                source.Clip = await Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
+                source.Clip = await Audio.AudioClip.Load("Assets/Audio/PCM 16 bit/pcm mono 16 bit 16kHz.wav");
                 source.Play();
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
