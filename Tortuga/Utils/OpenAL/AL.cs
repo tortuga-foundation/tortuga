@@ -65,6 +65,10 @@ namespace Tortuga.Utils.OpenAL
                 throw new Exception(message + err.ToString());
         }
 
+        private delegate int alGetEnumValue_T(string name);
+        private static alGetEnumValue_T _alGetEnumValue = LoadFunction<alGetEnumValue_T>("alGetEnumValue");
+        public static int alGetEnumValue(string name) => _alGetEnumValue(name);
+
         #endregion
 
         #region buffers

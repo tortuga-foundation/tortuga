@@ -20,13 +20,39 @@ namespace Tortuga.Utils.OpenAL
 
         #region effect ints
 
-        private delegate void alEffectiv_T(uint effect, ALEffect param, int[] val);
+        private delegate void alEffectiv_T(uint effect, int param, int[] val);
         private static alEffectiv_T _alEffectiv = LoadFunction<alEffectiv_T>("alEffectiv");
-        public static void alEffectiv(uint effect, ALEffect param, int[] val) => _alEffectiv(effect, param, val);
+        public static void alEffectiv(uint effect, ALEffect param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALReverbEAX param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALReverb param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALChorus param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALDistortion param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALEcho param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALFlanger param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALFrequencyShifter param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALVocalMorpher param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALPitchShifter param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALRingModulator param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALAutoWah param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALCompressor param, int[] val) => _alEffectiv(effect, (int)param, val);
+        public static void alEffectiv(uint effect, ALEqualizer param, int[] val) => _alEffectiv(effect, (int)param, val);
     
-        private delegate void alGetEffectiv_T(uint effect, ALEffect param, out int[] val);
+        private delegate void alGetEffectiv_T(uint effect, int param, int[] val);
         private static alGetEffectiv_T _alGetEffectiv = LoadFunction<alGetEffectiv_T>("alGetEffectiv");
-        public static void alGetEffectiv(uint effect, ALEffect param, out int[] val) => _alGetEffectiv(effect, param, out val);
+        public static void alGetEffectiv(uint effect, ALEffect param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALReverbEAX param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALReverb param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALChorus param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALDistortion param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALEcho param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALFlanger param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALFrequencyShifter param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALVocalMorpher param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALPitchShifter param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALRingModulator param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALAutoWah param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALCompressor param, int[] val) => _alGetEffectiv(effect, (int)param, val);
+        public static void alGetEffectiv(uint effect, ALEqualizer param, int[] val) => _alGetEffectiv(effect, (int)param, val);
 
         #endregion
 
@@ -35,13 +61,36 @@ namespace Tortuga.Utils.OpenAL
         private delegate void alEffectfv_T(uint effect, int param, float[] val);
         private static alEffectfv_T _alEffectfv = LoadFunction<alEffectfv_T>("alEffectfv");
         public static void alEffectfv(uint effect, ALEffect param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALReverbEAX param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALReverb param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALChorus param, float[] val) => _alEffectfv(effect, (int)param, val);
         public static void alEffectfv(uint effect, ALDistortion param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALEcho param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALFlanger param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALFrequencyShifter param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALVocalMorpher param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALPitchShifter param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALRingModulator param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALAutoWah param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALCompressor param, float[] val) => _alEffectfv(effect, (int)param, val);
+        public static void alEffectfv(uint effect, ALEqualizer param, float[] val) => _alEffectfv(effect, (int)param, val);
     
         private delegate void alGetEffectfv_T(uint effect, int param, float[] val);
         private static alGetEffectfv_T _alGetEffectfv = LoadFunction<alGetEffectfv_T>("alGetEffectfv");
         public static void alGetEffectfv(uint effect, ALEffect param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALReverbEAX param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALReverb param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALChorus param, float[] val) => _alGetEffectfv(effect, (int)param, val);
         public static void alGetEffectfv(uint effect, ALDistortion param, float[] val) => _alGetEffectfv(effect, (int)param, val);
-
+        public static void alGetEffectfv(uint effect, ALEcho param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALFlanger param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALFrequencyShifter param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALVocalMorpher param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALPitchShifter param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALRingModulator param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALAutoWah param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALCompressor param, float[] val) => _alGetEffectfv(effect, (int)param, val);
+        public static void alGetEffectfv(uint effect, ALEqualizer param, float[] val) => _alGetEffectfv(effect, (int)param, val);
         #endregion
 
         #region effect slot

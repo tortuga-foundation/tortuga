@@ -193,31 +193,22 @@ namespace Tortuga.Components
         }
 
         /// <summary>
-        /// the effects to apply to the audio source
+        /// the effects to apply to the audio source, use AddEffect and RemoveEffect functions to add or remove audio effects
         /// </summary>
-        public List<AudioEffect> Effects
-        {
-            get => _effects;
-        }
+        public List<AudioEffect> Effects => _effects;
         private List<AudioEffect> _effects;
 
         private uint _source;
         private AudioBuffer _buffer;
-        private Distortion _efx;
 
         /// <summary>
         /// Constructor for audio source
         /// </summary>
         public AudioSource()
         {
+            _effects = new List<AudioEffect>();
             alGenSources(out _source);
             alHandleError("failed to generate audio source: ");
-            _efx = new Distortion();
-            _efx.Edge = 1.0f;
-            _efx.Gain = 1.0f;
-            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)_efx.AuxiliarySlot, 0, 0 });
-            alHandleError("failed to setup effect on a audio source: ");
-            _effects = new List<AudioEffect>();
             this.Is3D = true;
             this.Loop = false;
             this.Gain = 1.0f;
@@ -235,6 +226,33 @@ namespace Tortuga.Components
         {
             alDeleteSources(1, new uint[]{ _source });
             alHandleError("failed to destroy source: ");
+        }
+
+        /// <summary>
+        /// Add a effect to the audio source
+        /// </summary>
+        /// <param name="effect">effect to add</param>
+        public void AddEffect(AudioEffect effect)
+        {
+            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, _effects.Count, (int)ALFilter.None });
+            alHandleError("failed to attach effect to audio source: ");
+            _effects.Add(effect);
+        }
+
+        /// <summary>
+        /// Removes a effect applied to the audio source
+        /// </summary>
+        /// <param name="effect">effect to remove</param>
+        public void RemoveEffect(AudioEffect effect)
+        {
+            var index = _effects.FindIndex((AudioEffect e) => e == effect);
+            if (index < 0)
+                return;
+            alHandleError("failed to remove effect from audio source: ");
+            _effects.Remove(effect);
+            for (int i = 0; i < _effects.Count; i++)
+                alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)_effects[i].AuxiliarySlot, i, (int)ALFilter.None });
+            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)ALAuxiliaryEffectSlot.None, _effects.Count, (int)ALFilter.None });
         }
 
         /// <summary>

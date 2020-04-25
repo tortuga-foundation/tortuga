@@ -267,6 +267,7 @@ namespace Tortuga.Utils.OpenAL
 
     internal enum ALAuxiliaryEffectSlot
     {
+        None = 0x0000,
         Effect = 0x0001,
         Gain = 0x0002,
         AxuiliarySendAuto = 0x0003,
