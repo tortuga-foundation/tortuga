@@ -1,7 +1,7 @@
 using Tortuga.Utils.OpenAL;
 using static Tortuga.Utils.OpenAL.OpenALNative;
 
-namespace Tortuga.Audio.API
+namespace Tortuga.Audio.Effect
 {
     /// <summary>
     /// distortion audio effect
@@ -17,7 +17,7 @@ namespace Tortuga.Audio.API
             {
                 var val = new float[1];
                 alGetEffectfv(_effect, ALDistortion.Edge, val);
-                alHandleError("failed to set distortion variable");
+                alHandleError("failed to get distortion variable");
                 return val[0];
             }
             set
@@ -36,7 +36,7 @@ namespace Tortuga.Audio.API
             {
                 var val = new float[1];
                 alGetEffectfv(_effect, ALDistortion.Gain, val);
-                alHandleError("failed to set distortion variable");
+                alHandleError("failed to get distortion variable");
                 return val[0];
             }
             set
@@ -55,7 +55,7 @@ namespace Tortuga.Audio.API
             {
                 var val = new float[1];
                 alGetEffectfv(_effect, ALDistortion.LowPassCutOff, val);
-                alHandleError("failed to set distortion variable");
+                alHandleError("failed to get distortion variable");
                 return val[0];
             }
             set
@@ -74,7 +74,7 @@ namespace Tortuga.Audio.API
             {
                 var val = new float[1];
                 alGetEffectfv(_effect, ALDistortion.EQCenter, val);
-                alHandleError("failed to set distortion variable");
+                alHandleError("failed to get distortion variable");
                 return val[0];
             }
             set
@@ -93,7 +93,7 @@ namespace Tortuga.Audio.API
             {
                 var val = new float[1];
                 alGetEffectfv(_effect, ALDistortion.EQBandwidth, val);
-                alHandleError("failed to set distortion variable");
+                alHandleError("failed to get distortion variable");
                 return val[0];
             }
             set

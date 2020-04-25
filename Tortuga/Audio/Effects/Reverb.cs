@@ -3,7 +3,7 @@ using System.Numerics;
 using Tortuga.Utils.OpenAL;
 using static Tortuga.Utils.OpenAL.OpenALNative;
 
-namespace Tortuga.Audio.API
+namespace Tortuga.Audio.Effect
 {
     /// <summary>
     /// Reverb audio effect

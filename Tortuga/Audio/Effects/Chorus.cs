@@ -1,7 +1,7 @@
 using Tortuga.Utils.OpenAL;
 using static Tortuga.Utils.OpenAL.OpenALNative;
 
-namespace Tortuga.Audio.API
+namespace Tortuga.Audio.Effect
 {
     /// <summary>
     /// Chorus audio effect
@@ -45,21 +45,6 @@ namespace Tortuga.Audio.API
                 alEffectiv(_effect, ALChorus.Phase, new int[]{ value });
                 alHandleError("failed to set chorus variable");
             }
-        }
-
-        /// <summary>
-        /// Types of chorus waveform
-        /// </summary>
-        public enum WaveformType
-        {
-            /// <summary>
-            /// Sin
-            /// </summary>
-            Sin  = 0,
-            /// <summary>
-            /// Tirangle
-            /// </summary>
-            Triangle = 1
         }
 
         /// <summary>

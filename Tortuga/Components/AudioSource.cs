@@ -1,4 +1,5 @@
 using System;
+using Tortuga.Audio.Effect;
 using Tortuga.Audio.API;
 using Tortuga.Audio;
 using Tortuga.Utils.OpenAL;
