@@ -4,21 +4,6 @@ using static Tortuga.Utils.OpenAL.OpenALNative;
 namespace Tortuga.Audio.Effect
 {
     /// <summary>
-    /// Types of waveform
-    /// </summary>
-    public enum WaveformType
-    {
-        /// <summary>
-        /// Sin
-        /// </summary>
-        Sin  = 0,
-        /// <summary>
-        /// Tirangle
-        /// </summary>
-        Triangle = 1
-    }
-
-    /// <summary>
     /// base audio effect class
     /// </summary>
     public abstract class AudioEffect

@@ -8,6 +8,22 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class Chorus : AudioEffect
     {
+
+        /// <summary>
+        /// Types of waveform
+        /// </summary>
+        public enum WaveformType
+        {
+            /// <summary>
+            /// Sin
+            /// </summary>
+            Sin  = 0,
+            /// <summary>
+            /// Tirangle
+            /// </summary>
+            Triangle = 1
+        }
+
         /// <summary>
         /// chorus rate
         /// </summary>
@@ -26,7 +42,6 @@ namespace Tortuga.Audio.Effect
                 alHandleError("failed to set chorus variable");
             }
         }
-
 
         /// <summary>
         /// chorus phase

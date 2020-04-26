@@ -9,6 +9,21 @@ namespace Tortuga.Audio.Effect
     public class Flanger : AudioEffect
     {
         /// <summary>
+        /// Types of waveform
+        /// </summary>
+        public enum WaveformType
+        {
+            /// <summary>
+            /// Sin
+            /// </summary>
+            Sin  = 0,
+            /// <summary>
+            /// Tirangle
+            /// </summary>
+            Triangle = 1
+        }
+        
+        /// <summary>
         /// flanger waveform
         /// </summary>
         public WaveformType Waveform
