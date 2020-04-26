@@ -102,6 +102,7 @@ namespace Tortuga.Audio.Effect
         ~AudioEffect()
         {
             alDeleteAuxiliaryEffectSlots(new uint[]{ _aux });
+            alHandleError("failed to delete effect auxiliary slot");
             alDeleteEffects(_effect);
             alHandleError("failed to delete effect");
         }
