@@ -9,6 +9,11 @@ namespace Tortuga.Audio.Effect
     public class Equalizer : AudioEffect
     {
         /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.Equalizer;
+
+        /// <summary>
         /// equalizer low gain
         /// </summary>
         public float LowGain
@@ -205,6 +210,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Equalizer });
             alHandleError("failed to setup dequalizer: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

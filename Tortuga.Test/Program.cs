@@ -51,10 +51,11 @@ namespace Tortuga.Test
                 var source = await entity.AddComponent<Components.AudioSource>();
                 source.Position = Vector3.Zero;
                 source.Velocity = Vector3.Zero;
-                source.Is3D = true;
+                source.Is3D = false;
                 source.Loop = true;
                 source.PlayOnEnable = true;
                 source.Clip = await Audio.AudioClip.Load("Assets/Audio/pcm mono 16 bit 16kHz.wav");
+                source.AddEffect(new Audio.Effect.Echo());
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;

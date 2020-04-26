@@ -8,6 +8,12 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class Distortion : AudioEffect
     {
+
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.Distortion;
+
         /// <summary>
         /// distortion edge
         /// </summary>
@@ -110,6 +116,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Distortion });
             alHandleError("failed to setup distortion: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

@@ -8,6 +8,12 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class FrequencyShifter : AudioEffect
     {
+
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.FrequencyShifter;
+
         /// <summary>
         /// frequency direction type
         /// </summary>
@@ -91,6 +97,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.FrequencyShifter });
             alHandleError("failed to setup echo: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

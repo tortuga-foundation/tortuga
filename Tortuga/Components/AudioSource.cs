@@ -196,7 +196,7 @@ namespace Tortuga.Components
         /// <summary>
         /// the effects to apply to the audio source, use AddEffect and RemoveEffect functions to add or remove audio effects
         /// </summary>
-        public List<AudioEffect> Effects => _effects;
+        public AudioEffect[] Effects => _effects.ToArray();
         private List<AudioEffect> _effects;
 
         private uint _source;

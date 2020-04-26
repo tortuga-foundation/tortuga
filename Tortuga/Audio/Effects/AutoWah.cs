@@ -8,6 +8,10 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class AutoWah : AudioEffect
     {
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.AutoWah;
 
         /// <summary>
         /// auto wah attack time
@@ -93,6 +97,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.AutoWah });
             alHandleError("failed to setup auto wah: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

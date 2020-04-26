@@ -9,6 +9,11 @@ namespace Tortuga.Audio.Effect
     public class RingModulator : AudioEffect
     {
         /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.RingModulator;
+
+        /// <summary>
         /// Types of waveform
         /// </summary>
         public enum WaveformType
@@ -91,6 +96,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.PitchShifter });
             alHandleError("failed to setup ring modulator: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

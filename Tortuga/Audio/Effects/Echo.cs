@@ -8,6 +8,10 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class Echo : AudioEffect
     {
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.Echo;
 
         /// <summary>
         /// echo delay
@@ -111,6 +115,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Echo });
             alHandleError("failed to setup echo: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

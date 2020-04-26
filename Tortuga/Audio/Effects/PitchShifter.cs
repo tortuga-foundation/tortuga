@@ -8,6 +8,12 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class PitchShifter : AudioEffect
     {
+
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.PitchShifter;
+
         /// <summary>
         /// pitch shifter phoneme a
         /// </summary>
@@ -53,6 +59,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.PitchShifter });
             alHandleError("failed to setup pitch shifter: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

@@ -8,6 +8,10 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class Compressor : AudioEffect
     {
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.Compressor;
 
         /// <summary>
         /// Compressor On
@@ -39,6 +43,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Compressor });
             alHandleError("failed to setup compressor: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

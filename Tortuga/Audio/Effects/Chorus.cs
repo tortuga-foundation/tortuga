@@ -8,6 +8,10 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class Chorus : AudioEffect
     {
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.Chorus;
 
         /// <summary>
         /// Types of waveform
@@ -145,6 +149,8 @@ namespace Tortuga.Audio.Effect
         {
             alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Chorus });
             alHandleError("failed to setup chorus: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

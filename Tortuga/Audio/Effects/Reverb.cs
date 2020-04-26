@@ -10,6 +10,12 @@ namespace Tortuga.Audio.Effect
     /// </summary>
     public class Reverb : AudioEffect
     {
+
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public override AudioEffectType Type => AudioEffectType.Reverb;
+
         private bool _isEAX;
 
         /// <summary>
@@ -560,6 +566,8 @@ namespace Tortuga.Audio.Effect
             else
                 alEffectiv(_effect, ALEffect.Type, new int[]{ (int)ALEffect.Reverb });
             alHandleError("failed to setup reverb: ");
+            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
+            alHandleError("failed to setup effect slot: ");
         }
     }
 }

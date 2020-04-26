@@ -4,10 +4,74 @@ using static Tortuga.Utils.OpenAL.OpenALNative;
 namespace Tortuga.Audio.Effect
 {
     /// <summary>
+    /// different types of audio effects
+    /// </summary>
+    public enum AudioEffectType
+    {
+        /// <summary>
+        /// None
+        /// </summary>
+        None,
+        /// <summary>
+        /// AutoWah
+        /// </summary>
+        AutoWah,
+        /// <summary>
+        /// Chorus
+        /// </summary>
+        Chorus,
+        /// <summary>
+        /// Compressor
+        /// </summary>
+        Compressor,
+        /// <summary>
+        /// Distortion
+        /// </summary>
+        Distortion,
+        /// <summary>
+        /// Echo
+        /// </summary>
+        Echo,
+        /// <summary>
+        /// Equalizer
+        /// </summary>
+        Equalizer,
+        /// <summary>
+        /// Flanger
+        /// </summary>
+        Flanger,
+        /// <summary>
+        /// FrequencyShifter
+        /// </summary>
+        FrequencyShifter,
+        /// <summary>
+        /// PitchShifter
+        /// </summary>
+        PitchShifter,
+        /// <summary>
+        /// Reverb
+        /// </summary>
+        Reverb,
+        /// <summary>
+        /// RingModulator
+        /// </summary>
+        RingModulator,
+        /// <summary>
+        /// VocalMorpher
+        /// </summary>
+        VocalMorpher
+    }
+
+    /// <summary>
     /// base audio effect class
     /// </summary>
     public abstract class AudioEffect
     {
+        /// <summary>
+        /// type of audio effect
+        /// </summary>
+        public virtual AudioEffectType Type => AudioEffectType.None;
+
         internal uint AuxiliarySlot => _aux;
         internal uint Handle => _effect;
         /// <summary>
@@ -28,10 +92,6 @@ namespace Tortuga.Audio.Effect
             alHandleError("failed to generate effect");
             alGenAuxiliaryEffectSlots(out _aux);
             alHandleError("failed to generate effect auxiliary slot");
-            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.Effect, new int[]{ (int)_effect });
-            alHandleError("failed to setup effect slot: ");
-            alAuxiliaryEffectSlotiv(_aux, ALAuxiliaryEffectSlot.AxuiliarySendAuto, new int[]{ 1 });
-            alHandleError("failed to setup effect slot: ");
 
             if (alIsEffect(_effect) == false)
                 throw new System.Exception("failed to create open al effect");
