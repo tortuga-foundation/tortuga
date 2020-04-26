@@ -6,6 +6,7 @@ using Tortuga.Utils.OpenAL;
 using static Tortuga.Utils.OpenAL.OpenALNative;
 using System.Numerics;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Tortuga.Components
 {
@@ -235,7 +236,11 @@ namespace Tortuga.Components
         /// <param name="effect">effect to add</param>
         public void AddEffect(AudioEffect effect)
         {
-            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, _effects.Count, (int)ALFilter.None });
+            int filterHandle = (int)ALFilter.None;
+            if (effect.Filter != null)
+                filterHandle = (int)effect.Filter.Handle;
+
+            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, _effects.Count, filterHandle });
             alHandleError("failed to attach effect to audio source: ");
             _effects.Add(effect);
         }
@@ -252,7 +257,12 @@ namespace Tortuga.Components
             alHandleError("failed to remove effect from audio source: ");
             _effects.Remove(effect);
             for (int i = 0; i < _effects.Count; i++)
-                alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)_effects[i].AuxiliarySlot, i, (int)ALFilter.None });
+            {
+                int filterHandle = (int)ALFilter.None;
+                if (effect.Filter != null)
+                    filterHandle = (int)_effects[i].Filter.Handle;
+                alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)_effects[i].AuxiliarySlot, i, filterHandle });
+            }
             alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)ALAuxiliaryEffectSlot.None, _effects.Count, (int)ALFilter.None });
         }
 
@@ -320,6 +330,28 @@ namespace Tortuga.Components
             forward = new Vector3(vals[0], vals[1], vals[2]);
             up = new Vector3(vals[3], vals[4], vals[5]);
             alHandleError("could not get source audio orientation: ");
+        }
+
+        /// <summary>
+        /// every frame check if effect is dirty and needs reloading
+        /// </summary>
+        public override Task Update()
+        {
+            return Task.Run(() => 
+            {
+                for (int i = 0; i < _effects.Count; i++)
+                {
+                    var effect = _effects[i];
+                    if (effect.IsDirty == false)
+                        continue;
+                    
+                    int filterHandle = (int)ALFilter.None;
+                    if (effect.Filter != null)
+                        filterHandle = (int)effect.Filter.Handle;
+                    alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, i, filterHandle });
+                    alHandleError("failed to attach effect to audio source: ");
+                }
+            });
         }
     }
 }

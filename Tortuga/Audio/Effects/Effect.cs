@@ -72,6 +72,25 @@ namespace Tortuga.Audio.Effect
         /// </summary>
         public virtual AudioEffectType Type => AudioEffectType.None;
 
+        /// <summary>
+        /// filter on the effect
+        /// </summary>
+        public Filter Filter
+        {
+            get => _filter;
+            set
+            {
+                _filter = value;
+                IsDirty = true;
+            }
+        }
+        private Filter _filter = null;
+        /// <summary>
+        /// When a new filter is applied the audio effect is marked 
+        /// as dirty so the source can reload the effect with the filter
+        /// </summary>
+        internal bool IsDirty;
+
         internal uint AuxiliarySlot => _aux;
         internal uint Handle => _effect;
         /// <summary>
@@ -95,6 +114,7 @@ namespace Tortuga.Audio.Effect
 
             if (alIsEffect(_effect) == false)
                 throw new System.Exception("failed to create open al effect");
+            IsDirty = false;
         }
         /// <summary>
         /// de-constructor for audio effect
