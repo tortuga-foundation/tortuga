@@ -14,6 +14,10 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 - Vulkan
 - SDL2
 - Open AL
+- Bullet Physics Library
+
+You can install all required prerequisites on ubuntu with the following command
+`sudo apt install -y libopenal-dev libbullet-dev libvulkan-dev libsdl2-dev`
 
 ## Using the package in your project
 
