@@ -23,9 +23,11 @@ You can use nuget to install the package `TortugaEngine`
 
 ## How to Run
 
-1. `dotnet restore tortuga.sln`
-2. `dotnet build tortuga.sln`
-3. `./Tortuga.Test/bin/Debug/netcoreapp3.0/Tortuga.Test.dll`
+1. `git clone https://github.com/tortuga-foundation/tortuga.git`
+2. `cd tortuga`
+3. `dotnet restore tortuga.sln`
+4. `dotnet build tortuga.sln`
+5. `./Tortuga.Test/bin/Debug/netcoreapp3.0/Tortuga.Test.dll`
 
 ## Example
 
