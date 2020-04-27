@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
+using Tortuga.Audio;
 
 namespace Tortuga.Test
 {
@@ -11,6 +12,10 @@ namespace Tortuga.Test
 
             //create new scene
             var scene = new Core.Scene();
+
+            //audio mixer
+            var mixer = new MixerGroup();
+            mixer.Gain = 2.0f;
 
             //camera
             {
@@ -55,7 +60,7 @@ namespace Tortuga.Test
                 source.Loop = true;
                 source.PlayOnEnable = true;
                 source.Clip = await Audio.AudioClip.Load("Assets/Audio/pcm mono 16 bit 16kHz.wav");
-                source.AddEffect(new Audio.Effect.Echo());
+                source.Output = mixer;
                 var transform = await entity.AddComponent<Components.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;

@@ -16,6 +16,65 @@ namespace Tortuga.Components
     public class AudioSource : Core.BaseComponent
     {
         /// <summary>
+        /// This can be used to re route the output of this audio source to a mixer
+        /// </summary>
+        public MixerGroup Output
+        {
+            get => _output;
+            set
+            {
+                if (_output != null)
+                {
+                    _output.OnMixerEffectsUpdated -= OnMixerEffectsUpdated;
+                    _output.OnMixerSettingsUpdated -= OnMixerSetttingsUpdated;
+                }
+                _output = value;
+                if (_output == null)
+                    return;
+                _output.OnMixerEffectsUpdated += OnMixerEffectsUpdated;
+                _output.OnMixerSettingsUpdated += OnMixerSetttingsUpdated;
+                OnMixerEffectsUpdated();
+                OnMixerSetttingsUpdated();
+            }
+        }
+        private MixerGroup _output;
+
+        private void OnMixerEffectsUpdated()
+        {
+            if (_output == null)
+                return;
+
+            var maxSlots = new int[1];
+            alcGetIntegerv(Engine.Instance.Audio.Handle, (int)ALAuxiliaryEffectSlot.MaxSends, maxSlots);
+            alHandleError("failed to get maximum effect slots allowed: ");
+            var effects = _output.FullEffects.ToArray();
+            for (int i = 0; i < effects.Length; i++)
+            {
+                int filter = (int)ALFilter.None;
+                if (effects[i].Filter != null)
+                    filter = (int)effects[i].Filter.Handle;
+
+                alSourceiv(_handle, ALSource.AuxiliarySendFilter, new int[]{ (int)effects[i].AuxiliarySlot, i, filter });
+                alHandleError("failed to remove effect from audio source: ");
+            }
+            for (int i = effects.Length; i < maxSlots[0]; i++)
+            {
+                alSourceiv(_handle, ALSource.AuxiliarySendFilter, new int[]{ (int)ALAuxiliaryEffectSlot.None, i, (int)ALFilter.None });
+                alHandleError("failed to remove effect from audio source: ");
+            }
+        }
+        private void OnMixerSetttingsUpdated()
+        {
+            if (_output == null)
+                return;
+            
+            alSourcefv(_handle, ALSource.Pitch, new float[]{ _output.FullPitch * _pitch });
+            alHandleError("could not set source pitch: ");
+            alSourcefv(_handle, ALSource.Gain, new float[]{ _output.FullGain * _gain });
+            alHandleError("could not set source gain: ");
+        }
+
+        /// <summary>
         /// automatically play's when AudioSystem is initialized
         /// </summary>
         public bool PlayOnEnable;
@@ -29,7 +88,7 @@ namespace Tortuga.Components
             {
                 _clip = value;
                 _buffer = new AudioBuffer(_clip);
-                alSourceiv(_source, ALSource.Buffer, new int[]{ (int)_buffer.Handle });
+                alSourceiv(_handle, ALSource.Buffer, new int[]{ (int)_buffer.Handle });
                 alHandleError("could not set source audio clip: ");
             }
         }
@@ -42,16 +101,16 @@ namespace Tortuga.Components
             get
             {
                 var val = new int[1];
-                alGetSourceiv(_source, ALSource.Looping, val);
+                alGetSourceiv(_handle, ALSource.Looping, val);
                 alHandleError("could not get source audio loop: ");
                 return val[0] == 1;
             }
             set
             {
                 if (value)
-                    alSourceiv(_source, ALSource.Looping, new int[]{1});
+                    alSourceiv(_handle, ALSource.Looping, new int[]{1});
                 else
-                    alSourceiv(_source, ALSource.Looping, new int[]{0});
+                    alSourceiv(_handle, ALSource.Looping, new int[]{0});
                 alHandleError("could not set source loop: ");
             }
         }
@@ -60,37 +119,37 @@ namespace Tortuga.Components
         /// </summary>
         public float Pitch
         {
-            get
-            {
-                var val = new float[1];
-                alGetSourcefv(_source, ALSource.Pitch, val);
-                alHandleError("could not get source audio pitch: ");
-                return val[0];
-            }
+            get => _pitch;
             set
             {
-                alSourcefv(_source, ALSource.Pitch, new float[]{value});
+                _pitch = value;
+                float val = value;
+                if (_output != null)
+                    val = _output.FullPitch * _pitch;
+
+                alSourcefv(_handle, ALSource.Pitch, new float[]{ val });
                 alHandleError("could not set source pitch: ");
             }
         }
+        private float _pitch;
         /// <summary>
         /// Audio source gain
         /// </summary>
         public float Gain
         {
-            get
-            {
-                var val = new float[1];
-                alGetSourcefv(_source, ALSource.Gain, val);
-                alHandleError("could not get source audio gain: ");
-                return val[0];
-            }
+            get => _gain;
             set
             {
-                alSourcefv(_source, ALSource.Gain, new float[]{value});
+                _gain = value;
+                float val = value;
+                if (_output != null)
+                    val = _output.FullGain * _gain;
+
+                alSourcefv(_handle, ALSource.Gain, new float[]{ val });
                 alHandleError("could not set source gain: ");
             }
         }
+        private float _gain;
 
         /// <summary>
         /// If true audio source will use position, velocity and orientation
@@ -100,7 +159,7 @@ namespace Tortuga.Components
             get
             {
                 int[] val = new int[1];
-                alGetSourceiv(_source, ALSource.SourceRelative, val);
+                alGetSourceiv(_handle, ALSource.SourceRelative, val);
                 alHandleError("could not get source audio 3D mode: ");
                 return val[0] == 1;
             }
@@ -108,12 +167,12 @@ namespace Tortuga.Components
             {
                 if (value)
                 {
-                    alSourceiv(_source, ALSource.SourceRelative, new int[]{1});
+                    alSourceiv(_handle, ALSource.SourceRelative, new int[]{1});
                     if (_clip != null && _clip.NumberOfChannels > 1)
                         Console.WriteLine("WARN: Audio Clip must be mono (1 channel) for 3D to work");
                 }
                 else
-                    alSourceiv(_source, ALSource.SourceRelative, new int[]{0});
+                    alSourceiv(_handle, ALSource.SourceRelative, new int[]{0});
                 alHandleError("could not set source 3D mode: ");
             }
         }
@@ -126,13 +185,13 @@ namespace Tortuga.Components
             get
             {
                 var val = new float[3];
-                alGetSourcefv(_source, ALSource.Position, val);
+                alGetSourcefv(_handle, ALSource.Position, val);
                 alHandleError("could not get source audio position: ");
                 return new Vector3(val[0], val[1], val[2]);
             }
             set
             {
-                alSourcefv(_source, ALSource.Position, new float[]{ value.X, value.Y, value.Z });
+                alSourcefv(_handle, ALSource.Position, new float[]{ value.X, value.Y, value.Z });
                 alHandleError("could not set source position: ");
             }
         }
@@ -144,13 +203,13 @@ namespace Tortuga.Components
             get
             {
                 var val = new float[3];
-                alGetSourcefv(_source, ALSource.Velocity, val);
+                alGetSourcefv(_handle, ALSource.Velocity, val);
                 alHandleError("could not get source audio velocity: ");
                 return new Vector3(val[0], val[1], val[2]);
             }
             set
             {
-                alSourcefv(_source, ALSource.Velocity, new float[]{ value.X, value.Y, value.Z });
+                alSourcefv(_handle, ALSource.Velocity, new float[]{ value.X, value.Y, value.Z });
                 alHandleError("could not set source velocity: ");
             }
         }
@@ -163,13 +222,13 @@ namespace Tortuga.Components
             get
             {
                 var val = new float[1];
-                alGetSourcefv(_source, ALSource.RolloffFactor, val);
+                alGetSourcefv(_handle, ALSource.RolloffFactor, val);
                 alHandleError("could not get source roll off factor: ");
                 return val[0];
             }
             set
             {
-                alSourcefv(_source, ALSource.RolloffFactor, new float[]{ value });
+                alSourcefv(_handle, ALSource.RolloffFactor, new float[]{ value });
                 alHandleError("could not set source roll off factor: ");
             }
 
@@ -183,13 +242,13 @@ namespace Tortuga.Components
             get
             {
                 var val = new float[1];
-                alGetSourcefv(_source, ALSource.MaxDistance, val);
+                alGetSourcefv(_handle, ALSource.MaxDistance, val);
                 alHandleError("could not get source max distance: ");
                 return val[0];
             }
             set
             {
-                alSourcefv(_source, ALSource.MaxDistance, new float[]{ value });
+                alSourcefv(_handle, ALSource.MaxDistance, new float[]{ value });
                 alHandleError("could not set source max distance: ");
             }
         }
@@ -200,7 +259,8 @@ namespace Tortuga.Components
         public AudioEffect[] Effects => _effects.ToArray();
         private List<AudioEffect> _effects;
 
-        private uint _source;
+        internal uint Handle => _handle;
+        private uint _handle;
         private AudioBuffer _buffer;
 
         /// <summary>
@@ -209,7 +269,7 @@ namespace Tortuga.Components
         public AudioSource()
         {
             _effects = new List<AudioEffect>();
-            alGenSources(out _source);
+            alGenSources(out _handle);
             alHandleError("failed to generate audio source: ");
             this.Is3D = true;
             this.Loop = false;
@@ -220,50 +280,15 @@ namespace Tortuga.Components
             this.Position = Vector3.Zero;
             this.Velocity = Vector3.Zero;
             this.SetOrientation(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
+            this.Output = null;
         }
         /// <summary>
         /// De-Constructor for audio source
         /// </summary>
         ~AudioSource()
         {
-            alDeleteSources(1, new uint[]{ _source });
+            alDeleteSources(1, new uint[]{ _handle });
             alHandleError("failed to destroy source: ");
-        }
-
-        /// <summary>
-        /// Add a effect to the audio source
-        /// </summary>
-        /// <param name="effect">effect to add</param>
-        public void AddEffect(AudioEffect effect)
-        {
-            int filterHandle = (int)ALFilter.None;
-            if (effect.Filter != null)
-                filterHandle = (int)effect.Filter.Handle;
-
-            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, _effects.Count, filterHandle });
-            alHandleError("failed to attach effect to audio source: ");
-            _effects.Add(effect);
-        }
-
-        /// <summary>
-        /// Removes a effect applied to the audio source
-        /// </summary>
-        /// <param name="effect">effect to remove</param>
-        public void RemoveEffect(AudioEffect effect)
-        {
-            var index = _effects.FindIndex((AudioEffect e) => e == effect);
-            if (index < 0)
-                return;
-            alHandleError("failed to remove effect from audio source: ");
-            _effects.Remove(effect);
-            for (int i = 0; i < _effects.Count; i++)
-            {
-                int filterHandle = (int)ALFilter.None;
-                if (effect.Filter != null)
-                    filterHandle = (int)_effects[i].Filter.Handle;
-                alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)_effects[i].AuxiliarySlot, i, filterHandle });
-            }
-            alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)ALAuxiliaryEffectSlot.None, _effects.Count, (int)ALFilter.None });
         }
 
         /// <summary>
@@ -276,7 +301,7 @@ namespace Tortuga.Components
                 Console.WriteLine("no audio clip assigned");
                 return;
             }
-            alSourcePlay(_source);
+            alSourcePlay(_handle);
             alHandleError("failed to play source: ");
         }
 
@@ -288,7 +313,7 @@ namespace Tortuga.Components
             if (_clip == null || _buffer == null)
                 return;
             
-            alSourceStop(_source);
+            alSourceStop(_handle);
             alHandleError("failed to stop source: ");
         }
 
@@ -300,7 +325,7 @@ namespace Tortuga.Components
             if (_clip == null || _buffer == null)
                 return;
             
-            alSourcePause(_source);
+            alSourcePause(_handle);
             alHandleError("failed to pause source: ");
         }
     
@@ -311,7 +336,7 @@ namespace Tortuga.Components
         /// <param name="forward">forward vector</param>
         public void SetOrientation(Vector3 up, Vector3 forward)
         {
-            alSourcefv(_source, ALSource.Orientation, new float[]{
+            alSourcefv(_handle, ALSource.Orientation, new float[]{
                 forward.X, forward.Y, forward.Z,
                 up.X, up.Y, up.Z 
             });
@@ -326,7 +351,7 @@ namespace Tortuga.Components
         public void GetOrientation(out Vector3 up, out Vector3 forward)
         {
             var vals = new float[6];
-            alGetSourcefv(_source, ALSource.Orientation, vals);
+            alGetSourcefv(_handle, ALSource.Orientation, vals);
             forward = new Vector3(vals[0], vals[1], vals[2]);
             up = new Vector3(vals[3], vals[4], vals[5]);
             alHandleError("could not get source audio orientation: ");
@@ -348,7 +373,7 @@ namespace Tortuga.Components
                     int filterHandle = (int)ALFilter.None;
                     if (effect.Filter != null)
                         filterHandle = (int)effect.Filter.Handle;
-                    alSourceiv(_source, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, i, filterHandle });
+                    alSourceiv(_handle, ALSource.AuxiliarySendFilter, new int[]{ (int)effect.AuxiliarySlot, i, filterHandle });
                     alHandleError("failed to attach effect to audio source: ");
                 }
             });

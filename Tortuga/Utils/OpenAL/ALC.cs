@@ -41,5 +41,17 @@ namespace Tortuga.Utils.OpenAL
         public static bool alcIsExtensionPresent(ALCdevice device, string extension) => _alcIsExtensionPresent(device, extension);
 
         #endregion
+    
+        #region query functions
+        
+        private delegate void alcGetIntegerv_T(ALCdevice device, int param, int size, int[] values);
+        private static alcGetIntegerv_T _alcGetIntegerv = LoadFunction<alcGetIntegerv_T>("alcGetIntegerv");
+        public static void alcGetIntegerv(ALCdevice device, int param, int[] values) => _alcGetIntegerv(device, param, values.Length, values); 
+
+        private delegate string alcGetString_T(ALCdevice device, int param);
+        private static alcGetString_T _alcGetString = LoadFunction<alcGetString_T>("alcGetString");
+        public static string alcGetString(ALCdevice device, int param) => _alcGetString(device, param);
+
+        #endregion
     }
 }
