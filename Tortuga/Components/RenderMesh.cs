@@ -15,6 +15,11 @@ namespace Tortuga.Components
     public class RenderMesh : Core.BaseComponent
     {
         /// <summary>
+        /// if false then this mesh is skipped from rendering
+        /// </summary>
+        public bool IsActive;
+
+        /// <summary>
         /// material to use for rendering
         /// </summary>
         public Material Material
@@ -137,6 +142,7 @@ namespace Tortuga.Components
                     VkBufferUsageFlags.UniformBuffer
                 );
                 _uniformDescriptorSet.BuffersUpdate(_uniformBuffer);
+                this.IsActive = true;
             });
         }
 

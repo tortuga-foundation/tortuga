@@ -141,6 +141,8 @@ namespace Tortuga.Systems
                     {
                         foreach (var mesh in meshes)
                         {
+                            if (mesh.IsActive == false)
+                                continue;
                             try
                             {
                                 var meshLights = mesh.RenderingLights(lights);
@@ -182,6 +184,9 @@ namespace Tortuga.Systems
                     {
                         foreach (var mesh in meshes)
                         {
+                            if (mesh.IsActive == false)
+                                continue;
+
                             if (materialInstancing.ContainsKey(mesh.Material) == false)
                                 materialInstancing[mesh.Material] = new Dictionary<Graphics.Mesh, List<Components.RenderMesh>>();
                             if (materialInstancing[mesh.Material].ContainsKey(mesh.Mesh) == false)
