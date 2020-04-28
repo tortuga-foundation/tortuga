@@ -35,8 +35,8 @@ namespace Tortuga.Utils.SDL2
             }
         }
 
-        private static readonly NativeLibraryLoader.NativeLibrary _lib = LoadSdl2();
-        private static NativeLibraryLoader.NativeLibrary LoadSdl2()
+        private static readonly NativeLibraryLoader.NativeLibrary _lib = _loadSDL2();
+        private static NativeLibraryLoader.NativeLibrary _loadSDL2()
         {
             var lib = new NativeLibraryLoader.NativeLibrary(GetLibName());
             System.Console.WriteLine("Loaded SDL2");

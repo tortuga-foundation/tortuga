@@ -38,8 +38,8 @@ namespace Tortuga.Utils.OpenAL
             }
         }
     
-        private static readonly NativeLibraryLoader.NativeLibrary _lib = LoadOpenAL();
-        private static NativeLibraryLoader.NativeLibrary LoadOpenAL()
+        private static readonly NativeLibraryLoader.NativeLibrary _lib = _loadOpenAL();
+        private static NativeLibraryLoader.NativeLibrary _loadOpenAL()
         {
             var lib = new NativeLibraryLoader.NativeLibrary(GetLibName());
             System.Console.WriteLine("Loaded Open AL");
