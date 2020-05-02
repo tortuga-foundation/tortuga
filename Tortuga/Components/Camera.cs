@@ -174,7 +174,7 @@ namespace Tortuga.Components
 
                 var transform = MyEntity.GetComponent<Transform>();
                 if (transform != null)
-                    viewMatrix = transform.ToMatrix;
+                    viewMatrix = transform.Matrix;
 
                 viewMatrix.M22 *= -1;
                 return viewMatrix;

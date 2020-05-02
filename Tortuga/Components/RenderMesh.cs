@@ -61,7 +61,7 @@ namespace Tortuga.Components
                 if (transform == null)
                     return Matrix4x4.Identity;
 
-                return transform.ToMatrix;
+                return transform.Matrix;
             }
         }
         /// <summary>

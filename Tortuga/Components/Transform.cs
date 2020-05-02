@@ -27,7 +27,7 @@ namespace Tortuga.Components
         /// <summary>
         /// Returns model matrix of the entity
         /// </summary>
-        public Matrix4x4 ToMatrix
+        public Matrix4x4 Matrix
         {
             get
             {
@@ -37,6 +37,7 @@ namespace Tortuga.Components
                 mat *= Matrix4x4.CreateTranslation(Position);
                 return mat;
             }
+            set => Matrix4x4.Decompose(value, out Scale, out Rotation, out Position);
         }
         /// <summary>
         /// Returns right vector of the entity
@@ -45,7 +46,7 @@ namespace Tortuga.Components
         {
             get
             {
-                var mat = ToMatrix;
+                var mat = Matrix;
                 return Vector3.Normalize(new Vector3(mat.M11, mat.M21, mat.M31));
             }
         }
@@ -56,7 +57,7 @@ namespace Tortuga.Components
         {
             get
             {
-                var mat = ToMatrix;
+                var mat = Matrix;
                 return Vector3.Normalize(new Vector3(mat.M12, mat.M22, mat.M32));
             }
         }
@@ -67,7 +68,7 @@ namespace Tortuga.Components
         {
             get
             {
-                var mat = ToMatrix;
+                var mat = Matrix;
                 return Vector3.Normalize(new Vector3(-mat.M13, -mat.M23, -mat.M33));
             }
         }
