@@ -36,7 +36,7 @@ namespace Tortuga.Test
             _yaw += mousePosDelta.X;
             _pitch -= mousePosDelta.Y;
 
-            var cameras = MyScene.GetComponents<Tortuga.Components.Camera>();
+            var cameras = MyScene.GetComponents<Tortuga.Components.RenderMesh>();
                 foreach (var camera in cameras)
                 {
                     var transform = camera.MyEntity.GetComponent<Tortuga.Components.Transform>();
@@ -80,7 +80,7 @@ namespace Tortuga.Test
             {
                 _movement += _input * Time.DeltaTime * 0.1f;
 
-                var cameras = MyScene.GetComponents<Tortuga.Components.Camera>();
+                var cameras = MyScene.GetComponents<Tortuga.Components.RenderMesh>();
                 foreach (var camera in cameras)
                 {
                     var transform = camera.MyEntity.GetComponent<Tortuga.Components.Transform>();

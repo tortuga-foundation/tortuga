@@ -56,7 +56,7 @@ namespace Tortuga
             /// Set front face for vulkan pipeline
             /// WARNING: adjusting this might break UI elements
             /// </summary>
-            public static FrontFaceType FrontFace = FrontFaceType.CounterClockwise;
+            public static FrontFaceType FrontFace = FrontFaceType.Clockwise;
         }
         /// <summary>
         /// Engine window settings

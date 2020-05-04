@@ -175,7 +175,7 @@ namespace Tortuga.Components
                 if (transform != null)
                     viewMatrix = transform.Matrix;
 
-                viewMatrix.M22 *= -1;
+                Matrix4x4.Invert(viewMatrix, out viewMatrix);
                 return viewMatrix;
             }
         }
