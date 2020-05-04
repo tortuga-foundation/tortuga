@@ -33,7 +33,7 @@ namespace Tortuga.Test
         private void OnMousePositionChanged(Vector2 mouseDelta)
         {
             var mousePosDelta = mouseDelta * Time.DeltaTime * 0.001f;
-            _yaw += mousePosDelta.X;
+            _yaw += Time.DeltaTime * 2.0f;
             _pitch -= mousePosDelta.Y;
 
             var cameras = MyScene.GetComponents<Tortuga.Components.RenderMesh>();
@@ -78,6 +78,7 @@ namespace Tortuga.Test
             InputSystem.IsCursorLocked = true;
             return Task.Run(() => 
             {
+                _yaw += Time.DeltaTime * 0.05f;
                 _movement += _input * Time.DeltaTime * 0.1f;
 
                 var cameras = MyScene.GetComponents<Tortuga.Components.RenderMesh>();
@@ -87,7 +88,8 @@ namespace Tortuga.Test
                     if (transform == null)
                         continue;
                     
-                    transform.Position = (-transform.Forward *  _movement.Y) + (transform.Right * _movement.X);
+                    //transform.Position = (-transform.Forward *  _movement.Y) + (-transform.Right * _movement.X);
+                    transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 1.0f, 0.0f), _yaw);
                 }
             });
         }
