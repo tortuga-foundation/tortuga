@@ -51,5 +51,13 @@ namespace Tortuga.Utils.SDL2
         private delegate string SDL_GetError_t();
         private static SDL_GetError_t s_sdl_getError = LoadFunction<SDL_GetError_t>("SDL_GetError");
         public static string SDL_GetError() => s_sdl_getError();
+    
+        private delegate void SDL_ShowCursor_T(int param);
+        private static SDL_ShowCursor_T _SDL_ShowCursor = LoadFunction<SDL_ShowCursor_T>("SDL_ShowCursor");
+        public static void SDL_ShowCursor(int param) => _SDL_ShowCursor(param);
+
+        private delegate void SDL_WarpMouseInWindow_T(SDL_Window window, int x, int y);
+        private static SDL_WarpMouseInWindow_T _SDL_WarpMouseInWindow = LoadFunction<SDL_WarpMouseInWindow_T>("SDL_WarpMouseInWindow");
+        public static void SDL_WarpMouseInWindow(SDL_Window window, int x, int y) => _SDL_WarpMouseInWindow(window, x, y);
     }
 }

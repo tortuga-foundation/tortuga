@@ -22,11 +22,12 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "Camera";
+                await entity.AddComponent<Components.Transform>();
                 var listener = await entity.AddComponent<Components.AudioListener>();
                 listener.Position = Vector3.Zero;
                 listener.Velocity = Vector3.Zero;
                 var camera = await entity.AddComponent<Components.Camera>();
-                camera.FieldOfView = 90;
+                camera.FieldOfView = 60;
                 scene.AddEntity(entity);
             }
 
@@ -143,8 +144,7 @@ namespace Tortuga.Test
             //add systems to the scene
             scene.AddSystem<Systems.RenderingSystem>();
             scene.AddSystem<Systems.AudioSystem>();
-            scene.AddSystem<AutoRotator>();
-            scene.AddSystem<LightMovement>();
+            scene.AddSystem<CameraMovement>();
 
             Engine.Instance.LoadScene(scene); //set this scene as currently active
             await Engine.Instance.Run();

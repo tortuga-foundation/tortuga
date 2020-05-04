@@ -171,7 +171,6 @@ namespace Tortuga.Components
             get
             {
                 var viewMatrix = Matrix4x4.Identity;
-
                 var transform = MyEntity.GetComponent<Transform>();
                 if (transform != null)
                     viewMatrix = transform.Matrix;
