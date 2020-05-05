@@ -101,6 +101,11 @@ namespace Tortuga
             /// Controls the resolution the cameras will render at multiplied by the window resolution
             /// </summary>
             public static float RenderResolutionScale = 1.0f;
+            /// <summary>
+            /// The amount of frames that should be rendered in a second
+            /// 0 = Unlimited
+            /// </summary>
+            public static uint MaxFramesPerSecond = 60;
         }
 
         /// <summary>

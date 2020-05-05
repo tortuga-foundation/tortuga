@@ -9,9 +9,9 @@ namespace Tortuga.Test
     public class CameraMovement : BaseSystem
     {
         private Vector2 _input = Vector2.Zero;
-        private Vector2 _mousePosition = Vector2.Zero;
         private float _yaw;
         private float _pitch;
+        private Vector3 _targetPosition;
 
         public override void OnDisable()
         {
@@ -25,15 +25,14 @@ namespace Tortuga.Test
             InputSystem.OnKeyDown += OnKeyDown;
             InputSystem.OnKeyUp += OnKeyUp;
             InputSystem.OnMousePositionChanged += OnMousePositionChanged;
-            _mousePosition = InputSystem.MousePosition;
             Console.WriteLine(Matrix4x4.CreateTranslation(new Vector3(2, 3, 4)));
         }
 
         private void OnMousePositionChanged(Vector2 mouseDelta)
         {
-            var mousePosDelta = mouseDelta * Time.DeltaTime * 0.001f;
+            var mousePosDelta = mouseDelta * Time.DeltaTime * 0.5f;
             _yaw -= mousePosDelta.X;
-            _pitch -= mousePosDelta.Y;
+            _pitch += mousePosDelta.Y;
         }
 
         private void OnKeyUp(KeyCode key, ModifierKeys mod)
@@ -64,7 +63,6 @@ namespace Tortuga.Test
 
         public override Task Update()
         {
-            InputSystem.IsCursorLocked = true;
             return Task.Run(() => 
             {
                 var cameras = MyScene.GetComponents<Tortuga.Components.Camera>();
@@ -74,12 +72,12 @@ namespace Tortuga.Test
                     if (transform == null)
                         continue;
                     
-                    var _movement = (transform.Forward * _input.Y + transform.Right * _input.X) * Time.DeltaTime * 0.1f;
-                    var targetPosition = transform.Position - _movement;
-                    var targetRotation = Quaternion.CreateFromAxisAngle(new Vector3(0.0f, 1.0f, 0.0f), _yaw);
+                    var _movement = (transform.Forward * _input.Y + transform.Right * _input.X) * Time.DeltaTime * 50.0f;
+                    _targetPosition -= _movement;
+                    transform.Position = Vector3.Lerp(transform.Position, _targetPosition, Time.DeltaTime * 10.0f);
                     
-                    transform.Position = Vector3.Lerp(transform.Position, targetPosition, Time.DeltaTime);
-                    transform.Rotation = Quaternion.Slerp(transform.Rotation, targetRotation, Time.DeltaTime);
+                    var targetRotation = Quaternion.CreateFromYawPitchRoll(_yaw, _pitch, 0.0f);
+                    transform.Rotation = Quaternion.Slerp(transform.Rotation, targetRotation, Time.DeltaTime * 10.0f);
                 }
             });
         }

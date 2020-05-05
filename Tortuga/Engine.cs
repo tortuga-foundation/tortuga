@@ -107,13 +107,17 @@ namespace Tortuga
         {
             return Task.Run(() =>
             {
-                Time.StopWatch = new System.Diagnostics.Stopwatch();
-                Time.StopWatch.Start();
+                var stopWatch = new System.Diagnostics.Stopwatch();
+                stopWatch.Start();
+                float oldTime = 0.0f;
+                float currentTime = 0.0f;
                 while (this._mainWindow.Exists)
                 {
                     try
                     {
-                        Time.LastFramesTicks = Time.StopWatch.ElapsedTicks;
+                        oldTime = currentTime;
+                        currentTime = stopWatch.ElapsedMilliseconds;
+                        Time.DeltaTime = (currentTime - oldTime) / 1000.0f;
                         this._mainWindow.PumpEvents();
                         this._mainWindow.AcquireSwapchainImage();
                         if (_activeScene != null)
@@ -135,8 +139,10 @@ namespace Tortuga
                         foreach (var entity in _activeScene.Entities)
                             removalTasks.Add(entity.RemoveAllMarkedForRemoval());
                         Task.WaitAll(removalTasks.ToArray());
-                        //Store Time elapsed
-                        Time.DeltaTime = (Time.StopWatch.ElapsedTicks - Time.LastFramesTicks) / 10000000.0f;
+                        while (
+                            Settings.Graphics.MaxFramesPerSecond > 0 &&
+                            stopWatch.ElapsedMilliseconds - currentTime < (1000.0f / Settings.Graphics.MaxFramesPerSecond)
+                        );
                     }
                     catch (System.Exception e)
                     {
