@@ -25,12 +25,11 @@ namespace Tortuga.Test
             InputSystem.OnKeyDown += OnKeyDown;
             InputSystem.OnKeyUp += OnKeyUp;
             InputSystem.OnMousePositionChanged += OnMousePositionChanged;
-            Console.WriteLine(Matrix4x4.CreateTranslation(new Vector3(2, 3, 4)));
         }
 
         private void OnMousePositionChanged(Vector2 mouseDelta)
         {
-            var mousePosDelta = mouseDelta * Time.DeltaTime * 0.5f;
+            var mousePosDelta = mouseDelta * Time.DeltaTime * 0.25f;
             _yaw -= mousePosDelta.X;
             _pitch += mousePosDelta.Y;
         }
@@ -72,7 +71,7 @@ namespace Tortuga.Test
                     if (transform == null)
                         continue;
                     
-                    var _movement = (transform.Forward * _input.Y + transform.Right * _input.X) * Time.DeltaTime * 50.0f;
+                    var _movement = (transform.Forward * _input.Y + transform.Right * _input.X) * Time.DeltaTime * 30.0f;
                     _targetPosition -= _movement;
                     transform.Position = Vector3.Lerp(transform.Position, _targetPosition, Time.DeltaTime * 10.0f);
                     
