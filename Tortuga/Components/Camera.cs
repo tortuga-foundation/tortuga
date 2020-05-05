@@ -171,12 +171,11 @@ namespace Tortuga.Components
             get
             {
                 var viewMatrix = Matrix4x4.Identity;
-
                 var transform = MyEntity.GetComponent<Transform>();
                 if (transform != null)
                     viewMatrix = transform.Matrix;
 
-                viewMatrix.M22 *= -1;
+                Matrix4x4.Invert(viewMatrix, out viewMatrix);
                 return viewMatrix;
             }
         }

@@ -11,7 +11,20 @@ namespace Tortuga.Input
     /// Input system for tortuga engine
     /// </summary>
     public static class InputSystem
-    {        
+    {
+        /// <summary>
+        /// Lock's the cursor 
+        /// </summary>
+        public static bool IsCursorLocked
+        {
+            get => _isCursorLocked;
+            set
+            {
+                _isCursorLocked = value;
+                Tortuga.Utils.SDL2.SDL2Native.SDL_SetRelativeMouseMode(value);
+            }
+        }
+        private static bool _isCursorLocked = false;
         internal static unsafe void ProcessEvents(SDL_Event ev)
         {
             switch(ev.type)
@@ -664,7 +677,7 @@ namespace Tortuga.Input
         private static void ProcessMouseMotionEvent(SDL_MouseMotionEvent ev)
         {
             _mousePosition = new Vector2(ev.x, ev.y);
-            OnMousePositionChanged?.Invoke(_mousePosition);
+            OnMousePositionChanged?.Invoke(new Vector2(ev.xrel, ev.yrel));
         }
 
         #endregion

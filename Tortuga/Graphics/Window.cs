@@ -302,5 +302,13 @@ namespace Tortuga.Graphics
             if (shouldPause)
                 t1.Wait();
         }
+
+        /// <summary>
+        /// Set cursor position inside the window
+        /// </summary>
+        /// <param name="x">X position of the cursor</param>
+        /// <param name="y">Y position of the cursor</param>
+        public unsafe void SetCursor(int x, int y)
+            => SDL_WarpMouseInWindow(_windowHandle, x, y);
     }
 }
