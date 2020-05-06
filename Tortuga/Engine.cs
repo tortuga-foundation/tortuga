@@ -97,6 +97,7 @@ namespace Tortuga
             //initialize input event system
             InputSystem.Initialize();
             _audioDevice = new AudioDevice();
+            var temp = new Tortuga.Utils.BulletPhysics.BtDispatcherInfo();
         }
 
         /// <summary>
