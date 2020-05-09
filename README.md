@@ -27,6 +27,10 @@ You can use nuget to install the package `TortugaEngine`
 
 ## How to Run
 
+IMPORTANT: To compile this project you need a `bullet-static` physics library which can be found at 
+https://github.com/tortuga-foundation/bullet-physics-static
+Place the compiled library in `Tortuga/Libs/` folder
+
 1. `git clone https://github.com/tortuga-foundation/tortuga.git`
 2. `cd tortuga`
 3. `dotnet restore tortuga.sln`
