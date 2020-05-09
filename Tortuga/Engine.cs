@@ -97,7 +97,6 @@ namespace Tortuga
             //initialize input event system
             InputSystem.Initialize();
             _audioDevice = new AudioDevice();
-            var temp = new Tortuga.Utils.BulletPhysics.BtDispatcherInfo();
         }
 
         /// <summary>
@@ -140,10 +139,18 @@ namespace Tortuga
                         foreach (var entity in _activeScene.Entities)
                             removalTasks.Add(entity.RemoveAllMarkedForRemoval());
                         Task.WaitAll(removalTasks.ToArray());
-                        while (
-                            Settings.Graphics.MaxFramesPerSecond > 0 &&
-                            stopWatch.ElapsedMilliseconds - currentTime < (1000.0f / Settings.Graphics.MaxFramesPerSecond)
-                        );
+                        if (Settings.Graphics.MaxFramesPerSecond > 0)
+                        {
+                            int waitTime = System.Convert.ToInt32(
+                                System.MathF.Round(
+                                (
+                                    1000.0f / Settings.Graphics.MaxFramesPerSecond) - 
+                                    (stopWatch.ElapsedMilliseconds - currentTime)
+                                )
+                            );
+                            if (waitTime > 0)
+                                System.Threading.Thread.Sleep(waitTime);
+                        }
                     }
                     catch (System.Exception e)
                     {
