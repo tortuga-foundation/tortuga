@@ -256,9 +256,9 @@ namespace Tortuga.Systems
                         //begin render pass for this camera
                         _renderCommand.BeginRenderPass(Engine.Instance.MainRenderPass, camera.Framebuffer);
                         var secondaryCmds = new List<CommandPool.Command>();
+                        var secondaryCommandTask = new List<Task<CommandPool.Command>>();
 
                         //build render command for each mesh
-                        var secondaryCommandTask = new List<Task<CommandPool.Command>>();
                         {
                             if (meshInstancingTask.IsCompleted == false)
                                 meshInstancingTask.Wait();

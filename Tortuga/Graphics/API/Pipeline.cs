@@ -75,7 +75,7 @@ namespace Tortuga.Graphics.API
             var depthStencil = VkPipelineDepthStencilStateCreateInfo.New();
             depthStencil.depthTestEnable = VkBool32.True;
             depthStencil.depthWriteEnable = VkBool32.True;
-            depthStencil.depthCompareOp = VkCompareOp.GreaterOrEqual;
+            depthStencil.depthCompareOp = VkCompareOp.LessOrEqual;
             depthStencil.depthBoundsTestEnable = VkBool32.False;
             depthStencil.minDepthBounds = 0.0f;
             depthStencil.maxDepthBounds = 1.0f;

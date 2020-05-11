@@ -83,7 +83,7 @@ namespace Tortuga.Test
                 transform.IsStatic = false;
                 //add mesh component
                 var mesh = await entity.AddComponent<Components.RenderMesh>();
-                mesh.IsActive = false;
+                mesh.IsActive = true;
                 mesh.Material = bricksMaterial;
                 mesh.Mesh = sphereOBJ;
 
