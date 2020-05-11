@@ -29,6 +29,8 @@ namespace Tortuga.Test
 
         private void OnMousePositionChanged(Vector2 mouseDelta)
         {
+            if (InputSystem.IsMouseButtonDown(MouseButton.Right) == false)
+                return;
             var mousePosDelta = mouseDelta * Time.DeltaTime * 0.25f;
             _yaw -= mousePosDelta.X;
             _pitch += mousePosDelta.Y;
@@ -36,6 +38,11 @@ namespace Tortuga.Test
 
         private void OnKeyUp(KeyCode key, ModifierKeys mod)
         {
+            if (InputSystem.IsMouseButtonDown(MouseButton.Right) == false)
+            {
+                _input = Vector2.Zero;
+                return;
+            }
             if (key == KeyCode.W)
                 _input.Y--;
             if (key == KeyCode.S)
@@ -48,6 +55,11 @@ namespace Tortuga.Test
 
         private void OnKeyDown(KeyCode key, ModifierKeys mod)
         {
+            if (InputSystem.IsMouseButtonDown(MouseButton.Right) == false)
+            {
+                _input = Vector2.Zero;
+                return;
+            }
             if (key == KeyCode.W)
                 _input.Y++;
             if (key == KeyCode.S)

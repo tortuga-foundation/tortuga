@@ -49,12 +49,7 @@ namespace Tortuga.Graphics.API
             rasterizer.polygonMode = VkPolygonMode.Fill;
             rasterizer.lineWidth = 1.0f;
             rasterizer.cullMode = VkCullModeFlags.Back;
-            if (Settings.Vulkan.FrontFace == Settings.Vulkan.FrontFaceType.Clockwise)
-                rasterizer.frontFace = VkFrontFace.Clockwise;
-            else if (Settings.Vulkan.FrontFace == Settings.Vulkan.FrontFaceType.CounterClockwise)
-                rasterizer.frontFace = VkFrontFace.CounterClockwise;
-            else if (Settings.Vulkan.FrontFace == Settings.Vulkan.FrontFaceType.None)
-                rasterizer.cullMode = VkCullModeFlags.None;
+            rasterizer.frontFace = VkFrontFace.Clockwise;
             rasterizer.depthBiasEnable = VkBool32.False;
 
             var multisampling = VkPipelineMultisampleStateCreateInfo.New();
