@@ -31,11 +31,7 @@ namespace Tortuga.Components
         /// Mesh data to use for rendering
         /// NOTE: please use SetMesh for setting new mesh data
         /// </summary>
-        public Graphics.Mesh Mesh
-        {
-            set => SetMesh(value).Wait();
-            get => _mesh;
-        }
+        public Graphics.Mesh Mesh;
         /// <summary>
         /// Is mesh static
         /// </summary>
@@ -109,16 +105,13 @@ namespace Tortuga.Components
 
 
         internal CommandPool.Command RenderCommand => _renderCommand;
-        internal Graphics.API.Buffer VertexBuffers => _vertexBuffers;
-        internal Graphics.API.Buffer IndexBuffer => _indexBuffer;
+        internal Graphics.API.Buffer VertexBuffers => Mesh.VertexBuffer;
+        internal Graphics.API.Buffer IndexBuffer => Mesh.IndexBuffer;
         internal uint IndicesCount => Convert.ToUInt32(Mesh.Indices.Length);
 
         private Graphics.Material _material;
-        private Graphics.Mesh _mesh;
         private CommandPool _renderCommandPool;
         private CommandPool.Command _renderCommand;
-        private Graphics.API.Buffer _vertexBuffers;
-        private Graphics.API.Buffer _indexBuffer;
         private DescriptorSetPool _uniformDescriptorPool;
         private DescriptorSetPool.DescriptorSet _uniformDescriptorSet;
         private Graphics.API.Buffer _uniformBuffer;
@@ -144,65 +137,6 @@ namespace Tortuga.Components
                 _uniformDescriptorSet.BuffersUpdate(_uniformBuffer);
                 this.IsActive = true;
             });
-        }
-
-        /// <summary>
-        /// Used to set mesh data async
-        /// </summary>
-        /// <param name="mesh">mesh data</param>
-        public async Task SetMesh(Mesh mesh)
-        {
-            if (mesh == null)
-                return;
-
-            if (mesh.Indices.Length == 0 || mesh.Vertices.Length == 0)
-                return;
-
-            //index buffer
-            if (_mesh == null || _mesh.Indices.Length != mesh.Indices.Length)
-            {
-                _indexBuffer = Graphics.API.Buffer.CreateDevice(
-                    Convert.ToUInt32(sizeof(ushort) * mesh.Indices.Length),
-                    VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
-                );
-            }
-
-            if (_mesh == null || _mesh.Indices != mesh.Indices)
-                await _indexBuffer.SetDataWithStaging(mesh.Indices);
-
-            //vertex buffer
-            var bytes = new List<byte>();
-            foreach (var vertex in mesh.Vertices)
-            {
-                foreach (var b in BitConverter.GetBytes(vertex.Position.X))
-                    bytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vertex.Position.Y))
-                    bytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vertex.Position.Z))
-                    bytes.Add(b);
-
-                foreach (var b in BitConverter.GetBytes(vertex.TextureCoordinates.X))
-                    bytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vertex.TextureCoordinates.Y))
-                    bytes.Add(b);
-
-                foreach (var b in BitConverter.GetBytes(vertex.Normal.X))
-                    bytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vertex.Normal.Y))
-                    bytes.Add(b);
-                foreach (var b in BitConverter.GetBytes(vertex.Normal.Z))
-                    bytes.Add(b);
-            }
-            var vertexBufferSize = System.Convert.ToUInt32(sizeof(byte) * bytes.Count);
-            if (_vertexBuffers == null || _vertexBuffers.Size != vertexBufferSize)
-            {
-                _vertexBuffers = Graphics.API.Buffer.CreateDevice(
-                    vertexBufferSize,
-                    VkBufferUsageFlags.VertexBuffer
-                );
-            }
-            await _vertexBuffers.SetDataWithStaging(mesh.Vertices);
-            _mesh = mesh;
         }
 
         internal Task<CommandPool.Command> RecordRenderCommand(
