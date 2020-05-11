@@ -179,7 +179,6 @@ namespace Tortuga.Graphics
             this._isDirty = true;
         }
 
-
         #region Error Material
 
         /// <summary>

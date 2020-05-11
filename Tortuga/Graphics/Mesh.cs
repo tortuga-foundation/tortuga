@@ -197,5 +197,16 @@ namespace Tortuga.Graphics
                 Task.WaitAll(new Task[]{ indexTask, vertexTask });
             });
         }
+    
+        /// <summary>
+        /// Destroys the mesh data from memory and mesh buffer information from gpu
+        /// </summary>
+        public void Unload()
+        {
+            _indexBuffers = null;
+            _vertexBuffers = null;
+            this.Vertices = new Vertex[0];
+            this.Indices = new ushort[0];
+        }
     }
 }
