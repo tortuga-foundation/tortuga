@@ -324,12 +324,12 @@ namespace Tortuga.Graphics.UI
                                 vertices.Add(vertex);
 
                             indices.Add((ushort)(verticesCount + 0));
-                            indices.Add((ushort)(verticesCount + 2));
                             indices.Add((ushort)(verticesCount + 1));
+                            indices.Add((ushort)(verticesCount + 2));
 
                             indices.Add((ushort)(verticesCount + 0));
-                            indices.Add((ushort)(verticesCount + 3));
                             indices.Add((ushort)(verticesCount + 2));
+                            indices.Add((ushort)(verticesCount + 3));
                             cursor.X += symbol.AdvanceX;
                             verticesCount += 4;
                         }

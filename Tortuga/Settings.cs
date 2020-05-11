@@ -29,34 +29,11 @@ namespace Tortuga
                 /// </summary>
                 Full
             };
-            /// <summary>
-            /// Set Front face for vulkan back face culling
-            /// </summary>
-            public enum FrontFaceType
-            {
-                /// <summary>
-                /// Don't Cull back faces
-                /// </summary>
-                None,
-                /// <summary>
-                /// Cull Counter clock wise faces
-                /// </summary>
-                Clockwise,
-                /// <summary>
-                /// Cull clockwise faces
-                /// </summary>
-                CounterClockwise
-            };
 
             /// <summary>
             /// Set the debug level for vulkan
             /// </summary>
             public static DebugType DebugLevel = DebugType.ErrorAndWarnings;
-            /// <summary>
-            /// Set front face for vulkan pipeline
-            /// WARNING: adjusting this might break UI elements
-            /// </summary>
-            public static FrontFaceType FrontFace = FrontFaceType.Clockwise;
         }
         /// <summary>
         /// Engine window settings

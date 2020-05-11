@@ -97,7 +97,7 @@ namespace Tortuga.Graphics.UI.Base
         /// <param name="position">New mouse position</param>
         protected virtual void OnMousePositionChanged(Vector2 position)
         {
-            _mousePosition = position;
+            _mousePosition = InputSystem.MousePosition;
         }
 
         /// <summary>

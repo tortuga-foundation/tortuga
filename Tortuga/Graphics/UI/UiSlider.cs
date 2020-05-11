@@ -165,7 +165,6 @@ namespace Tortuga.Graphics.UI
         protected override void OnMousePositionChanged(Vector2 position)
         {
             base.OnMousePositionChanged(position);
-            _mousePosition = position;
             if (_isDraging && _isMouseButtonDown)
                 UpdateSliderValueWithMousePosition();
         }
