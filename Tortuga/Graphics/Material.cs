@@ -344,6 +344,18 @@ namespace Tortuga.Graphics
             }
             return Material.ErrorMaterial;
         }
+        
+        /// <summary>
+        /// Destroys material stored in memory and all buffers associated in gpu
+        /// </summary>
+        public void Unload()
+        {
+            this.DescriptorMapper.Clear();
+            _pipeline = null;
+            _inputBuilder = null;
+            _shader = null;
+            _instanceBuffer = null;
+        }
         #endregion
     }
 }
