@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Vulkan;
 
 namespace Tortuga.Graphics
 {
@@ -33,6 +35,11 @@ namespace Tortuga.Graphics
     /// </summary>
     public class Mesh
     {
+        internal Graphics.API.Buffer VertexBuffer => _vertexBuffers;
+        internal Graphics.API.Buffer IndexBuffer => _indexBuffers;
+        private Graphics.API.Buffer _vertexBuffers;
+        private Graphics.API.Buffer _indexBuffers;
+
         /// <summary>
         /// Indices for this mesh
         /// </summary>
@@ -146,15 +153,60 @@ namespace Tortuga.Graphics
         /// </summary>
         /// <param name="file">Path to the obj file</param>
         /// <returns>Mesh object that can be used for rendering</returns>
-        public static Task<Mesh> Load(string file)
+        public static async Task<Mesh> Load(string file)
         {
             if (File.Exists(file) == false)
                 throw new FileNotFoundException();
 
             if (file.ToLower().EndsWith(".obj"))
-                return Task.FromResult(LoadOBJ(file));
+            {
+                var mesh = LoadOBJ(file);
+                await mesh.UpdateBuffers();
+                return mesh;
+            }
             else
                 throw new NotSupportedException("this type of file is not currently supported");
+        }
+
+        /// <summary>
+        /// rebuilds the vertex and index buffers for gpu
+        /// </summary>
+        public Task UpdateBuffers(bool force = false)
+        {
+            return Task.Run(() => 
+            {
+                var expectedIndexSize = Convert.ToUInt32(sizeof(ushort) * this.Indices.Length);
+                var expectedVertexSize = Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * this.Vertices.Length);
+
+                if (_indexBuffers == null || _indexBuffers.Size != expectedIndexSize || force)
+                {
+                    _indexBuffers = Graphics.API.Buffer.CreateDevice(
+                        expectedIndexSize,
+                        VkBufferUsageFlags.IndexBuffer
+                    );
+                }
+                var indexTask = _indexBuffers.SetDataWithStaging(this.Indices);
+                if (_vertexBuffers == null || _vertexBuffers.Size != expectedVertexSize || force)
+                {
+                    _vertexBuffers = Graphics.API.Buffer.CreateDevice(
+                        expectedVertexSize,
+                        VkBufferUsageFlags.VertexBuffer
+                    );
+                }
+                var vertexTask = _vertexBuffers.SetDataWithStaging(this.Vertices);
+                Task.WaitAll(new Task[]{ indexTask, vertexTask });
+            });
+        }
+    
+        /// <summary>
+        /// Destroys the mesh data from memory and mesh buffer information from gpu
+        /// </summary>
+        public void Unload()
+        {
+            _indexBuffers = null;
+            _vertexBuffers = null;
+            this.Vertices = new Vertex[0];
+            this.Indices = new ushort[0];
         }
     }
 }

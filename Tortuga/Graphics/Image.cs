@@ -179,5 +179,15 @@ namespace Tortuga.Graphics
             });
             return loader;
         }
+
+        /// <summary>
+        /// Destroys the image from memory
+        /// </summary>
+        public void Unload()
+        {
+            Pixels = new Color[0];
+            Width = 0;
+            Height = 0;
+        }
     }
 }
