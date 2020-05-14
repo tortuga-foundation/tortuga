@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Text;
 using Tortuga.Utils;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 
 namespace Tortuga.Audio
 {
@@ -30,7 +31,16 @@ namespace Tortuga.Audio
         /// <summary>
         /// Samples / audio data
         /// </summary>
-        public NativeList<byte> Samples;
+        public unsafe byte[] Samples
+        {
+            get
+            {
+                var rtn = new byte[NativeSamples.Count];
+                Marshal.Copy(NativeSamples.Data, rtn, 0, rtn.Length);
+                return rtn;
+            }
+        }
+        internal NativeList<byte> NativeSamples;
 
         /// <summary>
         /// Constructor for audio clip
@@ -107,10 +117,10 @@ namespace Tortuga.Audio
                 var rawData = dataChunk.bytes;
 
                 var data = new AudioClip(numChannels, sampleRate, bitsPerSample);
-                data.Samples = new NativeList<byte>();
-                data.Samples.Count = (uint)rawData.Length;
+                data.NativeSamples = new NativeList<byte>();
+                data.NativeSamples.Count = (uint)rawData.Length;
                 for (int i = 0; i < rawData.Length; i++)
-                    data.Samples[i] = rawData[i];
+                    data.NativeSamples[i] = rawData[i];
                 
                 return data;
             }

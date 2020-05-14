@@ -24,8 +24,8 @@ namespace Tortuga.Audio.API
             alBufferData(
                 _buffer, 
                 GetALFormat(clip.NumberOfChannels, clip.BitsPerSample), 
-                new IntPtr(clip.Samples.Data.ToPointer()),
-                (int)clip.Samples.Count,
+                new IntPtr(clip.NativeSamples.Data.ToPointer()),
+                (int)clip.NativeSamples.Count,
                 clip.SampleRate
             );
             alHandleError("failed set audio clip data to open al buffers: ");
