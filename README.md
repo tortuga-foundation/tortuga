@@ -12,12 +12,12 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 
 - Dot Net Core 3.0
 - Vulkan
+- GlsLang Tools
 - SDL2
 - Open AL
 - Bullet Physics Library
 
-You can install all required prerequisites on ubuntu with the following command
-`sudo apt install -y libopenal1 libsdl2-2.0-0 libvulkan1 libbullet2.87 `
+For linux you can use `./setup.sh` to download the prerequisites 
 
 ## Using the package in your project
 
