@@ -11,6 +11,29 @@ using static Tortuga.Utils.SDL2.SDL2Native;
 namespace Tortuga.Graphics
 {
     /// <summary>
+    /// Different types of windows
+    /// </summary>
+    public enum WindowType
+    {
+        /// <summary>
+        /// Default type of window
+        /// </summary>
+        Window,
+        /// <summary>
+        /// borderless window
+        /// </summary>
+        Borderless,
+        /// <summary>
+        /// Full screen window
+        /// </summary>
+        Fullscreen,
+        /// <summary>
+        /// Resizable window
+        /// </summary>
+        ResizeableWindow
+    }
+
+    /// <summary>
     /// Type of message box
     /// </summary>
     public enum MessageBoxFlags
@@ -60,14 +83,14 @@ namespace Tortuga.Graphics
             string title,
             int x, int y,
             int width, int height,
-            Settings.Window.WindowType type)
+            WindowType type)
         {
             var flags = SDL_WindowFlags.AllowHighDpi;
-            if (type == Settings.Window.WindowType.Borderless)
+            if (type == WindowType.Borderless)
                 flags |= SDL_WindowFlags.Borderless;
-            else if (type == Settings.Window.WindowType.Fullscreen)
+            else if (type == WindowType.Fullscreen)
                 flags |= SDL_WindowFlags.Fullscreen;
-            else if (type == Settings.Window.WindowType.ResizeableWindow)
+            else if (type == WindowType.ResizeableWindow)
                 flags |= SDL_WindowFlags.Resizable;
                 
             this._windowHandle = SDL_CreateWindow(
@@ -93,7 +116,7 @@ namespace Tortuga.Graphics
                 var processHandle = Process.GetCurrentProcess().SafeHandle.DangerousGetHandle();
                 surfaceInfo.hinstance = processHandle;
                 surfaceInfo.hwnd = win32Info.window;
-                err = vkCreateWin32SurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateWin32SurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.X11)
             {
@@ -104,7 +127,7 @@ namespace Tortuga.Graphics
                 {
                     Value = x11Info.window
                 };
-                err = vkCreateXlibSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateXlibSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.Wayland)
             {
@@ -112,14 +135,14 @@ namespace Tortuga.Graphics
                 var surfaceInfo = VkWaylandSurfaceCreateInfoKHR.New();
                 surfaceInfo.display = (Vulkan.Wayland.wl_display*)waylandInfo.display;
                 surfaceInfo.surface = (Vulkan.Wayland.wl_surface*)waylandInfo.surface;
-                err = vkCreateWaylandSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateWaylandSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.Android)
             {
                 var androidInfo = Unsafe.Read<AndroidWindowInfo>(&sysWindowInfo.info);
                 var surfaceInfo = VkAndroidSurfaceCreateInfoKHR.New();
                 surfaceInfo.window = (Vulkan.Android.ANativeWindow*)androidInfo.window;
-                err = vkCreateAndroidSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateAndroidSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.Mir)
             {
@@ -127,7 +150,7 @@ namespace Tortuga.Graphics
                 var surfaceInfo = VkMirSurfaceCreateInfoKHR.New();
                 surfaceInfo.connection = (Vulkan.Mir.MirConnection*)mirInfo.connection;
                 surfaceInfo.mirSurface = (Vulkan.Mir.MirSurface*)mirInfo.mirSurface;
-                err = vkCreateMirSurfaceKHR(Engine.Instance.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateMirSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else
                 throw new PlatformNotSupportedException("This platform (window manager) is currently not supported");
@@ -136,8 +159,8 @@ namespace Tortuga.Graphics
                 throw new Exception("failed to create window surface");
 
             this._surface = surface;
-            this._swapchain = new API.Swapchain(this);
-            this._swapchianFence = new API.Fence();
+            this._swapchain = new API.Swapchain(API.Handler.MainDevice, this);
+            this._swapchianFence = new API.Fence(API.Handler.MainDevice);
         }
 
         /// <summary>
@@ -147,7 +170,7 @@ namespace Tortuga.Graphics
         {
             _exists = false;
             SDL_DestroyWindow(_windowHandle);
-            vkDestroySurfaceKHR(Engine.Instance.Vulkan.Handle, this._surface, null);
+            vkDestroySurfaceKHR(API.Handler.Vulkan.Handle, this._surface, null);
         }
 
         internal static unsafe SDL_version SDLVersion
@@ -213,18 +236,6 @@ namespace Tortuga.Graphics
                 SDL_SetWindowSize(_windowHandle, w, h);
             }
         }
-        
-
-        /// <summary>
-        /// process window events and return it as a snapshot
-        /// </summary>
-        public unsafe void PumpEvents()
-        {
-            SDL_PumpEvents();
-            SDL_Event ev;
-            while (SDL_PollEvent(&ev) != 0)
-                Input.InputSystem.ProcessEvents(ev);
-        }
 
         /// <summary>
         /// Closes the window
@@ -242,7 +253,7 @@ namespace Tortuga.Graphics
             _swapchianFence.Reset();
             uint imageIndex;
             var acquireResponse = vkAcquireNextImageKHR(
-                Engine.Instance.MainDevice.LogicalDevice.Handle,
+                API.Handler.MainDevice.LogicalDevice.Handle,
                 _swapchain.Handle,
                 ulong.MaxValue,
                 VkSemaphore.Null,

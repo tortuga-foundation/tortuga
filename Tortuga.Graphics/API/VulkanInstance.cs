@@ -50,13 +50,13 @@ namespace Tortuga.Graphics.API
             else
                 throw new PlatformNotSupportedException("this platform is not supported");
 
-            if (Settings.Vulkan.DebugLevel != Settings.Vulkan.DebugType.None)
+            if (Settings.Graphics.GraphicsApiDebugLevel != Settings.GraphicsApiDebugLevelType.None)
                 instanceExtensions.Add(Strings.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
 
             //vulkan validation layers
             var validationLayer = new NativeList<IntPtr>();
-            if (Settings.Vulkan.DebugLevel != Settings.Vulkan.DebugType.None)
+            if (Settings.Graphics.GraphicsApiDebugLevel != Settings.GraphicsApiDebugLevelType.None)
                 validationLayer.Add(Strings.StandardValidationLayeName);
 
             //create vulkan info
@@ -81,12 +81,12 @@ namespace Tortuga.Graphics.API
             this._instanceHandle = instance;
 
             //setup debugging callbacks
-            if (Settings.Vulkan.DebugLevel != Settings.Vulkan.DebugType.None)
+            if (Settings.Graphics.GraphicsApiDebugLevel != Settings.GraphicsApiDebugLevelType.None)
             {
                 var flags = VkDebugReportFlagsEXT.None;
-                if (Settings.Vulkan.DebugLevel == Settings.Vulkan.DebugType.ErrorAndWarnings)
+                if (Settings.Graphics.GraphicsApiDebugLevel == Settings.GraphicsApiDebugLevelType.ErrorAndWarnings)
                     flags = VkDebugReportFlagsEXT.WarningEXT | VkDebugReportFlagsEXT.ErrorEXT;
-                else if (Settings.Vulkan.DebugLevel == Settings.Vulkan.DebugType.Full)
+                else if (Settings.Graphics.GraphicsApiDebugLevel == Settings.GraphicsApiDebugLevelType.Full)
                     flags = VkDebugReportFlagsEXT.WarningEXT | VkDebugReportFlagsEXT.ErrorEXT |
                     VkDebugReportFlagsEXT.DebugEXT | VkDebugReportFlagsEXT.PerformanceWarningEXT | VkDebugReportFlagsEXT.InformationEXT;
                 if (CreateDebugReportCallback(flags) != VkResult.Success)
@@ -107,7 +107,7 @@ namespace Tortuga.Graphics.API
         }
         unsafe ~VulkanInstance()
         {
-            if (Settings.Vulkan.DebugLevel != Settings.Vulkan.DebugType.None)
+            if (Settings.Graphics.GraphicsApiDebugLevel != Settings.GraphicsApiDebugLevelType.None)
                 DestroyDebugReportCallback();
             vkDestroyInstance(_instanceHandle, null);
         }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Text;
 using Tortuga.Utils.SDL2;
+using static Tortuga.Utils.SDL2.SDL2Native;
 
 namespace Tortuga.Input
 {
@@ -31,94 +32,103 @@ namespace Tortuga.Input
             }
         }
         private static bool _isCursorLocked = false;
-        internal static unsafe void ProcessEvents(SDL_Event ev)
+
+        /// <summary>
+        /// Get all events from SDL and process them
+        /// </summary>
+        public static unsafe void ProcessEvents()
         {
-            switch(ev.type)
+            SDL_PumpEvents();
+            SDL_Event ev;
+            while (SDL_PollEvent(&ev) != 0)
             {
-                case SDL_EventType.Quit:
-                case SDL_EventType.Terminating:
-                    OnApplicationClose?.Invoke();
-                    break;
-                case SDL_EventType.WindowEvent:
-                    var windowEvent = Unsafe.Read<SDL_WindowEvent>(&ev);
-                    ProcessWindowEvents(windowEvent);
-                    break;
-                case SDL_EventType.KeyDown:
-                case SDL_EventType.KeyUp:
-                    var keyboardEvent = Unsafe.Read<SDL_KeyboardEvent>(&ev);
-                    ProcessKeyboardEvents(keyboardEvent);
-                    break;
-                case SDL_EventType.TextInput:
-                    var textInputEvent = Unsafe.Read<SDL_TextInputEvent>(&ev);
-                    ProcessTextInputEvent(textInputEvent);
-                    break;
-                case SDL_EventType.MouseMotion:
-                    var mouseMotionEvent = Unsafe.Read<SDL_MouseMotionEvent>(&ev);
-                    ProcessMouseMotionEvent(mouseMotionEvent);
-                    break;
-                case SDL_EventType.MouseButtonDown:
-                case SDL_EventType.MouseButtonUp:
-                    var mouseButtonEvent = Unsafe.Read<SDL_MouseButtonEvent>(&ev);
-                    ProcessMouseButtonEvent(mouseButtonEvent);
-                    break;
-                case SDL_EventType.MouseWheel:
-                    var mouseWheelEvent = Unsafe.Read<SDL_MouseWheelEvent>(&ev);
-                    ProcessMouseWheelEvent(mouseWheelEvent);
-                    break;
-                case SDL_EventType.JoyDeviceAdded:
-                    var joyAddEvent = Unsafe.Read<SDL_JoyDeviceEvent>(&ev);
-                    ProcessJoyEvent(joyAddEvent, true);
-                    break;
-                case SDL_EventType.JoyDeviceRemoved:
-                    var joyRemoveEvent = Unsafe.Read<SDL_JoyDeviceEvent>(&ev);
-                    ProcessJoyEvent(joyRemoveEvent, false);
-                    break;
-                case SDL_EventType.JoyAxisMotion:
-                    var joyAxisEvent = Unsafe.Read<SDL_JoyAxisEvent>(&ev);
-                    ProcessJoyAxisEvent(joyAxisEvent);
-                    break;
-                case SDL_EventType.JoyBallMotion:
-                    var JoyBallMotion = Unsafe.Read<SDL_JoyBallEvent>(&ev);
-                    ProcessJoyBallEvent(JoyBallMotion);
-                    break;
-                case SDL_EventType.JoyHatMotion:
-                    var joyHatMotion = Unsafe.Read<SDL_JoyHatEvent>(&ev);
-                    ProcessJoyHatEvent(joyHatMotion);
-                    break;
-                case SDL_EventType.JoyButtonDown:
-                case SDL_EventType.JoyButtonUp:
-                    var joyButtonEvent = Unsafe.Read<SDL_JoyButtonEvent>(&ev);
-                    ProcessJoyButtonEvent(joyButtonEvent);
-                    break;
-                case SDL_EventType.ControllerAxisMotion:
-                    var controllerAxisEvent = Unsafe.Read<SDL_ControllerAxisEvent>(&ev);
-                    ProcessControllerAxisEvent(controllerAxisEvent);
-                    break;
-                case SDL_EventType.ControllerButtonDown:
-                case SDL_EventType.ControllerButtonUp:
-                    var controllerButtonEvent = Unsafe.Read<SDL_ControllerButtonEvent>(&ev);
-                    ProcessControllerButtonEvent(controllerButtonEvent);
-                    break;
-                case SDL_EventType.ControllerDeviceAdded:
-                    var controllerDeviceAddEvent = Unsafe.Read<SDL_ControllerDeviceEvent>(&ev);
-                    ProcessControllerEvent(controllerDeviceAddEvent, true);
-                    break;
-                case SDL_EventType.ControllerDeviceRemoved:
-                    var controllerDeviceRemoveEvent = Unsafe.Read<SDL_ControllerDeviceEvent>(&ev);
-                    ProcessControllerEvent(controllerDeviceRemoveEvent, false);
-                    break;
-                case SDL_EventType.FingerDown:
-                case SDL_EventType.FingerUp:
-                case SDL_EventType.FingerMotion:
-                    var fingerMotionEvent = Unsafe.Read<SDL_TouchFingerEvent>(&ev);
-                    ProcessFingerMotionEvent(fingerMotionEvent);
-                    break;
-                case SDL_EventType.DropFile:
-                case SDL_EventType.DropTest:
-                case SDL_EventType.DropBegin:
-                case SDL_EventType.DropComplete:
-                    var dropEvent = Unsafe.Read<SDL_DropEvent>(&ev);
-                    break;
+                switch (ev.type)
+                {
+                    case SDL_EventType.Quit:
+                    case SDL_EventType.Terminating:
+                        OnApplicationClose?.Invoke();
+                        break;
+                    case SDL_EventType.WindowEvent:
+                        var windowEvent = Unsafe.Read<SDL_WindowEvent>(&ev);
+                        ProcessWindowEvents(windowEvent);
+                        break;
+                    case SDL_EventType.KeyDown:
+                    case SDL_EventType.KeyUp:
+                        var keyboardEvent = Unsafe.Read<SDL_KeyboardEvent>(&ev);
+                        ProcessKeyboardEvents(keyboardEvent);
+                        break;
+                    case SDL_EventType.TextInput:
+                        var textInputEvent = Unsafe.Read<SDL_TextInputEvent>(&ev);
+                        ProcessTextInputEvent(textInputEvent);
+                        break;
+                    case SDL_EventType.MouseMotion:
+                        var mouseMotionEvent = Unsafe.Read<SDL_MouseMotionEvent>(&ev);
+                        ProcessMouseMotionEvent(mouseMotionEvent);
+                        break;
+                    case SDL_EventType.MouseButtonDown:
+                    case SDL_EventType.MouseButtonUp:
+                        var mouseButtonEvent = Unsafe.Read<SDL_MouseButtonEvent>(&ev);
+                        ProcessMouseButtonEvent(mouseButtonEvent);
+                        break;
+                    case SDL_EventType.MouseWheel:
+                        var mouseWheelEvent = Unsafe.Read<SDL_MouseWheelEvent>(&ev);
+                        ProcessMouseWheelEvent(mouseWheelEvent);
+                        break;
+                    case SDL_EventType.JoyDeviceAdded:
+                        var joyAddEvent = Unsafe.Read<SDL_JoyDeviceEvent>(&ev);
+                        ProcessJoyEvent(joyAddEvent, true);
+                        break;
+                    case SDL_EventType.JoyDeviceRemoved:
+                        var joyRemoveEvent = Unsafe.Read<SDL_JoyDeviceEvent>(&ev);
+                        ProcessJoyEvent(joyRemoveEvent, false);
+                        break;
+                    case SDL_EventType.JoyAxisMotion:
+                        var joyAxisEvent = Unsafe.Read<SDL_JoyAxisEvent>(&ev);
+                        ProcessJoyAxisEvent(joyAxisEvent);
+                        break;
+                    case SDL_EventType.JoyBallMotion:
+                        var JoyBallMotion = Unsafe.Read<SDL_JoyBallEvent>(&ev);
+                        ProcessJoyBallEvent(JoyBallMotion);
+                        break;
+                    case SDL_EventType.JoyHatMotion:
+                        var joyHatMotion = Unsafe.Read<SDL_JoyHatEvent>(&ev);
+                        ProcessJoyHatEvent(joyHatMotion);
+                        break;
+                    case SDL_EventType.JoyButtonDown:
+                    case SDL_EventType.JoyButtonUp:
+                        var joyButtonEvent = Unsafe.Read<SDL_JoyButtonEvent>(&ev);
+                        ProcessJoyButtonEvent(joyButtonEvent);
+                        break;
+                    case SDL_EventType.ControllerAxisMotion:
+                        var controllerAxisEvent = Unsafe.Read<SDL_ControllerAxisEvent>(&ev);
+                        ProcessControllerAxisEvent(controllerAxisEvent);
+                        break;
+                    case SDL_EventType.ControllerButtonDown:
+                    case SDL_EventType.ControllerButtonUp:
+                        var controllerButtonEvent = Unsafe.Read<SDL_ControllerButtonEvent>(&ev);
+                        ProcessControllerButtonEvent(controllerButtonEvent);
+                        break;
+                    case SDL_EventType.ControllerDeviceAdded:
+                        var controllerDeviceAddEvent = Unsafe.Read<SDL_ControllerDeviceEvent>(&ev);
+                        ProcessControllerEvent(controllerDeviceAddEvent, true);
+                        break;
+                    case SDL_EventType.ControllerDeviceRemoved:
+                        var controllerDeviceRemoveEvent = Unsafe.Read<SDL_ControllerDeviceEvent>(&ev);
+                        ProcessControllerEvent(controllerDeviceRemoveEvent, false);
+                        break;
+                    case SDL_EventType.FingerDown:
+                    case SDL_EventType.FingerUp:
+                    case SDL_EventType.FingerMotion:
+                        var fingerMotionEvent = Unsafe.Read<SDL_TouchFingerEvent>(&ev);
+                        ProcessFingerMotionEvent(fingerMotionEvent);
+                        break;
+                    case SDL_EventType.DropFile:
+                    case SDL_EventType.DropTest:
+                    case SDL_EventType.DropBegin:
+                    case SDL_EventType.DropComplete:
+                        var dropEvent = Unsafe.Read<SDL_DropEvent>(&ev);
+                        break;
+                }
             }
         }
         internal static void Initialize()
@@ -193,7 +203,7 @@ namespace Tortuga.Input
 
         private static List<SDL_TouchID> _touches;
         private static List<SDL_FingerID> _fingers;
-        
+
         private static void ProcessFingerMotionEvent(SDL_TouchFingerEvent ev)
         {
             if (ev.type == SDL_EventType.FingerDown)
@@ -214,7 +224,8 @@ namespace Tortuga.Input
             }
             else if (ev.type == SDL_EventType.FingerUp)
             {
-                OnFingerUp?.Invoke(new TouchEvent(){
+                OnFingerUp?.Invoke(new TouchEvent()
+                {
                     TouchId = _touches.FindIndex((SDL_TouchID t) => t == ev.touchId),
                     FingerId = _fingers.FindIndex((SDL_FingerID f) => f == ev.fingerId),
                     Position = new Vector2(ev.x, ev.y),
@@ -229,7 +240,8 @@ namespace Tortuga.Input
             }
             else if (ev.type == SDL_EventType.FingerMotion)
             {
-                OnFingerMotion?.Invoke(new TouchEvent(){
+                OnFingerMotion?.Invoke(new TouchEvent()
+                {
                     TouchId = _touches.FindIndex((SDL_TouchID t) => t == ev.touchId),
                     FingerId = _fingers.FindIndex((SDL_FingerID f) => f == ev.fingerId),
                     Position = new Vector2(ev.x, ev.y),
@@ -689,7 +701,7 @@ namespace Tortuga.Input
         #endregion
 
         #region Text Input
-        
+
         /// <summary>
         /// Triggers when a character is pressed on the keyboard
         /// </summary>
@@ -725,7 +737,7 @@ namespace Tortuga.Input
         /// This get's called every time a key is released on keyboard
         /// </summary>
         public static Action<KeyCode, ModifierKeys> OnKeyUp;
-        
+
         /// <summary>
         /// Checks if a specific key is being held right now
         /// </summary>
@@ -758,7 +770,7 @@ namespace Tortuga.Input
                 }
             }
         }
-        
+
         #endregion
 
         #region Window
@@ -830,7 +842,7 @@ namespace Tortuga.Input
                     break;
             }
         }
-    
+
         #endregion
     }
 }
