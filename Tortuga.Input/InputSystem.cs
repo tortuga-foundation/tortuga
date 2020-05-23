@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 using System;
 using System.Numerics;
 using System.Collections.Generic;
@@ -5,14 +6,43 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Tortuga.Utils.SDL2;
 using static Tortuga.Utils.SDL2.SDL2Native;
+using System.Threading.Tasks;
 
 namespace Tortuga.Input
 {
     /// <summary>
     /// Input system for tortuga engine
     /// </summary>
-    public static class InputSystem
+    public class InputSystem : Core.BaseSystem
     {
+        #region Tortuga System
+
+        public override Task Update()
+        {
+            return Task.Run(() => {});
+        }
+
+        public override Task EarlyUpdate()
+        {
+            return Task.Run(() => ProcessEvents());
+        }
+
+        public override Task LateUpdate()
+        {
+            return Task.Run(() => {});
+        }
+
+        public override void OnEnable()
+        {
+            Initialize();
+        }
+
+        public override void OnDisable()
+        {
+        }
+
+        #endregion
+
         /// <summary>
         /// Get's triggered when the entire application get's asked to be closed.
         /// This includes all windows
@@ -131,7 +161,11 @@ namespace Tortuga.Input
                 }
             }
         }
-        internal static void Initialize()
+        
+        /// <summary>
+        /// Setup Input System
+        /// </summary>
+        public static void Initialize()
         {
             var keys = System.Enum.GetValues(typeof(KeyCode)) as KeyCode[];
             foreach (var key in keys)

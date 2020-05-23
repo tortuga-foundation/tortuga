@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 using System;
 using System.Threading.Tasks;
 
@@ -8,6 +9,16 @@ namespace Tortuga.Audio
     /// </summary>
     public class AudioSystem : Core.BaseSystem
     {
+        public override Task EarlyUpdate()
+        {
+            return Task.Run(() => {});
+        }
+
+        public override Task LateUpdate()
+        {
+            return Task.Run(() => {});
+        }
+
         /// <summary>
         /// Called when system is disabled
         /// </summary>

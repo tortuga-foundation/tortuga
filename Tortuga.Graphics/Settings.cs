@@ -1,7 +1,7 @@
 namespace Tortuga.Settings
 {
     /// <summary>
-    /// Graphics api level
+    /// Graphics api debug level
     /// </summary>
     public enum GraphicsApiDebugLevelType
     {
@@ -24,6 +24,10 @@ namespace Tortuga.Settings
     /// </summary>
     public static class Graphics
     {
+        /// <summary>
+        /// Graphics api debug level
+        /// Changing this will require restart and this should be setup before the engine is loaded
+        /// </summary>
         public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = GraphicsApiDebugLevelType.ErrorAndWarnings;
     }
 }

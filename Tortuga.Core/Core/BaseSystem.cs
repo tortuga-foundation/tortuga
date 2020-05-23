@@ -20,6 +20,16 @@ namespace Tortuga.Core
         public abstract Task Update();
 
         /// <summary>
+        /// Runs every frame before update method
+        /// </summary>
+        public abstract Task EarlyUpdate();
+        
+        /// <summary>
+        /// Runs every frame after update method
+        /// </summary>
+        public abstract Task LateUpdate();
+
+        /// <summary>
         /// this method runs on all systems when a scene is loaded and the system is inside the scene
         /// </summary>
         public abstract void OnEnable();

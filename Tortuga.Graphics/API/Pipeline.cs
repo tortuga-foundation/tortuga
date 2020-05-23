@@ -17,10 +17,6 @@ namespace Tortuga.Graphics.API
         private Device _device;
         private RenderPass _renderPass;
 
-        public Pipeline(RenderPass renderPass, DescriptorSetLayout[] layouts, Graphics.Shader shader, PipelineInputBuilder pipelineInput) :
-        this(renderPass, layouts, shader.Vertex, shader.Fragment, pipelineInput.BindingDescriptions, pipelineInput.AttributeDescriptions)
-        {}
-
         public unsafe Pipeline(
             RenderPass renderPass,
             DescriptorSetLayout[] layouts,

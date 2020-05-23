@@ -1,150 +1,15 @@
-/*
-namespace Tortuga
+namespace Tortuga.Settings
 {
     /// <summary>
-    /// Main Settings that is used by the game engine
+    /// Core tortuga settings
     /// </summary>
-    public static partial class Settings
+    public class Core
     {
         /// <summary>
-        /// Vulkan specific settings used by the game engine
+        /// How many times does the main loop run, per second,
+        /// 0 = No Limit
+        /// Note: Can also use this to lock the FPS
         /// </summary>
-        public static class Vulkan
-        {
-            /// <summary>
-            /// Different debug types for vulkan
-            /// </summary>
-            public enum DebugType
-            {
-                /// <summary>
-                /// No vulkan debuging
-                /// </summary>
-                None,
-                /// <summary>
-                /// Vulkan should show error and warnings
-                /// </summary>
-                ErrorAndWarnings,
-                /// <summary>
-                /// Vulkan should show full debug info
-                /// </summary>
-                Full
-            };
-
-            /// <summary>
-            /// Set the debug level for vulkan
-            /// </summary>
-            public static DebugType DebugLevel = DebugType.ErrorAndWarnings;
-        }
-        /// <summary>
-        /// Engine window settings
-        /// </summary>
-        public static class Window
-        {
-            /// <summary>
-            /// Window Types
-            /// </summary>
-            public enum WindowType
-            {
-                /// <summary>
-                /// Window must be fullscreen only
-                /// </summary>
-                Fullscreen,
-                /// <summary>
-                /// Window must be borderless
-                /// </summary>
-                Borderless,
-                /// <summary>
-                /// Window must be a non-resizable window
-                /// </summary>
-                Windowed,
-                /// <summary>
-                /// Window must be a resizeable window
-                /// </summary>
-                ResizeableWindow
-            }
-
-            /// <summary>
-            /// Set the current type of window
-            /// </summary>
-            public static WindowType Type = WindowType.ResizeableWindow;
-        }
-
-        /// <summary>
-        /// Graphics settings for the engine
-        /// </summary>
-        public static class Graphics
-        {
-            /// <summary>
-            /// Controls the resolution the cameras will render at multiplied by the window resolution
-            /// </summary>
-            public static float RenderResolutionScale = 1.0f;
-            /// <summary>
-            /// The amount of frames that should be rendered in a second
-            /// 0 = Unlimited
-            /// </summary>
-            public static uint MaxFramesPerSecond = 60;
-        }
-
-        /// <summary>
-        /// Audio Settings
-        /// </summary>
-        public static class Audio
-        {
-            /// <summary>
-            /// Type of distance model to use for audio
-            /// </summary>
-            public static AudioDistanceModel DistanceModel
-            {
-                get => _distanceModel;
-                set
-                {
-                    _distanceModel = value;
-                    Engine.Instance.Audio.UpdateDistanceModel();
-                }
-            }
-            private static AudioDistanceModel _distanceModel = AudioDistanceModel.InverseDistance;
-            /// <summary>
-            /// Clamps the distance model
-            /// </summary>
-            public static bool IsDistanceModelClamped
-            {
-                get => _isDistanceModelClamped;
-                set
-                {
-                    _isDistanceModelClamped = value;
-                    Engine.Instance.Audio.UpdateDistanceModel();
-                }
-            }
-            private static bool _isDistanceModelClamped = true;
-
-            /// <summary>
-            /// The speed of sound to use 
-            /// </summary>
-            public static float SpeedOfSound
-            {
-                get => _speedOfSound;
-                set
-                {
-                    _speedOfSound = value;
-                    Engine.Instance.Audio.UpdateSpeedOfSound();
-                }
-            }
-            private static float _speedOfSound = 343.3f;
-
-            /// <summary>
-            /// dopler effect
-            /// </summary>
-            public static float DoplerFactor
-            {
-                get => _doplerFactor;
-                set
-                {
-                    _doplerFactor = value;
-                    Engine.Instance.Audio.UpdateDoplerFactor();
-                }
-            }
-            private static float _doplerFactor = 1.0f;
-        }
+        public static float MaxLoopsPerSecond = 60.0f;
     }
-}
-*/
+} 

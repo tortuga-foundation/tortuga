@@ -19,6 +19,14 @@ namespace Tortuga.Core
         /// </summary>
         public virtual async Task Update() { await Task.Run(() => { }); }
         /// <summary>
+        /// this method runs once per frame before update
+        /// </summary>
+        public virtual async Task EarlyUpdate() { await Task.Run(() => { }); }
+        /// <summary>
+        /// this method runs once per frame after update
+        /// </summary>
+        public virtual async Task LateUpdate() { await Task.Run(() => { }); }
+        /// <summary>
         /// This method runs when a component is attached to an entity
         /// </summary>
         public virtual async Task OnEnable() { await Task.Run(() => { }); }
