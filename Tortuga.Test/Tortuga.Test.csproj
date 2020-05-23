@@ -4,6 +4,9 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tortuga\Tortuga.csproj" />
+    <ProjectReference Include="..\Tortuga.Core\Tortuga.Core.csproj" />
+    <ProjectReference Include="..\Tortuga.Audio\Tortuga.Audio.csproj" />
+    <ProjectReference Include="..\Tortuga.Graphics\Tortuga.Graphics.csproj" />
+    <ProjectReference Include="..\Tortuga.Input\Tortuga.Input.csproj" />
   </ItemGroup>
 </Project>

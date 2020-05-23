@@ -76,10 +76,10 @@ namespace Tortuga.Test
         {
             return Task.Run(() => 
             {
-                var cameras = MyScene.GetComponents<Tortuga.Components.Camera>();
+                var cameras = MyScene.GetComponents<Tortuga.Graphics.Camera>();
                 foreach (var camera in cameras)
                 {
-                    var transform = camera.MyEntity.GetComponent<Tortuga.Components.Transform>();
+                    var transform = camera.MyEntity.GetComponent<Tortuga.Core.Transform>();
                     if (transform == null)
                         continue;
                     

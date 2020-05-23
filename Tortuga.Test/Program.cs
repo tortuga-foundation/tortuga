@@ -22,11 +22,11 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "Camera";
-                await entity.AddComponent<Components.Transform>();
-                var listener = await entity.AddComponent<Components.AudioListener>();
+                await entity.AddComponent<Core.Transform>();
+                var listener = await entity.AddComponent<Audio.AudioListener>();
                 listener.Position = Vector3.Zero;
                 listener.Velocity = Vector3.Zero;
-                var camera = await entity.AddComponent<Components.Camera>();
+                var camera = await entity.AddComponent<Graphics.Camera>();
                 camera.FieldOfView = 60;
                 scene.AddEntity(entity);
             }
@@ -40,13 +40,13 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "Light";
-                var transform = await entity.AddComponent<Components.Transform>();
+                var transform = await entity.AddComponent<Core.Transform>();
                 transform.Position = new Vector3(0, 0, -7);
                 transform.IsStatic = true;
                 //add light component
-                var light = await entity.AddComponent<Components.Light>();
+                var light = await entity.AddComponent<Graphics.Light>();
                 light.Intensity = 200.0f;
-                light.Type = Components.Light.LightType.Point;
+                light.Type = Graphics.Light.LightType.Point;
                 light.Color = System.Drawing.Color.White;
                 scene.AddEntity(entity);
             }
@@ -55,7 +55,7 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "sphere 1";
-                var source = await entity.AddComponent<Components.AudioSource>();
+                var source = await entity.AddComponent<Audio.AudioSource>();
                 source.Position = Vector3.Zero;
                 source.Velocity = Vector3.Zero;
                 source.Is3D = true;
@@ -63,11 +63,11 @@ namespace Tortuga.Test
                 source.PlayOnEnable = true;
                 source.Clip = await Audio.AudioClip.Load("Assets/Audio/pcm mono 16 bit 16kHz.wav");
                 source.Output = mixer;
-                var transform = await entity.AddComponent<Components.Transform>();
+                var transform = await entity.AddComponent<Core.Transform>();
                 transform.Position = new Vector3(0, 0, -10);
                 transform.IsStatic = false;
                 //add mesh component
-                var mesh = await entity.AddComponent<Components.RenderMesh>();
+                var mesh = await entity.AddComponent<Graphics.RenderMesh>();
                 mesh.Material = bricksMaterial;
                 mesh.Mesh = sphereOBJ;
 
@@ -78,11 +78,11 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 entity.Name = "sphere 2";
-                var transform = await entity.AddComponent<Components.Transform>();
+                var transform = await entity.AddComponent<Core.Transform>();
                 transform.Position = new Vector3(3, 0, -10);
                 transform.IsStatic = false;
                 //add mesh component
-                var mesh = await entity.AddComponent<Components.RenderMesh>();
+                var mesh = await entity.AddComponent<Graphics.RenderMesh>();
                 mesh.IsActive = true;
                 mesh.Material = bricksMaterial;
                 mesh.Mesh = sphereOBJ;
@@ -142,8 +142,8 @@ namespace Tortuga.Test
             }
 
             //add systems to the scene
-            scene.AddSystem<Systems.RenderingSystem>();
-            scene.AddSystem<Systems.AudioSystem>();
+            scene.AddSystem<Graphics.RenderingSystem>();
+            scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<CameraMovement>();
 
             Engine.Instance.LoadScene(scene); //set this scene as currently active
