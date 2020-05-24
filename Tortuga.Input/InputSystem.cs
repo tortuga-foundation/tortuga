@@ -147,7 +147,7 @@ namespace Tortuga.Input
                 }
             }
         }
-        
+
         /// <summary>
         /// Setup Input System
         /// </summary>

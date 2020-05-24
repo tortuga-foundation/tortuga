@@ -28,6 +28,6 @@ namespace Tortuga.Settings
         /// Graphics api debug level
         /// Changing this will require restart and this should be setup before the engine is loaded
         /// </summary>
-        public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = GraphicsApiDebugLevelType.ErrorAndWarnings;
+        public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = GraphicsApiDebugLevelType.Full;
     }
 }

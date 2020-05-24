@@ -28,5 +28,10 @@ namespace Tortuga.Graphics.API
             }
         }
         private static Device _mainDevice;
+
+        public static void Init()
+        {
+            _vulkan = new VulkanInstance();
+        }
     }
 }

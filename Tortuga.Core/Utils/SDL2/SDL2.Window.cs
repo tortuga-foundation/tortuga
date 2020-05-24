@@ -6,6 +6,10 @@ namespace Tortuga.Utils.SDL2
 {
     public static unsafe partial class SDL2Native
     {
+        private delegate UInt32 SDL_GetWindowID_T(SDL_Window window);
+        private static SDL_GetWindowID_T _SDL_GetWindowID = LoadFunction<SDL_GetWindowID_T>("SDL_GetWindowID");
+        public static UInt32 SDL_GetWindowID(SDL_Window window) => _SDL_GetWindowID(window);
+
         private delegate SDL_Window SDL_CreateWindow_t(string title, int x, int y, int w, int h, SDL_WindowFlags flags);
         private static SDL_CreateWindow_t s_sdl_createWindow = LoadFunction<SDL_CreateWindow_t>("SDL_CreateWindow");
         public static SDL_Window SDL_CreateWindow(string title, int x, int y, int w, int h, SDL_WindowFlags flags) => s_sdl_createWindow(title, x, y, w, h, flags);

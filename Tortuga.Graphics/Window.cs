@@ -58,11 +58,14 @@ namespace Tortuga.Graphics
     public class Window
     {
         /// <summary>
-        /// returns acquired swapchain
+        /// SDL window ID
         /// </summary>
-        public uint SwapchainAcquiredImage => _swapchainImageIndex;
+        public uint WindowIdentifier => SDL_GetWindowID(_windowHandle);
+
+        internal uint SwapchainAcquiredImage => _swapchainImageIndex;
         internal VkSurfaceKHR Surface => _surface;
         internal API.Swapchain Swapchain => _swapchain;
+        internal VkImage CurrentImage => _swapchain.Images[_swapchainImageIndex];
 
         private IntPtr _windowHandle;
         private VkSurfaceKHR _surface;
@@ -248,7 +251,7 @@ namespace Tortuga.Graphics
         /// <summary>
         /// Aquire swapchain image and store the referance in 'SwapchainAcquiredImage'
         /// </summary>
-        public unsafe void AcquireSwapchainImage()
+        internal unsafe void AcquireSwapchainImage()
         {
             _swapchianFence.Reset();
             uint imageIndex;
@@ -276,7 +279,7 @@ namespace Tortuga.Graphics
         /// <summary>
         /// present acquired swapchain
         /// </summary>
-        public unsafe void Present()
+        internal unsafe void Present()
         {
             var swapchains = new NativeList<VkSwapchainKHR>();
             var imageIndices = new NativeList<uint>();
