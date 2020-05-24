@@ -219,11 +219,11 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void SampledImageUpdate(ImageView view, Sampler sampler, uint binding = 0, uint arrayIndex = 0)
+            public unsafe void SampledImageUpdate(VkImageLayout layout, ImageView view, Sampler sampler, uint binding = 0, uint arrayIndex = 0)
             {
                 var imageInfo = new VkDescriptorImageInfo
                 {
-                    imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+                    imageLayout = layout,
                     imageView = view.Handle,
                     sampler = sampler.Handle
                 };
@@ -236,6 +236,7 @@ namespace Tortuga.Graphics.API
                 writeInfos.descriptorCount = _arrayCount;
                 writeInfos.descriptorType = bindings.type;
                 writeInfos.pImageInfo = &imageInfo;
+            
 
                 vkUpdateDescriptorSets(
                     _device.LogicalDevice,

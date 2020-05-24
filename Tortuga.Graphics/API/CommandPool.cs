@@ -460,6 +460,10 @@ namespace Tortuga.Graphics.API
             {
                 vkCmdDraw(_handle, vertexCount, 1, 0, 0);
             }
+            public unsafe void Dispatch(uint groupX, uint groupY, uint groupZ)
+            {
+                vkCmdDispatch(_handle, groupX, groupY, groupZ);
+            }
             public unsafe void ExecuteCommands(Command[] commands)
             {
                 var cmds = new NativeList<VkCommandBuffer>();

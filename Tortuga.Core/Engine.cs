@@ -9,6 +9,12 @@ namespace Tortuga
     public class Engine
     {
         /// <summary>
+        /// singleton instance of engine
+        /// </summary>
+        public static Engine Instance => _instance;
+        private static Engine _instance;
+
+        /// <summary>
         /// Controlls if the application is running
         /// </summary>
         public bool IsRunning;
@@ -26,6 +32,11 @@ namespace Tortuga
         /// </summary>
         public Engine()
         {
+            if (_instance == null)
+                _instance = this;
+            else
+                throw new System.Exception("there can only be one instance of engine");
+
             _modules = new List<Core.BaseModule>();
         }
 
@@ -175,6 +186,18 @@ namespace Tortuga
                 _modules[index].Destroy();
                 _modules.RemoveAt(index);
             }
+        }
+    
+        /// <summary>
+        /// Get's a module from the engine
+        /// </summary>
+        /// <typeparam name="T">type of module to get</typeparam>
+        public T GetModule<T>() where T : Core.BaseModule, new()
+        {
+            var index = _modules.FindIndex(m => m.GetType() == typeof(T));
+            if (index == -1)
+                return null;
+            return _modules[index] as T;
         }
     }
 }

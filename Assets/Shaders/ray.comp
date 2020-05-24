@@ -1,0 +1,7 @@
+#version 460
+
+layout(set=0, binding=0, rgba8) writeonly uniform image2D renderImage;
+
+void main() {
+    imageStore(renderImage, ivec2(gl_GlobalInvocationID.xy), vec4(1., 1., 1., 1.));
+}

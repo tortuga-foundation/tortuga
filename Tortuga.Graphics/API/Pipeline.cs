@@ -211,6 +211,7 @@ namespace Tortuga.Graphics.API
         /// </summary>
         public unsafe Pipeline(Shader shader, DescriptorSetLayout[] layouts)
         {
+            _device = shader.DeviceUsed;
             this.SetupPipelineLayout(layouts);
 
             var startFuncName = new FixedUtf8String("main");
