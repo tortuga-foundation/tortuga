@@ -36,10 +36,7 @@ namespace Tortuga.Test
                 if (window.WindowIdentifier == windowId)
                     engine.IsRunning = false;
             };
-            Input.InputModule.OnApplicationClose += () =>
-            {
-                engine.IsRunning = false;
-            };
+            Input.InputModule.OnApplicationClose += () => engine.IsRunning = false;
 
             //entity
             {
