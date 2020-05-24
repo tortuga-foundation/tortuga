@@ -1,3 +1,5 @@
+#pragma warning disable 0649
+
 namespace Tortuga.Graphics
 {
     internal struct ShaderPixel
