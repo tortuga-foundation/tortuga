@@ -6,38 +6,27 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using Tortuga.Utils.SDL2;
 using static Tortuga.Utils.SDL2.SDL2Native;
-using System.Threading.Tasks;
 
 namespace Tortuga.Input
 {
     /// <summary>
     /// Input system for tortuga engine
     /// </summary>
-    public class InputSystem : Core.BaseSystem
+    public class InputModule : Core.BaseModule
     {
         #region Tortuga System
 
-        public override Task Update()
-        {
-            return Task.Run(() => {});
-        }
-
-        public override Task EarlyUpdate()
-        {
-            return Task.Run(() => ProcessEvents());
-        }
-
-        public override Task LateUpdate()
-        {
-            return Task.Run(() => {});
-        }
-
-        public override void OnEnable()
+        public override void Init()
         {
             Initialize();
         }
 
-        public override void OnDisable()
+        public override void Update()
+        {
+            ProcessEvents();
+        }
+
+        public override void Destroy()
         {
         }
 
@@ -63,10 +52,7 @@ namespace Tortuga.Input
         }
         private static bool _isCursorLocked = false;
 
-        /// <summary>
-        /// Get all events from SDL and process them
-        /// </summary>
-        public static unsafe void ProcessEvents()
+        internal static unsafe void ProcessEvents()
         {
             SDL_PumpEvents();
             SDL_Event ev;
@@ -165,7 +151,7 @@ namespace Tortuga.Input
         /// <summary>
         /// Setup Input System
         /// </summary>
-        public static void Initialize()
+        internal static void Initialize()
         {
             var keys = System.Enum.GetValues(typeof(KeyCode)) as KeyCode[];
             foreach (var key in keys)

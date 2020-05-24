@@ -19,6 +19,16 @@ namespace Tortuga
         public Core.Scene CurrentScene => _activeScene;
         private Core.Scene _activeScene;
 
+        private List<Core.BaseModule> _modules;
+
+        /// <summary>
+        /// constructor for engine
+        /// </summary>
+        public Engine()
+        {
+            _modules = new List<Core.BaseModule>();
+        }
+
         /// <summary>
         /// Main engine loop
         /// </summary>
@@ -39,6 +49,10 @@ namespace Tortuga
                         oldTime = currentTime;
                         currentTime = stopWatch.ElapsedMilliseconds;
                         Time.DeltaTime = (currentTime - oldTime) / 1000.0f;
+                        //update modules
+                        foreach (var module in _modules)
+                            module.Update();
+
                         //early update
                         if (_activeScene != null)
                         {
@@ -93,7 +107,7 @@ namespace Tortuga
                             int waitTime = System.Convert.ToInt32(
                                 System.MathF.Round(
                                 (
-                                    1000.0f / Settings.Core.MaxLoopsPerSecond) - 
+                                    1000.0f / Settings.Core.MaxLoopsPerSecond) -
                                     (stopWatch.ElapsedMilliseconds - currentTime)
                                 )
                             );
@@ -132,6 +146,35 @@ namespace Tortuga
                 system.Value.OnDisable();
 
             _activeScene = new Core.Scene();
+        }
+
+        /// <summary>
+        /// Adds a module to the engine
+        /// </summary>
+        /// <typeparam name="T">module to add</typeparam>
+        public void AddModule<T>() where T : Core.BaseModule, new()
+        {
+            var index = _modules.FindIndex(m => m.GetType() == typeof(T));
+            if (index == -1)
+            {
+                var module = new T();
+                module.Init();
+                _modules.Add(module);
+            }
+        }
+
+        /// <summary>
+        /// Removes a module from the engine
+        /// </summary>
+        /// <typeparam name="T">module to remove</typeparam>
+        public void RemoveModule<T>() where T : Core.BaseModule, new()
+        {
+            var index = _modules.FindIndex(m => m.GetType() == typeof(T));
+            if (index > -1)
+            {
+                _modules[index].Destroy();
+                _modules.RemoveAt(index);
+            }
         }
     }
 }

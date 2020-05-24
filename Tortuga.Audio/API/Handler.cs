@@ -17,6 +17,12 @@ namespace Tortuga.Audio.API
                 return _device;
             }
         }
+
         private static AudioDevice _device;
+
+        public static void Init()
+        {
+            _device = new AudioDevice();
+        }
     }
 }
