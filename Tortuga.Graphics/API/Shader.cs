@@ -21,9 +21,11 @@ namespace Tortuga.Graphics.API
 
         public VkShaderModule Handle => _shader;
         public Device DeviceUsed => _device;
+        public ShaderType Type => _type;
 
         private VkShaderModule _shader;
         private Device _device;
+        private ShaderType _type;
 
         private unsafe void SetupShader(byte[] byteCode)
         {
@@ -47,6 +49,7 @@ namespace Tortuga.Graphics.API
 
         public Shader(Device device, string file)
         {
+            _type = GetShaderTypeFromExtension(file);
             _device = device;
             var compileTask = Compile(file);
             compileTask.Wait();
@@ -56,6 +59,7 @@ namespace Tortuga.Graphics.API
         }
         public Shader(Device device, string code, ShaderType type)
         {
+            _type = type;
             _device = device;
             var shaderFile = string.Format(
                 "{0}{1}.{2}",
@@ -74,8 +78,9 @@ namespace Tortuga.Graphics.API
             File.Delete(shaderFile);
             File.Delete(compileTask.Result);
         }
-        public Shader(Device device, byte[] compiledCode)
+        public Shader(Device device, byte[] compiledCode, ShaderType type)
         {
+            _type = type;
             _device = device;
             SetupShader(compiledCode);
         }
@@ -106,6 +111,24 @@ namespace Tortuga.Graphics.API
                     return "tese";
             }
             throw new NotSupportedException("this type of shader is not supported");
+        }
+
+        public ShaderType GetShaderTypeFromExtension(string file)
+        {
+            if (file.EndsWith("vert"))
+                return ShaderType.Vertex;
+            else if (file.EndsWith("frag"))
+                return ShaderType.Fragment;
+            else if (file.EndsWith("comp"))
+                return ShaderType.Compute;
+            else if (file.EndsWith("geom"))
+                return ShaderType.Geometry;
+            else if (file.EndsWith("tesc"))
+                return ShaderType.TessellationControl;
+            else if (file.EndsWith("tese"))
+                return ShaderType.TessellationEvaluation;
+            else
+                throw new Exception("invalid shader extension type");
         }
 
         ///compiles shader code in a file and returns a path to compiled shader file

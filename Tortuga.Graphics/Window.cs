@@ -92,7 +92,7 @@ namespace Tortuga.Graphics
                 flags |= SDL_WindowFlags.Fullscreen;
             else if (type == WindowType.ResizeableWindow)
                 flags |= SDL_WindowFlags.Resizable;
-                
+
             this._windowHandle = SDL_CreateWindow(
                 title,
                 x, y,
@@ -154,7 +154,7 @@ namespace Tortuga.Graphics
             }
             else
                 throw new PlatformNotSupportedException("This platform (window manager) is currently not supported");
-            
+
             if (err != VkResult.Success)
                 throw new Exception("failed to create window surface");
 
@@ -223,7 +223,7 @@ namespace Tortuga.Graphics
         /// </summary>
         public unsafe Vector2 Size
         {
-            get 
+            get
             {
                 int w, h;
                 SDL_GetWindowSize(_windowHandle, &w, &h);
@@ -304,12 +304,16 @@ namespace Tortuga.Graphics
         /// <param name="title">Title</param>
         /// <param name="message">Message to display</param>
         /// <param name="shouldPause">If true it will stop the program until message box is delt with</param>
-        public unsafe void ShowMessageBox(MessageBoxFlags flags, string title, string message, bool shouldPause = false)
+        public unsafe void ShowMessageBox(
+            MessageBoxFlags flags,
+            string title,
+            string message,
+            bool shouldPause = false
+        )
         {
-            var t1 = System.Threading.Tasks.Task.Run(() => 
-            {
-                SDL_ShowSimpleMessageBox((uint)flags, title, message);
-            });
+            var t1 = System.Threading.Tasks.Task.Run(() =>
+                SDL_ShowSimpleMessageBox((uint)flags, title, message)
+            );
             if (shouldPause)
                 t1.Wait();
         }

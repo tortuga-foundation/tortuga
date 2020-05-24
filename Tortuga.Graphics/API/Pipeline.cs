@@ -17,21 +17,67 @@ namespace Tortuga.Graphics.API
         private Device _device;
         private RenderPass _renderPass;
 
+        private unsafe void SetupPipelineLayout(DescriptorSetLayout[] layouts)
+        {
+            var setLayouts = new NativeList<VkDescriptorSetLayout>();
+            foreach (var l in layouts)
+                setLayouts.Add(l.Handle);
+            var pipelineLayoutInfo = VkPipelineLayoutCreateInfo.New();
+            pipelineLayoutInfo.setLayoutCount = setLayouts.Count;
+            pipelineLayoutInfo.pSetLayouts = (VkDescriptorSetLayout*)setLayouts.Data.ToPointer();
+
+            VkPipelineLayout pipelineLayout;
+            if (vkCreatePipelineLayout(
+                _device.LogicalDevice,
+                &pipelineLayoutInfo,
+                null,
+                &pipelineLayout
+            ) != VkResult.Success)
+                throw new Exception("failed to create pipeline layout");
+            _layout = pipelineLayout;
+        }
+
+        private VkShaderStageFlags ShaderTypeToVulkanFlags(Shader.ShaderType type)
+        {
+            switch(type)
+            {
+                case Shader.ShaderType.Compute:
+                    return VkShaderStageFlags.Compute;
+                case Shader.ShaderType.Fragment:
+                    return VkShaderStageFlags.Fragment;
+                case Shader.ShaderType.Geometry:
+                    return VkShaderStageFlags.Geometry;
+                case Shader.ShaderType.Vertex:
+                    return VkShaderStageFlags.Vertex;
+                case Shader.ShaderType.TessellationControl:
+                    return VkShaderStageFlags.TessellationControl;
+                case Shader.ShaderType.TessellationEvaluation:
+                    return VkShaderStageFlags.TessellationEvaluation;
+            }
+            throw new Exception("invalid shader type provided");
+        }
+
+        /// <summary>
+        /// create graphics pipeline
+        /// </summary>
         public unsafe Pipeline(
             RenderPass renderPass,
             DescriptorSetLayout[] layouts,
             Shader vertex,
             Shader fragment,
-            NativeList<VkVertexInputBindingDescription> bindingDescriptions,
-            NativeList<VkVertexInputAttributeDescription> attributeDescriptions
+            PipelineInputBuilder pipelineInputBuilder
         )
         {
+            _renderPass = renderPass;
             _device = renderPass.DeviceUsed;
             foreach (var layout in layouts)
             {
                 if (layout.DeviceUsed != _device)
                     throw new Exception("The descriptor set layout provided belongs to a different device than the render pass");
             }
+
+            var bindingDescriptions = pipelineInputBuilder.BindingDescriptions;
+            var attributeDescriptions = pipelineInputBuilder.AttributeDescriptions;
 
             var vertexInputInfo = VkPipelineVertexInputStateCreateInfo.New();
             vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptions.Count;
@@ -111,22 +157,7 @@ namespace Tortuga.Graphics.API
             dynamicState.dynamicStateCount = dynamicStates.Count;
             dynamicState.pDynamicStates = (VkDynamicState*)dynamicStates.Data.ToPointer();
 
-            var setLayouts = new NativeList<VkDescriptorSetLayout>();
-            foreach (var l in layouts)
-                setLayouts.Add(l.Handle);
-            var pipelineLayoutInfo = VkPipelineLayoutCreateInfo.New();
-            pipelineLayoutInfo.setLayoutCount = setLayouts.Count;
-            pipelineLayoutInfo.pSetLayouts = (VkDescriptorSetLayout*)setLayouts.Data.ToPointer();
-
-            VkPipelineLayout pipelineLayout;
-            if (vkCreatePipelineLayout(
-                _device.LogicalDevice,
-                &pipelineLayoutInfo,
-                null,
-                &pipelineLayout
-            ) != VkResult.Success)
-                throw new Exception("failed to create pipeline layout");
-            _layout = pipelineLayout;
+            this.SetupPipelineLayout(layouts);
 
             var shaderInfo = new NativeList<VkPipelineShaderStageCreateInfo>();
             var startFuncName = new FixedUtf8String("main");
@@ -174,6 +205,38 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to create graphics pipeline");
             _pipeline = pipeline;
         }
+
+        /// <summary>
+        /// create compute pipeline
+        /// </summary>
+        public unsafe Pipeline(Shader shader, DescriptorSetLayout[] layouts)
+        {
+            this.SetupPipelineLayout(layouts);
+
+            var startFuncName = new FixedUtf8String("main");
+            var stage = VkPipelineShaderStageCreateInfo.New();
+            stage.stage = ShaderTypeToVulkanFlags(shader.Type);
+            stage.module = shader.Handle;
+            stage.pName = startFuncName;
+            stage.pSpecializationInfo = null;
+
+            var createInfo = VkComputePipelineCreateInfo.New();
+            createInfo.layout = _layout;
+            createInfo.stage = stage;
+
+            VkPipeline pipeline;
+            if (vkCreateComputePipelines(
+                _device.LogicalDevice,
+                VkPipelineCache.Null,
+                1,
+                &createInfo,
+                null,
+                &pipeline
+            ) != VkResult.Success)
+                throw new Exception("failed to create compute pipeline");
+            _pipeline = pipeline;
+        }
+
         unsafe ~Pipeline()
         {
             vkDestroyPipeline(

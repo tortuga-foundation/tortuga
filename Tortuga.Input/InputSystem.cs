@@ -10,7 +10,7 @@ using static Tortuga.Utils.SDL2.SDL2Native;
 namespace Tortuga.Input
 {
     /// <summary>
-    /// Input system for tortuga engine
+    /// Input Module
     /// </summary>
     public class InputModule : Core.BaseModule
     {

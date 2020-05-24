@@ -1,6 +1,4 @@
 ﻿using System.Threading.Tasks;
-using System.Numerics;
-using Tortuga.Audio;
 
 namespace Tortuga.Test
 {
@@ -10,16 +8,14 @@ namespace Tortuga.Test
         {
             //setup engine and load required modules
             var engine = new Engine();
-            // Setup audio modules
             engine.AddModule<Audio.AudioModule>();
-            //setup input module
             engine.AddModule<Input.InputModule>();
 
             //create new scene
             var scene = new Core.Scene();
 
             //audio mixer
-            var mixer = new MixerGroup();
+            var mixer = new Audio.MixerGroup();
             mixer.Gain = 2.0f;
             mixer.AddEffect(new Audio.Effect.Echo());
 
