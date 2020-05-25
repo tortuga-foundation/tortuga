@@ -7,10 +7,9 @@ namespace Tortuga.Test
         static async Task Main(string[] args)
         {
             //setup engine and load required modules
-            var engine = new Engine();
-            engine.AddModule<Audio.AudioModule>();
-            engine.AddModule<Input.InputModule>();
-            engine.AddModule<Graphics.GraphicsModule>();
+            Engine.Instance.AddModule<Audio.AudioModule>();
+            Engine.Instance.AddModule<Input.InputModule>();
+            Engine.Instance.AddModule<Graphics.GraphicsModule>();
 
             //create new scene
             var scene = new Core.Scene();
@@ -34,9 +33,9 @@ namespace Tortuga.Test
             Input.InputModule.OnWindowClose += (uint windowId) =>
             {
                 if (window.WindowIdentifier == windowId)
-                    engine.IsRunning = false;
+                    Engine.Instance.IsRunning = false;
             };
-            Input.InputModule.OnApplicationClose += () => engine.IsRunning = false;
+            Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
             //entity
             {
@@ -49,8 +48,8 @@ namespace Tortuga.Test
             scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<Graphics.RenderingSystem>();
 
-            engine.LoadScene(scene);
-            await engine.Run();
+            Engine.Instance.LoadScene(scene);
+            await Engine.Instance.Run();
         }
     }
 }

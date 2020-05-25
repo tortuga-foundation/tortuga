@@ -11,7 +11,16 @@ namespace Tortuga
         /// <summary>
         /// singleton instance of engine
         /// </summary>
-        public static Engine Instance => _instance;
+        public static Engine Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new Engine();
+
+                return _instance;
+            }
+        }
         private static Engine _instance;
 
         /// <summary>
@@ -30,7 +39,7 @@ namespace Tortuga
         /// <summary>
         /// constructor for engine
         /// </summary>
-        public Engine()
+        private Engine()
         {
             if (_instance == null)
                 _instance = this;
