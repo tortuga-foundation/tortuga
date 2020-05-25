@@ -1,7 +1,19 @@
 #version 460
 
+layout(constant_id=0) const float spec_constX = 0;
+layout(constant_id=1) const float spec_constY = 0;
+layout(constant_id=2) const float spec_constZ = 0;
 layout(set=0, binding=0, rgba8) writeonly uniform image2D renderImage;
 
 void main() {
-    imageStore(renderImage, ivec2(gl_GlobalInvocationID.xy), vec4(1., 1., 1., 1.));
+    imageStore(
+        renderImage, 
+        ivec2(gl_GlobalInvocationID.xy), 
+        vec4(
+            spec_constX, 
+            spec_constY, 
+            spec_constZ, 
+            1.
+        )
+    );
 }

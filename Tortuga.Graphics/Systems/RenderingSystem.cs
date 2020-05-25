@@ -25,6 +25,9 @@ namespace Tortuga.Graphics
             _renderFence = new API.Fence(API.Handler.MainDevice);
 
             _shader = new API.Shader(API.Handler.MainDevice, "Assets/Shaders/ray.comp");
+            _shader.CreateOrUpdateSpecialization(0, 1.0f);
+            _shader.CreateOrUpdateSpecialization(1, 1.0f);
+            _shader.CreateOrUpdateSpecialization(2, 1.0f);
             _pipeline = new API.Pipeline(
                 _shader,
                 new API.DescriptorSetLayout[]
@@ -109,6 +112,7 @@ namespace Tortuga.Graphics
                     null,
                     _renderFence
                 );
+                // wait for render process to finish
                 _renderFence.Wait();
             });
         }

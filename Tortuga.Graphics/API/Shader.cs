@@ -2,8 +2,12 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Collections.Generic;
 using Vulkan;
 using static Vulkan.VulkanNative;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Numerics;
 
 namespace Tortuga.Graphics.API
 {
@@ -19,13 +23,22 @@ namespace Tortuga.Graphics.API
             Geometry
         };
 
+        public class Specialization
+        {
+            public uint Identifier;
+            public uint Size;
+            public byte[] Data;
+        }
+
         public VkShaderModule Handle => _shader;
         public Device DeviceUsed => _device;
         public ShaderType Type => _type;
+        public Specialization[] Specializations => _specialization.ToArray();
 
         private VkShaderModule _shader;
         private Device _device;
         private ShaderType _type;
+        private List<Specialization> _specialization;
 
         private unsafe void SetupShader(byte[] byteCode)
         {
@@ -49,6 +62,7 @@ namespace Tortuga.Graphics.API
 
         public Shader(Device device, string file)
         {
+            _specialization = new List<Specialization>();
             _type = GetShaderTypeFromExtension(file);
             _device = device;
             var compileTask = Compile(file);
@@ -59,6 +73,7 @@ namespace Tortuga.Graphics.API
         }
         public Shader(Device device, string code, ShaderType type)
         {
+            _specialization = new List<Specialization>();
             _type = type;
             _device = device;
             var shaderFile = string.Format(
@@ -80,6 +95,7 @@ namespace Tortuga.Graphics.API
         }
         public Shader(Device device, byte[] compiledCode, ShaderType type)
         {
+            _specialization = new List<Specialization>();
             _type = type;
             _device = device;
             SetupShader(compiledCode);
@@ -91,6 +107,88 @@ namespace Tortuga.Graphics.API
                 _shader,
                 null
             );
+        }
+
+        private void CreateOrUpdateSpecialization(uint identifier, byte[] bytes)
+        {
+            var size = Convert.ToUInt32(bytes.Length * sizeof(byte));
+            //does specialization exist
+            var index = _specialization.FindIndex(s => s.Identifier == identifier);
+            if (index == -1)
+            {
+                //create new specialization
+                _specialization.Add(new Specialization()
+                {
+                    Identifier = identifier,
+                    Size = size,
+                    Data = bytes
+                });
+            }
+            else
+            {
+                //update specialization
+                _specialization[index] = new Specialization()
+                {
+                    Identifier = identifier,
+                    Size = size,
+                    Data = bytes
+                };
+            }
+        }
+        public void CreateOrUpdateSpecialization(uint identifier, int data)
+        {
+            var bytes = BitConverter.GetBytes(data);
+            CreateOrUpdateSpecialization(identifier, bytes);   
+        }
+        public void CreateOrUpdateSpecialization(uint identifier, float data)
+        {
+            var bytes = BitConverter.GetBytes(data);
+            CreateOrUpdateSpecialization(identifier, bytes);   
+        }
+        public void CreateOrUpdateSpecialization(uint identifier, uint data)
+        {
+            var bytes = BitConverter.GetBytes(data);
+            CreateOrUpdateSpecialization(identifier, bytes);   
+        }
+        public void CreateOrUpdateSpecialization(uint identifier, Vector2 data)
+        {
+            var bytes = new List<byte>();
+            foreach (var b in BitConverter.GetBytes(data.X))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(data.Y))
+                bytes.Add(b);
+            CreateOrUpdateSpecialization(identifier, bytes.ToArray());   
+        }
+        public void CreateOrUpdateSpecialization(uint identifier, Vector3 data)
+        {
+            var bytes = new List<byte>();
+            foreach (var b in BitConverter.GetBytes(data.X))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(data.Y))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(data.Z))
+                bytes.Add(b);
+            CreateOrUpdateSpecialization(identifier, bytes.ToArray());   
+        }
+        public void CreateOrUpdateSpecialization(uint identifier, Vector4 data)
+        {
+            var bytes = new List<byte>();
+            foreach (var b in BitConverter.GetBytes(data.X))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(data.Y))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(data.Z))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(data.W))
+                bytes.Add(b);
+            CreateOrUpdateSpecialization(identifier, bytes.ToArray());   
+        }
+
+        public void DeleteSpecialization(uint identifier)
+        {
+            var index = _specialization.FindIndex(s => s.Identifier == identifier);
+            if (index > -1)
+                _specialization.RemoveAt(index);
         }
 
         public string GetShaderTypeExtension(ShaderType type)
@@ -131,7 +229,9 @@ namespace Tortuga.Graphics.API
                 throw new Exception("invalid shader extension type");
         }
 
-        ///compiles shader code in a file and returns a path to compiled shader file
+        /// <summary>
+        /// compiles shader code in a file and returns a path to compiled shader file
+        /// </summary>
         public static async Task<string> Compile(string file)
         {
             if (File.Exists(file) == false)

@@ -214,12 +214,37 @@ namespace Tortuga.Graphics.API
             _device = shader.DeviceUsed;
             this.SetupPipelineLayout(layouts);
 
+            //specialization
+            var specializationEntry = new Utils.NativeList<VkSpecializationMapEntry>();
+            var specializationData = new Utils.NativeList<byte>();
+            uint fullSize = 0;
+            foreach (var specEntry in shader.Specializations)
+            {
+                specializationEntry.Add(new VkSpecializationMapEntry()
+                {
+                    constantID = specEntry.Identifier,
+                    offset = fullSize,
+                    size = (UIntPtr)specEntry.Size
+                });
+                foreach(var b in specEntry.Data)
+                    specializationData.Add(b);
+                fullSize += specEntry.Size;
+            }
+            var specialization = new VkSpecializationInfo()
+            {
+                mapEntryCount = specializationEntry.Count,
+                pMapEntries = (VkSpecializationMapEntry*)specializationEntry.Data.ToPointer(),
+                dataSize = (UIntPtr)fullSize,
+                pData = specializationData.Data.ToPointer()
+            };
+
+            //setup shader
             var startFuncName = new FixedUtf8String("main");
             var stage = VkPipelineShaderStageCreateInfo.New();
             stage.stage = ShaderTypeToVulkanFlags(shader.Type);
             stage.module = shader.Handle;
             stage.pName = startFuncName;
-            stage.pSpecializationInfo = null;
+            stage.pSpecializationInfo = &specialization;
 
             var createInfo = VkComputePipelineCreateInfo.New();
             createInfo.layout = _layout;
