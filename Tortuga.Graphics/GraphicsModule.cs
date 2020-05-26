@@ -1,5 +1,4 @@
 #pragma warning disable 1591
-using Vulkan;
 
 namespace Tortuga.Graphics
 {
@@ -8,8 +7,8 @@ namespace Tortuga.Graphics
     /// </summary>
     public class GraphicsModule : Core.BaseModule
     {
-        internal API.DescriptorSetLayout RenderDescriptorLayout => _descriptorLayout;
-        private API.DescriptorSetLayout _descriptorLayout;
+        internal API.DescriptorSetLayout[] RenderDescriptorLayouts => _descriptorLayouts;
+        private API.DescriptorSetLayout[] _descriptorLayouts;
 
         public override void Destroy()
         {
@@ -19,17 +18,34 @@ namespace Tortuga.Graphics
         {
             //initialize vulkan
             API.Handler.Init();
-            _descriptorLayout = new API.DescriptorSetLayout(
-                API.Handler.MainDevice,
-                new API.DescriptorSetCreateInfo[]
-                {
-                    new API.DescriptorSetCreateInfo()
+            //setup descriptor sets
+            _descriptorLayouts = new API.DescriptorSetLayout[]
+            {
+                //output rendered image
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
                     {
-                        stage = VkShaderStageFlags.Compute,
-                        type = VkDescriptorType.StorageImage
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Compute,
+                            type = API.DescriptorType.StorageImage
+                        },
                     }
-                }
-            );
+                ),
+                //rendered image settings
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Compute,
+                            type = API.DescriptorType.UniformBuffer
+                        }
+                    }
+                )
+            };
         }
 
         public override void Update()

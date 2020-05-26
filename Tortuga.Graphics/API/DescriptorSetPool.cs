@@ -22,13 +22,13 @@ namespace Tortuga.Graphics.API
             var poolSizes = new List<VkDescriptorPoolSize>();
             foreach (var info in layout.CreateInfoUsed)
             {
-                var poolSizeIndex = poolSizes.FindIndex(p => p.type == info.type);
+                var poolSizeIndex = poolSizes.FindIndex(p => p.type == (VkDescriptorType)info.type);
                 if (poolSizeIndex != -1)
                 {
                     var currentCount = poolSizes[poolSizeIndex].descriptorCount;
                     poolSizes[poolSizeIndex] = new VkDescriptorPoolSize
                     {
-                        type = info.type,
+                        type = (VkDescriptorType)info.type,
                         descriptorCount = currentCount + 1
                     };
                     _totalSets++;
@@ -37,7 +37,7 @@ namespace Tortuga.Graphics.API
                 {
                     poolSizes.Add(new VkDescriptorPoolSize
                     {
-                        type = info.type,
+                        type = (VkDescriptorType)info.type,
                         descriptorCount = 1
                     });
                     _totalSets++;
@@ -114,7 +114,7 @@ namespace Tortuga.Graphics.API
                 _arrayCount = arrayCount;
             }
 
-            public unsafe void BuffersUpdate(Buffer[] buffers, uint arrayIndex = 0)
+            public unsafe void UpdateBuffer(Buffer[] buffers, uint arrayIndex = 0)
             {
                 if (buffers.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
                     throw new Exception("provided incorrect number of buffers");
@@ -138,7 +138,7 @@ namespace Tortuga.Graphics.API
                         info.dstBinding = i;
                         info.dstArrayElement = arrayIndex;
                         info.descriptorCount = _arrayCount;
-                        info.descriptorType = bindings.type;
+                        info.descriptorType = (VkDescriptorType)bindings.type;
                         info.pBufferInfo = buff;
                         writeInfos.Add(info);
                     }
@@ -152,7 +152,7 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void BuffersUpdate(Buffer buffers, uint binding = 0, uint arrayIndex = 0)
+            public unsafe void UpdateBuffer(Buffer buffers, uint binding = 0, uint arrayIndex = 0)
             {
                 var bufferInfo = new VkDescriptorBufferInfo()
                 {
@@ -168,7 +168,7 @@ namespace Tortuga.Graphics.API
                 writeInfos.dstBinding = binding;
                 writeInfos.dstArrayElement = arrayIndex;
                 writeInfos.descriptorCount = _arrayCount;
-                writeInfos.descriptorType = bindings.type;
+                writeInfos.descriptorType = (VkDescriptorType)bindings.type;
                 writeInfos.pBufferInfo = &bufferInfo;
                 vkUpdateDescriptorSets(
                     _device.LogicalDevice,
@@ -179,12 +179,14 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void SampledImageUpdate(ImageView[] view, Sampler[] sampler, uint arrayIndex = 0)
+            public unsafe void UpdateSampledImage(VkImageLayout[] layouts, ImageView[] view, Sampler[] sampler, uint arrayIndex = 0)
             {
                 if (view.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
                     throw new Exception("provided incorrect number of image views");
                 if (sampler.Length != _pool._descriptorSetLayout.CreateInfoUsed.Length)
                     throw new Exception("provided incorrect number of samplers");
+                if (layouts.Length != view.Length)
+                    throw new Exception("provided incorrect number of image layouts");
 
                 var imageInfo = new NativeList<VkDescriptorImageInfo>();
                 var writeInfos = new NativeList<VkWriteDescriptorSet>();
@@ -192,7 +194,7 @@ namespace Tortuga.Graphics.API
                 {
                     imageInfo.Add(new VkDescriptorImageInfo
                     {
-                        imageLayout = VkImageLayout.ShaderReadOnlyOptimal,
+                        imageLayout = layouts[i],
                         imageView = view[i].Handle,
                         sampler = sampler[i].Handle
                     });
@@ -205,7 +207,7 @@ namespace Tortuga.Graphics.API
                         info.dstBinding = i;
                         info.dstArrayElement = arrayIndex;
                         info.descriptorCount = _arrayCount;
-                        info.descriptorType = bindings.type;
+                        info.descriptorType = (VkDescriptorType)bindings.type;
                         info.pImageInfo = img;
                         writeInfos.Add(info);
                     }
@@ -219,7 +221,7 @@ namespace Tortuga.Graphics.API
                 );
             }
 
-            public unsafe void SampledImageUpdate(VkImageLayout layout, ImageView view, Sampler sampler, uint binding = 0, uint arrayIndex = 0)
+            public unsafe void UpdateSampledImage(VkImageLayout layout, ImageView view, Sampler sampler, uint binding = 0, uint arrayIndex = 0)
             {
                 var imageInfo = new VkDescriptorImageInfo
                 {
@@ -234,7 +236,7 @@ namespace Tortuga.Graphics.API
                 writeInfos.dstBinding = binding;
                 writeInfos.dstArrayElement = arrayIndex;
                 writeInfos.descriptorCount = _arrayCount;
-                writeInfos.descriptorType = bindings.type;
+                writeInfos.descriptorType = (VkDescriptorType)bindings.type;
                 writeInfos.pImageInfo = &imageInfo;
             
 

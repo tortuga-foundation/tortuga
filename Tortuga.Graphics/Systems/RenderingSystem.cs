@@ -25,14 +25,11 @@ namespace Tortuga.Graphics
             _renderFence = new API.Fence(API.Handler.MainDevice);
 
             _shader = new API.Shader(API.Handler.MainDevice, "Assets/Shaders/ray.comp");
-            _shader.CreateOrUpdateSpecialization(0, 1.0f);
-            _shader.CreateOrUpdateSpecialization(1, 1.0f);
-            _shader.CreateOrUpdateSpecialization(2, 1.0f);
             _pipeline = new API.Pipeline(
                 _shader,
                 new API.DescriptorSetLayout[]
                 {
-                    Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayout
+                    Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayouts[0]
                 }
             );
         }
@@ -75,23 +72,23 @@ namespace Tortuga.Graphics
                     _renderCommand.BindDescriptorSets(
                         _pipeline,
                         new API.DescriptorSetPool.DescriptorSet[]
-                        { camera.RenderDescriptorSet },
+                        { camera.RenderImageDescriptorMap.Set },
                         VkPipelineBindPoint.Compute
                     );
-                    _renderCommand.TransferImageLayout(camera.RenderedImage, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
+                    _renderCommand.TransferImageLayout(camera.RenderImageDescriptorMap.Images[0], VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
                     _renderCommand.Dispatch(
-                        Convert.ToUInt32(camera.RenderedImage.Width),
-                        Convert.ToUInt32(camera.RenderedImage.Height),
+                        Convert.ToUInt32(camera.RenderImageDescriptorMap.Images[0].Width),
+                        Convert.ToUInt32(camera.RenderImageDescriptorMap.Images[0].Height),
                         1
                     );
                     if (camera.RenderToWindow != null)
                     {
                         var swapchian = camera.RenderToWindow.Swapchain;
                         var windowResolution = camera.RenderToWindow.Size;
-                        _renderCommand.TransferImageLayout(camera.RenderedImage, VkImageLayout.TransferDstOptimal, VkImageLayout.TransferSrcOptimal);
+                        _renderCommand.TransferImageLayout(camera.RenderImageDescriptorMap.Images[0], VkImageLayout.TransferDstOptimal, VkImageLayout.TransferSrcOptimal);
                         _renderCommand.TransferImageLayout(camera.RenderToWindow.CurrentImage, swapchian.ImagesFormat, VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
                         _renderCommand.BlitImage(
-                            camera.RenderedImage.ImageHandle,
+                            camera.RenderImageDescriptorMap.Images[0].ImageHandle,
                             0, 0,
                             Convert.ToInt32(camera.Resolution.X),
                             Convert.ToInt32(camera.Resolution.Y),

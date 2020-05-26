@@ -2,13 +2,35 @@
 
 namespace Tortuga.Graphics
 {
-    internal struct ShaderPixel
+    /// <summary>
+    /// 4 byte pixel
+    /// </summary>
+    public struct ShaderPixel
     {
+        /// <summary>
+        /// red
+        /// </summary>
         public byte R;
+        /// <summary>
+        /// green
+        /// </summary>
         public byte G;
+        /// <summary>
+        /// blue
+        /// </summary>
         public byte B;
+        /// <summary>
+        /// alpha
+        /// </summary>
         public byte A;
 
+        /// <summary>
+        /// constructor for shader pixel
+        /// </summary>
+        /// <param name="r">red</param>
+        /// <param name="g">green</param>
+        /// <param name="b">blue</param>
+        /// <param name="a">alpha</param>
         public ShaderPixel(byte r= 0, byte g = 0, byte b = 0, byte a = 1)
         {
             R = r;

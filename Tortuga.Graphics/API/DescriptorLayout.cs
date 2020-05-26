@@ -1,4 +1,6 @@
+#pragma warning disable 1591
 #pragma warning disable 0649
+
 using System;
 using Vulkan;
 using Tortuga.Utils;
@@ -24,17 +26,52 @@ struct PipelineLayout {
 
 namespace Tortuga.Graphics.API
 {
-    internal struct DescriptorSetCreateInfo
+
+    /// <summary>
+    /// Different type of descriptor set types, for more information please look at VkDescriptorType
+    /// </summary>
+    public enum DescriptorType
     {
-        public VkDescriptorType type;
-        public VkShaderStageFlags stage;
+        Sampler = VkDescriptorType.Sampler,
+        CombinedImageSampler = VkDescriptorType.CombinedImageSampler,
+        SampledImage = VkDescriptorType.SampledImage,
+        StorageImage = VkDescriptorType.StorageImage,
+        UniformTexelBuffer = VkDescriptorType.UniformTexelBuffer,
+        StorageTexelBuffer = VkDescriptorType.StorageTexelBuffer,
+        UniformBuffer = VkDescriptorType.UniformBuffer,
+        StorageBuffer = VkDescriptorType.StorageBuffer,
+        UniformBufferDynamic = VkDescriptorType.UniformBufferDynamic,
+        StorageBufferDynamic = VkDescriptorType.StorageBufferDynamic,
+        InputAttachment = VkDescriptorType.InputAttachment
+    }
+
+    /// <summary>
+    /// Different type of shader stages, for more information please look at VkShaderStageFlags
+    /// </summary>
+    public enum ShaderStageType
+    {
+        None = VkShaderStageFlags.None,
+        Vertex = VkShaderStageFlags.Vertex,
+        TessellationControl = VkShaderStageFlags.TessellationControl,
+        TessellationEvaluation = VkShaderStageFlags.TessellationEvaluation,
+        Geometry = VkShaderStageFlags.Geometry,
+        Fragment = VkShaderStageFlags.Fragment,
+        AllGraphics = VkShaderStageFlags.AllGraphics,
+        Compute = VkShaderStageFlags.Compute,
+        All = VkShaderStageFlags.All
+    }
+
+    public struct DescriptorSetCreateInfo
+    {
+        public DescriptorType type;
+        public ShaderStageType stage;
     };
 
-    internal class DescriptorSetLayout
+    public class DescriptorSetLayout
     {
-        public VkDescriptorSetLayout Handle => _layout;
+        internal VkDescriptorSetLayout Handle => _layout;
         public DescriptorSetCreateInfo[] CreateInfoUsed => _createInfo;
-        public Device DeviceUsed => _device;
+        internal Device DeviceUsed => _device;
 
         private VkDescriptorSetLayout _layout;
         private DescriptorSetCreateInfo[] _createInfo;
@@ -69,26 +106,9 @@ namespace Tortuga.Graphics.API
                 bindings.Add(new VkDescriptorSetLayoutBinding
                 {
                     binding = i,
-                    descriptorType = info.type,
+                    descriptorType = (VkDescriptorType)info.type,
                     descriptorCount = 1,
-                    stageFlags = info.stage
-                });
-            }
-            this.SetupDescriptorSetLayout(bindings);
-        }
-
-        public DescriptorSetLayout(Device device, VkDescriptorType type, VkShaderStageFlags stage, int amount)
-        {
-            _device = device;
-            var bindings = new NativeList<VkDescriptorSetLayoutBinding>();
-            for (uint i = 0; i < amount; i++)
-            {
-                bindings.Add(new VkDescriptorSetLayoutBinding
-                {
-                    binding = i,
-                    descriptorType = type,
-                    descriptorCount = 1,
-                    stageFlags = stage
+                    stageFlags = (VkShaderStageFlags)info.stage
                 });
             }
             this.SetupDescriptorSetLayout(bindings);

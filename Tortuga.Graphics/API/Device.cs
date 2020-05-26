@@ -7,7 +7,10 @@ using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Device
+    /// <summary>
+    /// represents GPU attached to this computer
+    /// </summary>
+    public class Device
     {
         public struct QueueFamily
         {

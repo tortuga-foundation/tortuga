@@ -22,7 +22,7 @@ namespace Tortuga.Graphics
             /// </summary>
             Orthographic
         }
-    
+
         /// <summary>
         /// Camera viewport
         /// </summary>
@@ -39,38 +39,26 @@ namespace Tortuga.Graphics
         /// </summary>
         public Vector2 Resolution
         {
-            get => new Vector2(RenderedImage.Width, RenderedImage.Height);
+            get => _resolution;
             set
             {
-                _renderedImage = new API.Image(
-                    API.Handler.MainDevice,
-                    Convert.ToUInt32(value.X),
-                    Convert.ToUInt32(value.Y),
-                    VkFormat.R8g8b8a8Unorm,
-                    (
-                        VkImageUsageFlags.ColorAttachment | 
-                        VkImageUsageFlags.TransferDst | 
-                        VkImageUsageFlags.TransferSrc |
-                        VkImageUsageFlags.Sampled | 
-                        VkImageUsageFlags.Storage
-                    )
-                );
-                _renderedImageView = new API.ImageView(
-                    _renderedImage,
-                    VkImageAspectFlags.Color
-                );
-                _renderDescriptorSet.SampledImageUpdate(
-                    new API.ImageView[]{ _renderedImageView },
-                    new API.Sampler[]{ _renderedImageSampler }
-                );
+                _descriptorHelper.BindImage(
+                    "RenderedImage",
+                    0,
+                    null,
+                    Convert.ToInt32(value.X),
+                    Convert.ToInt32(value.Y)
+                ).Wait();
+                _resolution = value;
             }
         }
+        private Vector2 _resolution;
 
         /// <summary>
         /// How far can the camera see
         /// </summary>
         public float MaxCameraDistance = 100.0f;
-    
+
         public Matrix4x4 ViewMatrix
         {
             get
@@ -89,26 +77,16 @@ namespace Tortuga.Graphics
         /// will render the camera into a window
         /// </summary>
         public Window RenderToWindow;
-
-        internal API.DescriptorSetPool.DescriptorSet RenderDescriptorSet => _renderDescriptorSet;
-        private API.DescriptorSetPool _renderDescriptorPool;
-        private API.DescriptorSetPool.DescriptorSet _renderDescriptorSet;
-    
-        internal API.Image RenderedImage => _renderedImage;
-        private API.Image _renderedImage;
-        private API.ImageView _renderedImageView;
-        private API.Sampler _renderedImageSampler;
+        private const string RENDER_IMAGE_KEY = "RenderedImage";
+        private DescriptorSetHelper _descriptorHelper;
+        internal DescriptorSetHelper.DescriptorObject RenderImageDescriptorMap => _descriptorHelper.DescriptorObjectMapper[RENDER_IMAGE_KEY];
 
         public override Task OnEnable()
         {
-            return Task.Run(() => 
+            return Task.Run(() =>
             {
-
-                _renderedImageSampler = new API.Sampler(API.Handler.MainDevice);
-                _renderDescriptorPool = new API.DescriptorSetPool(
-                    Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayout
-                );
-                _renderDescriptorSet = _renderDescriptorPool.AllocateDescriptorSet();
+                _descriptorHelper = new DescriptorSetHelper();
+                _descriptorHelper.InsertKey(RENDER_IMAGE_KEY, Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayouts[0]);
                 Resolution = new Vector2(1920, 1080);
             });
         }
