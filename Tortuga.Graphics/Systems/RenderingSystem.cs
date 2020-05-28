@@ -75,13 +75,14 @@ namespace Tortuga.Graphics
                         { camera.RenderImageDescriptorMap.Set },
                         VkPipelineBindPoint.Compute
                     );
-                    _renderCommand.TransferImageLayout(camera.RenderImageDescriptorMap.Images[0], VkImageLayout.Undefined, VkImageLayout.TransferDstOptimal);
                     _renderCommand.Dispatch(
                         Convert.ToUInt32(camera.RenderImageDescriptorMap.Images[0].Width),
                         Convert.ToUInt32(camera.RenderImageDescriptorMap.Images[0].Height),
                         1
                     );
-                    if (camera.RenderToWindow != null)
+
+                    //make sure window exists before rendering
+                    if (camera.RenderToWindow != null && camera.RenderToWindow.Exists )
                     {
                         var swapchian = camera.RenderToWindow.Swapchain;
                         var windowResolution = camera.RenderToWindow.Size;

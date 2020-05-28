@@ -7,6 +7,7 @@ using System.Diagnostics;
 using Tortuga.Utils;
 using static Vulkan.VulkanNative;
 using static Tortuga.Utils.SDL2.SDL2Native;
+using System.Collections.Generic;
 
 namespace Tortuga.Graphics
 {
@@ -57,6 +58,11 @@ namespace Tortuga.Graphics
     /// </summary>
     public class Window
     {
+        /// <summary>
+        /// A list of all the windows
+        /// </summary>
+        public static Dictionary<uint, Window> TotalWindows => _totalWindows;
+        private static Dictionary<uint, Window> _totalWindows = new Dictionary<uint, Window>();
         /// <summary>
         /// SDL window ID
         /// </summary>
@@ -164,6 +170,7 @@ namespace Tortuga.Graphics
             this._surface = surface;
             this._swapchain = new API.Swapchain(API.Handler.MainDevice, this);
             this._swapchianFence = new API.Fence(API.Handler.MainDevice);
+            _totalWindows.Add(WindowIdentifier, this);
         }
 
         /// <summary>
@@ -171,6 +178,7 @@ namespace Tortuga.Graphics
         /// </summary>
         unsafe ~Window()
         {
+            _totalWindows.Remove(WindowIdentifier);
             _exists = false;
             SDL_DestroyWindow(_windowHandle);
             vkDestroySurfaceKHR(API.Handler.Vulkan.Handle, this._surface, null);
@@ -245,6 +253,7 @@ namespace Tortuga.Graphics
         /// </summary>
         public unsafe void Close()
         {
+            _totalWindows.Remove(WindowIdentifier);
             _exists = false;
         }
 

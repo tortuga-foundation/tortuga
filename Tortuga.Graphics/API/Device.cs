@@ -12,23 +12,23 @@ namespace Tortuga.Graphics.API
     /// </summary>
     public class Device
     {
-        public struct QueueFamily
+        internal struct QueueFamily
         {
-            public uint Index;
-            public uint Count;
-            public bool IsGraphics;
+            internal uint Index;
+            internal uint Count;
+            internal bool IsGraphics;
             public bool IsCompute;
             public bool IsTransfer;
             public List<VkQueue> Queues;
         };
 
-        public VkPhysicalDevice PhysicalDevice => _physicalDevice;
-        public VkDevice LogicalDevice => _logicalDevice;
-        public VkPhysicalDeviceProperties Properties => _properties;
-        public VkPhysicalDeviceMemoryProperties MemoryProperties => _memoryProperties;
-        public VkPhysicalDeviceFeatures Feature => _features;
-        public List<QueueFamily> QueueFamilyProperties => _queueFamilyProperties;
-        public QueueFamily GraphicsQueueFamily
+        internal VkPhysicalDevice PhysicalDevice => _physicalDevice;
+        internal VkDevice LogicalDevice => _logicalDevice;
+        internal VkPhysicalDeviceProperties Properties => _properties;
+        internal VkPhysicalDeviceMemoryProperties MemoryProperties => _memoryProperties;
+        internal VkPhysicalDeviceFeatures Feature => _features;
+        internal List<QueueFamily> QueueFamilyProperties => _queueFamilyProperties;
+        internal QueueFamily GraphicsQueueFamily
         {
             get
             {
@@ -39,7 +39,7 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to find graphics queue in this device");
             }
         }
-        public QueueFamily TransferQueueFamily
+        internal QueueFamily TransferQueueFamily
         {
             get
             {
@@ -58,7 +58,7 @@ namespace Tortuga.Graphics.API
         private VkPhysicalDeviceFeatures _features;
         private List<QueueFamily> _queueFamilyProperties;
 
-        public unsafe Device(VkPhysicalDevice physicalDevice)
+        internal unsafe Device(VkPhysicalDevice physicalDevice)
         {
             this._physicalDevice = physicalDevice;
 
@@ -144,23 +144,26 @@ namespace Tortuga.Graphics.API
             }
         }
 
+        /// <summary>
+        /// deconstructor for device
+        /// </summary>
         unsafe ~Device()
         {
             vkDestroyDevice(_logicalDevice, null);
         }
 
-        public void WaitForQueue(VkQueue queue)
+        internal void WaitForQueue(VkQueue queue)
         {
             if (vkQueueWaitIdle(queue) != VkResult.Success)
                 throw new Exception("failed to wait on device queue");
         }
-        public void WaitForDevice()
+        internal void WaitForDevice()
         {
             if (vkDeviceWaitIdle(_logicalDevice) != VkResult.Success)
                 throw new Exception("failed to wait for device");
         }
 
-        public unsafe VkFormat FindDepthFormat
+        internal unsafe VkFormat FindDepthFormat
         {
             get
             {
@@ -184,7 +187,7 @@ namespace Tortuga.Graphics.API
             }
         }
 
-        public uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
+        internal uint FindMemoryType(uint typeFilter, VkMemoryPropertyFlags properties)
         {
             for (uint i = 0; i < _memoryProperties.memoryTypeCount; i++)
             {
