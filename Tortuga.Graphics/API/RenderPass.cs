@@ -7,23 +7,62 @@ namespace Tortuga.Graphics.API
 {
     internal class RenderPass
     {
+        public const VkFormat DEFAULT_COLOR_IMAGE_FORMAT = VkFormat.R8g8b8a8Unorm;
+        public enum RenderPassAttachmentType
+        {
+            Image,
+            Depth
+        }
+
         public VkRenderPass Handle => _renderPass;
         public Device DeviceUsed => _device;
+        public RenderPassAttachmentType[] AttachmentInfo => _attachmentInfo;
 
         private VkRenderPass _renderPass;
         private Device _device;
+        private RenderPassAttachmentType[] _attachmentInfo;
 
-        public unsafe RenderPass(Device device)
+        public unsafe RenderPass(
+            Device device,
+            RenderPassAttachmentType[] attachments
+        )
         {
+            //validate attachments provided
+            bool foundDepth = false;
+            for (int i = 0; i < attachments.Length; i++)
+            {
+                if (attachments[i] == RenderPassAttachmentType.Depth)
+                {
+                    if (foundDepth == false)
+                        foundDepth = true;
+                    else
+                        throw new InvalidOperationException("there must be only one depth attachment");
+                }
+            }
+
             _device = device;
+            _attachmentInfo = attachments;
 
             //setup attachment descriptions
-            var attachments = new NativeList<VkAttachmentDescription>();
-            for (int i = 0; i < 4; i++)
+            var attachmentDescriptions = new NativeList<VkAttachmentDescription>();
+            var colorAttachmentRefs = new NativeList<VkAttachmentReference>();
+            var depthAttachmentRefs = new VkAttachmentReference();
+            for (int i = 0; i < attachments.Length; i++)
             {
-                attachments.Add(new VkAttachmentDescription
+                //setup attachment descriptions
+                var format = VkFormat.Undefined;
+                switch (attachments[i])
                 {
-                    format = VkFormat.R32g32b32a32Sfloat,
+                    case RenderPassAttachmentType.Image:
+                        format = VkFormat.R32g32b32a32Sfloat;
+                        break;
+                    case RenderPassAttachmentType.Depth:
+                        format = VkFormat.R32Sfloat;
+                        break;
+                }
+                attachmentDescriptions.Add(new VkAttachmentDescription
+                {
+                    format = format,
                     samples = VkSampleCountFlags.Count1,
                     loadOp = VkAttachmentLoadOp.Clear,
                     storeOp = VkAttachmentStoreOp.Store,
@@ -32,35 +71,28 @@ namespace Tortuga.Graphics.API
                     initialLayout = VkImageLayout.Undefined,
                     finalLayout = VkImageLayout.ColorAttachmentOptimal
                 });
-            }
-            attachments[0].format = VkFormat.R32g32b32a32Sfloat;
-            attachments[1].format = VkFormat.R32g32b32a32Sfloat;
-            attachments[2].format = VkFormat.R32g32b32a32Sfloat;
-            attachments[3].format = VkFormat.D32Sfloat;
 
-            //color attachments
-            var colorAttachmentRefs = new NativeList<VkAttachmentReference>();
-            colorAttachmentRefs.Add(new VkAttachmentReference()
-            {
-                attachment = 0,
-                layout = VkImageLayout.ColorAttachmentOptimal
-            });
-            colorAttachmentRefs.Add(new VkAttachmentReference()
-            {
-                attachment = 1,
-                layout = VkImageLayout.ColorAttachmentOptimal
-            });
-            colorAttachmentRefs.Add(new VkAttachmentReference()
-            {
-                attachment = 2,
-                layout = VkImageLayout.ColorAttachmentOptimal
-            });
-            //depth attachment
-            var depthAttachmentRef = new VkAttachmentReference
-            {
-                attachment = 3,
-                layout = VkImageLayout.DepthStencilAttachmentOptimal
-            };
+                //setup attachment references
+                var layout = VkImageLayout.Undefined;
+                switch (attachments[i])
+                {
+                    case RenderPassAttachmentType.Image:
+                        layout = VkImageLayout.ColorAttachmentOptimal;
+                        break;
+                    case RenderPassAttachmentType.Depth:
+                        layout = VkImageLayout.DepthStencilAttachmentOptimal;
+                        break;
+                }
+                var reference = new VkAttachmentReference()
+                {
+                    attachment = Convert.ToUInt32(i),
+                    layout = layout
+                };
+                if (attachments[i] == RenderPassAttachmentType.Depth)
+                    depthAttachmentRefs = reference;
+                else
+                    colorAttachmentRefs.Add(reference);
+            }
 
             //create sub pass
             var subpass = new VkSubpassDescription
@@ -68,35 +100,12 @@ namespace Tortuga.Graphics.API
                 pipelineBindPoint = VkPipelineBindPoint.Graphics,
                 colorAttachmentCount = colorAttachmentRefs.Count,
                 pColorAttachments = (VkAttachmentReference*)colorAttachmentRefs.Data.ToPointer(),
-                pDepthStencilAttachment = &depthAttachmentRef
+                pDepthStencilAttachment = &depthAttachmentRefs
             };
 
-            //create dependencies
-            var dependencies = new NativeList<VkSubpassDependency>();
-            dependencies.Add(new VkSubpassDependency
-            {
-                srcSubpass = (~0U),//VK_SUBPASS_EXTERNAL
-                dstSubpass = 0,
-                srcStageMask = VkPipelineStageFlags.BottomOfPipe,
-                dstStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
-                srcAccessMask = VkAccessFlags.MemoryRead,
-                dstAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
-                dependencyFlags = VkDependencyFlags.ByRegion
-            });
-            dependencies.Add(new VkSubpassDependency
-            {
-                srcSubpass = 0,
-                dstSubpass = (~0U),//VK_SUBPASS_EXTERNAL
-                srcStageMask = VkPipelineStageFlags.ColorAttachmentOutput,
-                dstStageMask = VkPipelineStageFlags.BottomOfPipe,
-                srcAccessMask = VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
-                dstAccessMask = VkAccessFlags.MemoryRead,
-                dependencyFlags = VkDependencyFlags.ByRegion
-            });
-
             var renderPassInfo = VkRenderPassCreateInfo.New();
-            renderPassInfo.attachmentCount = attachments.Count;
-            renderPassInfo.pAttachments = (VkAttachmentDescription*)attachments.Data.ToPointer();
+            renderPassInfo.attachmentCount = attachmentDescriptions.Count;
+            renderPassInfo.pAttachments = (VkAttachmentDescription*)attachmentDescriptions.Data.ToPointer();
             renderPassInfo.subpassCount = 1;
             renderPassInfo.pSubpasses = &subpass;
 
