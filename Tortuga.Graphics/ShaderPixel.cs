@@ -38,5 +38,16 @@ namespace Tortuga.Graphics
             G = g;
             A = a;
         }
+
+        /// <summary>
+        /// white color
+        /// </summary>
+        public static ShaderPixel White 
+            => new ShaderPixel(255, 255, 255, 255);
+        /// <summary>
+        /// black color
+        /// </summary>
+        public static ShaderPixel Black 
+            => new ShaderPixel(0, 0, 0, 255);
     };
 }

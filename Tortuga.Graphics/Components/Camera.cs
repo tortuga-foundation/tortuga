@@ -2,7 +2,6 @@
 using System;
 using System.Numerics;
 using System.Threading.Tasks;
-using Vulkan;
 
 namespace Tortuga.Graphics
 {

@@ -4,10 +4,18 @@ layout(set=0, binding=0) readonly uniform CAMERA_MVP
 {
     mat4 view;
     mat4 projection;
+    int cameraX;
+    int cameraY;
+    int cameraWidth;
+    int cameraHeight;
 };
 layout(set=1, binding=0) readonly uniform MESH_MVP
 {
     mat4 model;
+};
+layout(set=3, binding=0) readonly uniform MATERIAL_INFO
+{
+    int workflow;
 };
 
 layout(location = 0) in vec3 inPosition;

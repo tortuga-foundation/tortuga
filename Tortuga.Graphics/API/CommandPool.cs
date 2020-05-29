@@ -121,15 +121,15 @@ namespace Tortuga.Graphics.API
                     throw new Exception("failed to end command buffer");
             }
 
-            public unsafe void CopyBuffer(Buffer source, Buffer destination)
+            public unsafe void CopyBuffer(Buffer source, Buffer destination, ulong sourceOffset = 0, ulong destinationOffset = 0)
             {
                 if (source.Size != destination.Size)
                     return;
 
                 var bufferCopy = new VkBufferCopy()
                 {
-                    dstOffset = 0,
-                    srcOffset = 0,
+                    dstOffset = sourceOffset,
+                    srcOffset = destinationOffset,
                     size = source.Size
                 };
 

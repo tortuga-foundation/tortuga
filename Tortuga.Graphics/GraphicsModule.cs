@@ -41,7 +41,17 @@ namespace Tortuga.Graphics
                         new API.DescriptorSetCreateInfo()
                         {
                             stage = API.ShaderStageType.Compute,
-                            type = API.DescriptorType.UniformBuffer
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Compute,
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Compute,
+                            type = API.DescriptorType.CombinedImageSampler
                         }
                     }
                 )
