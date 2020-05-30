@@ -2,23 +2,20 @@ using System;
 using Vulkan;
 using Tortuga.Utils;
 using static Vulkan.VulkanNative;
+using System.Collections.Generic;
 
 namespace Tortuga.Graphics.API
 {
     internal class Framebuffer
     {
         public VkFramebuffer Handle => _frameBuffer;
-        public Image ColorImage => _colorImage;
-        public Image DepthImage => _depthImage;
-        public ImageView ColorImageView => _colorImageView;
-        public ImageView DepthImageView => _depthImageView;
+        public Image[] AttachmentImages => _attachmentImages;
+        public ImageView[] AttachmentViews => _attachmentViews;
         public uint Width => _width;
         public uint Height => _height;
 
-        private Image _colorImage;
-        private ImageView _colorImageView;
-        private Image _depthImage;
-        private ImageView _depthImageView;
+        private Image[] _attachmentImages;
+        private ImageView[] _attachmentViews;
         private VkFramebuffer _frameBuffer;
         private uint _width, _height;
         private Device _device;
@@ -29,24 +26,42 @@ namespace Tortuga.Graphics.API
             _height = height;
             _device = renderPass.DeviceInUse;
 
-            _colorImage = new API.Image(
-                _device,
-                width, height,
-                VkFormat.R32g32b32a32Sfloat,
-                VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
-            );
-            _colorImageView = new ImageView(_colorImage, VkImageAspectFlags.Color);
-            _depthImage = new Image(
-                _device,
-                width, height,
-                VkFormat.D32Sfloat,
-                VkImageUsageFlags.DepthStencilAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
-            );
-            _depthImageView = new ImageView(_depthImage, VkImageAspectFlags.Depth);
+            var attachmentImages = new List<Image>();
+            var attachmentViews = new List<ImageView>();
+            for (int i = 0; i < renderPass.ColorAttachments.Length; i++)
+            {
+                var img = new Image(
+                    _device,
+                    width, height,
+                    RenderPass.DEFAULT_COLOR_FORMAT,
+                    VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
+                );
+                attachmentImages.Add(img);
+                attachmentViews.Add(new ImageView(
+                    img,
+                    VkImageAspectFlags.Color
+                ));
+            }
+            if (renderPass.DepthAttachment != null)
+            {
+                var img = new Image(
+                    _device,
+                    width, height,
+                    RenderPass.DEFAULT_DEPTH_FORMAT,
+                    VkImageUsageFlags.DepthStencilAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
+                );
+                attachmentImages.Add(img);
+                attachmentViews.Add(new ImageView(
+                    img,
+                    VkImageAspectFlags.Depth
+                ));
+            }
+            _attachmentImages = attachmentImages.ToArray();
+            _attachmentViews = attachmentViews.ToArray();
 
             var attachments = new NativeList<VkImageView>();
-            attachments.Add(_colorImageView.Handle);
-            attachments.Add(_depthImageView.Handle);
+            foreach (var views in _attachmentViews)
+                attachments.Add(views.Handle);
 
             var framebufferCreateInfo = VkFramebufferCreateInfo.New();
             framebufferCreateInfo.renderPass = renderPass.Handle;

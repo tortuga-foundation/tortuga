@@ -109,7 +109,7 @@ namespace Tortuga.Graphics
                     var swapchian = camera.RenderToWindow.Swapchain;
                     var windowResolution = camera.RenderToWindow.Size;
                     _renderCommand.TransferImageLayout(
-                        camera.Framebuffer.ColorImage, 
+                        camera.Framebuffer.AttachmentImages[0], 
                         VkImageLayout.ColorAttachmentOptimal, 
                         VkImageLayout.TransferSrcOptimal
                     );
@@ -120,7 +120,7 @@ namespace Tortuga.Graphics
                         VkImageLayout.TransferDstOptimal
                     );
                     _renderCommand.BlitImage(
-                        camera.Framebuffer.ColorImage.ImageHandle,
+                        camera.Framebuffer.AttachmentImages[0].ImageHandle,
                         0, 0,
                         Convert.ToInt32(camera.Resolution.X),
                         Convert.ToInt32(camera.Resolution.Y),

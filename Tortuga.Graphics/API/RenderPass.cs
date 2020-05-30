@@ -25,14 +25,18 @@ namespace Tortuga.Graphics.API
             }
         }
 
-        internal const VkFormat DEFAULT_COLOR_FORMAT = VkFormat.R32g32b32a32Sfloat;
-        internal const VkFormat DEFAULT_DEPTH_FORMAT = VkFormat.D32Sfloat;
+        public const VkFormat DEFAULT_COLOR_FORMAT = VkFormat.R32g32b32a32Sfloat;
+        public const VkFormat DEFAULT_DEPTH_FORMAT = VkFormat.D32Sfloat;
 
         public VkRenderPass Handle => _renderPass;
-        internal Device DeviceInUse => _device;
+        public Device DeviceInUse => _device;
+        public CreateInfo[] ColorAttachments => _colorAttachments;
+        public CreateInfo DepthAttachment => _depthAttachment;
 
         private VkRenderPass _renderPass;
         private Device _device;
+        private CreateInfo[] _colorAttachments;
+        private CreateInfo _depthAttachment;
 
         public unsafe RenderPass(Device device, CreateInfo[] colorAttachments, CreateInfo depthAttachment = null)
         {
@@ -41,6 +45,8 @@ namespace Tortuga.Graphics.API
                 throw new InvalidOperationException("you must have atleast 1 color attachment");
 
             _device = device;
+            _colorAttachments = colorAttachments;
+            _depthAttachment = depthAttachment;
             
             var attachmentDescriptions = new NativeList<VkAttachmentDescription>();
             foreach (var attachment in colorAttachments)
