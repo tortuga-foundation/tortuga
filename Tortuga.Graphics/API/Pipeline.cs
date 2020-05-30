@@ -69,7 +69,7 @@ namespace Tortuga.Graphics.API
         )
         {
             _renderPass = renderPass;
-            _device = renderPass.DeviceUsed;
+            _device = renderPass.DeviceInUse;
             foreach (var layout in layouts)
             {
                 if (layout.DeviceUsed != _device)

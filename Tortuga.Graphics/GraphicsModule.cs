@@ -23,10 +23,11 @@ namespace Tortuga.Graphics
             //setup render pass
             _renderPass = new API.RenderPass(
                 API.Handler.MainDevice,
-                new API.RenderPass.RenderPassAttachmentType[]
+                new API.RenderPass.CreateInfo[]
                 {
-                    API.RenderPass.RenderPassAttachmentType.Image
-                }
+                    new API.RenderPass.CreateInfo()
+                },
+                new API.RenderPass.CreateInfo()
             );
             //setup descriptor sets
             _descriptorLayouts = new API.DescriptorSetLayout[]

@@ -59,7 +59,6 @@ namespace Tortuga.Graphics
             set
             {
                 _framebuffer = new API.Framebuffer(
-                    API.Handler.MainDevice,
                     Engine.Instance.GetModule<GraphicsModule>().RenderPass,
                     Convert.ToUInt32(MathF.Round(value.X)),
                     Convert.ToUInt32(MathF.Round(value.Y))

@@ -23,7 +23,10 @@ namespace Tortuga.Graphics
         {
             _module = Engine.Instance.GetModule<GraphicsModule>();
             //render command
-            _renderCommandPool = new API.CommandPool(API.Handler.MainDevice, API.Handler.MainDevice.GraphicsQueueFamily);
+            _renderCommandPool = new API.CommandPool(
+                API.Handler.MainDevice, 
+                API.Handler.MainDevice.GraphicsQueueFamily
+            );
             _renderCommand = _renderCommandPool.AllocateCommands()[0];
 
             //sync
@@ -72,32 +75,32 @@ namespace Tortuga.Graphics
                 _renderCommand.BeginRenderPass(_module.RenderPass, camera.Framebuffer);
 
                 //todo: apply culling
-                foreach (var transfer in camera.UpdateView())
-                    transferCommands.Add(transfer.TransferCommand);
+                //foreach (var transfer in camera.UpdateView())
+                //    transferCommands.Add(transfer.TransferCommand);
 
-                var renderers = MyScene.GetComponents<Renderer>();
+                //var renderers = MyScene.GetComponents<Renderer>();
 
                 //build render command for each mesh
-                var secondaryTasks = new List<Task<API.CommandPool.Command>>();
-                foreach (var renderer in renderers)
-                {
-                    secondaryTasks.Add(Task.Run(() => renderer.BuildDrawCommand(camera)));
-                    //update mdoel matrix (position, rotation, scale)
-                    foreach (var transfer in renderer.UpdateModel())
-                        transferCommands.Add(transfer.TransferCommand);
-                }
+                //var secondaryTasks = new List<Task<API.CommandPool.Command>>();
+                //foreach (var renderer in renderers)
+                //{
+                //    secondaryTasks.Add(Task.Run(() => renderer.BuildDrawCommand(camera)));
+                //    //update mdoel matrix (position, rotation, scale)
+                //    foreach (var transfer in renderer.UpdateModel())
+                //        transferCommands.Add(transfer.TransferCommand);
+                //}
                 
                 //wait until task is completed
-                if (secondaryTasks.Count > 0)
-                    Task.WaitAll(secondaryTasks.ToArray());
+                //if (secondaryTasks.Count > 0)
+                //    Task.WaitAll(secondaryTasks.ToArray());
                 
                 //extract each mesh render command
-                var secondaryCommands = new List<API.CommandPool.Command>();
-                foreach (var t in secondaryTasks)
-                    secondaryCommands.Add(t.Result);
+                //var secondaryCommands = new List<API.CommandPool.Command>();
+                //foreach (var t in secondaryTasks)
+                //    secondaryCommands.Add(t.Result);
 
                 //execute all render commands
-                _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
+                //_renderCommand.ExecuteCommands(secondaryCommands.ToArray());
                 _renderCommand.EndRenderPass();
 
                 //make sure window exists before rendering
@@ -106,7 +109,7 @@ namespace Tortuga.Graphics
                     var swapchian = camera.RenderToWindow.Swapchain;
                     var windowResolution = camera.RenderToWindow.Size;
                     _renderCommand.TransferImageLayout(
-                        camera.Framebuffer.AttachmentImages[0], 
+                        camera.Framebuffer.ColorImage, 
                         VkImageLayout.ColorAttachmentOptimal, 
                         VkImageLayout.TransferSrcOptimal
                     );
@@ -117,7 +120,7 @@ namespace Tortuga.Graphics
                         VkImageLayout.TransferDstOptimal
                     );
                     _renderCommand.BlitImage(
-                        camera.Framebuffer.AttachmentImages[0].ImageHandle,
+                        camera.Framebuffer.ColorImage.ImageHandle,
                         0, 0,
                         Convert.ToInt32(camera.Resolution.X),
                         Convert.ToInt32(camera.Resolution.Y),
@@ -137,15 +140,15 @@ namespace Tortuga.Graphics
                 }
             }
             _renderCommand.End();
-            API.CommandPool.Command.Submit(
-                API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
-                transferCommands.ToArray(),
-                new API.Semaphore[]{ _renderSemaphore }
-            );
+            //API.CommandPool.Command.Submit(
+            //    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+            //    transferCommands.ToArray(),
+            //    new API.Semaphore[]{ _renderSemaphore }
+            //);
             _renderCommand.Submit(
                 API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                 null,
-                new API.Semaphore[]{ _renderSemaphore },
+                null,
                 _renderFence
             );
             // wait for render process to finish

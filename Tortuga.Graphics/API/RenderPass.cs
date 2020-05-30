@@ -7,106 +7,91 @@ namespace Tortuga.Graphics.API
 {
     internal class RenderPass
     {
-        public const VkFormat DEFAULT_COLOR_IMAGE_FORMAT = VkFormat.R8g8b8a8Unorm;
-        public const VkFormat DEFAULT_DEPTH_IMAGE_FORMAT = VkFormat.R32Sfloat;
-        public enum RenderPassAttachmentType
+        public class CreateInfo
         {
-            Image,
-            Depth
+            /// <summary>
+            /// Should clear the image on begin render pass
+            /// </summary>
+            public bool Clear;
+            /// <summary>
+            /// Should store the image on end render pass
+            /// </summary>
+            public bool Store;
+
+            public CreateInfo(bool clear = true, bool store = true)
+            {
+                this.Clear = clear;
+                this.Store = store;
+            }
         }
 
+        internal const VkFormat DEFAULT_COLOR_FORMAT = VkFormat.R32g32b32a32Sfloat;
+        internal const VkFormat DEFAULT_DEPTH_FORMAT = VkFormat.D32Sfloat;
+
         public VkRenderPass Handle => _renderPass;
-        public Device DeviceUsed => _device;
-        public RenderPassAttachmentType[] AttachmentInfo => _attachmentInfo;
+        internal Device DeviceInUse => _device;
 
         private VkRenderPass _renderPass;
         private Device _device;
-        private RenderPassAttachmentType[] _attachmentInfo;
 
-        public unsafe RenderPass(
-            Device device,
-            RenderPassAttachmentType[] attachments
-        )
+        public unsafe RenderPass(Device device, CreateInfo[] colorAttachments, CreateInfo depthAttachment = null)
         {
-            //validate attachments provided
-            bool foundDepth = false;
-            for (int i = 0; i < attachments.Length; i++)
-            {
-                if (attachments[i] == RenderPassAttachmentType.Depth)
-                {
-                    if (foundDepth == false)
-                        foundDepth = true;
-                    else
-                        throw new InvalidOperationException("there must be only one depth attachment");
-                }
-            }
+            //validate
+            if (colorAttachments.Length < 1)
+                throw new InvalidOperationException("you must have atleast 1 color attachment");
 
             _device = device;
-            _attachmentInfo = attachments;
-
-            //setup attachment descriptions
+            
             var attachmentDescriptions = new NativeList<VkAttachmentDescription>();
-            var colorAttachmentRefs = new NativeList<VkAttachmentReference>();
-            var depthAttachmentRefs = new VkAttachmentReference();
-            for (int i = 0; i < attachments.Length; i++)
+            foreach (var attachment in colorAttachments)
             {
-                var format = VkFormat.Undefined;
-                var layout = VkImageLayout.Undefined;
-                var storeOp = VkAttachmentStoreOp.DontCare;
-                var loadOp = VkAttachmentLoadOp.DontCare;
-                var stencilLoadOp = VkAttachmentLoadOp.DontCare;
-                var stencilStoreOp = VkAttachmentStoreOp.DontCare;
-                switch (attachments[i])
-                {
-                    case RenderPassAttachmentType.Image:
-                        format = DEFAULT_COLOR_IMAGE_FORMAT;
-                        layout = VkImageLayout.ColorAttachmentOptimal;
-                        storeOp = VkAttachmentStoreOp.Store;
-                        loadOp = VkAttachmentLoadOp.Clear;
-                        stencilLoadOp = VkAttachmentLoadOp.DontCare;
-                        stencilStoreOp = VkAttachmentStoreOp.DontCare;
-                        break;
-                    case RenderPassAttachmentType.Depth:
-                        format = DEFAULT_DEPTH_IMAGE_FORMAT;
-                        layout = VkImageLayout.DepthStencilAttachmentOptimal;
-                        storeOp = VkAttachmentStoreOp.DontCare;
-                        loadOp = VkAttachmentLoadOp.DontCare;
-                        stencilLoadOp = VkAttachmentLoadOp.Clear;
-                        stencilStoreOp = VkAttachmentStoreOp.Store;
-                        break;
-                }
-                //setup attachment descriptions
                 attachmentDescriptions.Add(new VkAttachmentDescription
                 {
-                    format = format,
+                    format = DEFAULT_COLOR_FORMAT,
                     samples = VkSampleCountFlags.Count1,
-                    loadOp = loadOp,
-                    storeOp = storeOp,
-                    stencilLoadOp = stencilLoadOp,
-                    stencilStoreOp = stencilStoreOp,
+                    loadOp = attachment.Clear ? VkAttachmentLoadOp.Clear : VkAttachmentLoadOp.DontCare,
+                    storeOp = attachment.Store ? VkAttachmentStoreOp.Store : VkAttachmentStoreOp.DontCare,
+                    stencilLoadOp = VkAttachmentLoadOp.DontCare,
+                    stencilStoreOp = VkAttachmentStoreOp.DontCare,
                     initialLayout = VkImageLayout.Undefined,
-                    finalLayout = layout
+                    finalLayout = VkImageLayout.ColorAttachmentOptimal
                 });
-
-                //setup attachment references
-                var reference = new VkAttachmentReference()
+            }
+            if (depthAttachment != null)
+            {
+                attachmentDescriptions.Add(new VkAttachmentDescription
                 {
-                    attachment = Convert.ToUInt32(i),
-                    layout = layout
-                };
-                if (attachments[i] == RenderPassAttachmentType.Depth)
-                    depthAttachmentRefs = reference;
-                else
-                    colorAttachmentRefs.Add(reference);
+                    format = DEFAULT_DEPTH_FORMAT,
+                    samples = VkSampleCountFlags.Count1,
+                    loadOp = depthAttachment.Clear ? VkAttachmentLoadOp.Clear : VkAttachmentLoadOp.DontCare,
+                    storeOp = depthAttachment.Store ? VkAttachmentStoreOp.Store : VkAttachmentStoreOp.DontCare,
+                    stencilLoadOp = VkAttachmentLoadOp.DontCare,
+                    stencilStoreOp = VkAttachmentStoreOp.DontCare,
+                    initialLayout = VkImageLayout.Undefined,
+                    finalLayout = VkImageLayout.DepthStencilAttachmentOptimal
+                });
             }
 
-            //create sub pass
+            var colorAttachmentRef = new Utils.NativeList<VkAttachmentReference>();
+            for (uint i = 0; i < colorAttachments.Length; i++)
+            {
+                colorAttachmentRef.Add(new VkAttachmentReference()
+                {
+                    attachment = i,
+                    layout = VkImageLayout.ColorAttachmentOptimal
+                });
+            }
+            var depthAttachmentRef = new VkAttachmentReference
+            {
+                attachment = Convert.ToUInt32(colorAttachments.Length),
+                layout = VkImageLayout.DepthStencilAttachmentOptimal
+            };
             var subpass = new VkSubpassDescription
             {
                 pipelineBindPoint = VkPipelineBindPoint.Graphics,
-                colorAttachmentCount = colorAttachmentRefs.Count,
-                pColorAttachments = (VkAttachmentReference*)colorAttachmentRefs.Data.ToPointer(),
-                pDepthStencilAttachment = foundDepth ? &depthAttachmentRefs : null
+                colorAttachmentCount = colorAttachmentRef.Count,
+                pColorAttachments = (VkAttachmentReference*)colorAttachmentRef.Data.ToPointer(),
+                pDepthStencilAttachment = depthAttachment != null ? &depthAttachmentRef : null
             };
 
             var renderPassInfo = VkRenderPassCreateInfo.New();
@@ -118,7 +103,7 @@ namespace Tortuga.Graphics.API
 
             VkRenderPass renderPass;
             if (vkCreateRenderPass(
-                device.LogicalDevice,
+                _device.LogicalDevice,
                 &renderPassInfo,
                 null,
                 &renderPass

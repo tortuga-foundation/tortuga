@@ -40,14 +40,6 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
-            {
-                var entity = new Core.Entity();
-                var renderer = await entity.AddComponent<Graphics.Renderer>();
-                renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
-                renderer.MaterialData = new Graphics.Material();
-                scene.AddEntity(entity);
-            }
-
             scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<Graphics.RenderingSystem>();
 
