@@ -139,23 +139,12 @@ namespace Tortuga.Graphics.API
             public unsafe void BeginRenderPass(RenderPass renderPass, Framebuffer framebuffer)
             {
                 var clearValues = new NativeList<VkClearValue>();
-                foreach (var info in renderPass.AttachmentInfo)
+                foreach (var attachment in renderPass.AttachmentInfo)
                 {
-                    switch(info)
-                    {
-                        case RenderPass.RenderPassAttachmentType.Image:
-                            clearValues.Add(new VkClearValue
-                            {
-                                color = new VkClearColorValue(0, 0, 0, 0),
-                            });
-                            break;
-                        case RenderPass.RenderPassAttachmentType.Depth:
-                            clearValues.Add(new VkClearValue
-                            {
-                                depthStencil = new VkClearDepthStencilValue(1, 1)
-                            });
-                            break;
-                    }
+                    if (attachment == RenderPass.RenderPassAttachmentType.Image)
+                        clearValues.Add(new VkClearValue { color = new VkClearColorValue(0, 255, 0, 0) });
+                    else if (attachment == RenderPass.RenderPassAttachmentType.Depth)
+                        clearValues.Add(new VkClearValue { depthStencil = new VkClearDepthStencilValue(1, 1) });
                 }
 
                 var renderPassBeginInfo = VkRenderPassBeginInfo.New();

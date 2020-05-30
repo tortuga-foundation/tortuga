@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Vulkan;
 using static Vulkan.VulkanNative;
 
@@ -60,6 +61,11 @@ namespace Tortuga.Graphics.API
                 ulong.MaxValue
             ) != VkResult.Success)
                 throw new Exception("failed to wait on a fence");
+        }
+
+        public Task WaitAsync()
+        {
+            return Task.Run(() => Wait());
         }
 
         public unsafe void Reset()

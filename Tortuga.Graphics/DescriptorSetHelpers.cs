@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Vulkan;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Tortuga.Graphics
 {
@@ -147,20 +148,11 @@ namespace Tortuga.Graphics
             });
         }
     
-        /// <summary>
-        /// Set's up an buffer on the GPU so your data can be passed to the shader
-        /// If you want to leave the buffer blank set data to null
-        /// and specify the size 
-        /// </summary>
-        /// <param name="key">key identifier for the descriptor set</param>
-        /// <param name="binding">binding for the descriptor set</param>
-        /// <param name="data">data to transfer to the shader</param>
-        /// <param name="size">size of the data, only required if data is null</param>
-        public async Task BindBuffer(string key, int binding, byte[] data, int size = -1)
+        private void BufferSetup(string key, int binding, byte[] data, int size = -1)
         {
             int actualSize = size;
             if (data != null)
-                Convert.ToUInt32(sizeof(byte) * data.Length);
+                actualSize = sizeof(byte) * data.Length;
             if (actualSize < 1)
                 throw new InvalidOperationException("invalid parameters passed to the function, you must include data or have a valid buffer size (greater than 0)");
 
@@ -174,15 +166,38 @@ namespace Tortuga.Graphics
 
             if (createNew)
             {
-                _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateHost(
+                _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateDevice(
                     _descriptorObjectMapper[key].Layout.DeviceUsed,
                     Convert.ToUInt32(actualSize),
                     VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.UniformBuffer
                 );
             }
+        }
+
+        /// <summary>
+        /// Set's up an buffer on the GPU so your data can be passed to the shader
+        /// If you want to leave the buffer blank set data to null
+        /// and specify the size 
+        /// </summary>
+        /// <param name="key">key identifier for the descriptor set</param>
+        /// <param name="binding">binding for the descriptor set</param>
+        /// <param name="data">data to transfer to the shader</param>
+        /// <param name="size">size of the data, only required if data is null</param>
+        public async Task BindBuffer(string key, int binding, byte[] data, int size = -1)
+        {
+            this.BufferSetup(key, binding, data, size);
             
             if (data != null)
                 await _descriptorObjectMapper[key].Buffers[binding].SetDataWithStaging(data);
+        }
+
+        internal API.BufferTransferObject BindBufferWithTransferObject(string key, int binding, byte[] data)
+        {
+            if (data == null)
+                throw new InvalidOperationException("data cannot be null");
+
+            this.BufferSetup(key, binding, data, -1);
+            return _descriptorObjectMapper[key].Buffers[binding].SetDataGetTransferObject(data);
         }
     
         public void RemoveBinding(string key, int binding)
@@ -191,6 +206,51 @@ namespace Tortuga.Graphics
             _descriptorObjectMapper[key].Images[binding] = null;
             _descriptorObjectMapper[key].Views[binding] = null;
             _descriptorObjectMapper[key].Sampler[binding] = null;
+        }
+
+        public static byte[] MatrixToBytes(Matrix4x4 mat)
+        {
+            var bytes = new List<byte>();
+            //1
+            foreach (var b in BitConverter.GetBytes(mat.M11))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M12))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M13))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M14))
+                bytes.Add(b);
+            //2
+            foreach (var b in BitConverter.GetBytes(mat.M21))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M22))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M23))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M24))
+                bytes.Add(b);
+            
+            //3
+            foreach (var b in BitConverter.GetBytes(mat.M31))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M32))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M33))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M34))
+                bytes.Add(b);
+
+            //4
+            foreach (var b in BitConverter.GetBytes(mat.M41))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M42))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M43))
+                bytes.Add(b);
+            foreach (var b in BitConverter.GetBytes(mat.M44))
+                bytes.Add(b);
+
+            return bytes.ToArray();
         }
     }
 }

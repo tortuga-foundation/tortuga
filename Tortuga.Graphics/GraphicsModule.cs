@@ -9,6 +9,8 @@ namespace Tortuga.Graphics
     {
         internal API.DescriptorSetLayout[] RenderDescriptorLayouts => _descriptorLayouts;
         private API.DescriptorSetLayout[] _descriptorLayouts;
+        internal API.RenderPass RenderPass => _renderPass;
+        private API.RenderPass _renderPass;
 
         public override void Destroy()
         {
@@ -18,43 +20,75 @@ namespace Tortuga.Graphics
         {
             //initialize vulkan
             API.Handler.Init();
+            //setup render pass
+            _renderPass = new API.RenderPass(
+                API.Handler.MainDevice,
+                new API.RenderPass.RenderPassAttachmentType[]
+                {
+                    API.RenderPass.RenderPassAttachmentType.Image
+                }
+            );
             //setup descriptor sets
             _descriptorLayouts = new API.DescriptorSetLayout[]
             {
-                //output rendered image
+                //PROJECTION
                 new API.DescriptorSetLayout(
                     API.Handler.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
                         {
-                            stage = API.ShaderStageType.Compute,
-                            type = API.DescriptorType.StorageImage
-                        },
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
+                        }
                     }
                 ),
-                //rendered image settings
+                //VIEW
                 new API.DescriptorSetLayout(
                     API.Handler.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
                         {
-                            stage = API.ShaderStageType.Compute,
-                            type = API.DescriptorType.CombinedImageSampler
-                        },
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
+                        }
+                    }
+                ),
+                //MODEL
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
                         new API.DescriptorSetCreateInfo()
                         {
-                            stage = API.ShaderStageType.Compute,
-                            type = API.DescriptorType.CombinedImageSampler
-                        },
-                        new API.DescriptorSetCreateInfo()
-                        {
-                            stage = API.ShaderStageType.Compute,
-                            type = API.DescriptorType.CombinedImageSampler
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
                         }
                     }
                 )
+                //rendered image settings
+                //new API.DescriptorSetLayout(
+                //    API.Handler.MainDevice,
+                //    new API.DescriptorSetCreateInfo[]
+                //    {
+                //        new API.DescriptorSetCreateInfo()
+                //        {
+                //            stage = API.ShaderStageType.Compute,
+                //            type = API.DescriptorType.CombinedImageSampler
+                //        },
+                //        new API.DescriptorSetCreateInfo()
+                //        {
+                //            stage = API.ShaderStageType.Compute,
+                //            type = API.DescriptorType.CombinedImageSampler
+                //        },
+                //        new API.DescriptorSetCreateInfo()
+                //        {
+                //            stage = API.ShaderStageType.Compute,
+                //            type = API.DescriptorType.CombinedImageSampler
+                //        }
+                //    }
+                //)
             };
         }
 

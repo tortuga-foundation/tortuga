@@ -19,12 +19,14 @@ namespace Tortuga.Graphics.API
         private VkFramebuffer _frameBuffer;
         private uint _width, _height;
         private Device _device;
+        private RenderPass _renderPass;
 
         public unsafe Framebuffer(Device device, RenderPass renderPass, uint width, uint height)
         {
             _device = device;
             _width = width;
             _height = height;
+            _renderPass = renderPass;
 
             var len = renderPass.AttachmentInfo.Length;
             _attachmentImages = new Image[len];
@@ -37,7 +39,11 @@ namespace Tortuga.Graphics.API
                         _device,
                         width, height,
                         RenderPass.DEFAULT_COLOR_IMAGE_FORMAT,
-                        VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
+                        (
+                            VkImageUsageFlags.ColorAttachment | 
+                            VkImageUsageFlags.TransferSrc | 
+                            VkImageUsageFlags.TransferDst
+                        )
                     );
                     _attachmentImageViews[i] = new ImageView(
                         _attachmentImages[i],
@@ -49,8 +55,12 @@ namespace Tortuga.Graphics.API
                     _attachmentImages[i] = new Image(
                         _device,
                         width, height,
-                        VkFormat.D32Sfloat,
-                        VkImageUsageFlags.DepthStencilAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
+                        RenderPass.DEFAULT_DEPTH_IMAGE_FORMAT,
+                        (
+                            VkImageUsageFlags.DepthStencilAttachment | 
+                            VkImageUsageFlags.TransferSrc | 
+                            VkImageUsageFlags.TransferDst
+                        )
                     );
                     _attachmentImageViews[i] = new ImageView(
                         _attachmentImages[i], 
@@ -91,6 +101,32 @@ namespace Tortuga.Graphics.API
                 _frameBuffer,
                 null
             );
+        }
+    
+        internal void SetupImages(CommandPool.Command command)
+        {
+            for (int i = 0; i < _renderPass.AttachmentInfo.Length; i++)
+            {
+                var attachment = _renderPass.AttachmentInfo[i];
+                if (attachment == RenderPass.RenderPassAttachmentType.Image)
+                {
+                    command.TransferImageLayout(
+                        _attachmentImages[i], 
+                        VkImageLayout.Undefined, 
+                        VkImageLayout.ColorAttachmentOptimal
+                    );
+                }
+                else if (attachment == RenderPass.RenderPassAttachmentType.Depth)
+                {
+                    command.TransferImageLayout(
+                        _attachmentImages[i], 
+                        VkImageLayout.Undefined, 
+                        VkImageLayout.DepthStencilAttachmentOptimal
+                    );
+                }
+                else
+                    throw new NotSupportedException("this type of attachment is not supported");
+            }
         }
     }
 }

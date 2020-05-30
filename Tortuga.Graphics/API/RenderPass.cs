@@ -8,6 +8,7 @@ namespace Tortuga.Graphics.API
     internal class RenderPass
     {
         public const VkFormat DEFAULT_COLOR_IMAGE_FORMAT = VkFormat.R8g8b8a8Unorm;
+        public const VkFormat DEFAULT_DEPTH_IMAGE_FORMAT = VkFormat.R32Sfloat;
         public enum RenderPassAttachmentType
         {
             Image,
@@ -49,40 +50,45 @@ namespace Tortuga.Graphics.API
             var depthAttachmentRefs = new VkAttachmentReference();
             for (int i = 0; i < attachments.Length; i++)
             {
-                //setup attachment descriptions
                 var format = VkFormat.Undefined;
+                var layout = VkImageLayout.Undefined;
+                var storeOp = VkAttachmentStoreOp.DontCare;
+                var loadOp = VkAttachmentLoadOp.DontCare;
+                var stencilLoadOp = VkAttachmentLoadOp.DontCare;
+                var stencilStoreOp = VkAttachmentStoreOp.DontCare;
                 switch (attachments[i])
                 {
                     case RenderPassAttachmentType.Image:
-                        format = VkFormat.R32g32b32a32Sfloat;
+                        format = DEFAULT_COLOR_IMAGE_FORMAT;
+                        layout = VkImageLayout.ColorAttachmentOptimal;
+                        storeOp = VkAttachmentStoreOp.Store;
+                        loadOp = VkAttachmentLoadOp.Clear;
+                        stencilLoadOp = VkAttachmentLoadOp.DontCare;
+                        stencilStoreOp = VkAttachmentStoreOp.DontCare;
                         break;
                     case RenderPassAttachmentType.Depth:
-                        format = VkFormat.R32Sfloat;
+                        format = DEFAULT_DEPTH_IMAGE_FORMAT;
+                        layout = VkImageLayout.DepthStencilAttachmentOptimal;
+                        storeOp = VkAttachmentStoreOp.DontCare;
+                        loadOp = VkAttachmentLoadOp.DontCare;
+                        stencilLoadOp = VkAttachmentLoadOp.Clear;
+                        stencilStoreOp = VkAttachmentStoreOp.Store;
                         break;
                 }
+                //setup attachment descriptions
                 attachmentDescriptions.Add(new VkAttachmentDescription
                 {
                     format = format,
                     samples = VkSampleCountFlags.Count1,
-                    loadOp = VkAttachmentLoadOp.Clear,
-                    storeOp = VkAttachmentStoreOp.Store,
-                    stencilLoadOp = VkAttachmentLoadOp.DontCare,
-                    stencilStoreOp = VkAttachmentStoreOp.DontCare,
+                    loadOp = loadOp,
+                    storeOp = storeOp,
+                    stencilLoadOp = stencilLoadOp,
+                    stencilStoreOp = stencilStoreOp,
                     initialLayout = VkImageLayout.Undefined,
-                    finalLayout = VkImageLayout.ColorAttachmentOptimal
+                    finalLayout = layout
                 });
 
                 //setup attachment references
-                var layout = VkImageLayout.Undefined;
-                switch (attachments[i])
-                {
-                    case RenderPassAttachmentType.Image:
-                        layout = VkImageLayout.ColorAttachmentOptimal;
-                        break;
-                    case RenderPassAttachmentType.Depth:
-                        layout = VkImageLayout.DepthStencilAttachmentOptimal;
-                        break;
-                }
                 var reference = new VkAttachmentReference()
                 {
                     attachment = Convert.ToUInt32(i),
@@ -100,7 +106,7 @@ namespace Tortuga.Graphics.API
                 pipelineBindPoint = VkPipelineBindPoint.Graphics,
                 colorAttachmentCount = colorAttachmentRefs.Count,
                 pColorAttachments = (VkAttachmentReference*)colorAttachmentRefs.Data.ToPointer(),
-                pDepthStencilAttachment = &depthAttachmentRefs
+                pDepthStencilAttachment = foundDepth ? &depthAttachmentRefs : null
             };
 
             var renderPassInfo = VkRenderPassCreateInfo.New();

@@ -171,33 +171,31 @@ namespace Tortuga.Graphics
         /// <summary>
         /// rebuilds the vertex and index buffers for gpu
         /// </summary>
-        public Task UpdateBuffers(bool force = false)
+        public async Task UpdateBuffers(bool force = false)
         {
-            return Task.Run(() => 
-            {
-                var expectedIndexSize = Convert.ToUInt32(sizeof(ushort) * this.Indices.Length);
-                var expectedVertexSize = Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * this.Vertices.Length);
+            var expectedIndexSize = Convert.ToUInt32(sizeof(ushort) * this.Indices.Length);
+            var expectedVertexSize = Convert.ToUInt32(Unsafe.SizeOf<Vertex>() * this.Vertices.Length);
 
-                if (_indexBuffers == null || _indexBuffers.Size != expectedIndexSize || force)
-                {
-                    _indexBuffers = Graphics.API.Buffer.CreateDevice(
-                        API.Handler.MainDevice,
-                        expectedIndexSize,
-                        VkBufferUsageFlags.IndexBuffer
-                    );
-                }
-                var indexTask = _indexBuffers.SetDataWithStaging(this.Indices);
-                if (_vertexBuffers == null || _vertexBuffers.Size != expectedVertexSize || force)
-                {
-                    _vertexBuffers = Graphics.API.Buffer.CreateDevice(
-                        API.Handler.MainDevice,
-                        expectedVertexSize,
-                        VkBufferUsageFlags.VertexBuffer
-                    );
-                }
-                var vertexTask = _vertexBuffers.SetDataWithStaging(this.Vertices);
-                Task.WaitAll(new Task[]{ indexTask, vertexTask });
-            });
+            if (_indexBuffers == null || _indexBuffers.Size != expectedIndexSize || force)
+            {
+                _indexBuffers = Graphics.API.Buffer.CreateDevice(
+                    API.Handler.MainDevice,
+                    expectedIndexSize,
+                    VkBufferUsageFlags.IndexBuffer
+                );
+            }
+            var indexTask = _indexBuffers.SetDataWithStaging(this.Indices);
+            if (_vertexBuffers == null || _vertexBuffers.Size != expectedVertexSize || force)
+            {
+                _vertexBuffers = Graphics.API.Buffer.CreateDevice(
+                    API.Handler.MainDevice,
+                    expectedVertexSize,
+                    VkBufferUsageFlags.VertexBuffer
+                );
+            }
+            var vertexTask = _vertexBuffers.SetDataWithStaging(this.Vertices);
+            await indexTask;
+            await vertexTask;
         }
     
         /// <summary>

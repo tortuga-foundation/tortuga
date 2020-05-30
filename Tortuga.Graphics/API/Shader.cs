@@ -5,8 +5,6 @@ using System.Diagnostics;
 using System.Collections.Generic;
 using Vulkan;
 using static Vulkan.VulkanNative;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Numerics;
 
 namespace Tortuga.Graphics.API
