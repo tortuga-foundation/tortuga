@@ -115,17 +115,21 @@ namespace Tortuga.Graphics.API
             multisampling.alphaToCoverageEnable = VkBool32.False;
             multisampling.alphaToOneEnable = VkBool32.False;
 
-            var colorBlendAttachment = new VkPipelineColorBlendAttachmentState()
+            var colorBlendAttachments = new Utils.NativeList<VkPipelineColorBlendAttachmentState>();
+            foreach (var attachment in renderPass.ColorAttachments)
             {
-                colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A,
-                blendEnable = VkBool32.True,
-                srcColorBlendFactor = VkBlendFactor.SrcAlpha,
-                dstColorBlendFactor = VkBlendFactor.OneMinusSrcAlpha,
-                colorBlendOp = VkBlendOp.Add,
-                srcAlphaBlendFactor = VkBlendFactor.One,
-                dstAlphaBlendFactor = VkBlendFactor.Zero,
-                alphaBlendOp = VkBlendOp.Add
-            };
+                colorBlendAttachments.Add(new VkPipelineColorBlendAttachmentState()
+                {
+                    colorWriteMask = VkColorComponentFlags.R | VkColorComponentFlags.G | VkColorComponentFlags.B | VkColorComponentFlags.A,
+                    blendEnable = VkBool32.True,
+                    srcColorBlendFactor = VkBlendFactor.SrcAlpha,
+                    dstColorBlendFactor = VkBlendFactor.OneMinusSrcAlpha,
+                    colorBlendOp = VkBlendOp.Add,
+                    srcAlphaBlendFactor = VkBlendFactor.One,
+                    dstAlphaBlendFactor = VkBlendFactor.Zero,
+                    alphaBlendOp = VkBlendOp.Add
+                });
+            }
 
             var depthStencil = VkPipelineDepthStencilStateCreateInfo.New();
             depthStencil.depthTestEnable = VkBool32.True;
@@ -141,8 +145,8 @@ namespace Tortuga.Graphics.API
             var colorBlending = VkPipelineColorBlendStateCreateInfo.New();
             colorBlending.logicOpEnable = VkBool32.False;
             colorBlending.logicOp = VkLogicOp.Copy;
-            colorBlending.attachmentCount = 1;
-            colorBlending.pAttachments = &colorBlendAttachment;
+            colorBlending.attachmentCount = colorBlendAttachments.Count;
+            colorBlending.pAttachments = (VkPipelineColorBlendAttachmentState*)colorBlendAttachments.Data.ToPointer();
             colorBlending.blendConstants_0 = 0.0f;
             colorBlending.blendConstants_1 = 0.0f;
             colorBlending.blendConstants_2 = 0.0f;

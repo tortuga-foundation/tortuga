@@ -49,6 +49,10 @@ namespace Tortuga.Test
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
                 renderer.MaterialData = new Graphics.Material();
+                var colorTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Color.jpg");
+                var normalTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Normal.jpg");
+                await renderer.MaterialData.SetColor(colorTexture.Pixels, colorTexture.Width, colorTexture.Height);
+                await renderer.MaterialData.SetNormal(normalTexture.Pixels, normalTexture.Width, normalTexture.Height);
                 scene.AddEntity(entity);
             }
 

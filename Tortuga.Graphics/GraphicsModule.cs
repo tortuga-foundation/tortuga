@@ -25,6 +25,7 @@ namespace Tortuga.Graphics
                 API.Handler.MainDevice,
                 new API.RenderPass.CreateInfo[]
                 {
+                    new API.RenderPass.CreateInfo(),
                     new API.RenderPass.CreateInfo()
                 },
                 new API.RenderPass.CreateInfo()

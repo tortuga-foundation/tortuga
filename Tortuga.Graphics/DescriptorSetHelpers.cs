@@ -84,8 +84,8 @@ namespace Tortuga.Graphics
                 if (_descriptorObjectMapper[key].Images[binding] == null)
                     createNew = true;
                 else if (
-                    _descriptorObjectMapper[key].Images[binding].Width == width &&
-                    _descriptorObjectMapper[key].Images[binding].Height == height
+                    _descriptorObjectMapper[key].Images[binding].Width != width ||
+                    _descriptorObjectMapper[key].Images[binding].Height != height
                 ) createNew = true;
 
                 if (createNew)
