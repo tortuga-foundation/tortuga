@@ -75,32 +75,32 @@ namespace Tortuga.Graphics
                 _renderCommand.BeginRenderPass(_module.RenderPass, camera.Framebuffer);
 
                 //todo: apply culling
-                //foreach (var transfer in camera.UpdateView())
-                //    transferCommands.Add(transfer.TransferCommand);
+                foreach (var transfer in camera.UpdateView())
+                    transferCommands.Add(transfer.TransferCommand);
 
-                //var renderers = MyScene.GetComponents<Renderer>();
+                var renderers = MyScene.GetComponents<Renderer>();
 
                 //build render command for each mesh
-                //var secondaryTasks = new List<Task<API.CommandPool.Command>>();
-                //foreach (var renderer in renderers)
-                //{
-                //    secondaryTasks.Add(Task.Run(() => renderer.BuildDrawCommand(camera)));
-                //    //update mdoel matrix (position, rotation, scale)
-                //    foreach (var transfer in renderer.UpdateModel())
-                //        transferCommands.Add(transfer.TransferCommand);
-                //}
+                var secondaryTasks = new List<Task<API.CommandPool.Command>>();
+                foreach (var renderer in renderers)
+                {
+                    secondaryTasks.Add(Task.Run(() => renderer.BuildDrawCommand(camera)));
+                    //update mdoel matrix (position, rotation, scale)
+                    foreach (var transfer in renderer.UpdateModel())
+                        transferCommands.Add(transfer.TransferCommand);
+                }
                 
                 //wait until task is completed
-                //if (secondaryTasks.Count > 0)
-                //    Task.WaitAll(secondaryTasks.ToArray());
+                if (secondaryTasks.Count > 0)
+                    Task.WaitAll(secondaryTasks.ToArray());
                 
                 //extract each mesh render command
-                //var secondaryCommands = new List<API.CommandPool.Command>();
-                //foreach (var t in secondaryTasks)
-                //    secondaryCommands.Add(t.Result);
+                var secondaryCommands = new List<API.CommandPool.Command>();
+                foreach (var t in secondaryTasks)
+                    secondaryCommands.Add(t.Result);
 
                 //execute all render commands
-                //_renderCommand.ExecuteCommands(secondaryCommands.ToArray());
+                _renderCommand.ExecuteCommands(secondaryCommands.ToArray());
                 _renderCommand.EndRenderPass();
 
                 //make sure window exists before rendering
@@ -140,15 +140,20 @@ namespace Tortuga.Graphics
                 }
             }
             _renderCommand.End();
-            //API.CommandPool.Command.Submit(
-            //    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
-            //    transferCommands.ToArray(),
-            //    new API.Semaphore[]{ _renderSemaphore }
-            //);
+            var semaphores = new List<API.Semaphore>();
+            if (transferCommands.Count > 0)
+            {
+                semaphores.Add(_renderSemaphore);
+                API.CommandPool.Command.Submit(
+                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    transferCommands.ToArray(),
+                    semaphores.ToArray()
+                );
+            }
             _renderCommand.Submit(
                 API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                 null,
-                null,
+                semaphores.ToArray(),
                 _renderFence
             );
             // wait for render process to finish

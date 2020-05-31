@@ -151,13 +151,13 @@ namespace Tortuga.Graphics
         {
             return Task.Run(() =>
             {
+                Resolution = new Vector2(1920, 1080);
                 var module = Engine.Instance.GetModule<GraphicsModule>();
                 _descriptorHelper = new DescriptorSetHelper();
                 _descriptorHelper.InsertKey(PROJECTION_KEY, module.RenderDescriptorLayouts[0]);
                 _descriptorHelper.InsertKey(VIEW_KEY, module.RenderDescriptorLayouts[1]);
                 _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();
                 _descriptorHelper.BindBuffer(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix)).Wait();
-                Resolution = new Vector2(1920, 1080);
             });
         }
     }

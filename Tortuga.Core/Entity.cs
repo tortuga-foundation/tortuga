@@ -31,6 +31,7 @@ namespace Tortuga.Core
             Name = "My Entity";
             _components = new Dictionary<Type, BaseComponent>();
             _markedForRemoval = new Dictionary<Type, BaseComponent>();
+            this.AddComponent<Core.Transform>().Wait();
         }
 
         /// <summary>

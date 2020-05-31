@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System.Numerics;
 
 namespace Tortuga.Test
 {
@@ -42,6 +43,8 @@ namespace Tortuga.Test
 
             {
                 var entity = new Core.Entity();
+                var transform = entity.GetComponent<Core.Transform>();
+                transform.Position = new Vector3(0, 0, -3);
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
                 renderer.MaterialData = new Graphics.Material();

@@ -172,6 +172,10 @@ namespace Tortuga.Graphics
                     VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.UniformBuffer
                 );
             }
+            _descriptorObjectMapper[key].Set.UpdateBuffer(
+                _descriptorObjectMapper[key].Buffers[binding],
+                Convert.ToUInt32(binding)
+            );
         }
 
         /// <summary>
@@ -186,7 +190,6 @@ namespace Tortuga.Graphics
         public async Task BindBuffer(string key, int binding, byte[] data, int size = -1)
         {
             this.BufferSetup(key, binding, data, size);
-            
             if (data != null)
                 await _descriptorObjectMapper[key].Buffers[binding].SetDataWithStaging(data);
         }

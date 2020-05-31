@@ -115,11 +115,11 @@ namespace Tortuga.Graphics
                 Convert.ToUInt32(camera.Resolution.X),
                 Convert.ToUInt32(camera.Resolution.Y)
             );
-            //_renderCommand.BindVertexBuffer(MeshData.VertexBuffer);
-            //_renderCommand.BindIndexBuffer(MeshData.IndexBuffer);
-            //_renderCommand.DrawIndexed(
-            //    Convert.ToUInt32(MeshData.Indices.Length)
-            //);
+            _renderCommand.BindVertexBuffer(MeshData.VertexBuffer);
+            _renderCommand.BindIndexBuffer(MeshData.IndexBuffer);
+            _renderCommand.DrawIndexed(
+                Convert.ToUInt32(MeshData.Indices.Length)
+            );
             _renderCommand.Draw(3);
             _renderCommand.End();
             return _renderCommand;

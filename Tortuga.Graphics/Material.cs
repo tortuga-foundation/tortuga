@@ -33,25 +33,25 @@ namespace Tortuga.Graphics
                 new PipelineInputBuilder(
                     new PipelineInputBuilder.BindingElement[]
                     {
-                        //new PipelineInputBuilder.BindingElement()
-                        //{
-                        //    Type = PipelineInputBuilder.BindingElement.BindingType.Vertex,
-                        //    Elements = new PipelineInputBuilder.AttributeElement[]
-                        //    {
-                        //        //position
-                        //        new PipelineInputBuilder.AttributeElement(
-                        //            PipelineInputBuilder.AttributeElement.FormatType.Float3
-                        //        ),
-                        //        //texture
-                        //        new PipelineInputBuilder.AttributeElement(
-                        //            PipelineInputBuilder.AttributeElement.FormatType.Float2
-                        //        ),
-                        //        //normal
-                        //        new PipelineInputBuilder.AttributeElement(
-                        //            PipelineInputBuilder.AttributeElement.FormatType.Float3
-                        //        )
-                        //    }
-                        //}
+                        new PipelineInputBuilder.BindingElement()
+                        {
+                            Type = PipelineInputBuilder.BindingElement.BindingType.Vertex,
+                            Elements = new PipelineInputBuilder.AttributeElement[]
+                            {
+                                //position
+                                new PipelineInputBuilder.AttributeElement(
+                                    PipelineInputBuilder.AttributeElement.FormatType.Float3
+                                ),
+                                //texture
+                                new PipelineInputBuilder.AttributeElement(
+                                    PipelineInputBuilder.AttributeElement.FormatType.Float2
+                                ),
+                                //normal
+                                new PipelineInputBuilder.AttributeElement(
+                                    PipelineInputBuilder.AttributeElement.FormatType.Float3
+                                )
+                            }
+                        }
                     }
                 )
             );
