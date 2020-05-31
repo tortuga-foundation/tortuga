@@ -49,5 +49,10 @@ namespace Tortuga.Graphics
         /// </summary>
         public static ShaderPixel Black 
             => new ShaderPixel(0, 0, 0, 255);
+        /// <summary>
+        /// blue color
+        /// </summary>
+        public static ShaderPixel Blue
+            => new ShaderPixel(0, 0, 255, 255);
     };
 }

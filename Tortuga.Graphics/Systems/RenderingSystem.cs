@@ -71,10 +71,11 @@ namespace Tortuga.Graphics
             var cameras = MyScene.GetComponents<Camera>();
             foreach (var camera in cameras)
             {
+                //todo: apply frustrum culling
+
                 //begin camera render pass
                 _renderCommand.BeginRenderPass(_module.RenderPass, camera.Framebuffer);
 
-                //todo: apply culling
                 foreach (var transfer in camera.UpdateView())
                     transferCommands.Add(transfer.TransferCommand);
 

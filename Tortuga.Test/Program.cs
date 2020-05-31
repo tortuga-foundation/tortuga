@@ -33,7 +33,7 @@ namespace Tortuga.Test
             };
             Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
-            //entity
+            //camera
             {
                 var entity = new Core.Entity();
                 var camera = await entity.AddComponent<Graphics.Camera>();
@@ -41,6 +41,7 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
+            //mesh
             {
                 var entity = new Core.Entity();
                 var transform = entity.GetComponent<Core.Transform>();
