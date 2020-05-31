@@ -72,7 +72,7 @@ namespace Tortuga.Graphics
         /// <param name="height">height of the image</param>
         public Task BindImage(string key, int binding, ShaderPixel[] pixels, int width, int height)
         {
-            return Task.Run(() => 
+            return Task.Run(() =>
             {
                 if (pixels != null && pixels.Length != width * height)
                     throw new InvalidOperationException("color length does not match width and height");
@@ -101,9 +101,9 @@ namespace Tortuga.Graphics
                         Convert.ToUInt32(height),
                         VkFormat.R8g8b8a8Unorm,
                         (
-                            VkImageUsageFlags.TransferDst | 
-                            VkImageUsageFlags.TransferSrc | 
-                            VkImageUsageFlags.ColorAttachment | 
+                            VkImageUsageFlags.TransferDst |
+                            VkImageUsageFlags.TransferSrc |
+                            VkImageUsageFlags.ColorAttachment |
                             VkImageUsageFlags.Sampled
                         )
                     );
@@ -147,7 +147,7 @@ namespace Tortuga.Graphics
                 }
             });
         }
-    
+
         private void BufferSetup(string key, int binding, byte[] data, int size = -1)
         {
             int actualSize = size;
@@ -171,11 +171,11 @@ namespace Tortuga.Graphics
                     Convert.ToUInt32(actualSize),
                     VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.UniformBuffer
                 );
+                _descriptorObjectMapper[key].Set.UpdateBuffer(
+                    _descriptorObjectMapper[key].Buffers[binding],
+                    Convert.ToUInt32(binding)
+                );
             }
-            _descriptorObjectMapper[key].Set.UpdateBuffer(
-                _descriptorObjectMapper[key].Buffers[binding],
-                Convert.ToUInt32(binding)
-            );
         }
 
         /// <summary>
@@ -202,7 +202,7 @@ namespace Tortuga.Graphics
             this.BufferSetup(key, binding, data, -1);
             return _descriptorObjectMapper[key].Buffers[binding].SetDataGetTransferObject(data);
         }
-    
+
         public void RemoveBinding(string key, int binding)
         {
             _descriptorObjectMapper[key].Buffers[binding] = null;
@@ -232,7 +232,7 @@ namespace Tortuga.Graphics
                 bytes.Add(b);
             foreach (var b in BitConverter.GetBytes(mat.M24))
                 bytes.Add(b);
-            
+
             //3
             foreach (var b in BitConverter.GetBytes(mat.M31))
                 bytes.Add(b);

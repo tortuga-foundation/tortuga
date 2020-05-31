@@ -102,7 +102,8 @@ namespace Tortuga.Graphics
                 new API.DescriptorSetPool.DescriptorSet[]{
                     camera.ProjectionDescriptor,
                     camera.ViewDescriptor,
-                    this.ModelDescriptorSet
+                    this.ModelDescriptorSet,
+                    MaterialData.DescriptorSet
                 }
             );
             _renderCommand.SetScissor(

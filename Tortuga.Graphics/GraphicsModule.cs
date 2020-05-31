@@ -67,29 +67,29 @@ namespace Tortuga.Graphics
                             type = API.DescriptorType.UniformBuffer
                         }
                     }
-                )
+                ),
                 //rendered image settings
-                //new API.DescriptorSetLayout(
-                //    API.Handler.MainDevice,
-                //    new API.DescriptorSetCreateInfo[]
-                //    {
-                //        new API.DescriptorSetCreateInfo()
-                //        {
-                //            stage = API.ShaderStageType.Compute,
-                //            type = API.DescriptorType.CombinedImageSampler
-                //        },
-                //        new API.DescriptorSetCreateInfo()
-                //        {
-                //            stage = API.ShaderStageType.Compute,
-                //            type = API.DescriptorType.CombinedImageSampler
-                //        },
-                //        new API.DescriptorSetCreateInfo()
-                //        {
-                //            stage = API.ShaderStageType.Compute,
-                //            type = API.DescriptorType.CombinedImageSampler
-                //        }
-                //    }
-                //)
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        }
+                    }
+                )
             };
         }
 
