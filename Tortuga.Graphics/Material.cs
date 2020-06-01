@@ -29,7 +29,7 @@ namespace Tortuga.Graphics
             _descriptorHelper = new DescriptorSetHelper();
             _descriptorHelper.InsertKey(
                 TEXTURES_KEY, 
-                Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayouts[3]
+                Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[3]
             );
             //color texture
             _descriptorHelper.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
@@ -57,8 +57,8 @@ namespace Tortuga.Graphics
         {
             var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
             _pipeline = new API.Pipeline(
-                graphicsModule.RenderPass,
-                graphicsModule.RenderDescriptorLayouts,
+                graphicsModule.MeshRenderPassMRT,
+                graphicsModule.MeshDescriptorSetLayouts,
                 _vertexShader,
                 _fragmentShader,
                 new PipelineInputBuilder(

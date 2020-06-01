@@ -69,7 +69,7 @@ namespace Tortuga.Graphics
                 
                 //setup descriptor helpers
                 _descriptorHelper = new DescriptorSetHelper();
-                _descriptorHelper.InsertKey(MODEL_KEY, _module.RenderDescriptorLayouts[2]);
+                _descriptorHelper.InsertKey(MODEL_KEY, _module.MeshDescriptorSetLayouts[2]);
                 _descriptorHelper.BindBuffer(MODEL_KEY, 0, DescriptorSetHelper.MatrixToBytes(this.Matrix)).Wait();
             });
         }
@@ -93,7 +93,7 @@ namespace Tortuga.Graphics
         {
             _renderCommand.Begin(
                 VkCommandBufferUsageFlags.RenderPassContinue,
-                _module.RenderPass,
+                _module.MeshRenderPassMRT,
                 camera.Framebuffer
             );
             _renderCommand.BindPipeline(MaterialData.Pipeline);
@@ -121,7 +121,6 @@ namespace Tortuga.Graphics
             _renderCommand.DrawIndexed(
                 Convert.ToUInt32(MeshData.Indices.Length)
             );
-            _renderCommand.Draw(3);
             _renderCommand.End();
             return _renderCommand;
         }

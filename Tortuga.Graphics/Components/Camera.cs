@@ -1,6 +1,5 @@
 #pragma warning disable 1591
 using System;
-using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -10,9 +9,10 @@ namespace Tortuga.Graphics
     {
         public enum TypeOfRenderTarget
         {
+            DeferredRendering = -1,
             Color = 0,
             Normal = 1,
-            Depth = 2,
+            Position = 2,
             Detail = 3
         }
 
@@ -42,7 +42,7 @@ namespace Tortuga.Graphics
         }
         private ProjectionType _type = ProjectionType.Perspective;
 
-        public TypeOfRenderTarget RenderTarget = TypeOfRenderTarget.Color;
+        public TypeOfRenderTarget RenderTarget = TypeOfRenderTarget.DeferredRendering;
 
         /// <summary>
         /// camera field of view
@@ -69,7 +69,12 @@ namespace Tortuga.Graphics
             set
             {
                 _framebuffer = new API.Framebuffer(
-                    Engine.Instance.GetModule<GraphicsModule>().RenderPass,
+                    Engine.Instance.GetModule<GraphicsModule>().MeshRenderPassMRT,
+                    Convert.ToUInt32(MathF.Round(value.X)),
+                    Convert.ToUInt32(MathF.Round(value.Y))
+                );
+                _defferedFramebuffer = new API.Framebuffer(
+                    Engine.Instance.GetModule<GraphicsModule>().DefferedRenderPass,
                     Convert.ToUInt32(MathF.Round(value.X)),
                     Convert.ToUInt32(MathF.Round(value.Y))
                 );
@@ -134,13 +139,79 @@ namespace Tortuga.Graphics
         /// will render the camera into a window
         /// </summary>
         public Window RenderToWindow;
+
+        #region Framebuffers
+
         internal API.Framebuffer Framebuffer => _framebuffer;
         private API.Framebuffer _framebuffer;
+        internal API.Framebuffer DefferedFramebuffer => _defferedFramebuffer;
+        private API.Framebuffer _defferedFramebuffer;
+
+        #endregion
+
+        #region descriptor sets
+
         private DescriptorSetHelper _descriptorHelper;
         private const string PROJECTION_KEY = "PROJECTION";
         private const string VIEW_KEY = "VIEW";
+        private const string MRT_KEY = "MRT";
         internal API.DescriptorSetPool.DescriptorSet ProjectionDescriptor => _descriptorHelper.DescriptorObjectMapper[PROJECTION_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet ViewDescriptor => _descriptorHelper.DescriptorObjectMapper[VIEW_KEY].Set;
+        internal API.DescriptorSetPool.DescriptorSet MrtDescriptorSet => _descriptorHelper.DescriptorObjectMapper[MRT_KEY].Set;
+        #endregion
+
+        #region deffered pipeline
+
+        internal API.Pipeline DefferedPipeline => _defferedPipeline;
+        private API.Pipeline _defferedPipeline;
+
+        private API.Shader _vertexShader;
+        private API.Shader _fragmentShader;
+
+        #endregion
+
+        public override Task OnEnable()
+        {
+            return Task.Run(() =>
+            {
+                Resolution = new Vector2(1920, 1080);
+                var module = Engine.Instance.GetModule<GraphicsModule>();
+                //setup descriptor sets
+                _descriptorHelper = new DescriptorSetHelper();
+                _descriptorHelper.InsertKey(PROJECTION_KEY, module.MeshDescriptorSetLayouts[0]);
+                _descriptorHelper.InsertKey(VIEW_KEY, module.MeshDescriptorSetLayouts[1]);
+                _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();
+                _descriptorHelper.BindBuffer(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix)).Wait();
+
+                //mrt descriptor set
+                _descriptorHelper.InsertKey(MRT_KEY, module.DefferedDescriptorSetLayouts[0]);
+                _descriptorHelper.BindImage(MRT_KEY, 0, _framebuffer.AttachmentImages[0], _framebuffer.AttachmentViews[0]);
+                _descriptorHelper.BindImage(MRT_KEY, 1, _framebuffer.AttachmentImages[1], _framebuffer.AttachmentViews[1]);
+                _descriptorHelper.BindImage(MRT_KEY, 2, _framebuffer.AttachmentImages[2], _framebuffer.AttachmentViews[2]);
+                _descriptorHelper.BindImage(MRT_KEY, 3, _framebuffer.AttachmentImages[3], _framebuffer.AttachmentViews[3]);
+            
+                //deffered pipeline
+                _vertexShader = new API.Shader(
+                    API.Handler.MainDevice,
+                    "Assets/Shaders/Default/Deffered.vert"
+                );
+                _fragmentShader = new API.Shader(
+                    API.Handler.MainDevice,
+                    "Assets/Shaders/Default/Deffered.frag"
+                );
+                _defferedPipeline = new API.Pipeline(
+                    module.DefferedRenderPass,
+                    module.DefferedDescriptorSetLayouts,
+                    _vertexShader, _fragmentShader,
+                    new PipelineInputBuilder()
+                );
+            });
+        }
+
+        private float ToRadians(float degree)
+        {
+            return (degree / 360) * MathF.PI;
+        }
 
         internal API.BufferTransferObject[] UpdateView()
         {
@@ -151,24 +222,6 @@ namespace Tortuga.Graphics
             {
                 _descriptorHelper.BindBufferWithTransferObject(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix))
             };
-        }
-        public override Task OnEnable()
-        {
-            return Task.Run(() =>
-            {
-                Resolution = new Vector2(1920, 1080);
-                var module = Engine.Instance.GetModule<GraphicsModule>();
-                _descriptorHelper = new DescriptorSetHelper();
-                _descriptorHelper.InsertKey(PROJECTION_KEY, module.RenderDescriptorLayouts[0]);
-                _descriptorHelper.InsertKey(VIEW_KEY, module.RenderDescriptorLayouts[1]);
-                _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();
-                _descriptorHelper.BindBuffer(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix)).Wait();
-            });
-        }
-    
-        private float ToRadians(float degree)
-        {
-            return (degree / 360) * MathF.PI;
         }
     }
 }

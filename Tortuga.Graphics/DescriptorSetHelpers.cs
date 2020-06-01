@@ -1,6 +1,5 @@
 #pragma warning disable 1591
 using System;
-using System.Drawing;
 using System.Collections.Generic;
 using Vulkan;
 using System.Runtime.CompilerServices;
@@ -146,6 +145,34 @@ namespace Tortuga.Graphics
                     _descriptorObjectMapper[key].WaitFence.Wait();
                 }
             });
+        }
+
+        internal void BindImage(string key, int binding, API.Image image, API.ImageView view = null, API.Sampler sampler = null)
+        {
+            if (image == null)
+                throw new Exception("image is required for this function");
+
+            if (view == null)
+                view = new API.ImageView(
+                    image,
+                    VkImageAspectFlags.Color
+                );
+
+            if (sampler == null)
+                sampler = new API.Sampler(image.DeviceUsed);
+
+            if (_descriptorObjectMapper.ContainsKey(key) == false)
+                throw new Exception("descriptor set key not found");
+
+            _descriptorObjectMapper[key].Images[binding] = image;
+            _descriptorObjectMapper[key].Views[binding] = view;
+            _descriptorObjectMapper[key].Sampler[binding] = sampler;
+            _descriptorObjectMapper[key].Set.UpdateSampledImage(
+                VkImageLayout.ColorAttachmentOptimal,
+                _descriptorObjectMapper[key].Views[binding],
+                _descriptorObjectMapper[key].Sampler[binding],
+                Convert.ToUInt32(binding)
+            );
         }
 
         private void BufferSetup(string key, int binding, byte[] data, int size = -1)

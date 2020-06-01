@@ -7,10 +7,23 @@ namespace Tortuga.Graphics
     /// </summary>
     public class GraphicsModule : Core.BaseModule
     {
-        internal API.DescriptorSetLayout[] RenderDescriptorLayouts => _descriptorLayouts;
-        private API.DescriptorSetLayout[] _descriptorLayouts;
-        internal API.RenderPass RenderPass => _renderPass;
-        private API.RenderPass _renderPass;
+        //MRT renderer
+        internal API.DescriptorSetLayout[] MeshDescriptorSetLayouts => _meshDescriptorSetLayouts;
+        private API.DescriptorSetLayout[] _meshDescriptorSetLayouts;
+        internal API.RenderPass MeshRenderPassMRT => _meshRenderPassMRT;
+        private API.RenderPass _meshRenderPassMRT;
+
+        //deffered
+        internal API.DescriptorSetLayout[] DefferedDescriptorSetLayouts => _defferedDescriptorSetLayouts;
+        private API.DescriptorSetLayout[] _defferedDescriptorSetLayouts;
+        internal API.RenderPass DefferedRenderPass => _defferedRenderPass;
+        private API.RenderPass _defferedRenderPass;
+
+        //light
+        internal API.DescriptorSetLayout[] LightDescriptorSetLayouts => _lightDescriptorSetLayouts;
+        private API.DescriptorSetLayout[] _lightDescriptorSetLayouts;
+        internal API.RenderPass LightRenderPass => _lightRenderPass;
+        private API.RenderPass _lightRenderPass;
 
         public override void Destroy()
         {
@@ -20,8 +33,10 @@ namespace Tortuga.Graphics
         {
             //initialize vulkan
             API.Handler.Init();
-            //setup render pass
-            _renderPass = new API.RenderPass(
+
+            #region MRT Renderer
+
+            _meshRenderPassMRT = new API.RenderPass(
                 API.Handler.MainDevice,
                 new API.RenderPass.CreateInfo[]
                 {
@@ -32,8 +47,8 @@ namespace Tortuga.Graphics
                 },
                 new API.RenderPass.CreateInfo()
             );
-            //setup descriptor sets
-            _descriptorLayouts = new API.DescriptorSetLayout[]
+
+            _meshDescriptorSetLayouts = new API.DescriptorSetLayout[]
             {
                 //PROJECTION
                 new API.DescriptorSetLayout(
@@ -94,6 +109,105 @@ namespace Tortuga.Graphics
                     }
                 )
             };
+
+            #endregion
+
+            #region light
+
+            _lightRenderPass = new API.RenderPass(
+                API.Handler.MainDevice,
+                new API.RenderPass.CreateInfo[]
+                {
+                    new API.RenderPass.CreateInfo()
+                }
+            );
+
+            _lightDescriptorSetLayouts = new API.DescriptorSetLayout[]
+            {
+                //PROJECTION
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
+                        }
+                    }
+                ),
+                //VIEW
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
+                        }
+                    }
+                ),
+                //MODEL
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
+                        }
+                    }
+                )
+            };
+
+            #endregion
+
+            #region Deffered
+
+            _defferedRenderPass = new API.RenderPass(
+                API.Handler.MainDevice,
+                new API.RenderPass.CreateInfo[]
+                {
+                    new API.RenderPass.CreateInfo()
+                }
+            );
+            _defferedDescriptorSetLayouts = new API.DescriptorSetLayout[]
+            {
+                    new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        //color
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        //normal
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        //position
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        },
+                        //detail
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.CombinedImageSampler
+                        }
+                    }
+                )
+            };
+
+            #endregion
         }
 
         public override void Update()
