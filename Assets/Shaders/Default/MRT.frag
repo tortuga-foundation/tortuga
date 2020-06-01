@@ -12,6 +12,8 @@ layout(location = 3) in vec3 inWorldPosition;
 
 layout(location = 0) out vec4 outColor;
 layout(location = 1) out vec4 outNormal;
+layout(location = 2) out vec4 outPosition;
+layout(location = 3) out vec4 outDetail;
 
 mat3 GetTBN();
 vec3 GetNormal(mat3 TBN);
@@ -19,6 +21,8 @@ vec3 GetNormal(mat3 TBN);
 void main() {
     outColor = texture(colorTexture, inUV);
     outNormal = vec4(GetNormal(GetTBN()), 1.);
+    outPosition = vec4(inWorldPosition, 1.);
+    outDetail = texture(detailTexture, inUV);
 }
 
 mat3 GetTBN()

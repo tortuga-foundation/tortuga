@@ -5,6 +5,46 @@ namespace Tortuga.Test
 {
     class Program
     {
+        public class RotatorSystem : Core.BaseSystem
+        {
+            private float _rotation = 0.0f;
+
+            public override Task EarlyUpdate()
+            {
+                return Task.Run(() => { });
+            }
+
+            public override Task LateUpdate()
+            {
+                return Task.Run(() => { });
+            }
+
+            public override void OnDisable()
+            {
+            }
+
+            public override void OnEnable()
+            {
+            }
+
+            public override Task Update()
+            {
+                return Task.Run(() =>
+                {
+                    var meshes = MyScene.GetComponents<Graphics.Renderer>();
+                    foreach(var mesh in meshes)
+                    {
+                        var transform = mesh.MyEntity.GetComponent<Core.Transform>();
+                        if (transform != null)
+                        {
+                            transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
+                            _rotation += Time.DeltaTime * 1.0f;
+                        }
+                    }
+                });
+            }
+        }
+
         static async Task Main(string[] args)
         {
             //setup sdl input system
@@ -37,6 +77,7 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 var camera = await entity.AddComponent<Graphics.Camera>();
+                camera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.Detail;
                 camera.RenderToWindow = window;
                 scene.AddEntity(entity);
             }
@@ -48,7 +89,7 @@ namespace Tortuga.Test
                 transform.Position = new Vector3(0, 0, -3);
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
-                renderer.MaterialData = new Graphics.Material();
+                renderer.MaterialData = new Graphics.Material("Assets/Shaders/Default/MRT.vert", "Assets/Shaders/Default/MRT.frag");
                 var colorTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Color.jpg");
                 var normalTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Normal.jpg");
                 await renderer.MaterialData.SetColor(colorTexture.Pixels, colorTexture.Width, colorTexture.Height);
@@ -58,6 +99,7 @@ namespace Tortuga.Test
 
             scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<Graphics.RenderingSystem>();
+            scene.AddSystem<RotatorSystem>();
 
             Engine.Instance.LoadScene(scene);
             await Engine.Instance.Run();

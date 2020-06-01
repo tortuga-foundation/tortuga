@@ -8,6 +8,14 @@ namespace Tortuga.Graphics
 {
     public class Camera : Core.BaseComponent
     {
+        public enum TypeOfRenderTarget
+        {
+            Color = 0,
+            Normal = 1,
+            Depth = 2,
+            Detail = 3
+        }
+
         /// <summary>
         /// type of camera projection
         /// </summary>
@@ -33,6 +41,8 @@ namespace Tortuga.Graphics
             }
         }
         private ProjectionType _type = ProjectionType.Perspective;
+
+        public TypeOfRenderTarget RenderTarget = TypeOfRenderTarget.Color;
 
         /// <summary>
         /// camera field of view
@@ -104,11 +114,6 @@ namespace Tortuga.Graphics
             }
         }
 
-        private float ToRadians(float degree)
-        {
-            return (degree / 360) * MathF.PI;
-        }
-
         /// <summary>
         /// projection matrix
         /// </summary>
@@ -136,6 +141,7 @@ namespace Tortuga.Graphics
         private const string VIEW_KEY = "VIEW";
         internal API.DescriptorSetPool.DescriptorSet ProjectionDescriptor => _descriptorHelper.DescriptorObjectMapper[PROJECTION_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet ViewDescriptor => _descriptorHelper.DescriptorObjectMapper[VIEW_KEY].Set;
+
         internal API.BufferTransferObject[] UpdateView()
         {
             if (this.IsStatic)
@@ -146,7 +152,6 @@ namespace Tortuga.Graphics
                 _descriptorHelper.BindBufferWithTransferObject(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix))
             };
         }
-
         public override Task OnEnable()
         {
             return Task.Run(() =>
@@ -159,6 +164,11 @@ namespace Tortuga.Graphics
                 _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();
                 _descriptorHelper.BindBuffer(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix)).Wait();
             });
+        }
+    
+        private float ToRadians(float degree)
+        {
+            return (degree / 360) * MathF.PI;
         }
     }
 }

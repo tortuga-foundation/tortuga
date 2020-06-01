@@ -65,7 +65,8 @@ namespace Tortuga.Graphics.API
             DescriptorSetLayout[] layouts,
             Shader vertex,
             Shader fragment,
-            PipelineInputBuilder pipelineInputBuilder
+            PipelineInputBuilder pipelineInputBuilder,
+            uint subPass = 0
         )
         {
             _renderPass = renderPass;
@@ -193,7 +194,7 @@ namespace Tortuga.Graphics.API
             pipelineInfo.pDynamicState = &dynamicState;
             pipelineInfo.layout = _layout;
             pipelineInfo.renderPass = _renderPass.Handle;
-            pipelineInfo.subpass = 0;
+            pipelineInfo.subpass = subPass;
             pipelineInfo.basePipelineHandle = VkPipeline.Null;
             pipelineInfo.basePipelineIndex = -1;
 

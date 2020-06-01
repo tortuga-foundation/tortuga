@@ -10,6 +10,30 @@ namespace Tortuga.Graphics
     public class Texture
     {
         /// <summary>
+        /// Channels
+        /// </summary>
+        [Flags]
+        public enum Channel
+        {
+            /// <summary>
+            /// Red
+            /// </summary>
+            R,
+            /// <summary>
+            /// Green
+            /// </summary>
+            G,
+            /// <summary>
+            /// Blue
+            /// </summary>
+            B,
+            /// <summary>
+            /// Alpha
+            /// </summary>
+            A
+        }
+
+        /// <summary>
         /// image width
         /// </summary>
         public int Width => _width;
@@ -125,6 +149,34 @@ namespace Tortuga.Graphics
                 }
             });
             return loader;
+        }
+
+        /// <summary>
+        /// Copies a specific image texture channel to this image
+        /// </summary>
+        /// <param name="source">source image</param>
+        /// <param name="channel">channel(s) to copy</param>
+        public void CopyChannel(Texture source, Channel channel)
+        {
+            for (int x = 0; x < this.Width; x++)
+            {
+                for (int y = 0; y < this.Height; y++)
+                {
+                    float percentX = Convert.ToSingle(x) / Convert.ToSingle(this.Width);
+                    float percentY = Convert.ToSingle(y) / Convert.ToSingle(this.Height);
+                    int sourceX = Convert.ToInt32(MathF.Round(percentX * source.Width));
+                    int sourceY = Convert.ToInt32(MathF.Round(percentY * source.Height));
+
+                    if ((channel & Channel.R) != 0)
+                        this._pixels[(y * this.Width) + x].R = source.Pixels[(sourceY * source.Width) + sourceX].R;
+                    if ((channel & Channel.G) != 0)
+                        this._pixels[(y * this.Width) + x].G = source.Pixels[(sourceY * source.Width) + sourceX].G;
+                    if ((channel & Channel.B) != 0)
+                        this._pixels[(y * this.Width) + x].B = source.Pixels[(sourceY * source.Width) + sourceX].B;
+                    if ((channel & Channel.A) != 0)
+                        this._pixels[(y * this.Width) + x].A = source.Pixels[(sourceY * source.Width) + sourceX].A;
+                }
+            }
         }
     }
 }

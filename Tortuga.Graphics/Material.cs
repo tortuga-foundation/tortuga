@@ -22,18 +22,40 @@ namespace Tortuga.Graphics
         /// <summary>
         /// constructor for material
         /// </summary>
-        public Material()
+        public Material(string vertexPath, string fragmentPath)
         {
             var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
+            SetupShader(vertexPath, fragmentPath);
+            _descriptorHelper = new DescriptorSetHelper();
+            _descriptorHelper.InsertKey(
+                TEXTURES_KEY, 
+                Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayouts[3]
+            );
+            //color texture
+            _descriptorHelper.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
+            //normal texture
+            _descriptorHelper.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { ShaderPixel.Blue }, 1, 1).Wait();
+            //detail texture
+            _descriptorHelper.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
+        }
 
-            _vertexShader = new API.Shader(
-                API.Handler.MainDevice,
-                "Assets/Shaders/Default/Default.vert"
-            );
-            _fragmentShader = new API.Shader(
-                API.Handler.MainDevice,
-                "Assets/Shaders/Default/Default.frag"
-            );
+        /// <summary>
+        /// update shaders
+        /// NOTE: this will auto call Re Compile pipeline
+        /// </summary>
+        public void SetupShader(string vertexPath, string fragmentPath)
+        {
+            _vertexShader = new API.Shader(API.Handler.MainDevice, vertexPath);
+            _fragmentShader = new API.Shader(API.Handler.MainDevice, fragmentPath);
+            ReCompilePipeline();
+        }
+
+        /// <summary>
+        /// Re-compiles pipeline
+        /// </summary>
+        public void ReCompilePipeline()
+        {
+            var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
             _pipeline = new API.Pipeline(
                 graphicsModule.RenderPass,
                 graphicsModule.RenderDescriptorLayouts,
@@ -64,17 +86,6 @@ namespace Tortuga.Graphics
                     }
                 )
             );
-            _descriptorHelper = new DescriptorSetHelper();
-            _descriptorHelper.InsertKey(
-                TEXTURES_KEY, 
-                Engine.Instance.GetModule<GraphicsModule>().RenderDescriptorLayouts[3]
-            );
-            //color texture
-            _descriptorHelper.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
-            //normal texture
-            _descriptorHelper.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { ShaderPixel.Blue }, 1, 1).Wait();
-            //detail texture
-            _descriptorHelper.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
         }
 
         /// <summary>
