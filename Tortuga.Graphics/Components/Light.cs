@@ -1,4 +1,5 @@
-
+#pragma warning disable 0649
+using System.Numerics;
 
 namespace Tortuga.Graphics
 {
@@ -7,6 +8,17 @@ namespace Tortuga.Graphics
     /// </summary>
     public class Light : Core.BaseComponent
     {
+        internal struct LightInfo
+        {
+            public Vector4 Position;
+            public Vector4 Forward;
+            public Vector4 Color;
+            public int Type;
+            public float Intensity;
+            public int Reserved1;
+            public int Reserved2;
+        }
+
         internal API.Framebuffer Framebuffer => _framebuffer;
         private API.Framebuffer _framebuffer;
 
@@ -40,6 +52,20 @@ namespace Tortuga.Graphics
                 _fragmentShader,
                 new PipelineInputBuilder()
             );
+        }
+    
+        internal LightInfo GetShaderInfo
+        {
+            get
+            {
+                var info = new LightInfo();
+                info.Position = Vector4.Zero;
+                info.Forward = new Vector4(0, 0, 1, 0);
+                info.Color = new Vector4(255, 255, 255, 255);
+                info.Intensity = 1.0f;
+                info.Type = 0;
+                return info;
+            }
         }
     }
 }

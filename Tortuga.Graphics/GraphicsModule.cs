@@ -175,7 +175,7 @@ namespace Tortuga.Graphics
             );
             _defferedDescriptorSetLayouts = new API.DescriptorSetLayout[]
             {
-                    new API.DescriptorSetLayout(
+                new API.DescriptorSetLayout(
                     API.Handler.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
@@ -202,6 +202,28 @@ namespace Tortuga.Graphics
                         {
                             stage = API.ShaderStageType.Fragment,
                             type = API.DescriptorType.CombinedImageSampler
+                        }
+                    }
+                ),
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.UniformBuffer
+                        }
+                    }
+                ),
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Fragment,
+                            type = API.DescriptorType.UniformBuffer
                         }
                     }
                 )

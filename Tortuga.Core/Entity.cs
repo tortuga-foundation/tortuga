@@ -42,7 +42,8 @@ namespace Tortuga.Core
         public async Task<T> AddComponent<T>() where T : BaseComponent, new()
         {
             if (_components.ContainsKey(typeof(T)))
-                return null;
+                return _components[typeof(T)] as T;
+
             var newComp = BaseComponent.Create<T>(this);
             _components.Add(typeof(T), newComp);
             OnComponentAdded?.Invoke(this, newComp);

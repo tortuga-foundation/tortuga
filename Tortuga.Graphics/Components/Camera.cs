@@ -1,5 +1,6 @@
 #pragma warning disable 1591
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 
@@ -30,7 +31,7 @@ namespace Tortuga.Graphics
             /// </summary>
             Orthographic
         }
-        
+
         public ProjectionType Type
         {
             get => _type;
@@ -155,9 +156,14 @@ namespace Tortuga.Graphics
         private const string PROJECTION_KEY = "PROJECTION";
         private const string VIEW_KEY = "VIEW";
         private const string MRT_KEY = "MRT";
+        private const string CAMERA_POSITION_KEY = "CAMERA_POSITION";
+        private const string LIGHT_KEY = "LIGHT";
         internal API.DescriptorSetPool.DescriptorSet ProjectionDescriptor => _descriptorHelper.DescriptorObjectMapper[PROJECTION_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet ViewDescriptor => _descriptorHelper.DescriptorObjectMapper[VIEW_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet MrtDescriptorSet => _descriptorHelper.DescriptorObjectMapper[MRT_KEY].Set;
+        internal API.DescriptorSetPool.DescriptorSet CameraPositionDescriptorSet => _descriptorHelper.DescriptorObjectMapper[CAMERA_POSITION_KEY].Set;
+        internal API.DescriptorSetPool.DescriptorSet LightDescriptorSet => _descriptorHelper.DescriptorObjectMapper[LIGHT_KEY].Set;
+
         #endregion
 
         #region deffered pipeline
@@ -167,6 +173,8 @@ namespace Tortuga.Graphics
 
         private API.Shader _vertexShader;
         private API.Shader _fragmentShader;
+
+        private int _lightsAmount = 0;
 
         #endregion
 
@@ -189,7 +197,31 @@ namespace Tortuga.Graphics
                 _descriptorHelper.BindImage(MRT_KEY, 1, _framebuffer.AttachmentImages[1], _framebuffer.AttachmentViews[1]);
                 _descriptorHelper.BindImage(MRT_KEY, 2, _framebuffer.AttachmentImages[2], _framebuffer.AttachmentViews[2]);
                 _descriptorHelper.BindImage(MRT_KEY, 3, _framebuffer.AttachmentImages[3], _framebuffer.AttachmentViews[3]);
-            
+
+                //camera position descriptor set
+                _descriptorHelper.InsertKey(CAMERA_POSITION_KEY, module.DefferedDescriptorSetLayouts[1]);
+                var bytes = new List<byte>();
+                {
+                    var pos = Vector4.Zero;
+                    var transform = MyEntity.GetComponent<Core.Transform>();
+                    if (transform != null)
+                        pos = new Vector4(transform.Position, 1.0f);
+
+                    foreach (var b in BitConverter.GetBytes(pos.X))
+                        bytes.Add(b);
+                    foreach (var b in BitConverter.GetBytes(pos.Y))
+                        bytes.Add(b);
+                    foreach (var b in BitConverter.GetBytes(pos.Z))
+                        bytes.Add(b);
+                    foreach (var b in BitConverter.GetBytes(pos.W))
+                        bytes.Add(b);
+                }
+                _descriptorHelper.BindBuffer(CAMERA_POSITION_KEY, 0, bytes.ToArray()).Wait();
+
+                //light descriptor set
+                _descriptorHelper.InsertKey(LIGHT_KEY, module.DefferedDescriptorSetLayouts[2]);
+                _descriptorHelper.BindBuffer(LIGHT_KEY, 0, new byte[] { 1 }).Wait();
+
                 //deffered pipeline
                 _vertexShader = new API.Shader(
                     API.Handler.MainDevice,
@@ -199,6 +231,7 @@ namespace Tortuga.Graphics
                     API.Handler.MainDevice,
                     "Assets/Shaders/Default/Deffered.frag"
                 );
+                _fragmentShader.CreateOrUpdateSpecialization(0, 0);
                 _defferedPipeline = new API.Pipeline(
                     module.DefferedRenderPass,
                     module.DefferedDescriptorSetLayouts,
@@ -206,6 +239,28 @@ namespace Tortuga.Graphics
                     new PipelineInputBuilder()
                 );
             });
+        }
+
+        internal API.BufferTransferObject[] UpdateLightInfo(Light.LightInfo[] lights)
+        {
+            if (lights.Length != _lightsAmount)
+            {
+                _fragmentShader.CreateOrUpdateSpecialization(0, lights.Length);
+                var module = Engine.Instance.GetModule<GraphicsModule>();
+                _defferedPipeline = new API.Pipeline(
+                    module.DefferedRenderPass,
+                    module.DefferedDescriptorSetLayouts,
+                    _vertexShader, _fragmentShader,
+                    new PipelineInputBuilder()
+                );
+                _lightsAmount = lights.Length;
+            }
+            var transferObject = new API.BufferTransferObject();
+            if (lights.Length > 0)
+                transferObject = _descriptorHelper.BindBufferWithTransferObject(LIGHT_KEY, 0, lights);
+            else
+                transferObject = _descriptorHelper.BindBufferWithTransferObject(LIGHT_KEY, 0, new byte[] { 1 });
+            return new API.BufferTransferObject[] { transferObject };
         }
 
         private float ToRadians(float degree)
@@ -216,7 +271,7 @@ namespace Tortuga.Graphics
         internal API.BufferTransferObject[] UpdateView()
         {
             if (this.IsStatic)
-                return new API.BufferTransferObject[]{};
+                return new API.BufferTransferObject[] { };
 
             return new API.BufferTransferObject[]
             {

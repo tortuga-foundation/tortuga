@@ -86,14 +86,25 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 var transform = entity.GetComponent<Core.Transform>();
-                transform.Position = new Vector3(0, 0, -3);
+                transform.Position = new Vector3(0, 0, -10);
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
                 renderer.MaterialData = new Graphics.Material("Assets/Shaders/Default/MRT.vert", "Assets/Shaders/Default/MRT.frag");
                 var colorTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Color.jpg");
                 var normalTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Normal.jpg");
+                var detailTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Metalness.jpg");
+                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Bricks/Roughness.jpg"), Graphics.Texture.Channel.G);
+                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Bricks/AmbientOclusion.jpg"), Graphics.Texture.Channel.B);
                 await renderer.MaterialData.SetColor(colorTexture.Pixels, colorTexture.Width, colorTexture.Height);
                 await renderer.MaterialData.SetNormal(normalTexture.Pixels, normalTexture.Width, normalTexture.Height);
+                await renderer.MaterialData.SetDetail(detailTexture.Pixels, detailTexture.Width, detailTexture.Height);
+                scene.AddEntity(entity);
+            }
+
+            //light
+            {
+                var entity = new Core.Entity();
+                var light = await entity.AddComponent<Graphics.Light>();
                 scene.AddEntity(entity);
             }
 

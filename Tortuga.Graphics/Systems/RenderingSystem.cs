@@ -73,12 +73,16 @@ namespace Tortuga.Graphics
             if (_module == null)
                 return;
 
+            var transferCommands = new List<API.CommandPool.Command>();
+
             #region light commands
 
             _lightCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             var lights = MyScene.GetComponents<Light>();
+            var lightInfos = new List<Light.LightInfo>();
             foreach (var light in lights)
             {
+                lightInfos.Add(light.GetShaderInfo);
                 _lightCommand.BeginRenderPass(_module.LightRenderPass, light.Framebuffer);
                 _lightCommand.EndRenderPass();
             }
@@ -88,11 +92,13 @@ namespace Tortuga.Graphics
 
             #region render command
 
-            var transferCommands = new List<API.CommandPool.Command>();
             _renderCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             var cameras = MyScene.GetComponents<Camera>();
             foreach (var camera in cameras)
             {
+                foreach (var t in camera.UpdateLightInfo(lightInfos.ToArray()))
+                    transferCommands.Add(t.TransferCommand);
+
                 //todo: apply frustrum culling
 
                 //begin camera render pass
@@ -141,7 +147,9 @@ namespace Tortuga.Graphics
                     camera.DefferedPipeline,
                     new API.DescriptorSetPool.DescriptorSet[]
                     {
-                        camera.MrtDescriptorSet
+                        camera.MrtDescriptorSet,
+                        camera.CameraPositionDescriptorSet,
+                        camera.LightDescriptorSet
                     }
                 );
                 _deferredCommand.SetScissor(

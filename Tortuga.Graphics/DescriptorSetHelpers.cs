@@ -175,11 +175,11 @@ namespace Tortuga.Graphics
             );
         }
 
-        private void BufferSetup(string key, int binding, byte[] data, int size = -1)
+        private void BufferSetup<T>(string key, int binding, T[] data, int size = -1) where T : struct
         {
             int actualSize = size;
             if (data != null)
-                actualSize = sizeof(byte) * data.Length;
+                actualSize = Unsafe.SizeOf<T>() * data.Length;
             if (actualSize < 1)
                 throw new InvalidOperationException("invalid parameters passed to the function, you must include data or have a valid buffer size (greater than 0)");
 
@@ -214,14 +214,14 @@ namespace Tortuga.Graphics
         /// <param name="binding">binding for the descriptor set</param>
         /// <param name="data">data to transfer to the shader</param>
         /// <param name="size">size of the data, only required if data is null</param>
-        public async Task BindBuffer(string key, int binding, byte[] data, int size = -1)
+        public async Task BindBuffer<T>(string key, int binding, T[] data, int size = -1) where T : struct
         {
             this.BufferSetup(key, binding, data, size);
             if (data != null)
                 await _descriptorObjectMapper[key].Buffers[binding].SetDataWithStaging(data);
         }
 
-        internal API.BufferTransferObject BindBufferWithTransferObject(string key, int binding, byte[] data)
+        internal API.BufferTransferObject BindBufferWithTransferObject<T>(string key, int binding, T[] data) where T : struct
         {
             if (data == null)
                 throw new InvalidOperationException("data cannot be null");
