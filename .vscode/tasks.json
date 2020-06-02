@@ -9,7 +9,8 @@
         "build",
         "${workspaceFolder}/Tortuga.Test/Tortuga.Test.csproj",
         "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
+        "/consoleloggerparameters:NoSummary",
+        "/p:DefineConstants=TORTUGA_PROFILER"
       ],
       "problemMatcher": "$msCompile"
     },

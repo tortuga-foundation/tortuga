@@ -1,3 +1,8 @@
+#pragma warning disable 1711
+
+#if TORTUGA_PROFILER
+using System.Collections.Generic;
+#endif
 using System.Threading.Tasks;
 
 namespace Tortuga.Core
@@ -8,6 +13,25 @@ namespace Tortuga.Core
     /// </summary>
     public abstract class BaseSystem
     {
+#if TORTUGA_PROFILER
+
+        /// <summary>
+        /// Records how long each function takes for debugging
+        /// </summary>
+        /// <typeparam name="string">function name</typeparam>
+        /// <typeparam name="long">time in miliseconds</typeparam>
+        public Dictionary<string, long> FunctionDuration = new Dictionary<string, long>();
+
+        internal void CreateOrUpdateDuration(string key, long duration)
+        {
+            if (FunctionDuration.ContainsKey(key) == false)
+                FunctionDuration.Add(key, duration);
+            else
+                FunctionDuration[key] = duration;
+        }
+        
+#endif
+
         /// <summary>
         /// A referance to the scene this system is attached to
         /// </summary>
@@ -23,7 +47,7 @@ namespace Tortuga.Core
         /// Runs every frame before update method
         /// </summary>
         public abstract Task EarlyUpdate();
-        
+
         /// <summary>
         /// Runs every frame after update method
         /// </summary>

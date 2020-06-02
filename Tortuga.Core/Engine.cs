@@ -60,68 +60,162 @@ namespace Tortuga
             {
                 var stopWatch = new System.Diagnostics.Stopwatch();
                 stopWatch.Start();
+#if TORTUGA_PROFILER
+                var profiler = new System.Diagnostics.Stopwatch();
+                profiler.Start();
+#endif
                 float oldTime = 0.0f;
                 float currentTime = 0.0f;
                 while (this.IsRunning)
                 {
                     try
                     {
+                        #region Compute Delta Time
+                        
                         oldTime = currentTime;
                         currentTime = stopWatch.ElapsedMilliseconds;
                         Time.DeltaTime = (currentTime - oldTime) / 1000.0f;
-                        //update modules
+                        
+                        #endregion
+                        
+                        #region Update Modules
+
                         foreach (var module in _modules)
                             module.Update();
 
-                        //early update
-                        if (_activeScene != null)
-                        {
-                            var tasks = new List<Task>();
-                            foreach (var system in _activeScene.Systems.Values)
-                                tasks.Add(system.EarlyUpdate());
+                        #endregion
 
-                            foreach (var entity in _activeScene.Entities)
-                            {
-                                foreach (var component in entity.Components)
-                                    tasks.Add(component.Value.EarlyUpdate());
-                            }
-                            Task.WaitAll(tasks.ToArray());
-                        }
-                        //update
-                        if (_activeScene != null)
-                        {
-                            var tasks = new List<Task>();
-                            foreach (var system in _activeScene.Systems.Values)
-                                tasks.Add(system.Update());
+                        // used by early update, update & late update
+                        var tasks = new List<Task>();
 
-                            foreach (var entity in _activeScene.Entities)
-                            {
-                                foreach (var component in entity.Components)
-                                    tasks.Add(component.Value.Update());
-                            }
-                            Task.WaitAll(tasks.ToArray());
-                        }
-                        //late update
-                        if (_activeScene != null)
-                        {
-                            var tasks = new List<Task>();
-                            foreach (var system in _activeScene.Systems.Values)
-                                tasks.Add(system.LateUpdate());
+                        #region Early Update
 
-                            foreach (var entity in _activeScene.Entities)
+                        tasks = new List<Task>();
+#if TORTUGA_PROFILER
+                        profiler.Restart();
+#endif
+
+                        foreach (var system in _activeScene.Systems.Values)
+                        {
+#if TORTUGA_PROFILER
+                            tasks.Add(Task.Run(async () =>
                             {
-                                foreach (var component in entity.Components)
-                                    tasks.Add(component.Value.LateUpdate());
-                            }
-                            Task.WaitAll(tasks.ToArray());
+                                await system.EarlyUpdate();
+                                system.CreateOrUpdateDuration("EarlyUpdate", profiler.ElapsedMilliseconds);
+                            }));
+#else
+                            tasks.Add(system.EarlyUpdate());
+#endif
                         }
-                        //clean up marked for removal
+
+                        foreach (var entity in _activeScene.Entities)
+                        {
+                            foreach (var component in entity.Components)
+                            {
+#if TORTUGA_PROFILER
+                                tasks.Add(Task.Run(async () =>
+                                {
+                                    await component.Value.EarlyUpdate();
+                                    component.Value.CreateOrUpdateDuration("EarlyUpdate", profiler.ElapsedMilliseconds);
+                                }));
+#else
+                                tasks.Add(component.Value.EarlyUpdate());
+#endif
+                            }
+                        }
+                        Task.WaitAll(tasks.ToArray());
+
+                        #endregion
+
+                        #region Update
+                        
+                        tasks = new List<Task>();
+#if TORTUGA_PROFILER
+                        profiler.Restart();
+#endif
+
+                        foreach (var system in _activeScene.Systems.Values)
+                        {
+#if TORTUGA_PROFILER
+                            tasks.Add(Task.Run(async () =>
+                            {
+                                await system.Update();
+                                system.CreateOrUpdateDuration("Update", profiler.ElapsedMilliseconds);
+                            }));
+#else
+                            tasks.Add(system.Update());
+#endif
+                        }
+
+                        foreach (var entity in _activeScene.Entities)
+                        {
+                            foreach (var component in entity.Components)
+                            {
+#if TORTUGA_PROFILER
+                                tasks.Add(Task.Run(async () =>
+                                {
+                                    await component.Value.Update();
+                                    component.Value.CreateOrUpdateDuration("Update", profiler.ElapsedMilliseconds);
+                                }));
+#else
+                                tasks.Add(component.Value.Update());
+#endif
+                            }
+                        }
+                        Task.WaitAll(tasks.ToArray());
+
+                        #endregion
+
+                        #region Late Update
+
+                        tasks = new List<Task>();
+#if TORTUGA_PROFILER
+                        profiler.Restart();
+#endif
+
+                        foreach (var system in _activeScene.Systems.Values)
+                        {
+#if TORTUGA_PROFILER
+                            tasks.Add(Task.Run(async () =>
+                            {
+                                await system.LateUpdate();
+                                system.CreateOrUpdateDuration("LateUpdate", profiler.ElapsedMilliseconds);
+                            }));
+#else
+                            tasks.Add(system.LateUpdate());
+#endif
+                        }
+
+                        foreach (var entity in _activeScene.Entities)
+                        {
+                            foreach (var component in entity.Components)
+                            {
+#if TORTUGA_PROFILER
+                                tasks.Add(Task.Run(async () =>
+                                {
+                                    await component.Value.LateUpdate();
+                                    component.Value.CreateOrUpdateDuration("LateUpdate", profiler.ElapsedMilliseconds);
+                                }));
+#else
+                                tasks.Add(component.Value.LateUpdate());
+#endif
+                            }
+                        }
+                        Task.WaitAll(tasks.ToArray());
+
+                        #endregion
+
+                        #region Clean Up
+
                         var removalTasks = new List<Task>();
                         foreach (var entity in _activeScene.Entities)
                             removalTasks.Add(entity.RemoveAllMarkedForRemoval());
                         Task.WaitAll(removalTasks.ToArray());
 
-                        //limiter
+                        #endregion
+
+                        #region Frame Limiter
+
                         if (Settings.Core.MaxLoopsPerSecond > 0)
                         {
                             int waitTime = System.Convert.ToInt32(
@@ -134,6 +228,8 @@ namespace Tortuga
                             if (waitTime > 0)
                                 System.Threading.Thread.Sleep(waitTime);
                         }
+
+                        #endregion
                     }
                     catch (System.Exception e)
                     {
@@ -196,7 +292,7 @@ namespace Tortuga
                 _modules.RemoveAt(index);
             }
         }
-    
+
         /// <summary>
         /// Get's a module from the engine
         /// </summary>
