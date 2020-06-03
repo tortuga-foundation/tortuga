@@ -17,9 +17,10 @@ layout(location = 3) out vec4 outDetail;
 
 mat3 GetTBN();
 vec3 GetNormal(mat3 TBN);
+vec4 SRGBtoLINEAR(vec4 srgbIn);
 
 void main() {
-    outColor = texture(colorTexture, inUV);
+    outColor = SRGBtoLINEAR(texture(colorTexture, inUV));
     outNormal = vec4(GetNormal(GetTBN()), 1.);
     outPosition = vec4(inWorldPosition, 1.);
     outDetail = texture(detailTexture, inUV);
@@ -43,4 +44,15 @@ vec3 GetNormal(mat3 TBN)
 {
     vec3 tangentNormal = texture(normalTexture, inUV).rgb;
     return normalize(TBN * tangentNormal);
+}
+
+vec4 SRGBtoLINEAR(vec4 srgbIn)
+{
+	#ifdef SRGB_FAST_APPROXIMATION
+	vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
+	#else //SRGB_FAST_APPROXIMATION
+	vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
+	vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
+	#endif //SRGB_FAST_APPROXIMATION
+	return vec4(linOut,srgbIn.w);
 }

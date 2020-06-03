@@ -27,7 +27,7 @@ struct PBRInfo
 	vec3 specularColor;             // color contribution from specular lighting
 };
 
-layout (constant_id = 0) const int LIGHTS_COUNT = 0;
+layout (constant_id = 0) const int LIGHTS_COUNT = 1;
 
 layout(set=0,binding=0) uniform sampler2D colorTexture;
 layout(set=0,binding=1) uniform sampler2D normalTexture;
@@ -38,7 +38,7 @@ layout(set=1,binding=0) readonly uniform CAMERA_POSITION {
     vec4 inCameraPosition;
 };
 layout(set=2,binding=0) readonly uniform LIGHT_INFO {
-    LightInfo lightsInfos[1];
+    LightInfo lightsInfos[LIGHTS_COUNT];
 };
 
 layout(location=0) in vec2 inUV;
@@ -48,7 +48,6 @@ layout(location=0) out vec4 outColor;
 //constants
 const float PI = 3.141592653589793;
 const float MIN_ROUGHNESS = 0.04;
-#define MANUAL_SRGB 1
 
 //functions
 vec4 SRGBtoLINEAR(vec4 srgbIn);
@@ -145,17 +144,13 @@ void main() {
 }
 
 vec4 SRGBtoLINEAR(vec4 srgbIn) {
-	#ifdef MANUAL_SRGB
 	#ifdef SRGB_FAST_APPROXIMATION
 	vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
 	#else //SRGB_FAST_APPROXIMATION
 	vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
 	vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
 	#endif //SRGB_FAST_APPROXIMATION
-	return vec4(linOut,srgbIn.w);;
-	#else //MANUAL_SRGB
-	return srgbIn;
-	#endif //MANUAL_SRGB
+	return vec4(linOut,srgbIn.w);
 }
 
 vec3 SpecularReflection(PBRInfo pbrInputs)
