@@ -8,6 +8,7 @@ namespace Tortuga.Test
         public class RotatorSystem : Core.BaseSystem
         {
             private float _rotation = 0.0f;
+            private Vector3 _position = new Vector3(0, 0, -5);
 
             public override Task EarlyUpdate()
             {
@@ -39,8 +40,13 @@ namespace Tortuga.Test
                         {
                             transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
                             _rotation += Time.DeltaTime * 1.0f;
+                            transform.Position = _position;
                         }
                     }
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.W)) 
+                        _position.Z += Time.DeltaTime;
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.S)) 
+                        _position.Z -= Time.DeltaTime;
                 });
             }
         }
@@ -54,11 +60,6 @@ namespace Tortuga.Test
 
             //create new scene
             var scene = new Core.Scene();
-
-            Input.InputModule.OnKeyDown += (Input.KeyCode key, Input.ModifierKeys modifiers) =>
-            {
-                System.Console.WriteLine(key.ToString());
-            };
 
             var window = new Graphics.Window(
                 "Tortuga",
@@ -86,15 +87,15 @@ namespace Tortuga.Test
             {
                 var entity = new Core.Entity();
                 var transform = entity.GetComponent<Core.Transform>();
-                transform.Position = new Vector3(0, 0, -10);
+                transform.Position = new Vector3(0, 0, -5);
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
                 renderer.MaterialData = new Graphics.Material("Assets/Shaders/Default/MRT.vert", "Assets/Shaders/Default/MRT.frag");
-                var colorTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Color.jpg");
-                var normalTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Normal.jpg");
-                var detailTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Metalness.jpg");
-                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Bricks/Roughness.jpg"), Graphics.Texture.Channel.G);
-                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Bricks/AmbientOclusion.jpg"), Graphics.Texture.Channel.B);
+                var colorTexture = await Graphics.Texture.Load("Assets/Images/Metal/Color.jpg");
+                var normalTexture = await Graphics.Texture.Load("Assets/Images/Metal/Normal.jpg");
+                var detailTexture = await Graphics.Texture.Load("Assets/Images/Metal/Metal.jpg");
+                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Metal/Roughness.jpg"), Graphics.Texture.Channel.G);
+                detailTexture.CopyChannel(Graphics.Texture.SingleColor(System.Drawing.Color.White), Graphics.Texture.Channel.B);
                 await renderer.MaterialData.SetColor(colorTexture.Pixels, colorTexture.Width, colorTexture.Height);
                 await renderer.MaterialData.SetNormal(normalTexture.Pixels, normalTexture.Width, normalTexture.Height);
                 await renderer.MaterialData.SetDetail(detailTexture.Pixels, detailTexture.Width, detailTexture.Height);

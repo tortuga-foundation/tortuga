@@ -47,103 +47,109 @@ layout(location=0) out vec4 outColor;
 
 //constants
 const float PI = 3.141592653589793;
-const float MIN_ROUGHNESS = 0.04;
 
 //functions
+vec3 fresnelSchlick(float cosTheta, vec3 F0);
+float GeometrySchlickGGX(float NdotV, float roughness);
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness);
+float DistributionGGX(vec3 N, vec3 H, float roughness);
 vec4 SRGBtoLINEAR(vec4 srgbIn);
-vec3 SpecularReflection(PBRInfo pbrInputs);
-float GeometricOcclusion(PBRInfo pbrInputs);
-float MicrofacetDistribution(PBRInfo pbrInputs);
-vec3 Diffuse(PBRInfo pbrInputs);
-vec3 GetIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection);
-vec3 Uncharted2Tonemap(vec3 color);
-vec4 Tonemap(vec4 color);
 
 void main() {
-    //setup
-    vec3 f0 = vec3(0.04);
-    vec3 n = texture(normalTexture, inUV).rgb;
+    //texture sampling
+    vec4 baseColor = texture(colorTexture, inUV);
+    vec3 normal = texture(normalTexture, inUV).rgb;
     vec3 worldPosition = texture(positionTexture, inUV).xyz;
-    vec3 v = normalize(inCameraPosition.xyz - worldPosition);
-
-    //metalness workflow
     float metallic = clamp(texture(detailTexture, inUV).r, 0., 1.);
-    float roughness = clamp(texture(detailTexture, inUV).g, MIN_ROUGHNESS, 1.);
-    float ao = texture(detailTexture, inUV).b;
-    vec4 baseColor = SRGBtoLINEAR(texture(colorTexture, inUV));
+    float roughness = texture(detailTexture, inUV).g;
+    float ambientOclusion = texture(detailTexture, inUV).b;
 
-    //get diffuse color
-    vec3 diffuseColor = baseColor.rgb * (vec3(1.) - f0);
-    diffuseColor *= 1. - metallic;
+    //camera direction
+    vec3 V = normalize(inCameraPosition.xyz - worldPosition);
 
-    float alphaRoughness = roughness * roughness;
-    vec3 specularColor = mix(f0, baseColor.rgb, metallic);
-
-    //compute reflectance
-    float reflectance = max(max(specularColor.r, specularColor.g), specularColor.b);
-    
-    vec3 totalColor = vec3(0.);
-
+    //for each light
+    vec3 Lo = vec3(0.0);
     for (int i = 0; i < 1; i++)
     {
+        //light info
         LightInfo light = lightsInfos[i];
+        vec3 L = normalize(light.position.xyz - worldPosition);
+        vec3 H = normalize(V + L);
+        float dist    = length(light.position.xyz - worldPosition);
+        float attenuation = 1.0 / (dist * dist);
+        vec3 radiance     = light.color.rgb * attenuation;
 
-        float reflectance90 = clamp(reflectance * 25., 0., 1.);
-        vec3 specularEnvironmentR0 = specularColor.rgb;
-        vec3 specularEnvironmentR90 = vec3(1.) * reflectance90;
+        //apply fresnel
+        vec3 F0 = vec3(0.04);
+        F0      = mix(F0, baseColor.rgb, metallic);
+        vec3 F  = fresnelSchlick(max(dot(H, V), 0.0), F0);
+    
+        float NDF = DistributionGGX(normal, H, roughness);
+        float G   = GeometrySmith(normal, V, L, roughness);
 
-        vec3 l = normalize(light.position.xyz - worldPosition);
-        if (light.type == 1)
-            l = normalize(light.forward.xyz);
-        vec3 h = normalize(l+v);
-        vec3 reflection = -normalize(reflect(v, n));
-        float dist = length(light.position.xyz - worldPosition);
-        if (light.type == 1)
-            dist = 1;
-        reflection.y *= -1.;
+        vec3 numerator    = NDF * G * F;
+        float denominator = 4.0 * max(dot(normal, V), 0.0) * max(dot(normal, L), 0.0);
+        vec3 specular     = numerator / max(denominator, 0.001);
 
-        float nDotL = clamp(dot(n, l), 0.001, 1.);
-        float nDotV = clamp(dot(n, v), 0.001, 1.);
-        float nDotH = clamp(dot(n, h), 0.001, 1.);
-        float lDotH = clamp(dot(l, h), 0.001, 1.);
-        float vDotH = clamp(dot(v, h), 0.001, 1.);
-        
-        PBRInfo pbrInputs = PBRInfo(
-            nDotL,
-            nDotV,
-            nDotH,
-            lDotH,
-            vDotH,
-            roughness,
-            metallic,
-            specularEnvironmentR0,
-            specularEnvironmentR90,
-            alphaRoughness,
-            diffuseColor,
-            specularColor
-        );
+        vec3 kS = F;
+        vec3 kD = vec3(1.0) - kS;
+        kD *= 1.0 - metallic;
 
-        vec3 F = SpecularReflection(pbrInputs);
-        float G = GeometricOcclusion(pbrInputs);
-        float D = MicrofacetDistribution(pbrInputs);
-
-        // Calculation of analytical lighting contribution
-        vec3 diffuseContrib = (1.0 - F) * Diffuse(pbrInputs);
-        vec3 specContrib = F * G * D / (4.0 * nDotL * nDotV);
-        // Obtain final intensity as reflectance (BRDF) scaled by the energy of the light (cosine law)
-        vec3 color = (nDotL * light.color.rgb * (diffuseContrib + specContrib) * light.intensity) / (dist * dist);
-
-        // Calculate lighting contribution from image based lighting source (IBL)
-        color += GetIBLContribution(pbrInputs, n, reflection);
-
-        totalColor += mix(color, color * ao, 1.);
+        float NdotL = max(dot(normal, L), 0.0);        
+        Lo += (kD * baseColor.rgb / PI + specular) * radiance * NdotL;
     }
 
+    vec3 ambient = vec3(0.03) * baseColor.rgb * ambientOclusion;
+    vec3 color   = ambient + Lo;
 
-    outColor = vec4(totalColor, baseColor.a);
+    color = color / (color + vec3(1.0));
+    color = pow(color, vec3(1.0/2.2)); 
+
+    outColor = SRGBtoLINEAR(vec4(Lo, baseColor.a));
 }
 
-vec4 SRGBtoLINEAR(vec4 srgbIn) {
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - min(cosTheta, 1.), 5.0);
+}  
+
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+	
+    float num   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+	
+    return num / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float num   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+	
+    return num / denom;
+}
+
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+	
+    return ggx1 * ggx2;
+}
+
+vec4 SRGBtoLINEAR(vec4 srgbIn)
+{
 	#ifdef SRGB_FAST_APPROXIMATION
 	vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
 	#else //SRGB_FAST_APPROXIMATION
@@ -151,70 +157,4 @@ vec4 SRGBtoLINEAR(vec4 srgbIn) {
 	vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
 	#endif //SRGB_FAST_APPROXIMATION
 	return vec4(linOut,srgbIn.w);
-}
-
-vec3 SpecularReflection(PBRInfo pbrInputs)
-{
-	return pbrInputs.reflectance0 + (pbrInputs.reflectance90 - pbrInputs.reflectance0) * pow(clamp(1.0 - pbrInputs.VdotH, 0.0, 1.0), 5.0);
-}
-
-float GeometricOcclusion(PBRInfo pbrInputs)
-{
-	float NdotL = pbrInputs.NdotL;
-	float NdotV = pbrInputs.NdotV;
-	float r = pbrInputs.alphaRoughness;
-
-	float attenuationL = 2.0 * NdotL / (NdotL + sqrt(r * r + (1.0 - r * r) * (NdotL * NdotL)));
-	float attenuationV = 2.0 * NdotV / (NdotV + sqrt(r * r + (1.0 - r * r) * (NdotV * NdotV)));
-	return attenuationL * attenuationV;
-}
-
-float MicrofacetDistribution(PBRInfo pbrInputs)
-{
-	float roughnessSq = pbrInputs.alphaRoughness * pbrInputs.alphaRoughness;
-	float f = (pbrInputs.NdotH * roughnessSq - pbrInputs.NdotH) * pbrInputs.NdotH + 1.0;
-	return roughnessSq / (PI * f * f);
-}
-
-vec3 Diffuse(PBRInfo pbrInputs)
-{
-	return pbrInputs.diffuseColor / PI;
-}
-
-vec3 GetIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
-{
-	// retrieve a scale and bias to F0. See [1], Figure 3
-	vec3 brdf = vec3(0.).rgb;
-	vec3 diffuseLight = SRGBtoLINEAR(Tonemap(vec4(0.))).rgb;
-
-	vec3 specularLight = SRGBtoLINEAR(Tonemap(vec4(0.))).rgb;
-
-	vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
-	vec3 specular = specularLight * (pbrInputs.specularColor * brdf.x + brdf.y);
-
-	// For presentation, this allows us to disable IBL terms
-	// For presentation, this allows us to disable IBL terms
-	diffuse *= 1;
-	specular *= 1;
-
-	return diffuse + specular;
-}
-
-vec3 Uncharted2Tonemap(vec3 color)
-{
-	float A = 0.15;
-	float B = 0.50;
-	float C = 0.10;
-	float D = 0.20;
-	float E = 0.02;
-	float F = 0.30;
-	float W = 11.2;
-	return ((color*(A*color+C*B)+D*E)/(color*(A*color+B)+D*F))-E/F;
-}
-
-vec4 Tonemap(vec4 color)
-{
-	vec3 outcol = Uncharted2Tonemap(color.rgb * 1);
-	outcol = outcol * (1.0f / Uncharted2Tonemap(vec3(11.2f)));	
-	return vec4(pow(outcol, vec3(1.0f / 1)), color.a);
 }

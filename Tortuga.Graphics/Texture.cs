@@ -164,8 +164,8 @@ namespace Tortuga.Graphics
                 {
                     float percentX = Convert.ToSingle(x) / Convert.ToSingle(this.Width);
                     float percentY = Convert.ToSingle(y) / Convert.ToSingle(this.Height);
-                    int sourceX = Convert.ToInt32(MathF.Round(percentX * source.Width));
-                    int sourceY = Convert.ToInt32(MathF.Round(percentY * source.Height));
+                    int sourceX = Convert.ToInt32(MathF.Floor(percentX * source.Width));
+                    int sourceY = Convert.ToInt32(MathF.Floor(percentY * source.Height));
 
                     if ((channel & Channel.R) != 0)
                         this._pixels[(y * this.Width) + x].R = source.Pixels[(sourceY * source.Width) + sourceX].R;
