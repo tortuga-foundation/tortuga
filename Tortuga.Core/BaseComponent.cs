@@ -47,6 +47,10 @@ namespace Tortuga.Core
         /// </summary>
         public virtual async Task EarlyUpdate() { await Task.Run(() => { }); }
         /// <summary>
+        /// All GUI commands must run inside this function
+        /// </summary>
+        public virtual async Task OnGui() { await Task.Run(() => { }); }
+        /// <summary>
         /// this method runs once per frame after update
         /// </summary>
         public virtual async Task LateUpdate() { await Task.Run(() => { }); }

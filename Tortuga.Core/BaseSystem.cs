@@ -49,6 +49,11 @@ namespace Tortuga.Core
         public abstract Task EarlyUpdate();
 
         /// <summary>
+        /// All GUI commands must run inside this function
+        /// </summary>
+        public abstract Task OnGui();
+
+        /// <summary>
         /// Runs every frame after update method
         /// </summary>
         public abstract Task LateUpdate();

@@ -69,6 +69,7 @@ namespace Tortuga.Graphics
         /// <param name="pixels">each pixel of the iamge</param>
         /// <param name="width">width of the image</param>
         /// <param name="height">height of the image</param>
+        /// <param name="elementPerPixel">the amount of T data creates one pixel</param>
         public Task BindImage<T>(string key, int binding, T[] pixels, int width, int height, int elementPerPixel = 1) where T : struct
         {
             return Task.Run(() =>

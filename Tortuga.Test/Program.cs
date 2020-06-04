@@ -28,6 +28,11 @@ namespace Tortuga.Test
             {
             }
 
+            public override Task OnGui()
+            {
+                return Task.Run(() => {});
+            }
+
             public override Task Update()
             {
                 return Task.Run(() =>

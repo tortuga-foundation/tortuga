@@ -127,6 +127,45 @@ namespace Tortuga
 
                         #endregion
 
+                        #region OnGui
+                        
+                        tasks = new List<Task>();
+#if TORTUGA_PROFILER
+                        profiler.Restart();
+#endif
+
+                        foreach (var system in _activeScene.Systems.Values)
+                        {
+#if TORTUGA_PROFILER
+                            tasks.Add(Task.Run(async () =>
+                            {
+                                await system.OnGui();
+                                system.CreateOrUpdateDuration("OnGui", profiler.ElapsedMilliseconds);
+                            }));
+#else
+                            tasks.Add(system.OnGui());
+#endif
+                        }
+
+                        foreach (var entity in _activeScene.Entities)
+                        {
+                            foreach (var component in entity.Components)
+                            {
+#if TORTUGA_PROFILER
+                                tasks.Add(Task.Run(async () =>
+                                {
+                                    await component.Value.OnGui();
+                                    component.Value.CreateOrUpdateDuration("OnGui", profiler.ElapsedMilliseconds);
+                                }));
+#else
+                                tasks.Add(component.Value.OnGui());
+#endif
+                            }
+                        }
+                        Task.WaitAll(tasks.ToArray());
+
+                        #endregion
+
                         #region Update
                         
                         tasks = new List<Task>();

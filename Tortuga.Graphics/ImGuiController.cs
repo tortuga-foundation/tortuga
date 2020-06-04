@@ -26,7 +26,6 @@ namespace Tortuga.Graphics
         private API.Framebuffer _framebuffer;
         private uint _width;
         private uint _height;
-        private IntPtr _fontAtlasId;
 
         public ImGuiController()
         {
@@ -145,8 +144,7 @@ namespace Tortuga.Graphics
             var io = ImGui.GetIO();
             io.Fonts.GetTexDataAsRGBA32(out byte* pixel, out int width, out int height, out int bytesPerPixel);
 
-            //store out identifier
-            io.Fonts.SetTexID(_fontAtlasId);
+            io.Fonts.SetTexID((IntPtr)1);
 
             byte[] bytes = new byte[width * height * bytesPerPixel];
             Marshal.Copy((IntPtr)pixel, bytes, 0, bytes.Length);
@@ -170,10 +168,6 @@ namespace Tortuga.Graphics
             var transferCommandList = new List<API.BufferTransferObject>();
 
             #region fetch dear imGui draw data
-
-            ImGui.Begin("Test");
-            ImGui.Text("Hello World");
-            ImGui.End();
 
             ImGui.Render();
             var drawData = ImGui.GetDrawData();
@@ -282,9 +276,9 @@ namespace Tortuga.Graphics
                 vertexOffset += cmdList.VtxBuffer.Size;
             }
             _command.End();
+            primaryCommand.ExecuteCommands(new API.CommandPool.Command[]{_command});
             primaryCommand.EndRenderPass();
 
-            primaryCommand.ExecuteCommands(new API.CommandPool.Command[]{_command});
             #endregion
 
             return transferCommandList.ToArray();

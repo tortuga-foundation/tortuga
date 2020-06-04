@@ -254,5 +254,15 @@ namespace Tortuga.Graphics
 
             #endregion
         }
+
+        public override Task OnGui()
+        {
+            return Task.Run(() => 
+            {
+                ImGui.Begin("Test");
+                ImGui.Text("Hello World");
+                ImGui.End();
+            });
+        }
     }
 }

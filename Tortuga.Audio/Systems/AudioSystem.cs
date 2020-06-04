@@ -11,12 +11,12 @@ namespace Tortuga.Audio
     {
         public override Task EarlyUpdate()
         {
-            return Task.Run(() => {});
+            return Task.Run(() => { });
         }
 
         public override Task LateUpdate()
         {
-            return Task.Run(() => {});
+            return Task.Run(() => { });
         }
 
         /// <summary>
@@ -38,6 +38,11 @@ namespace Tortuga.Audio
             var audioSource = MyScene.GetComponents<AudioSource>();
             foreach (var source in audioSource)
                 source.Play();
+        }
+
+        public override Task OnGui()
+        {
+            return Task.Run(() => { });
         }
 
         /// <summary>
@@ -67,7 +72,7 @@ namespace Tortuga.Audio
             var audioListener = MyScene.GetComponents<AudioListener>();
             if (audioListener.Length > 1)
                 Console.WriteLine("WARN: There must be only 1 audio listener");
-            
+
             if (audioListener.Length != 0)
             {
                 var listener = audioListener[0];
