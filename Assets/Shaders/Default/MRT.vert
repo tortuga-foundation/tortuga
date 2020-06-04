@@ -34,5 +34,8 @@ void main() {
     outWorldPosition = worldPosition.xyz;
     outUV = inUV;
     outCameraPosition = inverse(view)[3].xyz;
-    outNormal = normalize(model * vec4(inNormal, 0.)).xyz;
+    
+    //normal
+    mat3 mNormal = transpose(inverse(mat3(model)));
+    outNormal = mNormal * normalize(inNormal);
 }

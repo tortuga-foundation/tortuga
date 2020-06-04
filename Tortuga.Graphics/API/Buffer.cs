@@ -112,18 +112,33 @@ namespace Tortuga.Graphics.API
                 _transferFromCommand.End();
             }
         }
-        unsafe ~Buffer()
+        ~Buffer()
         {
-            vkDestroyBuffer(
-                _device.LogicalDevice,
-                _buffer,
-                null
-            );
-            vkFreeMemory(
-                _device.LogicalDevice,
-                _deviceMemory,
-                null
-            );
+            Dispose();
+        }
+
+        public unsafe void Dispose()
+        {
+            if (_buffer != VkBuffer.Null)
+            {
+                vkDestroyBuffer(
+                    _device.LogicalDevice,
+                    _buffer,
+                    null
+                );
+                _buffer = VkBuffer.Null;
+            }
+            if (_deviceMemory != VkDeviceMemory.Null)
+            {
+                vkFreeMemory(
+                    _device.LogicalDevice,
+                    _deviceMemory,
+                    null
+                );
+                _deviceMemory = VkDeviceMemory.Null;
+            }
+            if (_staging != null)
+                _staging.Dispose();
         }
 
         public static Buffer CreateHost(Device device, uint size, VkBufferUsageFlags usageFlags)

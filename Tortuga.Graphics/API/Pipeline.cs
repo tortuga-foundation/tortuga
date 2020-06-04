@@ -189,7 +189,7 @@ namespace Tortuga.Graphics.API
             pipelineInfo.pViewportState = &viewportState;
             pipelineInfo.pRasterizationState = &rasterizer;
             pipelineInfo.pMultisampleState = &multisampling;
-            pipelineInfo.pDepthStencilState = &depthStencil;
+            pipelineInfo.pDepthStencilState = _renderPass.DepthAttachment != null ? &depthStencil : null;
             pipelineInfo.pColorBlendState = &colorBlending;
             pipelineInfo.pDynamicState = &dynamicState;
             pipelineInfo.layout = _layout;

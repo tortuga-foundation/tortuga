@@ -1,7 +1,9 @@
 #pragma warning disable 1591
 using System;
+using System.Numerics;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using ImGuiNET;
 using Vulkan;
 
 namespace Tortuga.Graphics
@@ -17,6 +19,7 @@ namespace Tortuga.Graphics
         private API.Semaphore _renderCommandSemaphore;
         private API.Fence _waitFence;
         private GraphicsModule _module;
+        private ImGuiController _gui;
 
         public override void OnDisable()
         {
@@ -25,6 +28,7 @@ namespace Tortuga.Graphics
         public override void OnEnable()
         {
             _module = Engine.Instance.GetModule<GraphicsModule>();
+
             //render command
             _graphicsCommandPool = new API.CommandPool(
                 API.Handler.MainDevice,
@@ -33,6 +37,7 @@ namespace Tortuga.Graphics
             _renderCommand = _graphicsCommandPool.AllocateCommands()[0];
             _lightCommand = _graphicsCommandPool.AllocateCommands()[0];
             _deferredCommand = _graphicsCommandPool.AllocateCommands()[0];
+            _gui = new ImGuiController();
 
             //sync
             _waitFence = new API.Fence(API.Handler.MainDevice);
@@ -45,6 +50,7 @@ namespace Tortuga.Graphics
         {
             return Task.Run(() =>
             {
+                _gui.NewFrame();
                 var cameras = MyScene.GetComponents<Camera>();
                 foreach (var camera in cameras)
                 {
@@ -58,6 +64,7 @@ namespace Tortuga.Graphics
         {
             return Task.Run(() =>
             {
+                _gui.EndFrame();
                 var cameras = MyScene.GetComponents<Camera>();
                 foreach (var camera in cameras)
                 {
@@ -95,6 +102,9 @@ namespace Tortuga.Graphics
             var cameras = MyScene.GetComponents<Camera>();
             foreach (var camera in cameras)
             {
+                foreach (var t in _gui.Render(camera, _renderCommand))
+                    transferCommands.Add(t.TransferCommand);
+
                 foreach (var t in camera.UpdateLightInfo(lightInfos.ToArray()))
                     transferCommands.Add(t.TransferCommand);
 
@@ -139,7 +149,7 @@ namespace Tortuga.Graphics
 
             _deferredCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             foreach (var camera in cameras)
-            {
+            {                
                 _deferredCommand.BeginRenderPass(_module.DefferedRenderPass, camera.DefferedFramebuffer);
                 _deferredCommand.BindPipeline(camera.DefferedPipeline);
                 _deferredCommand.BindDescriptorSets(

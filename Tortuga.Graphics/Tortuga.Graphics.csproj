@@ -11,6 +11,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ImGui.NET" Version="1.75.0" />
     <ProjectReference Include="..\Tortuga.Core\Tortuga.Core.csproj" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="Vk" Version="1.0.22" />

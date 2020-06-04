@@ -69,11 +69,11 @@ namespace Tortuga.Graphics
         /// <param name="pixels">each pixel of the iamge</param>
         /// <param name="width">width of the image</param>
         /// <param name="height">height of the image</param>
-        public Task BindImage(string key, int binding, ShaderPixel[] pixels, int width, int height)
+        public Task BindImage<T>(string key, int binding, T[] pixels, int width, int height, int elementPerPixel = 1) where T : struct
         {
             return Task.Run(() =>
             {
-                if (pixels != null && pixels.Length != width * height)
+                if (pixels != null && pixels.Length != width * height * elementPerPixel)
                     throw new InvalidOperationException("color length does not match width and height");
 
                 if (_descriptorObjectMapper.ContainsKey(key) == false)
@@ -91,7 +91,7 @@ namespace Tortuga.Graphics
                 {
                     _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateHost(
                         _descriptorObjectMapper[key].Layout.DeviceUsed,
-                        Convert.ToUInt32(width * height * Unsafe.SizeOf<ShaderPixel>()),
+                        Convert.ToUInt32(width * height * Unsafe.SizeOf<T>() * elementPerPixel),
                         VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
                     );
                     _descriptorObjectMapper[key].Images[binding] = new API.Image(
