@@ -5,6 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ImGuiNET;
 using Vulkan;
+using Tortuga.Utils.SDL2;
+using static ImGuiNET.ImGuiNative;
 
 namespace Tortuga.Graphics
 {
@@ -78,7 +80,7 @@ namespace Tortuga.Graphics
             _descriptorHelper.BindBuffer<Matrix4x4>(PROJ_KEY, 0, null, Unsafe.SizeOf<Matrix4x4>()).Wait();
             //font binding
             _descriptorHelper.InsertKey(FONT_KEY, _imGuiDescriptorLayout[1]);
-            _descriptorHelper.BindImage(FONT_KEY, 0, new ShaderPixel[]{ ShaderPixel.White }, 1, 1).Wait();
+            _descriptorHelper.BindImage(FONT_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
 
             //setup render pass
             _renderPass = new API.RenderPass(
@@ -137,6 +139,31 @@ namespace Tortuga.Graphics
             _command = _commandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
 
             this.SetupFonts();
+            this.SetupKeyMappings();
+        }
+
+        private unsafe void SetupKeyMappings()
+        {
+            ImGuiIOPtr io = ImGui.GetIO();
+            io.KeyMap[(int)ImGuiKey.Tab] = (int)SDL_Scancode.SDL_SCANCODE_TAB;
+            io.KeyMap[(int)ImGuiKey.LeftArrow] = (int)SDL_Scancode.SDL_SCANCODE_LEFT;
+            io.KeyMap[(int)ImGuiKey.RightArrow] = (int)SDL_Scancode.SDL_SCANCODE_RIGHT;
+            io.KeyMap[(int)ImGuiKey.UpArrow] = (int)SDL_Scancode.SDL_SCANCODE_UP;
+            io.KeyMap[(int)ImGuiKey.DownArrow] = (int)SDL_Scancode.SDL_SCANCODE_DOWN;
+            io.KeyMap[(int)ImGuiKey.PageUp] = (int)SDL_Scancode.SDL_SCANCODE_PAGEUP;
+            io.KeyMap[(int)ImGuiKey.PageDown] = (int)SDL_Scancode.SDL_SCANCODE_PAGEDOWN;
+            io.KeyMap[(int)ImGuiKey.Home] = (int)SDL_Scancode.SDL_SCANCODE_HOME;
+            io.KeyMap[(int)ImGuiKey.End] = (int)SDL_Scancode.SDL_SCANCODE_END;
+            io.KeyMap[(int)ImGuiKey.Delete] = (int)SDL_Scancode.SDL_SCANCODE_DELETE;
+            io.KeyMap[(int)ImGuiKey.Backspace] = (int)SDL_Scancode.SDL_SCANCODE_BACKSLASH;
+            io.KeyMap[(int)ImGuiKey.Enter] = (int)SDL_Scancode.SDL_SCANCODE_RETURN;
+            io.KeyMap[(int)ImGuiKey.Escape] = (int)SDL_Scancode.SDL_SCANCODE_ESCAPE;
+            io.KeyMap[(int)ImGuiKey.A] = (int)SDL_Scancode.SDL_SCANCODE_A;
+            io.KeyMap[(int)ImGuiKey.C] = (int)SDL_Scancode.SDL_SCANCODE_C;
+            io.KeyMap[(int)ImGuiKey.V] = (int)SDL_Scancode.SDL_SCANCODE_V;
+            io.KeyMap[(int)ImGuiKey.X] = (int)SDL_Scancode.SDL_SCANCODE_X;
+            io.KeyMap[(int)ImGuiKey.Y] = (int)SDL_Scancode.SDL_SCANCODE_Y;
+            io.KeyMap[(int)ImGuiKey.Z] = (int)SDL_Scancode.SDL_SCANCODE_Z;
         }
 
         private unsafe void SetupFonts()
@@ -158,12 +185,7 @@ namespace Tortuga.Graphics
             ImGui.NewFrame();
         }
 
-        public void EndFrame()
-        {
-            ImGui.EndFrame();
-        }
-
-        public API.BufferTransferObject[] Render(Camera camera, API.CommandPool.Command primaryCommand)
+        public unsafe API.BufferTransferObject[] Render(Camera camera, API.CommandPool.Command primaryCommand)
         {
             var transferCommandList = new List<API.BufferTransferObject>();
 
@@ -233,7 +255,7 @@ namespace Tortuga.Graphics
             var resolution = camera.Resolution;
             _width = Convert.ToUInt32(MathF.Round(resolution.X));
             _height = Convert.ToUInt32(MathF.Round(resolution.Y));
-            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, resolution.X, resolution.Y, 0.0f, -1.0f, 1.0f);
+            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, resolution.X, 0.0f, resolution.Y, -1.0f, 1.0f);
             transferCommandList.Add(_descriptorHelper.BindBufferWithTransferObject<Matrix4x4>(PROJ_KEY, 0, new Matrix4x4[] { proj }));
 
             if (_framebuffer.Width != _width || _framebuffer.Height != _height)
@@ -276,7 +298,7 @@ namespace Tortuga.Graphics
                 vertexOffset += cmdList.VtxBuffer.Size;
             }
             _command.End();
-            primaryCommand.ExecuteCommands(new API.CommandPool.Command[]{_command});
+            primaryCommand.ExecuteCommands(new API.CommandPool.Command[] { _command });
             primaryCommand.EndRenderPass();
 
             #endregion

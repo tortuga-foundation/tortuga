@@ -64,7 +64,6 @@ namespace Tortuga.Graphics
         {
             return Task.Run(() =>
             {
-                _gui.EndFrame();
                 var cameras = MyScene.GetComponents<Camera>();
                 foreach (var camera in cameras)
                 {
@@ -259,9 +258,7 @@ namespace Tortuga.Graphics
         {
             return Task.Run(() => 
             {
-                ImGui.Begin("Test");
-                ImGui.Text("Hello World");
-                ImGui.End();
+                ImGui.ShowDemoWindow();
             });
         }
     }
