@@ -5,8 +5,14 @@ using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class RenderPass
+    /// <summary>
+    /// Vulkan render pass
+    /// </summary>
+    public class RenderPass
     {
+        /// <summary>
+        /// render pass create info
+        /// </summary>
         public class CreateInfo
         {
             /// <summary>
@@ -18,6 +24,11 @@ namespace Tortuga.Graphics.API
             /// </summary>
             public bool Store;
 
+            /// <summary>
+            /// constructor for create info
+            /// </summary>
+            /// <param name="clear">should clear image on render pass begin</param>
+            /// <param name="store">should store image on render pass end</param>
             public CreateInfo(bool clear = true, bool store = true)
             {
                 this.Clear = clear;
@@ -25,12 +36,30 @@ namespace Tortuga.Graphics.API
             }
         }
 
+        /// <summary>
+        /// default render pass image color format
+        /// </summary>
         public const VkFormat DEFAULT_COLOR_FORMAT = VkFormat.R32g32b32a32Sfloat;
+        /// <summary>
+        /// default render pass depth format
+        /// </summary>
         public const VkFormat DEFAULT_DEPTH_FORMAT = VkFormat.D32Sfloat;
 
+        /// <summary>
+        /// vulkan render pass handle
+        /// </summary>
         public VkRenderPass Handle => _renderPass;
+        /// <summary>
+        /// device being used for this render pass
+        /// </summary>
         public Device DeviceInUse => _device;
+        /// <summary>
+        /// image color attachments used for this render pass
+        /// </summary>
         public CreateInfo[] ColorAttachments => _colorAttachments;
+        /// <summary>
+        /// depth attachment used for this render pass (can be null if no depth attachment is used)
+        /// </summary>
         public CreateInfo DepthAttachment => _depthAttachment;
 
         private VkRenderPass _renderPass;
@@ -38,6 +67,12 @@ namespace Tortuga.Graphics.API
         private CreateInfo[] _colorAttachments;
         private CreateInfo _depthAttachment;
 
+        /// <summary>
+        /// constructor for render pass
+        /// </summary>
+        /// <param name="device">vulkan device</param>
+        /// <param name="colorAttachments">color attachments</param>
+        /// <param name="depthAttachment">depth attachments</param>
         public unsafe RenderPass(Device device, CreateInfo[] colorAttachments, CreateInfo depthAttachment = null)
         {
             //validate
@@ -118,13 +153,28 @@ namespace Tortuga.Graphics.API
             _renderPass = renderPass;
         }
 
-        unsafe ~RenderPass()
+        /// <summary>
+        /// de-constructor
+        /// </summary>
+        ~RenderPass()
         {
-            vkDestroyRenderPass(
-                _device.LogicalDevice,
-                _renderPass,
-                null
-            );
+            Dispose();
+        }
+
+        /// <summary>
+        /// destroy's render pass
+        /// </summary>
+        public unsafe void Dispose()
+        {
+            if (_renderPass != VkRenderPass.Null)
+            {
+                vkDestroyRenderPass(
+                    _device.LogicalDevice,
+                    _renderPass,
+                    null
+                );
+                _renderPass = VkRenderPass.Null;
+            }
         }
     }
 }

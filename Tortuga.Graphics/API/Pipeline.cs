@@ -1,3 +1,4 @@
+#pragma warning disable 1591
 using System;
 using Vulkan;
 using Tortuga.Utils;
@@ -5,11 +6,88 @@ using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Pipeline
+    /// <summary>
+    /// Rasterization settings for graphics pipeline
+    /// </summary>
+    public class RasterizerInfo
     {
+        public enum FaceCullMode
+        {
+            None = VkCullModeFlags.None,
+            Back = VkCullModeFlags.Back,
+            Front = VkCullModeFlags.Front,
+            FrontAndBack = VkCullModeFlags.FrontAndBack
+        }
+        public enum PolygonFillMode
+        {
+            Fill = VkPolygonMode.Fill,
+            FillRectangleNV = VkPolygonMode.FillRectangleNV,
+            Line = VkPolygonMode.Line,
+            Point = VkPolygonMode.Point
+        }
+        public enum FrontFaceMode
+        {
+            Clockwise = VkFrontFace.Clockwise,
+            CounterClockwise = VkFrontFace.CounterClockwise
+        }
+
+        public FaceCullMode FaceCull => _faceCull;
+        private FaceCullMode _faceCull;
+
+        public PolygonFillMode PolygonFill => _polygonFill;
+        private PolygonFillMode _polygonFill;
+
+        public FrontFaceMode FrontFace => _frontFace;
+        private FrontFaceMode _frontFace;
+
+        public bool DepthClipEnabled => _depthClipEnabled;
+        private bool _depthClipEnabled;
+
+        public RasterizerInfo(
+            FaceCullMode faceCull = FaceCullMode.Back,
+            PolygonFillMode polygonFill = PolygonFillMode.Fill,
+            FrontFaceMode frontFace = FrontFaceMode.Clockwise,
+            bool depthClipEnabled = true
+        )
+        {
+            _faceCull = faceCull;
+            _polygonFill = polygonFill;
+            _frontFace = frontFace;
+            _depthClipEnabled = depthClipEnabled;
+        }
+    }
+    public enum PrimitiveTopology
+    {
+        PointList = VkPrimitiveTopology.PointList,
+        LineList = VkPrimitiveTopology.LineList,
+        LineStrip = VkPrimitiveTopology.LineStrip,
+        TriangleList = VkPrimitiveTopology.TriangleList,
+        TriangleStrip = VkPrimitiveTopology.TriangleStrip,
+        TriangleFan = VkPrimitiveTopology.TriangleFan,
+        LineListWithAdjacency = VkPrimitiveTopology.LineListWithAdjacency,
+        LineStripWithAdjacency = VkPrimitiveTopology.LineStripWithAdjacency,
+        TriangleListWithAdjacency = VkPrimitiveTopology.TriangleListWithAdjacency,
+        TriangleStripWithAdjacency = VkPrimitiveTopology.TriangleStripWithAdjacency,
+        PatchList = VkPrimitiveTopology.PatchList
+    }
+
+    public class Pipeline
+    {
+        /// <summary>
+        /// vulkan pipeline handle
+        /// </summary>
         public VkPipeline Handle => _pipeline;
+        /// <summary>
+        /// vulkan pipeline layout handle
+        /// </summary>
         public VkPipelineLayout Layout => _layout;
+        /// <summary>
+        /// vulkan device being used
+        /// </summary>
         public Device DeviceUsed => _device;
+        /// <summary>
+        /// vulkan render pass being used
+        /// </summary>
         public RenderPass RenderPassUsed => _renderPass;
 
         private VkPipelineLayout _layout;
@@ -39,7 +117,7 @@ namespace Tortuga.Graphics.API
 
         private VkShaderStageFlags ShaderTypeToVulkanFlags(Shader.ShaderType type)
         {
-            switch(type)
+            switch (type)
             {
                 case Shader.ShaderType.Compute:
                     return VkShaderStageFlags.Compute;
@@ -66,7 +144,9 @@ namespace Tortuga.Graphics.API
             Shader vertex,
             Shader fragment,
             PipelineInputBuilder pipelineInputBuilder,
-            uint subPass = 0
+            uint subPass = 0,
+            PrimitiveTopology topology = PrimitiveTopology.TriangleList,
+            RasterizerInfo rasterizerInfo = null
         )
         {
             _renderPass = renderPass;
@@ -76,6 +156,9 @@ namespace Tortuga.Graphics.API
                 if (layout.DeviceUsed != _device)
                     throw new Exception("The descriptor set layout provided belongs to a different device than the render pass");
             }
+
+            if (rasterizerInfo == null)
+                rasterizerInfo = new RasterizerInfo();
 
             var bindingDescriptions = pipelineInputBuilder.BindingDescriptions;
             var attributeDescriptions = pipelineInputBuilder.AttributeDescriptions;
@@ -87,7 +170,7 @@ namespace Tortuga.Graphics.API
             vertexInputInfo.pVertexAttributeDescriptions = (VkVertexInputAttributeDescription*)attributeDescriptions.Data.ToPointer();
 
             var inputAssemble = VkPipelineInputAssemblyStateCreateInfo.New();
-            inputAssemble.topology = VkPrimitiveTopology.TriangleList;
+            inputAssemble.topology = (VkPrimitiveTopology)topology;
             inputAssemble.primitiveRestartEnable = VkBool32.False;
 
             var viewport = new VkViewport(); //dynamic
@@ -100,12 +183,12 @@ namespace Tortuga.Graphics.API
             viewportState.pScissors = &scissor;
 
             var rasterizer = VkPipelineRasterizationStateCreateInfo.New();
-            rasterizer.depthClampEnable = VkBool32.False;
-            rasterizer.rasterizerDiscardEnable = VkBool32.False;
-            rasterizer.polygonMode = VkPolygonMode.Fill;
+            rasterizer.depthClampEnable = rasterizerInfo.DepthClipEnabled;
+            rasterizer.rasterizerDiscardEnable = VkBool32.True;
+            rasterizer.polygonMode = (VkPolygonMode)rasterizerInfo.PolygonFill;
             rasterizer.lineWidth = 1.0f;
-            rasterizer.cullMode = VkCullModeFlags.Back;
-            rasterizer.frontFace = VkFrontFace.Clockwise;
+            rasterizer.cullMode = (VkCullModeFlags)rasterizerInfo.FaceCull;
+            rasterizer.frontFace = (VkFrontFace)rasterizerInfo.FrontFace;
             rasterizer.depthBiasEnable = VkBool32.False;
 
             var multisampling = VkPipelineMultisampleStateCreateInfo.New();
@@ -231,7 +314,7 @@ namespace Tortuga.Graphics.API
                     offset = fullSize,
                     size = (UIntPtr)specEntry.Size
                 });
-                foreach(var b in specEntry.Data)
+                foreach (var b in specEntry.Data)
                     specializationData.Add(b);
                 fullSize += specEntry.Size;
             }
