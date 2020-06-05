@@ -12,6 +12,8 @@ namespace Tortuga.Graphics
 {
     internal class ImGuiController
     {
+        public API.Framebuffer Framebuffer => _framebuffer;
+
         private IntPtr _imGuiContext;
         private API.Buffer _vertexBuffer;
         private API.Buffer _indexBuffer;
@@ -31,7 +33,10 @@ namespace Tortuga.Graphics
 
         public ImGuiController()
         {
+            _descriptorHelper = new DescriptorSetHelper();
             _imGuiContext = ImGui.CreateContext();
+
+            //setup im gui
             ImGui.SetCurrentContext(_imGuiContext);
             ImGui.GetIO().Fonts.AddFontDefault();
             ImGui.StyleColorsDark();
@@ -74,7 +79,6 @@ namespace Tortuga.Graphics
                     }
                 )
             };
-            _descriptorHelper = new DescriptorSetHelper();
             //projection binding
             _descriptorHelper.InsertKey(PROJ_KEY, _imGuiDescriptorLayout[0]);
             _descriptorHelper.BindBuffer<Matrix4x4>(PROJ_KEY, 0, null, Unsafe.SizeOf<Matrix4x4>()).Wait();
@@ -138,6 +142,7 @@ namespace Tortuga.Graphics
             );
             _command = _commandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
 
+            //setup imgui resources
             this.SetupFonts();
             this.SetupKeyMappings();
         }
@@ -190,6 +195,11 @@ namespace Tortuga.Graphics
             var transferCommandList = new List<API.BufferTransferObject>();
 
             #region fetch dear imGui draw data
+
+            var io = ImGui.GetIO();
+            io.DisplaySize = camera.Resolution;
+            io.DisplayFramebufferScale = Vector2.One;
+            io.DeltaTime = Time.DeltaTime;
 
             ImGui.Render();
             var drawData = ImGui.GetDrawData();
@@ -255,7 +265,7 @@ namespace Tortuga.Graphics
             var resolution = camera.Resolution;
             _width = Convert.ToUInt32(MathF.Round(resolution.X));
             _height = Convert.ToUInt32(MathF.Round(resolution.Y));
-            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, resolution.X, 0.0f, resolution.Y, -1.0f, 1.0f);
+            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, resolution.X, resolution.Y, 0.0f, -1.0f, 1.0f);
             transferCommandList.Add(_descriptorHelper.BindBufferWithTransferObject<Matrix4x4>(PROJ_KEY, 0, new Matrix4x4[] { proj }));
 
             if (_framebuffer.Width != _width || _framebuffer.Height != _height)
@@ -276,10 +286,9 @@ namespace Tortuga.Graphics
                     _descriptorHelper.DescriptorObjectMapper[FONT_KEY].Set
                 }
             );
-            _command.SetScissor(0, 0, 1920, 1080);
-            _command.SetViewport(0, 0, 1920, 1080);
             _command.BindVertexBuffer(_vertexBuffer);
             _command.BindIndexBuffer(_indexBuffer);
+            _command.SetViewport(0, 0, _framebuffer.Width, _framebuffer.Height);
             int vertexOffset = 0;
             uint indexOffset = 0;
             for (int i = 0; i < drawData.CmdListsCount; i++)
@@ -291,7 +300,13 @@ namespace Tortuga.Graphics
                     if (pcmd.UserCallback != IntPtr.Zero)
                         throw new NotImplementedException("callbacks are not supported");
 
-                    _command.DrawIndexed(pcmd.ElemCount, 1, indexOffset, vertexOffset);
+                    _command.SetScissor(
+                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.X)), 
+                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.Y)), 
+                        Convert.ToUInt32(MathF.Round(pcmd.ClipRect.Z - pcmd.ClipRect.X)), 
+                        Convert.ToUInt32(MathF.Round(pcmd.ClipRect.W - pcmd.ClipRect.Y))
+                    );
+                    _command.DrawIndexed(pcmd.ElemCount, 1, indexOffset, vertexOffset, 0);
 
                     indexOffset += pcmd.ElemCount;
                 }
