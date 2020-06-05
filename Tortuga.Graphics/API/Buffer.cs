@@ -171,7 +171,11 @@ namespace Tortuga.Graphics.API
                 (void**)&mappedMemory
             ) != VkResult.Success)
                 throw new System.Exception("failed to map vulkan memory");
-            System.Buffer.MemoryCopy((void*)IntPtr.Add(ptr, offset), (void*)IntPtr.Add(mappedMemory, offset), size, size);
+            System.Buffer.MemoryCopy(
+                IntPtr.Add(ptr, offset).ToPointer(), 
+                IntPtr.Add(mappedMemory, offset).ToPointer(),
+                size, size
+            );
             vkUnmapMemory(
                 _device.LogicalDevice,
                 _deviceMemory
