@@ -15,7 +15,7 @@ namespace Tortuga.Test
                 return Task.Run(() =>
                 {
                     var meshes = MyScene.GetComponents<Graphics.Renderer>();
-                    foreach(var mesh in meshes)
+                    foreach (var mesh in meshes)
                     {
                         var transform = mesh.MyEntity.GetComponent<Core.Transform>();
                         if (transform != null)
@@ -25,10 +25,18 @@ namespace Tortuga.Test
                             transform.Position = _position;
                         }
                     }
-                    if (Input.InputModule.IsKeyDown(Input.KeyCode.W)) 
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
                         _position.Z += Time.DeltaTime;
-                    if (Input.InputModule.IsKeyDown(Input.KeyCode.S)) 
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
                         _position.Z -= Time.DeltaTime;
+                });
+            }
+
+            public override Task OnGui()
+            {
+                return Task.Run(() =>
+                {
+                    ImGuiNET.ImGui.ShowDemoWindow();
                 });
             }
         }
