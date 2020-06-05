@@ -165,13 +165,13 @@ namespace Tortuga.Input
                 case SDL_Scancode.SDL_SCANCODE_PAGEDOWN:
                     return KeyCode.PageDown;
                 case SDL_Scancode.SDL_SCANCODE_RIGHT:
-                    return KeyCode.Right;
+                    return KeyCode.RightArrow;
                 case SDL_Scancode.SDL_SCANCODE_LEFT:
-                    return KeyCode.Left;
+                    return KeyCode.LeftArrow;
                 case SDL_Scancode.SDL_SCANCODE_DOWN:
-                    return KeyCode.Down;
+                    return KeyCode.DownArrow;
                 case SDL_Scancode.SDL_SCANCODE_UP:
-                    return KeyCode.Up;
+                    return KeyCode.UpArrow;
                 case SDL_Scancode.SDL_SCANCODE_NUMLOCKCLEAR:
                     return KeyCode.NumLock;
                 case SDL_Scancode.SDL_SCANCODE_KP_DIVIDE:

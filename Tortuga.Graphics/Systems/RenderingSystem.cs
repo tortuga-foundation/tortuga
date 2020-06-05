@@ -14,12 +14,14 @@ namespace Tortuga.Graphics
         private API.CommandPool.Command _renderCommand;
         private API.CommandPool.Command _lightCommand;
         private API.CommandPool.Command _deferredCommand;
+        private API.CommandPool.Command _uiCommand;
         private API.Semaphore _transferCommandSemaphore;
         private API.Semaphore _lightCommandSemaphore;
         private API.Semaphore _renderCommandSemaphore;
+        private API.Semaphore _uiSemaphore;
         private API.Fence _waitFence;
         private GraphicsModule _module;
-        private ImGuiController _gui;
+        private API.UserInterface _gui;
 
         public override void OnDisable()
         {
@@ -28,6 +30,7 @@ namespace Tortuga.Graphics
         public override void OnEnable()
         {
             _module = Engine.Instance.GetModule<GraphicsModule>();
+            _gui = new API.UserInterface();
 
             //render command
             _graphicsCommandPool = new API.CommandPool(
@@ -37,13 +40,14 @@ namespace Tortuga.Graphics
             _renderCommand = _graphicsCommandPool.AllocateCommands()[0];
             _lightCommand = _graphicsCommandPool.AllocateCommands()[0];
             _deferredCommand = _graphicsCommandPool.AllocateCommands()[0];
-            _gui = new ImGuiController();
+            _uiCommand = _graphicsCommandPool.AllocateCommands()[0];
 
             //sync
             _waitFence = new API.Fence(API.Handler.MainDevice);
             _transferCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
             _lightCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
             _renderCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
+            _uiSemaphore = new API.Semaphore(API.Handler.MainDevice);
         }
 
         public override Task EarlyUpdate()
@@ -83,6 +87,11 @@ namespace Tortuga.Graphics
 
                 var transferCommands = new List<API.CommandPool.Command>();
 
+                _uiCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+                foreach (var t in _gui.Render(new Vector2(1920, 1080), _uiCommand))
+                    transferCommands.Add(t.TransferCommand);
+                _uiCommand.End();
+
                 #region light commands
 
                 _lightCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
@@ -104,9 +113,6 @@ namespace Tortuga.Graphics
                 var cameras = MyScene.GetComponents<Camera>();
                 foreach (var camera in cameras)
                 {
-                    foreach (var t in _gui.Render(camera, _renderCommand))
-                        transferCommands.Add(t.TransferCommand);
-
                     foreach (var t in camera.UpdateLightInfo(lightInfos.ToArray()))
                         transferCommands.Add(t.TransferCommand);
 
@@ -245,10 +251,14 @@ namespace Tortuga.Graphics
                     new API.Semaphore[] { _renderCommandSemaphore },
                     semaphores.ToArray()
                 );
+                _uiCommand.Submit(
+                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    new API.Semaphore[]{ _uiSemaphore }
+                );
                 _deferredCommand.Submit(
                     API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                     null,
-                    new API.Semaphore[] { _lightCommandSemaphore, _renderCommandSemaphore },
+                    new API.Semaphore[] { _lightCommandSemaphore, _renderCommandSemaphore, _uiSemaphore },
                     _waitFence
                 );
 

@@ -307,19 +307,19 @@ namespace Tortuga.Input
         /// <summary>
         /// The up arrow key.
         /// </summary>
-        Up = 45,
+        UpArrow = 45,
         /// <summary>
         /// The down arrow key.
         /// </summary>
-        Down = 46,
+        DownArrow = 46,
         /// <summary>
         /// The left arrow key.
         /// </summary>
-        Left = 47,
+        LeftArrow = 47,
         /// <summary>
         /// The right arrow key.
         /// </summary>
-        Right = 48,
+        RightArrow = 48,
         /// <summary>
         /// The enter key.
         /// </summary>

@@ -5,13 +5,14 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using ImGuiNET;
 using Vulkan;
-using Tortuga.Utils.SDL2;
-using static ImGuiNET.ImGuiNative;
 
-namespace Tortuga.Graphics
+namespace Tortuga.Graphics.API
 {
-    internal class ImGuiController
+    internal class UserInterface
     {
+        private const string PROJ_KEY = "PROJECTION";
+        private const string FONT_KEY = "FONT";
+
         public API.Framebuffer Framebuffer => _framebuffer;
 
         private IntPtr _imGuiContext;
@@ -23,23 +24,22 @@ namespace Tortuga.Graphics
         private API.Pipeline _pipeline;
         private API.DescriptorSetLayout[] _imGuiDescriptorLayout;
         private DescriptorSetHelper _descriptorHelper;
-        private const string PROJ_KEY = "PROJECTION";
-        private const string FONT_KEY = "FONT";
         private API.CommandPool _commandPool;
         private API.CommandPool.Command _command;
         private API.Framebuffer _framebuffer;
         private uint _width;
         private uint _height;
+        private UserInterfaceEventSystem _eventSystem;
 
-        public ImGuiController()
+        public UserInterface()
         {
             _descriptorHelper = new DescriptorSetHelper();
-            _imGuiContext = ImGui.CreateContext();
+            _imGuiContext = ImGuiNET.ImGui.CreateContext();
 
             //setup im gui
-            ImGui.SetCurrentContext(_imGuiContext);
-            ImGui.GetIO().Fonts.AddFontDefault();
-            ImGui.StyleColorsDark();
+            ImGuiNET.ImGui.SetCurrentContext(_imGuiContext);
+            ImGuiNET.ImGui.GetIO().Fonts.AddFontDefault();
+            ImGuiNET.ImGui.StyleColorsDark();
 
             //init vertex and index buffers
             _vertexBuffer = API.Buffer.CreateDevice(
@@ -123,11 +123,19 @@ namespace Tortuga.Graphics
                                 //texture coordinate
                                 new PipelineInputBuilder.AttributeElement(PipelineInputBuilder.AttributeElement.FormatType.Float2),
                                 //color
-                                new PipelineInputBuilder.AttributeElement(PipelineInputBuilder.AttributeElement.FormatType.Float4),
+                                new PipelineInputBuilder.AttributeElement(PipelineInputBuilder.AttributeElement.FormatType.Byte4Norm),
                             }
                         }
                     }
-                }
+                },
+                0,
+                API.PrimitiveTopology.TriangleList,
+                new API.RasterizerInfo(
+                    API.RasterizerInfo.FaceCullMode.Back,
+                    API.RasterizerInfo.PolygonFillMode.Fill,
+                    API.RasterizerInfo.FrontFaceMode.Clockwise,
+                    true
+                )
             );
 
             //render command
@@ -144,36 +152,12 @@ namespace Tortuga.Graphics
 
             //setup imgui resources
             this.SetupFonts();
-            this.SetupKeyMappings();
-        }
-
-        private unsafe void SetupKeyMappings()
-        {
-            ImGuiIOPtr io = ImGui.GetIO();
-            io.KeyMap[(int)ImGuiKey.Tab] = (int)SDL_Scancode.SDL_SCANCODE_TAB;
-            io.KeyMap[(int)ImGuiKey.LeftArrow] = (int)SDL_Scancode.SDL_SCANCODE_LEFT;
-            io.KeyMap[(int)ImGuiKey.RightArrow] = (int)SDL_Scancode.SDL_SCANCODE_RIGHT;
-            io.KeyMap[(int)ImGuiKey.UpArrow] = (int)SDL_Scancode.SDL_SCANCODE_UP;
-            io.KeyMap[(int)ImGuiKey.DownArrow] = (int)SDL_Scancode.SDL_SCANCODE_DOWN;
-            io.KeyMap[(int)ImGuiKey.PageUp] = (int)SDL_Scancode.SDL_SCANCODE_PAGEUP;
-            io.KeyMap[(int)ImGuiKey.PageDown] = (int)SDL_Scancode.SDL_SCANCODE_PAGEDOWN;
-            io.KeyMap[(int)ImGuiKey.Home] = (int)SDL_Scancode.SDL_SCANCODE_HOME;
-            io.KeyMap[(int)ImGuiKey.End] = (int)SDL_Scancode.SDL_SCANCODE_END;
-            io.KeyMap[(int)ImGuiKey.Delete] = (int)SDL_Scancode.SDL_SCANCODE_DELETE;
-            io.KeyMap[(int)ImGuiKey.Backspace] = (int)SDL_Scancode.SDL_SCANCODE_BACKSLASH;
-            io.KeyMap[(int)ImGuiKey.Enter] = (int)SDL_Scancode.SDL_SCANCODE_RETURN;
-            io.KeyMap[(int)ImGuiKey.Escape] = (int)SDL_Scancode.SDL_SCANCODE_ESCAPE;
-            io.KeyMap[(int)ImGuiKey.A] = (int)SDL_Scancode.SDL_SCANCODE_A;
-            io.KeyMap[(int)ImGuiKey.C] = (int)SDL_Scancode.SDL_SCANCODE_C;
-            io.KeyMap[(int)ImGuiKey.V] = (int)SDL_Scancode.SDL_SCANCODE_V;
-            io.KeyMap[(int)ImGuiKey.X] = (int)SDL_Scancode.SDL_SCANCODE_X;
-            io.KeyMap[(int)ImGuiKey.Y] = (int)SDL_Scancode.SDL_SCANCODE_Y;
-            io.KeyMap[(int)ImGuiKey.Z] = (int)SDL_Scancode.SDL_SCANCODE_Z;
+            _eventSystem = new UserInterfaceEventSystem();
         }
 
         private unsafe void SetupFonts()
         {
-            var io = ImGui.GetIO();
+            var io = ImGuiNET.ImGui.GetIO();
             io.Fonts.GetTexDataAsRGBA32(out byte* pixel, out int width, out int height, out int bytesPerPixel);
 
             io.Fonts.SetTexID((IntPtr)1);
@@ -187,24 +171,27 @@ namespace Tortuga.Graphics
 
         public void NewFrame()
         {
-            ImGui.NewFrame();
+            ImGuiNET.ImGui.NewFrame();
         }
 
-        public unsafe API.BufferTransferObject[] Render(Camera camera, API.CommandPool.Command primaryCommand)
+        public unsafe API.BufferTransferObject[] Render(Vector2 canvasSize, API.CommandPool.Command primaryCommand)
         {
+            var canvasWidth = Convert.ToInt32(MathF.Round(canvasSize.X));
+            var canvasHeight = Convert.ToInt32(MathF.Round(canvasSize.Y));
+
             var transferCommandList = new List<API.BufferTransferObject>();
 
             #region fetch dear imGui draw data
 
-            var io = ImGui.GetIO();
-            io.DisplaySize = camera.Resolution;
-            io.DisplayFramebufferScale = Vector2.One;
-            io.DeltaTime = Time.DeltaTime;
-
-            ImGui.Render();
-            var drawData = ImGui.GetDrawData();
+            ImGuiNET.ImGui.Render();
+            var drawData = ImGuiNET.ImGui.GetDrawData();
             if (drawData.CmdListsCount == 0)
                 return new API.BufferTransferObject[] { };
+
+            var io = ImGuiNET.ImGui.GetIO();
+            io.DisplaySize = new Vector2(canvasWidth, canvasHeight);
+            io.DisplayFramebufferScale = Vector2.One;
+            io.DeltaTime = Time.DeltaTime;
 
             #endregion
 
@@ -262,10 +249,7 @@ namespace Tortuga.Graphics
 
             #region projection matrix update
 
-            var resolution = camera.Resolution;
-            _width = Convert.ToUInt32(MathF.Round(resolution.X));
-            _height = Convert.ToUInt32(MathF.Round(resolution.Y));
-            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, resolution.X, resolution.Y, 0.0f, -1.0f, 1.0f);
+            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, canvasWidth, 0.0f, canvasHeight, -1.0f, 1.0f);
             transferCommandList.Add(_descriptorHelper.BindBufferWithTransferObject<Matrix4x4>(PROJ_KEY, 0, new Matrix4x4[] { proj }));
 
             if (_framebuffer.Width != _width || _framebuffer.Height != _height)
@@ -301,9 +285,9 @@ namespace Tortuga.Graphics
                         throw new NotImplementedException("callbacks are not supported");
 
                     _command.SetScissor(
-                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.X)), 
-                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.Y)), 
-                        Convert.ToUInt32(MathF.Round(pcmd.ClipRect.Z - pcmd.ClipRect.X)), 
+                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.X)),
+                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.Y)),
+                        Convert.ToUInt32(MathF.Round(pcmd.ClipRect.Z - pcmd.ClipRect.X)),
                         Convert.ToUInt32(MathF.Round(pcmd.ClipRect.W - pcmd.ClipRect.Y))
                     );
                     _command.DrawIndexed(pcmd.ElemCount, 1, indexOffset, vertexOffset, 0);
