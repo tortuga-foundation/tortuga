@@ -184,7 +184,7 @@ namespace Tortuga.Graphics.API
 
             var rasterizer = VkPipelineRasterizationStateCreateInfo.New();
             rasterizer.depthClampEnable = rasterizerInfo.DepthClipEnabled;
-            rasterizer.rasterizerDiscardEnable = VkBool32.True;
+            rasterizer.rasterizerDiscardEnable = VkBool32.False;
             rasterizer.polygonMode = (VkPolygonMode)rasterizerInfo.PolygonFill;
             rasterizer.lineWidth = 1.0f;
             rasterizer.cullMode = (VkCullModeFlags)rasterizerInfo.FaceCull;
