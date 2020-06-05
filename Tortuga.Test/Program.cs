@@ -10,29 +10,6 @@ namespace Tortuga.Test
             private float _rotation = 0.0f;
             private Vector3 _position = new Vector3(0, 0, -5);
 
-            public override Task EarlyUpdate()
-            {
-                return Task.Run(() => { });
-            }
-
-            public override Task LateUpdate()
-            {
-                return Task.Run(() => { });
-            }
-
-            public override void OnDisable()
-            {
-            }
-
-            public override void OnEnable()
-            {
-            }
-
-            public override Task OnGui()
-            {
-                return Task.Run(() => {});
-            }
-
             public override Task Update()
             {
                 return Task.Run(() =>

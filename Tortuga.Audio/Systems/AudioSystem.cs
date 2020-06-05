@@ -9,16 +9,6 @@ namespace Tortuga.Audio
     /// </summary>
     public class AudioSystem : Core.BaseSystem
     {
-        public override Task EarlyUpdate()
-        {
-            return Task.Run(() => { });
-        }
-
-        public override Task LateUpdate()
-        {
-            return Task.Run(() => { });
-        }
-
         /// <summary>
         /// Called when system is disabled
         /// </summary>
@@ -38,11 +28,6 @@ namespace Tortuga.Audio
             var audioSource = MyScene.GetComponents<AudioSource>();
             foreach (var source in audioSource)
                 source.Play();
-        }
-
-        public override Task OnGui()
-        {
-            return Task.Run(() => { });
         }
 
         /// <summary>

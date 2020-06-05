@@ -3,7 +3,6 @@ using System;
 using System.Numerics;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ImGuiNET;
 using Vulkan;
 
 namespace Tortuga.Graphics
@@ -22,10 +21,6 @@ namespace Tortuga.Graphics
         private API.Fence _waitFence;
         private GraphicsModule _module;
         private API.UserInterface _gui;
-
-        public override void OnDisable()
-        {
-        }
 
         public override void OnEnable()
         {
@@ -263,14 +258,6 @@ namespace Tortuga.Graphics
                 );
 
                 #endregion
-            });
-        }
-
-        public override Task OnGui()
-        {
-            return Task.Run(() =>
-            {
-                ImGui.ShowDemoWindow();
             });
         }
     }

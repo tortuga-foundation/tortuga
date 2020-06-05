@@ -11,7 +11,7 @@ namespace Tortuga.Core
     /// Base system class
     /// NOTE: please use BaseSystem.Create instead of constructor
     /// </summary>
-    public abstract class BaseSystem
+    public class BaseSystem
     {
 #if TORTUGA_PROFILER
 
@@ -41,31 +41,31 @@ namespace Tortuga.Core
         /// <summary>
         /// Update method, this runs once per frame
         /// </summary>
-        public abstract Task Update();
+        public virtual Task Update() => Task.Run(() => {});
 
         /// <summary>
         /// Runs every frame before update method
         /// </summary>
-        public abstract Task EarlyUpdate();
+        public virtual Task EarlyUpdate() => Task.Run(() => {});
 
         /// <summary>
         /// All GUI commands must run inside this function
         /// </summary>
-        public abstract Task OnGui();
+        public virtual Task OnGui() => Task.Run(() => {});
 
         /// <summary>
         /// Runs every frame after update method
         /// </summary>
-        public abstract Task LateUpdate();
+        public virtual Task LateUpdate() => Task.Run(() => {});
 
         /// <summary>
         /// this method runs on all systems when a scene is loaded and the system is inside the scene
         /// </summary>
-        public abstract void OnEnable();
+        public virtual void OnEnable(){}
         /// <summary>
         /// this method runs on all systems when a scene is unloaded or changed and the system is inside the scene
         /// </summary>
-        public abstract void OnDisable();
+        public virtual void OnDisable(){}
 
         /// <summary>
         /// This is used to create a new system and setup all objects required for the system
