@@ -159,7 +159,7 @@ namespace Tortuga.Graphics.API
             false
         );
 
-        public unsafe void SetData(IntPtr ptr, int offset, int size)
+        public unsafe void SetData(IntPtr ptr, int sourceOffset, int destinationOffset, int size)
         {
             IntPtr mappedMemory;
             if (vkMapMemory(
@@ -172,8 +172,8 @@ namespace Tortuga.Graphics.API
             ) != VkResult.Success)
                 throw new System.Exception("failed to map vulkan memory");
             System.Buffer.MemoryCopy(
-                IntPtr.Add(ptr, offset).ToPointer(), 
-                IntPtr.Add(mappedMemory, offset).ToPointer(),
+                IntPtr.Add(ptr, sourceOffset).ToPointer(),
+                IntPtr.Add(mappedMemory, destinationOffset).ToPointer(),
                 size, size
             );
             vkUnmapMemory(
@@ -269,9 +269,14 @@ namespace Tortuga.Graphics.API
             };
         }
 
-        internal BufferTransferObject SetDataGetTransferObject(IntPtr ptr, int offset, int size)
+        internal BufferTransferObject SetDataGetTransferObject(
+            IntPtr ptr,
+            int sourceOffset,
+            int destinationOffset,
+            int size
+        )
         {
-            _staging.SetData(ptr, offset, size);
+            _staging.SetData(ptr, sourceOffset, destinationOffset, size);
             return new BufferTransferObject
             {
                 commandPool = _commandPool,

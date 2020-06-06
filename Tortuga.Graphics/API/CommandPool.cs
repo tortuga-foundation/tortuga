@@ -445,15 +445,14 @@ namespace Tortuga.Graphics.API
                 };
                 vkCmdSetViewport(_handle, 0, 1, &viewport);
             }
-            public unsafe void BindVertexBuffer(Buffer vertexBuffer, uint bindPoint = 0)
+            public unsafe void BindVertexBuffer(Buffer vertexBuffer, uint bindPoint = 0, ulong offset = 0)
             {
-                ulong offset = 0;
+                ulong privateOffset = offset;
                 var buffer = vertexBuffer.Handle;
-                vkCmdBindVertexBuffers(_handle, bindPoint, 1, &buffer, &offset);
+                vkCmdBindVertexBuffers(_handle, bindPoint, 1, &buffer, &privateOffset);
             }
-            public unsafe void BindIndexBuffer(Buffer indexBuffer)
+            public unsafe void BindIndexBuffer(Buffer indexBuffer, ulong offset = 0)
             {
-                ulong offset = 0;
                 var buffer = indexBuffer.Handle;
                 vkCmdBindIndexBuffer(_handle, buffer, offset, VkIndexType.Uint16);
             }

@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
+using ImGuiNET;
 
 namespace Tortuga.Test
 {
@@ -36,7 +37,7 @@ namespace Tortuga.Test
             {
                 return Task.Run(() =>
                 {
-                    ImGuiNET.ImGui.ShowDemoWindow();
+                    ImGui.ShowDemoWindow();
                 });
             }
         }
@@ -55,7 +56,7 @@ namespace Tortuga.Test
                 "Tortuga",
                 0, 0,
                 1920, 1080,
-                Graphics.WindowType.Window
+                Graphics.WindowType.ResizeableWindow
             );
             Input.InputModule.OnWindowClose += (uint windowId) =>
             {

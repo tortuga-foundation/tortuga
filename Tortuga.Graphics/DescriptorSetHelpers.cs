@@ -90,6 +90,8 @@ namespace Tortuga.Graphics
 
                 if (createNew)
                 {
+                    if (_descriptorObjectMapper[key].Buffers[binding] != null)
+                        _descriptorObjectMapper[key].Buffers[binding].Dispose();
                     _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateHost(
                         _descriptorObjectMapper[key].Layout.DeviceUsed,
                         Convert.ToUInt32(width * height * Unsafe.SizeOf<T>() * elementPerPixel),
@@ -194,6 +196,8 @@ namespace Tortuga.Graphics
 
             if (createNew)
             {
+                if (_descriptorObjectMapper[key].Buffers[binding] != null)
+                    _descriptorObjectMapper[key].Buffers[binding].Dispose();
                 _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateDevice(
                     _descriptorObjectMapper[key].Layout.DeviceUsed,
                     Convert.ToUInt32(actualSize),

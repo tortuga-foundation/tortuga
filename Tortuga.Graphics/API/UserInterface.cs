@@ -92,7 +92,8 @@ namespace Tortuga.Graphics.API
                 new API.RenderPass.CreateInfo[]
                 {
                     new API.RenderPass.CreateInfo()
-                }
+                },
+                new RenderPass.CreateInfo()
             );
 
             //setup pipeline
@@ -176,133 +177,150 @@ namespace Tortuga.Graphics.API
 
         public unsafe API.BufferTransferObject[] Render(Vector2 canvasSize, API.CommandPool.Command primaryCommand)
         {
-            var canvasWidth = Convert.ToInt32(MathF.Round(canvasSize.X));
-            var canvasHeight = Convert.ToInt32(MathF.Round(canvasSize.Y));
-
-            var transferCommandList = new List<API.BufferTransferObject>();
-
-            #region fetch dear imGui draw data
-
-            ImGuiNET.ImGui.Render();
-            var drawData = ImGuiNET.ImGui.GetDrawData();
-            if (drawData.CmdListsCount == 0)
-                return new API.BufferTransferObject[] { };
-
-            var io = ImGuiNET.ImGui.GetIO();
-            io.DisplaySize = new Vector2(canvasWidth, canvasHeight);
-            io.DisplayFramebufferScale = Vector2.One;
-            io.DeltaTime = Time.DeltaTime;
-
-            #endregion
-
-            #region update vertex and index buffer size
-
-            var totalVBSize = Convert.ToUInt32(drawData.TotalVtxCount * Unsafe.SizeOf<ImDrawVert>());
-            if (_vertexBuffer.Size < totalVBSize)
+            try
             {
-                _vertexBuffer.Dispose();
-                _vertexBuffer = API.Buffer.CreateDevice(
-                    API.Handler.MainDevice,
-                    Convert.ToUInt32(MathF.Round(totalVBSize * 1.5f)),
-                    VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst
-                );
-            }
+                var canvasWidth = Convert.ToInt32(MathF.Round(canvasSize.X));
+                var canvasHeight = Convert.ToInt32(MathF.Round(canvasSize.Y));
 
-            var totalIBSize = Convert.ToUInt32(drawData.TotalIdxCount * sizeof(ushort));
-            if (_indexBuffer.Size < totalIBSize)
-            {
-                _indexBuffer.Dispose();
-                _indexBuffer = API.Buffer.CreateDevice(
-                    API.Handler.MainDevice,
-                    Convert.ToUInt32(MathF.Round(totalIBSize * 1.5f)),
-                    VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
-                );
-            }
+                var transferCommandList = new List<API.BufferTransferObject>();
 
-            #endregion
+                #region fetch dear imGui draw data
 
-            #region copy vertex and index buffer data
+                ImGuiNET.ImGui.Render();
+                var drawData = ImGuiNET.ImGui.GetDrawData();
+                if (drawData.CmdListsCount == 0)
+                    return new API.BufferTransferObject[] { };
 
-            uint vertexOffsetInVertices = 0;
-            uint indexOffsetInElements = 0;
-            for (int i = 0; i < drawData.CmdListsCount; i++)
-            {
-                var cmdList = drawData.CmdListsRange[i];
+                var io = ImGuiNET.ImGui.GetIO();
+                io.DisplaySize = new Vector2(canvasWidth, canvasHeight);
+                io.DisplayFramebufferScale = Vector2.One;
+                io.DeltaTime = Time.DeltaTime;
 
-                transferCommandList.Add(_vertexBuffer.SetDataGetTransferObject(
-                    cmdList.VtxBuffer.Data,
-                    Convert.ToInt32(vertexOffsetInVertices * Unsafe.SizeOf<ImDrawVert>()),
-                    Convert.ToInt32(cmdList.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>())
-                ));
+                #endregion
 
-                transferCommandList.Add(_indexBuffer.SetDataGetTransferObject(
-                    cmdList.IdxBuffer.Data,
-                    Convert.ToInt32(indexOffsetInElements * sizeof(ushort)),
-                    Convert.ToInt32(cmdList.IdxBuffer.Size * sizeof(ushort))
-                ));
+                #region update vertex and index buffer size
 
-                vertexOffsetInVertices += (uint)cmdList.VtxBuffer.Size;
-                indexOffsetInElements += (uint)cmdList.IdxBuffer.Size;
-            }
-
-            #endregion
-
-            #region projection matrix update
-
-            var proj = Matrix4x4.CreateOrthographicOffCenter(0f, canvasWidth, 0.0f, canvasHeight, -1.0f, 1.0f);
-            transferCommandList.Add(_descriptorHelper.BindBufferWithTransferObject<Matrix4x4>(PROJ_KEY, 0, new Matrix4x4[] { proj }));
-
-            if (_framebuffer.Width != _width || _framebuffer.Height != _height)
-                _framebuffer = new API.Framebuffer(_renderPass, _width, _height);
-
-            #endregion
-
-            #region Render Command
-
-            primaryCommand.BeginRenderPass(_renderPass, _framebuffer);
-            _command.Begin(VkCommandBufferUsageFlags.RenderPassContinue, _renderPass, _framebuffer);
-            _command.BindPipeline(_pipeline);
-            _command.BindDescriptorSets(
-                _pipeline,
-                new API.DescriptorSetPool.DescriptorSet[]
+                var totalVBSize = Convert.ToUInt32(drawData.TotalVtxCount * Unsafe.SizeOf<ImDrawVert>());
+                if (_vertexBuffer.Size < totalVBSize)
                 {
-                    _descriptorHelper.DescriptorObjectMapper[PROJ_KEY].Set,
-                    _descriptorHelper.DescriptorObjectMapper[FONT_KEY].Set
-                }
-            );
-            _command.BindVertexBuffer(_vertexBuffer);
-            _command.BindIndexBuffer(_indexBuffer);
-            _command.SetViewport(0, 0, _framebuffer.Width, _framebuffer.Height);
-            int vertexOffset = 0;
-            uint indexOffset = 0;
-            for (int i = 0; i < drawData.CmdListsCount; i++)
-            {
-                var cmdList = drawData.CmdListsRange[i];
-                for (int j = 0; j < cmdList.CmdBuffer.Size; j++)
-                {
-                    var pcmd = cmdList.CmdBuffer[j];
-                    if (pcmd.UserCallback != IntPtr.Zero)
-                        throw new NotImplementedException("callbacks are not supported");
-
-                    _command.SetScissor(
-                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.X)),
-                        Convert.ToInt32(MathF.Round(pcmd.ClipRect.Y)),
-                        Convert.ToUInt32(MathF.Round(pcmd.ClipRect.Z - pcmd.ClipRect.X)),
-                        Convert.ToUInt32(MathF.Round(pcmd.ClipRect.W - pcmd.ClipRect.Y))
+                    if (_vertexBuffer != null)
+                        _vertexBuffer.Dispose();
+                    _vertexBuffer = API.Buffer.CreateDevice(
+                        API.Handler.MainDevice,
+                        totalVBSize,
+                        VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst
                     );
-                    _command.DrawIndexed(pcmd.ElemCount, 1, indexOffset, vertexOffset, 0);
-
-                    indexOffset += pcmd.ElemCount;
                 }
-                vertexOffset += cmdList.VtxBuffer.Size;
+
+                var totalIBSize = Convert.ToUInt32(drawData.TotalIdxCount * sizeof(ushort));
+                if (_indexBuffer.Size < totalIBSize)
+                {
+                    if (_indexBuffer != null)
+                        _indexBuffer.Dispose();
+                    _indexBuffer = API.Buffer.CreateDevice(
+                        API.Handler.MainDevice,
+                        totalIBSize,
+                        VkBufferUsageFlags.IndexBuffer | VkBufferUsageFlags.TransferDst
+                    );
+                }
+
+                #endregion
+
+                #region copy vertex and index buffer data
+
+                uint vertexOffsetInVertices = 0;
+                uint indexOffsetInElements = 0;
+                for (int i = 0; i < drawData.CmdListsCount; i++)
+                {
+                    var cmdList = drawData.CmdListsRange[i];
+
+                    transferCommandList.Add(_vertexBuffer.SetDataGetTransferObject(
+                        cmdList.VtxBuffer.Data,
+                        0,
+                        Convert.ToInt32(vertexOffsetInVertices * Unsafe.SizeOf<ImDrawVert>()),
+                        Convert.ToInt32(cmdList.VtxBuffer.Size * Unsafe.SizeOf<ImDrawVert>())
+                    ));
+
+                    transferCommandList.Add(_indexBuffer.SetDataGetTransferObject(
+                        cmdList.IdxBuffer.Data,
+                        0,
+                        Convert.ToInt32(indexOffsetInElements * sizeof(ushort)),
+                        Convert.ToInt32(cmdList.IdxBuffer.Size * sizeof(ushort))
+                    ));
+
+                    vertexOffsetInVertices += (uint)cmdList.VtxBuffer.Size;
+                    indexOffsetInElements += (uint)cmdList.IdxBuffer.Size;
+                }
+
+                #endregion
+
+                #region projection matrix update
+
+                var proj = Matrix4x4.CreateOrthographicOffCenter(0f, canvasWidth, 0.0f, canvasHeight, -1.0f, 1.0f);
+                transferCommandList.Add(_descriptorHelper.BindBufferWithTransferObject<Matrix4x4>(PROJ_KEY, 0, new Matrix4x4[] { proj }));
+
+                if (_framebuffer.Width != _width || _framebuffer.Height != _height)
+                    _framebuffer = new API.Framebuffer(_renderPass, _width, _height);
+
+                #endregion
+
+                #region Render Command
+
+                primaryCommand.BeginRenderPass(_renderPass, _framebuffer);
+                _command.Begin(VkCommandBufferUsageFlags.RenderPassContinue, _renderPass, _framebuffer);
+                _command.BindPipeline(_pipeline);
+                _command.BindDescriptorSets(
+                    _pipeline,
+                    new API.DescriptorSetPool.DescriptorSet[]
+                    {
+                _descriptorHelper.DescriptorObjectMapper[PROJ_KEY].Set,
+                _descriptorHelper.DescriptorObjectMapper[FONT_KEY].Set
+                    }
+                );
+                _command.BindVertexBuffer(_vertexBuffer);
+                _command.BindIndexBuffer(_indexBuffer);
+                _command.SetViewport(0, 0, _framebuffer.Width, _framebuffer.Height);
+                int vertexOffset = 0;
+                uint indexOffset = 0;
+                for (int i = 0; i < drawData.CmdListsCount; i++)
+                {
+                    var cmdList = drawData.CmdListsRange[i];
+                    for (int j = 0; j < cmdList.CmdBuffer.Size; j++)
+                    {
+                        var pcmd = cmdList.CmdBuffer[j];
+                        if (pcmd.UserCallback != IntPtr.Zero)
+                            throw new NotImplementedException("callbacks are not supported");
+
+                        _command.SetScissor(
+                            Convert.ToInt32(MathF.Round(pcmd.ClipRect.X)),
+                            Convert.ToInt32(MathF.Round(pcmd.ClipRect.Y)),
+                            Convert.ToUInt32(MathF.Round(pcmd.ClipRect.Z - pcmd.ClipRect.X)),
+                            Convert.ToUInt32(MathF.Round(pcmd.ClipRect.W - pcmd.ClipRect.Y))
+                        );
+                        _command.DrawIndexed(
+                            pcmd.ElemCount, 
+                            1, 
+                            indexOffset + pcmd.IdxOffset, 
+                            Convert.ToInt32(vertexOffset + pcmd.VtxOffset), 
+                            0
+                        );
+                    }
+                    indexOffset += Convert.ToUInt32(cmdList.IdxBuffer.Size);
+                    vertexOffset += cmdList.VtxBuffer.Size;
+                }
+                _command.End();
+                primaryCommand.ExecuteCommands(new API.CommandPool.Command[] { _command });
+                primaryCommand.EndRenderPass();
+
+                #endregion
+
+                return transferCommandList.ToArray();
             }
-            _command.End();
-            primaryCommand.ExecuteCommands(new API.CommandPool.Command[] { _command });
-            primaryCommand.EndRenderPass();
-
-            #endregion
-
-            return transferCommandList.ToArray();
+            catch (Exception exc)
+            {
+                Console.WriteLine(string.Format("ImGui failed to render {0}", exc.ToString()));
+                return new BufferTransferObject[] { };
+            }
         }
     }
 }
