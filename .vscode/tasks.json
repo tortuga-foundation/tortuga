@@ -18,7 +18,9 @@
       "label": "restore",
       "command": "restore",
       "type": "shell",
-      "args": ["${workspaceFolder}/tortuga.sln"],
+      "args": [
+        "${workspaceFolder}/tortuga.sln"
+      ],
       "problemMatcher": []
     },
     {
@@ -29,16 +31,29 @@
         "-r",
         "${workspaceFolder}/Tortuga.Test/obj",
         "${workspaceFolder}/Tortuga.Test/bin",
-        "${workspaceFolder}/Tortuga/obj",
-        "${workspaceFolder}/Tortuga/bin"
+        "${workspaceFolder}/Tortuga.Core/obj",
+        "${workspaceFolder}/Tortuga.Core/bin",
+        "${workspaceFolder}/Tortuga.Input/obj",
+        "${workspaceFolder}/Tortuga.Input/bin",
+        "${workspaceFolder}/Tortuga.Audio/obj",
+        "${workspaceFolder}/Tortuga.Audio/bin",
+        "${workspaceFolder}/Tortuga.Graphics/obj",
+        "${workspaceFolder}/Tortuga.Graphics/bin"
       ],
-      "problemMatcher": []
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "pack",
       "command": "dotnet",
       "type": "shell",
-      "args": ["pack", "${workspaceFolder}/tortuga.sln"],
+      "args": [
+        "pack",
+        "${workspaceFolder}/tortuga.sln"
+      ],
       "problemMatcher": []
     }
   ]

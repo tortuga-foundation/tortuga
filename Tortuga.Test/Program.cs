@@ -38,6 +38,9 @@ namespace Tortuga.Test
                 return Task.Run(() =>
                 {
                     ImGui.ShowDemoWindow();
+                    ImGui.BeginPopupContextWindow();
+                    ImGui.Text("Hello World");
+                    ImGui.EndPopup();
                 });
             }
         }
