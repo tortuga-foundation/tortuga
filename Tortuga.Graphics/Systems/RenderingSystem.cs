@@ -20,12 +20,10 @@ namespace Tortuga.Graphics
         private API.Semaphore _uiSemaphore;
         private API.Fence _waitFence;
         private GraphicsModule _module;
-        private API.UserInterface _gui;
 
         public override void OnEnable()
         {
             _module = Engine.Instance.GetModule<GraphicsModule>();
-            _gui = new API.UserInterface();
 
             //render command
             _graphicsCommandPool = new API.CommandPool(
@@ -49,12 +47,10 @@ namespace Tortuga.Graphics
         {
             return Task.Run(() =>
             {
-                _gui.NewFrame();
-                var cameras = MyScene.GetComponents<Camera>();
-                foreach (var camera in cameras)
+                foreach (var window in Window.TotalWindows)
                 {
-                    if (camera.RenderToWindow != null)
-                        camera.RenderToWindow.AcquireSwapchainImage();
+                    window.Value.AcquireSwapchainImage();
+                    window.Value.UserInterface.NewFrame();
                 }
             });
         }
@@ -65,12 +61,8 @@ namespace Tortuga.Graphics
             await _waitFence.WaitAsync();
 
             //present each window
-            var cameras = MyScene.GetComponents<Camera>();
-            foreach (var camera in cameras)
-            {
-                if (camera.RenderToWindow != null)
-                    camera.RenderToWindow.Present();
-            }
+            foreach (var window in Window.TotalWindows)
+                window.Value.Present();
         }
 
         public override Task Update()
@@ -81,11 +73,6 @@ namespace Tortuga.Graphics
                     return;
 
                 var transferCommands = new List<API.CommandPool.Command>();
-
-                _uiCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-                foreach (var t in _gui.Render(new Vector2(1920, 1080), _uiCommand))
-                    transferCommands.Add(t.TransferCommand);
-                _uiCommand.End();
 
                 #region light commands
 
@@ -177,56 +164,63 @@ namespace Tortuga.Graphics
                     _deferredCommand.Draw(6);
                     _deferredCommand.EndRenderPass();
 
-                    //make sure window exists before rendering
-                    if (camera.RenderToWindow != null && camera.RenderToWindow.Exists)
-                    {
-                        var swapchian = camera.RenderToWindow.Swapchain;
-                        var windowResolution = camera.RenderToWindow.Size;
-                        API.Image imageAttachment = _gui.Framebuffer.AttachmentImages[0];
-                        //if (camera.RenderTarget == Camera.TypeOfRenderTarget.DeferredRendering)
-                        //    imageAttachment = camera.DefferedFramebuffer.AttachmentImages[0];
-                        //else
-                        //    imageAttachment = camera.Framebuffer.AttachmentImages[(int)camera.RenderTarget];
-
-                        _deferredCommand.TransferImageLayout(
-                            imageAttachment,
-                            VkImageLayout.ColorAttachmentOptimal,
-                            VkImageLayout.TransferSrcOptimal
-                        );
-                        _deferredCommand.TransferImageLayout(
-                            camera.RenderToWindow.CurrentImage,
-                            swapchian.ImagesFormat,
-                            VkImageLayout.Undefined,
-                            VkImageLayout.TransferDstOptimal
-                        );
-                        _deferredCommand.BlitImage(
-                            imageAttachment.ImageHandle,
-                            0, 0,
-                            Convert.ToInt32(camera.Resolution.X),
-                            Convert.ToInt32(camera.Resolution.Y),
-                            0,
-                            camera.RenderToWindow.CurrentImage,
-                            Convert.ToInt32(camera.Viewport.X * windowResolution.X),
-                            Convert.ToInt32(camera.Viewport.Y * windowResolution.Y),
-                            Convert.ToInt32(camera.Viewport.Z * windowResolution.X),
-                            Convert.ToInt32(camera.Viewport.W * windowResolution.Y),
-                            0
-                        );
-                        _deferredCommand.TransferImageLayout(
-                            camera.RenderToWindow.CurrentImage,
-                            swapchian.ImagesFormat,
-                            VkImageLayout.TransferDstOptimal,
-                            VkImageLayout.PresentSrcKHR
-                        );
-                    }
                 }
                 _deferredCommand.End();
+
+                #endregion
+
+                #region User Interface
+
+                _uiCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+
+                foreach (var window in Window.TotalWindows)
+                {
+                    foreach (var t in window.Value.UserInterface.Render(window.Value.Size, _uiCommand))
+                    {
+                        transferCommands.Add(t.TransferCommand);
+                    }
+
+                    window.Value.AquireSwapchainTaskContainer.Wait();
+
+                    _uiCommand.TransferImageLayout(
+                        window.Value.UserInterface.Framebuffer.AttachmentImages[0],
+                        VkImageLayout.ColorAttachmentOptimal,
+                        VkImageLayout.TransferSrcOptimal
+                    );
+                    _uiCommand.TransferImageLayout(
+                        window.Value.CurrentImage,
+                        window.Value.Swapchain.ImagesFormat,
+                        VkImageLayout.Undefined,
+                        VkImageLayout.TransferDstOptimal
+                    );
+                    _uiCommand.BlitImage(
+                        window.Value.UserInterface.Framebuffer.AttachmentImages[0].ImageHandle,
+                        0, 0,
+                        Convert.ToInt32(window.Value.UserInterface.Framebuffer.Width),
+                        Convert.ToInt32(window.Value.UserInterface.Framebuffer.Height),
+                        0,
+                        window.Value.CurrentImage,
+                        0, 0,
+                        Convert.ToInt32(window.Value.Swapchain.Extent.width),
+                        Convert.ToInt32(window.Value.Swapchain.Extent.height),
+                        0
+                    );
+                    _uiCommand.TransferImageLayout(
+                        window.Value.CurrentImage,
+                        window.Value.Swapchain.ImagesFormat,
+                        VkImageLayout.TransferDstOptimal,
+                        VkImageLayout.PresentSrcKHR
+                    );
+                }
+
+                _uiCommand.End();
 
                 #endregion
 
                 #region submit commands and sync
 
                 var semaphores = new List<API.Semaphore>();
+                //process transfer command
                 if (transferCommands.Count > 0)
                 {
                     semaphores.Add(_transferCommandSemaphore);
@@ -236,24 +230,29 @@ namespace Tortuga.Graphics
                         semaphores.ToArray()
                     );
                 }
+                //process light commands (Shadow Mapping)
                 _lightCommand.Submit(
                     API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                     new API.Semaphore[] { _lightCommandSemaphore },
                     semaphores.ToArray()
                 );
+                //process render commands (MRT)
                 _renderCommand.Submit(
                     API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                     new API.Semaphore[] { _renderCommandSemaphore },
                     semaphores.ToArray()
                 );
-                _uiCommand.Submit(
-                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
-                    new API.Semaphore[]{ _uiSemaphore }
-                );
+                //process deffered commands
                 _deferredCommand.Submit(
                     API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    new API.Semaphore[] { _uiSemaphore },
+                    new API.Semaphore[] { _lightCommandSemaphore, _renderCommandSemaphore }
+                );
+                //process ui commands (IMGUI)
+                _uiCommand.Submit(
+                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                     null,
-                    new API.Semaphore[] { _lightCommandSemaphore, _renderCommandSemaphore, _uiSemaphore },
+                    new API.Semaphore[] { _uiSemaphore },
                     _waitFence
                 );
 

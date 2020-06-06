@@ -70,7 +70,6 @@ namespace Tortuga.Test
                 var entity = new Core.Entity();
                 var camera = await entity.AddComponent<Graphics.Camera>();
                 camera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.DeferredRendering;
-                camera.RenderToWindow = window;
                 scene.AddEntity(entity);
             }
 

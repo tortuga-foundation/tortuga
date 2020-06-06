@@ -8,6 +8,7 @@ using Tortuga.Utils;
 using static Vulkan.VulkanNative;
 using static Tortuga.Utils.SDL2.SDL2Native;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Tortuga.Graphics
 {
@@ -79,6 +80,9 @@ namespace Tortuga.Graphics
         private uint _swapchainImageIndex;
         private API.Fence _swapchianFence;
 
+        internal API.UserInterface UserInterface => _userInterface;
+        private API.UserInterface _userInterface;
+
         /// <summary>
         /// constructor to create a window
         /// </summary>
@@ -108,6 +112,7 @@ namespace Tortuga.Graphics
                 width, height,
                 flags
             );
+            _userInterface = new API.UserInterface();
             _exists = true;
 
             //create surface
@@ -257,32 +262,43 @@ namespace Tortuga.Graphics
             _exists = false;
         }
 
+        internal Task AquireSwapchainTaskContainer => _aquireSwapchainTaskContainer;
+        private Task _aquireSwapchainTaskContainer;
+
         /// <summary>
         /// Aquire swapchain image and store the referance in 'SwapchainAcquiredImage'
         /// </summary>
-        internal unsafe void AcquireSwapchainImage()
+        internal void AcquireSwapchainImage()
         {
-            _swapchianFence.Reset();
-            uint imageIndex;
-            var acquireResponse = vkAcquireNextImageKHR(
-                API.Handler.MainDevice.LogicalDevice.Handle,
-                _swapchain.Handle,
-                ulong.MaxValue,
-                VkSemaphore.Null,
-                _swapchianFence.Handle,
-                &imageIndex
-            );
-            if (acquireResponse == VkResult.ErrorOutOfDateKHR)
+            _aquireSwapchainTaskContainer = Task.Run(async () =>
             {
-                _swapchain.Resize();
-                AcquireSwapchainImage();
-                return;
-            }
-            else if (acquireResponse != VkResult.Success)
-                throw new Exception("failed to get next swapchain image");
-            else
-                _swapchianFence.Wait();
-            _swapchainImageIndex = imageIndex;
+                _swapchianFence.Reset();
+                uint imageIndex = 0;
+                VkResult acquireResponse = VkResult.ErrorOutOfDateKHR;
+                var stopwatch = new Stopwatch();
+                stopwatch.Start();
+                while (acquireResponse != VkResult.Success)
+                {
+                    unsafe
+                    {
+                        acquireResponse = vkAcquireNextImageKHR(
+                            API.Handler.MainDevice.LogicalDevice.Handle,
+                            _swapchain.Handle,
+                            ulong.MaxValue,
+                            VkSemaphore.Null,
+                            _swapchianFence.Handle,
+                            &imageIndex
+                        );
+                    }
+                    if (acquireResponse == VkResult.ErrorOutOfDateKHR)
+                        _swapchain.Resize();
+                    if (stopwatch.ElapsedMilliseconds > 15000)
+                        throw new Exception("failed to aquire swapchain image");
+                }
+                
+                await _swapchianFence.WaitAsync();
+                _swapchainImageIndex = imageIndex;
+            });
         }
 
         /// <summary>

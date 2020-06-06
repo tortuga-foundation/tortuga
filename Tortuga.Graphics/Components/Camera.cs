@@ -136,11 +136,6 @@ namespace Tortuga.Graphics
             }
         }
 
-        /// <summary>
-        /// will render the camera into a window
-        /// </summary>
-        public Window RenderToWindow;
-
         #region Framebuffers
 
         internal API.Framebuffer Framebuffer => _framebuffer;
