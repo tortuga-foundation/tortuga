@@ -12,10 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Tortuga.Core\Tortuga.Core.csproj" />
-    <ProjectReference Include="..\Tortuga.Input\Tortuga.Input.csproj" />
     <PackageReference Include="System.Drawing.Common" Version="4.7.0" />
     <PackageReference Include="Vk" Version="1.0.22" />
-    <PackageReference Include="ImGui.NET.Docking" Version="1.75.0" />
   </ItemGroup>
 
 </Project>

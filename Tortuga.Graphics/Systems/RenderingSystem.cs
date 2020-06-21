@@ -13,11 +13,11 @@ namespace Tortuga.Graphics
         private API.CommandPool.Command _renderCommand;
         private API.CommandPool.Command _lightCommand;
         private API.CommandPool.Command _deferredCommand;
-        private API.CommandPool.Command _uiCommand;
+        private API.CommandPool.Command _presentCommand;
         private API.Semaphore _transferCommandSemaphore;
         private API.Semaphore _lightCommandSemaphore;
         private API.Semaphore _renderCommandSemaphore;
-        private API.Semaphore _uiSemaphore;
+        private API.Semaphore _presentSemaphore;
         private API.Fence _waitFence;
         private GraphicsModule _module;
 
@@ -33,25 +33,21 @@ namespace Tortuga.Graphics
             _renderCommand = _graphicsCommandPool.AllocateCommands()[0];
             _lightCommand = _graphicsCommandPool.AllocateCommands()[0];
             _deferredCommand = _graphicsCommandPool.AllocateCommands()[0];
-            _uiCommand = _graphicsCommandPool.AllocateCommands()[0];
+            _presentCommand = _graphicsCommandPool.AllocateCommands()[0];
 
             //sync
             _waitFence = new API.Fence(API.Handler.MainDevice);
             _transferCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
             _lightCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
             _renderCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
-            _uiSemaphore = new API.Semaphore(API.Handler.MainDevice);
+            _presentSemaphore = new API.Semaphore(API.Handler.MainDevice);
         }
 
         public override Task EarlyUpdate()
         {
             return Task.Run(() =>
             {
-                foreach (var window in Window.TotalWindows)
-                {
-                    window.Value.AcquireSwapchainImage();
-                    window.Value.UserInterface.NewFrame();
-                }
+                Window.Instance.AcquireSwapchainImage();
             });
         }
 
@@ -60,9 +56,8 @@ namespace Tortuga.Graphics
             // wait for render process to finish
             await _waitFence.WaitAsync();
 
-            //present each window
-            foreach (var window in Window.TotalWindows)
-                window.Value.Present();
+            //present
+            Window.Instance.Present();
         }
 
         public override Task Update()
@@ -169,51 +164,30 @@ namespace Tortuga.Graphics
 
                 #endregion
 
-                #region User Interface
+                #region Update Window Swapchain Image
 
-                _uiCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-
-                foreach (var window in Window.TotalWindows)
+                _presentCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+                var windowSize = Window.Instance.Size;
+                var windowWidth = Convert.ToInt32(windowSize.X);
+                var windowHeight = Convert.ToInt32(windowSize.Y);
+                foreach (var camera in cameras)
                 {
-                    foreach (var t in window.Value.UserInterface.Render(window.Value.Size, _uiCommand))
-                    {
-                        transferCommands.Add(t.TransferCommand);
-                    }
-
-                    window.Value.AquireSwapchainTaskContainer.Wait();
-
-                    _uiCommand.TransferImageLayout(
-                        window.Value.UserInterface.Framebuffer.AttachmentImages[0],
-                        VkImageLayout.ColorAttachmentOptimal,
-                        VkImageLayout.TransferSrcOptimal
-                    );
-                    _uiCommand.TransferImageLayout(
-                        window.Value.CurrentImage,
-                        window.Value.Swapchain.ImagesFormat,
-                        VkImageLayout.Undefined,
-                        VkImageLayout.TransferDstOptimal
-                    );
-                    _uiCommand.BlitImage(
-                        window.Value.UserInterface.Framebuffer.AttachmentImages[0].ImageHandle,
-                        0, 0,
-                        Convert.ToInt32(window.Value.UserInterface.Framebuffer.Width),
-                        Convert.ToInt32(window.Value.UserInterface.Framebuffer.Height),
+                    _presentCommand.BlitImage(
+                        camera.DefferedFramebuffer.AttachmentImages[0].ImageHandle,
                         0,
-                        window.Value.CurrentImage,
-                        0, 0,
-                        Convert.ToInt32(window.Value.Swapchain.Extent.width),
-                        Convert.ToInt32(window.Value.Swapchain.Extent.height),
+                        0,
+                        Convert.ToInt32(camera.DefferedFramebuffer.Width),
+                        Convert.ToInt32(camera.DefferedFramebuffer.Height),
+                        0,
+                        Window.Instance.CurrentImage.Handle,
+                        Convert.ToInt32(camera.Viewport.X * windowWidth),
+                        Convert.ToInt32(camera.Viewport.Y * windowHeight),
+                        Convert.ToInt32(camera.Viewport.Z * windowWidth),
+                        Convert.ToInt32(camera.Viewport.W * windowHeight),
                         0
                     );
-                    _uiCommand.TransferImageLayout(
-                        window.Value.CurrentImage,
-                        window.Value.Swapchain.ImagesFormat,
-                        VkImageLayout.TransferDstOptimal,
-                        VkImageLayout.PresentSrcKHR
-                    );
                 }
-
-                _uiCommand.End();
+                _presentCommand.End();
 
                 #endregion
 
@@ -245,14 +219,14 @@ namespace Tortuga.Graphics
                 //process deffered commands
                 _deferredCommand.Submit(
                     API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
-                    new API.Semaphore[] { _uiSemaphore },
+                    new API.Semaphore[] { _presentSemaphore },
                     new API.Semaphore[] { _lightCommandSemaphore, _renderCommandSemaphore }
                 );
-                //process ui commands (IMGUI)
-                _uiCommand.Submit(
+                //copy rendered image to window swapchain
+                _presentCommand.Submit(
                     API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                     null,
-                    new API.Semaphore[] { _uiSemaphore },
+                    new API.Semaphore[] { _presentSemaphore },
                     _waitFence
                 );
 

@@ -1,6 +1,5 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
-using ImGuiNET;
 
 namespace Tortuga.Test
 {
@@ -10,7 +9,6 @@ namespace Tortuga.Test
         {
             private float _rotation = 0.0f;
             private Vector3 _position = new Vector3(0, 0, -5);
-
             public override Task Update()
             {
                 return Task.Run(() =>
@@ -32,17 +30,6 @@ namespace Tortuga.Test
                         _position.Z -= Time.DeltaTime;
                 });
             }
-
-            public override Task OnGui()
-            {
-                return Task.Run(() =>
-                {
-                    ImGui.ShowDemoWindow();
-                    ImGui.BeginPopupContextWindow();
-                    ImGui.Text("Hello World");
-                    ImGui.EndPopup();
-                });
-            }
         }
 
         static async Task Main(string[] args)
@@ -54,18 +41,6 @@ namespace Tortuga.Test
 
             //create new scene
             var scene = new Core.Scene();
-
-            var window = new Graphics.Window(
-                "Tortuga",
-                0, 0,
-                1920, 1080,
-                Graphics.WindowType.ResizeableWindow
-            );
-            Input.InputModule.OnWindowClose += (uint windowId) =>
-            {
-                if (window.WindowIdentifier == windowId)
-                    Engine.Instance.IsRunning = false;
-            };
             Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
             //camera

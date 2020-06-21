@@ -1,3 +1,5 @@
+using Tortuga.Graphics;
+
 namespace Tortuga.Settings
 {
     /// <summary>
@@ -29,5 +31,9 @@ namespace Tortuga.Settings
         /// Changing this will require restart and this should be setup before the engine is loaded
         /// </summary>
         public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = GraphicsApiDebugLevelType.Full;
+        /// <summary>
+        /// How window is displayed
+        /// </summary>
+        public static WindowType Window = WindowType.Resizeable;
     }
 }

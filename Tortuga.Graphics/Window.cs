@@ -15,24 +15,21 @@ namespace Tortuga.Graphics
     /// <summary>
     /// Different types of windows
     /// </summary>
+    [Flags]
     public enum WindowType
     {
-        /// <summary>
-        /// Default type of window
-        /// </summary>
-        Window,
         /// <summary>
         /// borderless window
         /// </summary>
         Borderless,
         /// <summary>
+        /// Resizable window
+        /// </summary>
+        Resizeable,
+        /// <summary>
         /// Full screen window
         /// </summary>
         Fullscreen,
-        /// <summary>
-        /// Resizable window
-        /// </summary>
-        ResizeableWindow
     }
 
     /// <summary>
@@ -60,10 +57,27 @@ namespace Tortuga.Graphics
     public class Window
     {
         /// <summary>
-        /// A list of all the windows
+        /// Main window instance
         /// </summary>
-        public static Dictionary<uint, Window> TotalWindows => _totalWindows;
-        private static Dictionary<uint, Window> _totalWindows = new Dictionary<uint, Window>();
+        public static Window Instance
+        {
+            get
+            {
+                if (_instance == null)
+                    _instance = new Window(
+                        "Tortuga Engine",
+                        0,
+                        0,
+                        1920,
+                        1080,
+                        Settings.Graphics.Window
+                    );
+
+                return _instance;
+            }
+        }
+        private static Window _instance;
+
         /// <summary>
         /// SDL window ID
         /// </summary>
@@ -80,9 +94,6 @@ namespace Tortuga.Graphics
         private uint _swapchainImageIndex;
         private API.Fence _swapchianFence;
 
-        internal API.UserInterface UserInterface => _userInterface;
-        private API.UserInterface _userInterface;
-
         /// <summary>
         /// constructor to create a window
         /// </summary>
@@ -92,18 +103,18 @@ namespace Tortuga.Graphics
         /// <param name="width">the width of the window</param>
         /// <param name="height">the height of the window</param>
         /// <param name="type">the type of window to create</param>
-        public unsafe Window(
+        private unsafe Window(
             string title,
             int x, int y,
             int width, int height,
             WindowType type)
         {
             var flags = SDL_WindowFlags.AllowHighDpi;
-            if (type == WindowType.Borderless)
+            if ((type & WindowType.Borderless) != 0)
                 flags |= SDL_WindowFlags.Borderless;
-            else if (type == WindowType.Fullscreen)
+            if ((type & WindowType.Fullscreen) != 0)
                 flags |= SDL_WindowFlags.Fullscreen;
-            else if (type == WindowType.ResizeableWindow)
+            if ((type & WindowType.Resizeable) != 0)
                 flags |= SDL_WindowFlags.Resizable;
 
             this._windowHandle = SDL_CreateWindow(
@@ -112,7 +123,6 @@ namespace Tortuga.Graphics
                 width, height,
                 flags
             );
-            _userInterface = new API.UserInterface();
             _exists = true;
 
             //create surface
@@ -175,7 +185,6 @@ namespace Tortuga.Graphics
             this._surface = surface;
             this._swapchain = new API.Swapchain(API.Handler.MainDevice, this);
             this._swapchianFence = new API.Fence(API.Handler.MainDevice);
-            _totalWindows.Add(WindowIdentifier, this);
         }
 
         /// <summary>
@@ -183,7 +192,6 @@ namespace Tortuga.Graphics
         /// </summary>
         unsafe ~Window()
         {
-            _totalWindows.Remove(WindowIdentifier);
             _exists = false;
             SDL_DestroyWindow(_windowHandle);
             vkDestroySurfaceKHR(API.Handler.Vulkan.Handle, this._surface, null);
@@ -258,7 +266,6 @@ namespace Tortuga.Graphics
         /// </summary>
         public unsafe void Close()
         {
-            _totalWindows.Remove(WindowIdentifier);
             _exists = false;
         }
 
@@ -295,7 +302,7 @@ namespace Tortuga.Graphics
                     if (stopwatch.ElapsedMilliseconds > 15000)
                         throw new Exception("failed to aquire swapchain image");
                 }
-                
+
                 await _swapchianFence.WaitAsync();
                 _swapchainImageIndex = imageIndex;
             });
