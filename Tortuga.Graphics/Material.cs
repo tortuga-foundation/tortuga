@@ -80,7 +80,15 @@ namespace Tortuga.Graphics
                                 //normal
                                 new PipelineInputBuilder.AttributeElement(
                                     PipelineInputBuilder.AttributeElement.FormatType.Float3
-                                )
+                                ),
+                                //tangent
+                                new PipelineInputBuilder.AttributeElement(
+                                    PipelineInputBuilder.AttributeElement.FormatType.Float3
+                                ),
+                                //bi-tangent
+                                new PipelineInputBuilder.AttributeElement(
+                                    PipelineInputBuilder.AttributeElement.FormatType.Float3
+                                ),
                             }
                         }
                     }

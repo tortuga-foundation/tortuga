@@ -27,6 +27,14 @@ namespace Tortuga.Graphics
         /// Normal position of the vertex
         /// </summary>
         public Vector3 Normal;
+        /// <summary>
+        /// Used for normal mapping
+        /// </summary>
+        public Vector3 Tangent;
+        /// <summary>
+        /// Used for normal mapping
+        /// </summary>
+        public Vector3 BiTangent;
     }
 
 
@@ -161,6 +169,7 @@ namespace Tortuga.Graphics
             if (file.ToLower().EndsWith(".obj"))
             {
                 var mesh = LoadOBJ(file);
+                mesh.RecalculateNormals();
                 await mesh.UpdateBuffers();
                 return mesh;
             }
@@ -197,16 +206,55 @@ namespace Tortuga.Graphics
             await indexTask;
             await vertexTask;
         }
-    
+
         /// <summary>
         /// Destroys the mesh data from memory and mesh buffer information from gpu
         /// </summary>
-        public void Unload()
+        public void Dispose()
         {
             _indexBuffers = null;
             _vertexBuffers = null;
             this.Vertices = new Vertex[0];
             this.Indices = new ushort[0];
+        }
+
+        /// <summary>
+        /// De-constructor for mesh
+        /// </summary> 
+        ~Mesh()
+        {
+            this.Dispose();
+        }
+
+        /// <summary>
+        /// calculates tangents and bi-tangents for normal mapping
+        /// </summary>
+        public void RecalculateNormals()
+        {
+            for (int i = 0; i < this.Indices.Length; i += 3)
+            {
+                var v0 = this.Vertices[this.Indices[i + 0]];
+                var v1 = this.Vertices[this.Indices[i + 1]];
+                var v2 = this.Vertices[this.Indices[i + 2]];
+
+                var deltaPos1 = v1.Position - v0.Position;
+                var deltaPos2 = v2.Position - v0.Position;
+
+                var deltaUV1 = v1.TextureCoordinates - v0.TextureCoordinates;
+                var deltaUV2 = v2.TextureCoordinates - v0.TextureCoordinates;
+
+                float r = 1.0f / (deltaUV1.X * deltaUV2.Y - deltaUV1.Y * deltaUV2.X);
+                var tangent = (deltaPos1 * deltaUV2.Y - deltaPos2 * deltaUV1.Y) * r;
+                var biTangent = (deltaPos2 * deltaUV1.X - deltaPos1 * deltaUV2.X) * r;
+
+                this.Vertices[this.Indices[i + 0]].Tangent = tangent;
+                this.Vertices[this.Indices[i + 1]].Tangent = tangent;
+                this.Vertices[this.Indices[i + 2]].Tangent = tangent;
+
+                this.Vertices[this.Indices[i + 0]].BiTangent = biTangent;
+                this.Vertices[this.Indices[i + 1]].BiTangent = biTangent;
+                this.Vertices[this.Indices[i + 2]].BiTangent = biTangent;
+            }
         }
     }
 }
