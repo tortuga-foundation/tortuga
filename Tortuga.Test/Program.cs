@@ -64,11 +64,11 @@ namespace Tortuga.Test
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
                 renderer.MaterialData = new Graphics.Material("Assets/Shaders/Default/MRT.vert", "Assets/Shaders/Default/MRT.frag");
                 await renderer.MaterialData.SetShading(Graphics.ShadingType.Smooth);
-                var colorTexture = await Graphics.Texture.Load("Assets/Images/Metal/Color.jpg");
-                var normalTexture = await Graphics.Texture.Load("Assets/Images/Metal/Normal.jpg");
-                var detailTexture = await Graphics.Texture.Load("Assets/Images/Metal/Metal.jpg");
-                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Metal/Roughness.jpg"), Graphics.Texture.Channel.G);
-                detailTexture.CopyChannel(Graphics.Texture.SingleColor(System.Drawing.Color.White), Graphics.Texture.Channel.B);
+                var colorTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Color.jpg");
+                var normalTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Normal.jpg");
+                var detailTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Metal.jpg");
+                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Bricks/Roughness.jpg"), Graphics.Texture.Channel.G);
+                detailTexture.CopyChannel(await Graphics.Texture.Load("Assets/Images/Bricks/AmbientOclusion.jpg"), Graphics.Texture.Channel.B);
                 await renderer.MaterialData.SetColor(colorTexture.Pixels, colorTexture.Width, colorTexture.Height);
                 await renderer.MaterialData.SetNormal(normalTexture.Pixels, normalTexture.Width, normalTexture.Height);
                 await renderer.MaterialData.SetDetail(detailTexture.Pixels, detailTexture.Width, detailTexture.Height);
