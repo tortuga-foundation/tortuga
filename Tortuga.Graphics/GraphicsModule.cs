@@ -86,7 +86,7 @@ namespace Tortuga.Graphics
                         }
                     }
                 ),
-                //rendered image settings
+                //color, normal and detail textures
                 new API.DescriptorSetLayout(
                     API.Handler.MainDevice,
                     new API.DescriptorSetCreateInfo[]
@@ -105,6 +105,18 @@ namespace Tortuga.Graphics
                         {
                             stage = API.ShaderStageType.Fragment,
                             type = API.DescriptorType.CombinedImageSampler
+                        }
+                    }
+                ),
+                //material info
+                new API.DescriptorSetLayout(
+                    API.Handler.MainDevice,
+                    new API.DescriptorSetCreateInfo[]
+                    {
+                        new API.DescriptorSetCreateInfo()
+                        {
+                            stage = API.ShaderStageType.Vertex,
+                            type = API.DescriptorType.UniformBuffer
                         }
                     }
                 )

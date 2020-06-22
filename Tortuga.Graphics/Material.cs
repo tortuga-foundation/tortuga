@@ -3,19 +3,37 @@ using System.Threading.Tasks;
 namespace Tortuga.Graphics
 {
     /// <summary>
+    /// Shading type to use in vertex shader
+    /// </summary>
+    public enum ShadingType
+    {
+        /// <summary>
+        /// use flat shading type
+        /// </summary>
+        Flat = 0,
+        /// <summary>
+        /// use smooth shading type
+        /// </summary>
+        Smooth = 1
+    }
+
+    /// <summary>
     /// Material used for rendering a mesh
     /// </summary>
     public class Material
     {
         private const string TEXTURES_KEY = "TEXTURES";
+        private const string MATERIAL_KEY = "MATERIAL";
 
         private API.Shader _vertexShader;
         private API.Shader _fragmentShader;
         internal API.Pipeline Pipeline => _pipeline;
         private API.Pipeline _pipeline;
 
-        internal API.DescriptorSetPool.DescriptorSet DescriptorSet
+        internal API.DescriptorSetPool.DescriptorSet TexturesDescriptorSet
             => _descriptorHelper.DescriptorObjectMapper[TEXTURES_KEY].Set;
+        internal API.DescriptorSetPool.DescriptorSet MaterialDescriptorSet 
+            => _descriptorHelper.DescriptorObjectMapper[MATERIAL_KEY].Set;
 
         private DescriptorSetHelper _descriptorHelper;
 
@@ -28,7 +46,7 @@ namespace Tortuga.Graphics
             SetupShader(vertexPath, fragmentPath);
             _descriptorHelper = new DescriptorSetHelper();
             _descriptorHelper.InsertKey(
-                TEXTURES_KEY, 
+                TEXTURES_KEY,
                 Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[3]
             );
             //color texture
@@ -37,6 +55,13 @@ namespace Tortuga.Graphics
             _descriptorHelper.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { ShaderPixel.Blue }, 1, 1).Wait();
             //detail texture
             _descriptorHelper.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
+
+            //material
+            _descriptorHelper.InsertKey(
+                MATERIAL_KEY,
+                Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[4]
+            );
+            _descriptorHelper.BindBuffer(MATERIAL_KEY, 0, new int[] { 0 }).Wait();
         }
 
         /// <summary>
@@ -153,6 +178,15 @@ namespace Tortuga.Graphics
         public Task SetDetail(ShaderPixel[] pixels, int width, int height)
         {
             return _descriptorHelper.BindImage(TEXTURES_KEY, 2, pixels, width, height);
+        }
+
+        /// <summary>
+        /// Update's the shading model used for rendering the mesh
+        /// </summary>
+        /// <param name="type">type of shading model (flat, smooth)</param>
+        public Task SetShading(ShadingType type)
+        {
+            return _descriptorHelper.BindBuffer(MATERIAL_KEY, 0, new int[] { (int)type });
         }
     }
 }

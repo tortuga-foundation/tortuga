@@ -12,6 +12,10 @@ layout(set=2, binding=0) readonly uniform MODEL
 {
     mat4 model;
 };
+layout(set=4, binding=0) readonly uniform MATERIAL
+{
+    int shadingModel;
+};
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec2 inUV;
@@ -41,7 +45,10 @@ void main() {
     
     //normal
     mat3 mNormal = transpose(inverse(mat3(model)));
-    outNormal = mNormal * normalize(inPosition);
+    if (shadingModel == 0)
+        outNormal = mNormal * normalize(inNormal);
+    else if (shadingModel == 1)
+        outNormal = mNormal * normalize(inPosition);
     outTangent = mNormal * normalize(inTangent);
     outBiTangent = mNormal * normalize(inBiTangent);
 }

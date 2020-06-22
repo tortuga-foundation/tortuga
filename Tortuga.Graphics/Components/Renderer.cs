@@ -103,7 +103,8 @@ namespace Tortuga.Graphics
                     camera.ProjectionDescriptor,
                     camera.ViewDescriptor,
                     this.ModelDescriptorSet,
-                    MaterialData.DescriptorSet
+                    MaterialData.TexturesDescriptorSet,
+                    MaterialData.MaterialDescriptorSet
                 }
             );
             _renderCommand.SetScissor(

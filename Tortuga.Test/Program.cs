@@ -25,9 +25,13 @@ namespace Tortuga.Test
                         }
                     }
                     if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
-                        _position.Z += Time.DeltaTime;
+                        _position.Z += Time.DeltaTime * 2.0f;
                     if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
-                        _position.Z -= Time.DeltaTime;
+                        _position.Z -= Time.DeltaTime * 2.0f;
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
+                        _position.X += Time.DeltaTime * 2.0f;
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
+                        _position.X -= Time.DeltaTime * 2.0f;
                 });
             }
         }
@@ -59,6 +63,7 @@ namespace Tortuga.Test
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
                 renderer.MaterialData = new Graphics.Material("Assets/Shaders/Default/MRT.vert", "Assets/Shaders/Default/MRT.frag");
+                await renderer.MaterialData.SetShading(Graphics.ShadingType.Smooth);
                 var colorTexture = await Graphics.Texture.Load("Assets/Images/Metal/Color.jpg");
                 var normalTexture = await Graphics.Texture.Load("Assets/Images/Metal/Normal.jpg");
                 var detailTexture = await Graphics.Texture.Load("Assets/Images/Metal/Metal.jpg");
