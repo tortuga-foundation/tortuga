@@ -4,9 +4,9 @@ layout(set = 1, binding = 0) readonly uniform DATA
 {
     vec2 position;
     vec2 scale;
-    vec4 color;
     vec4 borderRadius;
 } model;
+layout(set = 2, binding = 0) uniform sampler2D baseColor;
 
 layout(location=0) in vec2 inUV;
 layout(location=1) in vec2 inPosition;
@@ -62,6 +62,6 @@ void main() {
     if (borderTestAlpha < 0.01)
         discard;
 
-    outColor = model.color;
+    outColor = texture(baseColor, inUV);
     outColor.a *= borderTestAlpha;
 }

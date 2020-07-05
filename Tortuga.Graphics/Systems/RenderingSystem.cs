@@ -59,8 +59,30 @@ namespace Tortuga.Graphics
             Window.Instance.Present();
         }
 
+        private UI.UiRenderable[] FetchRenderableUi(UI.UiElement[] elements)
+        {
+            var renderable = new List<UI.UiRenderable>();
+            foreach (var e in elements)
+            {
+                var renderableElement = e as UI.UiRenderable;
+                if (renderableElement != null)
+                    renderable.Add(renderableElement);
+                var children = FetchRenderableUi(e.Children);
+                foreach (var child in children)
+                {
+                    var renderableChild = child as UI.UiRenderable;
+                    if (renderableChild != null)
+                        renderable.Add(renderableChild);
+                }
+            }
+            return renderable.ToArray();
+        }
+
         public override Task Update()
         {
+            //fetch all renderable ui in the background
+            var renderableUis = Task.Run(() => FetchRenderableUi(MyScene.UserInterface));
+
             return Task.Run(() =>
             {
                 if (_module == null)
@@ -134,6 +156,7 @@ namespace Tortuga.Graphics
                 _deferredCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
                 foreach (var camera in cameras)
                 {
+                    //render
                     _deferredCommand.BeginRenderPass(_module.DefferedRenderPass, camera.DefferedFramebuffer);
                     _deferredCommand.BindPipeline(camera.DefferedPipeline);
                     _deferredCommand.BindDescriptorSets(
@@ -157,7 +180,23 @@ namespace Tortuga.Graphics
                     );
                     _deferredCommand.Draw(6);
                     _deferredCommand.EndRenderPass();
+                    //user interface
+                    _deferredCommand.BeginRenderPass(UI.UiResources.Instance.RenderPass, camera.DefferedFramebuffer);
+                    //wait for list of renderable ui
+                    renderableUis.Wait();
+                    //render user interface
+                    var uiCommands = new List<API.CommandPool.Command>();
+                    foreach (var ui in renderableUis.Result)
+                    {
+                        //get transfer commands
+                        foreach (var t in ui.CreateOrUpdateBuffers())
+                            transferCommands.Add(t.TransferCommand);
 
+                        //get draw command
+                        uiCommands.Add(ui.Draw(camera));
+                    }
+                    _deferredCommand.ExecuteCommands(uiCommands.ToArray());
+                    _deferredCommand.EndRenderPass();
                 }
                 _deferredCommand.End();
 

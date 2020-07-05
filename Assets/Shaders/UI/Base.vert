@@ -8,7 +8,6 @@ layout(set = 1, binding = 0) readonly uniform DATA
 {
     vec2 position;
     vec2 scale;
-    vec4 color;
     vec4 borderRadius;
 } model;
 
@@ -24,11 +23,11 @@ void main()
 
     vec2 vertexPositions[6] = vec2[](
         vec2(model.position.x, model.position.y),
+        vec2(model.position.x, scalePlusPosition.y),
         vec2(scalePlusPosition.x, model.position.y),
-        vec2(model.position.x, scalePlusPosition.y),
         vec2(scalePlusPosition.x, scalePlusPosition.y),
-        vec2(model.position.x, scalePlusPosition.y),
-        vec2(scalePlusPosition.x, model.position.y)
+        vec2(scalePlusPosition.x, model.position.y),
+        vec2(model.position.x, scalePlusPosition.y)
     );
     vec2 uv[] = vec2[](
         vec2(1, 0),

@@ -23,6 +23,8 @@ namespace Tortuga.Graphics.API
             /// Should store the image on end render pass
             /// </summary>
             public bool Store;
+            internal VkImageLayout InitialLayout;
+            internal VkImageLayout FinalLayout;
 
             /// <summary>
             /// constructor for create info
@@ -33,6 +35,8 @@ namespace Tortuga.Graphics.API
             {
                 this.Clear = clear;
                 this.Store = store;
+                InitialLayout = VkImageLayout.Undefined;
+                FinalLayout = VkImageLayout.ColorAttachmentOptimal;
             }
         }
 
@@ -82,7 +86,7 @@ namespace Tortuga.Graphics.API
             _device = device;
             _colorAttachments = colorAttachments;
             _depthAttachment = depthAttachment;
-            
+
             var attachmentDescriptions = new NativeList<VkAttachmentDescription>();
             foreach (var attachment in colorAttachments)
             {
@@ -90,12 +94,12 @@ namespace Tortuga.Graphics.API
                 {
                     format = DEFAULT_COLOR_FORMAT,
                     samples = VkSampleCountFlags.Count1,
-                    loadOp = attachment.Clear ? VkAttachmentLoadOp.Clear : VkAttachmentLoadOp.DontCare,
+                    loadOp = attachment.Clear ? VkAttachmentLoadOp.Clear : VkAttachmentLoadOp.Load,
                     storeOp = attachment.Store ? VkAttachmentStoreOp.Store : VkAttachmentStoreOp.DontCare,
                     stencilLoadOp = VkAttachmentLoadOp.DontCare,
                     stencilStoreOp = VkAttachmentStoreOp.DontCare,
-                    initialLayout = VkImageLayout.Undefined,
-                    finalLayout = VkImageLayout.ColorAttachmentOptimal
+                    initialLayout = attachment.InitialLayout,
+                    finalLayout = attachment.FinalLayout
                 });
             }
             if (depthAttachment != null)

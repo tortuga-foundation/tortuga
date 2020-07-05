@@ -255,10 +255,9 @@ namespace Tortuga.UI
         /// <summary>
         /// Apply constraints to the position and scale
         /// </summary>
-        public virtual void UpdatePositionsWithConstraints()
+        public virtual void UpdatePositionsWithConstraints(Vector2 canvas)
         {
-            //todo: var parentScale = Engine.Instance.MainWindow.Size;
-            var parentScale = new Vector2(1000, 1000);
+            var parentScale = canvas;
 
             if (_parent != null)
                 parentScale = _parent.Scale;

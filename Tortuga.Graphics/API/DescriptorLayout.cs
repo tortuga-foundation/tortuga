@@ -48,6 +48,7 @@ namespace Tortuga.Graphics.API
     /// <summary>
     /// Different type of shader stages, for more information please look at VkShaderStageFlags
     /// </summary>
+    [Flags]
     public enum ShaderStageType
     {
         None = VkShaderStageFlags.None,
