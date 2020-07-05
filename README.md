@@ -17,7 +17,9 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 - Open AL
 - Bullet Physics Library
 
-For linux you can use `./setup.sh` to download the prerequisites 
+```
+sudo apt install -y libopenal1 libsdl2-2.0-0 libvulkan1 glslang-tools libgdiplus
+```
 
 ## Using the package in your project
 
