@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Vulkan;
 using static Vulkan.VulkanNative;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace Tortuga.Graphics.API
 {
@@ -229,7 +230,7 @@ namespace Tortuga.Graphics.API
         public void CreateOrUpdateSpecialization(uint identifier, int data)
         {
             var bytes = BitConverter.GetBytes(data);
-            CreateOrUpdateSpecialization(identifier, bytes);   
+            CreateOrUpdateSpecialization(identifier, bytes);
         }
         /// <summary>
         /// apply shader specilization
@@ -239,7 +240,7 @@ namespace Tortuga.Graphics.API
         public void CreateOrUpdateSpecialization(uint identifier, float data)
         {
             var bytes = BitConverter.GetBytes(data);
-            CreateOrUpdateSpecialization(identifier, bytes);   
+            CreateOrUpdateSpecialization(identifier, bytes);
         }
         /// <summary>
         /// apply shader specilization
@@ -249,7 +250,7 @@ namespace Tortuga.Graphics.API
         public void CreateOrUpdateSpecialization(uint identifier, uint data)
         {
             var bytes = BitConverter.GetBytes(data);
-            CreateOrUpdateSpecialization(identifier, bytes);   
+            CreateOrUpdateSpecialization(identifier, bytes);
         }
         /// <summary>
         /// apply shader specilization
@@ -263,7 +264,7 @@ namespace Tortuga.Graphics.API
                 bytes.Add(b);
             foreach (var b in BitConverter.GetBytes(data.Y))
                 bytes.Add(b);
-            CreateOrUpdateSpecialization(identifier, bytes.ToArray());   
+            CreateOrUpdateSpecialization(identifier, bytes.ToArray());
         }
         /// <summary>
         /// apply shader specilization
@@ -279,7 +280,7 @@ namespace Tortuga.Graphics.API
                 bytes.Add(b);
             foreach (var b in BitConverter.GetBytes(data.Z))
                 bytes.Add(b);
-            CreateOrUpdateSpecialization(identifier, bytes.ToArray());   
+            CreateOrUpdateSpecialization(identifier, bytes.ToArray());
         }
         /// <summary>
         /// apply shader specilization
@@ -297,7 +298,7 @@ namespace Tortuga.Graphics.API
                 bytes.Add(b);
             foreach (var b in BitConverter.GetBytes(data.W))
                 bytes.Add(b);
-            CreateOrUpdateSpecialization(identifier, bytes.ToArray());   
+            CreateOrUpdateSpecialization(identifier, bytes.ToArray());
         }
 
         /// <summary>
@@ -377,7 +378,14 @@ namespace Tortuga.Graphics.API
             var process = new Process();
             var startInfo = new ProcessStartInfo();
             startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            startInfo.FileName = "glslangValidator";
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                startInfo.FileName = "glslangValidator";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                startInfo.FileName = "glslangValidator.exe";
+            else
+                Console.WriteLine("Shader compilation is not supported on this platform");
+
             startInfo.Arguments = string.Format(
                 "{0} -V -o {1}",
                 file,
