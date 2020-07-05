@@ -58,10 +58,13 @@ float BorderRadiusTest(vec4 borderRadius, vec2 position, vec2 scale)
 }
 
 void main() {
-    float borderTestAlpha = BorderRadiusTest(model.borderRadius, model.position, model.scale);
-    if (borderTestAlpha < 0.01)
-        discard;
-
     outColor = texture(baseColor, inUV);
-    outColor.a *= borderTestAlpha;
+    if (model.borderRadius != vec4(0.))
+    {
+        float borderTestAlpha = BorderRadiusTest(model.borderRadius, model.position, model.scale);
+        if (borderTestAlpha < 0.01)
+            discard;
+        
+        outColor.a *= borderTestAlpha;
+    }
 }
