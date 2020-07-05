@@ -88,7 +88,7 @@ namespace Tortuga.UI
                     _descriptorHelper.DescriptorObjectMapper[TEXTURE_KEY].Set,
                 }
             );
-            _command.Draw(4);
+            _command.Draw(6);
             _command.End();
             return _command;
         }

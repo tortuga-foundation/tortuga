@@ -84,7 +84,7 @@ namespace Tortuga.Graphics
                 _descriptorHelper.InsertKey(UI_PROJECTION_KEY, Tortuga.UI.UiResources.Instance.DescriptorSetLayouts[0]);
                 _descriptorHelper.BindBuffer(UI_PROJECTION_KEY, 0, new Matrix4x4[]
                 {
-                    Matrix4x4.CreateOrthographicOffCenter(0, Resolution.X, Resolution.Y, 0, 0, 1)
+                    Matrix4x4.CreateOrthographicOffCenter(0, value.X, value.Y, 0, 0, 1)
                 }).Wait();
                 _resolution = value;
             }
@@ -226,13 +226,6 @@ namespace Tortuga.Graphics
                 //light descriptor set
                 _descriptorHelper.InsertKey(LIGHT_KEY, module.DefferedDescriptorSetLayouts[2]);
                 _descriptorHelper.BindBuffer(LIGHT_KEY, 0, new byte[] { 1 }).Wait();
-
-                //ui projection descriptor set
-                _descriptorHelper.InsertKey(UI_PROJECTION_KEY, Tortuga.UI.UiResources.Instance.DescriptorSetLayouts[0]);
-                _descriptorHelper.BindBuffer(UI_PROJECTION_KEY, 0, new Matrix4x4[]
-                {
-                    Matrix4x4.CreateOrthographicOffCenter(0, Resolution.X, Resolution.Y, 0, 0, 1)
-                }).Wait();
 
                 //deffered pipeline
                 _vertexShader = new API.Shader(
