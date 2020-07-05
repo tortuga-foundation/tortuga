@@ -84,7 +84,7 @@ namespace Tortuga.Graphics
                 _descriptorHelper.InsertKey(UI_PROJECTION_KEY, Tortuga.UI.UiResources.Instance.DescriptorSetLayouts[0]);
                 _descriptorHelper.BindBuffer(UI_PROJECTION_KEY, 0, new Matrix4x4[]
                 {
-                    Matrix4x4.CreateOrthographicOffCenter(0, value.X, value.Y, 0, 0, 1)
+                    Matrix4x4.CreateOrthographicOffCenter(0, value.X, 0, value.Y, 0, 1)
                 }).Wait();
                 _resolution = value;
             }

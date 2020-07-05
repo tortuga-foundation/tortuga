@@ -23,11 +23,11 @@ void main()
 
     vec2 vertexPositions[6] = vec2[](
         vec2(model.position.x, model.position.y),
+        vec2(scalePlusPosition.x, model.position.y),
         vec2(model.position.x, scalePlusPosition.y),
-        vec2(scalePlusPosition.x, model.position.y),
         vec2(scalePlusPosition.x, scalePlusPosition.y),
-        vec2(scalePlusPosition.x, model.position.y),
-        vec2(model.position.x, scalePlusPosition.y)
+        vec2(model.position.x, scalePlusPosition.y),
+        vec2(scalePlusPosition.x, model.position.y)
     );
     vec2 uv[] = vec2[](
         vec2(1, 0),

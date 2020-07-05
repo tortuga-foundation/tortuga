@@ -88,6 +88,16 @@ namespace Tortuga.UI
                     _descriptorHelper.DescriptorObjectMapper[TEXTURE_KEY].Set,
                 }
             );
+            _command.SetScissor(
+                0, 0,
+                camera.DefferedFramebuffer.Width,
+                camera.DefferedFramebuffer.Height
+            );
+            _command.SetViewport(
+                0, 0,
+                camera.DefferedFramebuffer.Width,
+                camera.DefferedFramebuffer.Height
+            );
             _command.Draw(6);
             _command.End();
             return _command;
