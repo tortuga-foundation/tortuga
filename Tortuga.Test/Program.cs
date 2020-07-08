@@ -81,7 +81,13 @@ namespace Tortuga.Test
                 var light = await entity.AddComponent<Graphics.Light>();
                 scene.AddEntity(entity);
             }
-            scene.AddUserInterface(new UI.UiRenderable());
+
+            //user interface
+            {
+                var temp = new UI.UiText();
+                temp.Text = "Hello World";
+                scene.AddUserInterface(temp);
+            }
 
             scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<Graphics.RenderingSystem>();

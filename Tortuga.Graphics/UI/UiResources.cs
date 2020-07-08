@@ -40,9 +40,14 @@ namespace Tortuga.UI
         /// </summary>
         public DescriptorSetLayout[] DescriptorSetLayouts => _descriptorSetLayouts;
         private DescriptorSetLayout[] _descriptorSetLayouts;
+        public UiFont DefaultFont => _defaultFont;
+        private UiFont _defaultFont;
 
         private UiResources()
         {
+            //setup ui font
+            _defaultFont = new UiFont("Assets/Fonts/Roboto-Regular.ttf");
+
             //setup default ui descriptor set layouts
             _descriptorSetLayouts = new DescriptorSetLayout[]
             {
@@ -70,7 +75,7 @@ namespace Tortuga.UI
                         }
                     }
                 ),
-                //color / texture
+                //texture
                 new DescriptorSetLayout(
                     Handler.MainDevice,
                     new DescriptorSetCreateInfo[]

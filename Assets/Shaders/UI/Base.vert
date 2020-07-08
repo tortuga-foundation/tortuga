@@ -9,6 +9,7 @@ layout(set = 1, binding = 0) readonly uniform DATA
     vec2 position;
     vec2 scale;
     vec4 borderRadius;
+    vec4 color;
 } model;
 
 layout(location=0) out vec2 outUV;

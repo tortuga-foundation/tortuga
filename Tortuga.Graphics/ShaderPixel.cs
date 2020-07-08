@@ -31,7 +31,7 @@ namespace Tortuga.Graphics
         /// <param name="g">green</param>
         /// <param name="b">blue</param>
         /// <param name="a">alpha</param>
-        public ShaderPixel(byte r= 0, byte g = 0, byte b = 0, byte a = 1)
+        public ShaderPixel(byte r= 0, byte g = 0, byte b = 0, byte a = 255)
         {
             R = r;
             B = b;

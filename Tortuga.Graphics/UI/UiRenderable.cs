@@ -11,6 +11,7 @@ namespace Tortuga.UI
     /// </summary>
     public class UiRenderable : UiElement
     {
+        public Vector4 Color = new Vector4(1, 1, 1, 1);
         private const string DATA_KEY = "DATA";
         private const string TEXTURE_KEY = "TEXTURE";
 
@@ -19,6 +20,7 @@ namespace Tortuga.UI
             public Vector2 Position;
             public Vector2 Scale;
             public Vector4 BorderRadius;
+            public Vector4 Color;
         }
         private DescriptorSetHelper _descriptorHelper;
         private Graphics.API.CommandPool _commandPool;
@@ -50,7 +52,7 @@ namespace Tortuga.UI
             _command = _commandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
         }
 
-        internal Graphics.API.BufferTransferObject[] CreateOrUpdateBuffers()
+        internal virtual Graphics.API.BufferTransferObject[] CreateOrUpdateBuffers()
         {
             if (_isDirty == false)
                 return new Graphics.API.BufferTransferObject[] { };
@@ -64,14 +66,20 @@ namespace Tortuga.UI
                         {
                             Position = AbsolutePosition,
                             Scale = this.Scale,
-                            BorderRadius = Vector4.Zero
+                            BorderRadius = new Vector4(
+                                BorderRadiusTopLeft,
+                                BorderRadiusTopRight,
+                                BorderRadiusBottomLeft,
+                                BorderRadiusBottomRight
+                            ),
+                            Color = Color
                         }
                     }
                 )
             };
         }
 
-        internal Graphics.API.CommandPool.Command Draw(Camera camera)
+        internal virtual Graphics.API.CommandPool.Command Draw(Camera camera)
         {
             _command.Begin(
                 VkCommandBufferUsageFlags.RenderPassContinue,

@@ -5,6 +5,7 @@ layout(set = 1, binding = 0) readonly uniform DATA
     vec2 position;
     vec2 scale;
     vec4 borderRadius;
+    vec4 color;
 } model;
 layout(set = 2, binding = 0) uniform sampler2D baseColor;
 
@@ -58,13 +59,12 @@ float BorderRadiusTest(vec4 borderRadius, vec2 position, vec2 scale)
 }
 
 void main() {
-    outColor = texture(baseColor, inUV);
-    if (model.borderRadius != vec4(0.))
-    {
-        float borderTestAlpha = BorderRadiusTest(model.borderRadius, model.position, model.scale);
-        if (borderTestAlpha < 0.01)
-            discard;
-        
-        outColor.a *= borderTestAlpha;
-    }
+    vec4 tex = texture(baseColor, inUV);
+    vec3 totalColor = tex.rgb * model.color.rgb;
+    outColor = vec4(totalColor, tex.a);
+    float borderTestAlpha = BorderRadiusTest(model.borderRadius, model.position, model.scale);
+    if (borderTestAlpha < 0.01)
+        discard;
+    
+    outColor.a *= borderTestAlpha;
 }
