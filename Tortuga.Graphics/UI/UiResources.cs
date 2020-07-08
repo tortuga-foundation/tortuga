@@ -40,6 +40,9 @@ namespace Tortuga.UI
         /// </summary>
         public DescriptorSetLayout[] DescriptorSetLayouts => _descriptorSetLayouts;
         private DescriptorSetLayout[] _descriptorSetLayouts;
+        /// <summary>
+        /// default font used by user interface
+        /// </summary>
         public UiFont DefaultFont => _defaultFont;
         private UiFont _defaultFont;
 
@@ -105,11 +108,11 @@ namespace Tortuga.UI
                 _descriptorSetLayouts,
                 new Shader(
                     Handler.MainDevice,
-                    "Assets/Shaders/UI/Base.vert"
+                    "Assets/Shaders/Default/UI.vert"
                 ),
                 new Shader(
                     Handler.MainDevice,
-                    "Assets/Shaders/UI/Base.frag"
+                    "Assets/Shaders/Default/UI.frag"
                 ),
                 new Graphics.PipelineInputBuilder()
             );
