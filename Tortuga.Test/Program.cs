@@ -48,10 +48,11 @@ namespace Tortuga.Test
             Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
             //camera
+            Graphics.Camera mainCamera;
             {
                 var entity = new Core.Entity();
-                var camera = await entity.AddComponent<Graphics.Camera>();
-                camera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.DeferredRendering;
+                mainCamera = await entity.AddComponent<Graphics.Camera>();
+                mainCamera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.DeferredRendering;
                 scene.AddEntity(entity);
             }
 
@@ -87,6 +88,11 @@ namespace Tortuga.Test
                 var temp = new UI.UiText();
                 temp.Text = "Hello World";
                 scene.AddUserInterface(temp);
+                var win = new UI.UiRenderable();
+                win.RenderFromCamera = mainCamera;
+                win.Position = new Vector2(100, 100);
+                win.Scale = new Vector2(500, 500);
+                scene.AddUserInterface(win);
             }
 
             scene.AddSystem<Audio.AudioSystem>();

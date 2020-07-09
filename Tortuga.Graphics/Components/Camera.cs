@@ -79,13 +79,6 @@ namespace Tortuga.Graphics
                     Convert.ToUInt32(MathF.Round(value.X)),
                     Convert.ToUInt32(MathF.Round(value.Y))
                 );
-                if (_descriptorHelper == null)
-                    _descriptorHelper = new DescriptorSetHelper();
-                _descriptorHelper.InsertKey(UI_PROJECTION_KEY, Tortuga.UI.UiResources.Instance.DescriptorSetLayouts[0]);
-                _descriptorHelper.BindBuffer(UI_PROJECTION_KEY, 0, new Matrix4x4[]
-                {
-                    Matrix4x4.CreateOrthographicOffCenter(0, value.X, 0, value.Y, 0, 1)
-                }).Wait();
                 _resolution = value;
             }
         }
@@ -160,13 +153,11 @@ namespace Tortuga.Graphics
         private const string MRT_KEY = "MRT";
         private const string CAMERA_POSITION_KEY = "CAMERA_POSITION";
         private const string LIGHT_KEY = "LIGHT";
-        private const string UI_PROJECTION_KEY = "UI_PROJECTION";
         internal API.DescriptorSetPool.DescriptorSet ProjectionDescriptor => _descriptorHelper.DescriptorObjectMapper[PROJECTION_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet ViewDescriptor => _descriptorHelper.DescriptorObjectMapper[VIEW_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet MrtDescriptorSet => _descriptorHelper.DescriptorObjectMapper[MRT_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet CameraPositionDescriptorSet => _descriptorHelper.DescriptorObjectMapper[CAMERA_POSITION_KEY].Set;
         internal API.DescriptorSetPool.DescriptorSet LightDescriptorSet => _descriptorHelper.DescriptorObjectMapper[LIGHT_KEY].Set;
-        internal API.DescriptorSetPool.DescriptorSet UiProjecionSet => _descriptorHelper.DescriptorObjectMapper[UI_PROJECTION_KEY].Set;
 
         #endregion
 
@@ -189,8 +180,7 @@ namespace Tortuga.Graphics
                 Resolution = new Vector2(1920, 1080);
                 var module = Engine.Instance.GetModule<GraphicsModule>();
                 //setup descriptor sets
-                if (_descriptorHelper == null)
-                    _descriptorHelper = new DescriptorSetHelper();
+                _descriptorHelper = new DescriptorSetHelper();
                 _descriptorHelper.InsertKey(PROJECTION_KEY, module.MeshDescriptorSetLayouts[0]);
                 _descriptorHelper.InsertKey(VIEW_KEY, module.MeshDescriptorSetLayouts[1]);
                 _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();

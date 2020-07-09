@@ -61,10 +61,5 @@ namespace Tortuga.UI
             }
             return base.CreateOrUpdateBuffers();
         }
-
-        internal override Graphics.API.CommandPool.Command Draw(Camera camera)
-        {
-            return base.Draw(camera);
-        }
     }
 }

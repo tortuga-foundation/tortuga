@@ -7,7 +7,6 @@ using System.Diagnostics;
 using Tortuga.Utils;
 using static Vulkan.VulkanNative;
 using static Tortuga.Utils.SDL2.SDL2Native;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Tortuga.Graphics

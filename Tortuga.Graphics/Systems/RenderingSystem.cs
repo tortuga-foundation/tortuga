@@ -2,12 +2,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Numerics;
 using Vulkan;
 
 namespace Tortuga.Graphics
 {
     public class RenderingSystem : Core.BaseSystem
     {
+        private const string UI_PROJECTION_KEY = "UI_PROJECTION";
+
         private API.CommandPool _graphicsCommandPool;
         private API.CommandPool.Command _renderCommand;
         private API.CommandPool.Command _lightCommand;
@@ -19,6 +22,8 @@ namespace Tortuga.Graphics
         private API.Semaphore _presentSemaphore;
         private API.Fence _waitFence;
         private GraphicsModule _module;
+        private API.Framebuffer _uiFramebuffer;
+        private DescriptorSetHelper _descriptorHelper;
 
         public override void OnEnable()
         {
@@ -40,6 +45,24 @@ namespace Tortuga.Graphics
             _lightCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
             _renderCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
             _presentSemaphore = new API.Semaphore(API.Handler.MainDevice);
+
+            //setup a framebuffer for user interface
+            var windowSize = Window.Instance.Size;
+            _uiFramebuffer = new API.Framebuffer(
+                UI.UiResources.Instance.RenderPass,
+                Convert.ToUInt32(windowSize.X),
+                Convert.ToUInt32(windowSize.Y)
+            );
+            _descriptorHelper = new DescriptorSetHelper();
+            _descriptorHelper.InsertKey(UI_PROJECTION_KEY, UI.UiResources.Instance.DescriptorSetLayouts[0]);
+            _descriptorHelper.BindBuffer(UI_PROJECTION_KEY, 0, new Matrix4x4[]
+            {
+                Matrix4x4.CreateOrthographicOffCenter(
+                    0, Window.Instance.Size.X,
+                    0, Window.Instance.Size.Y,
+                    0, 1
+                )
+            }).Wait();
         }
 
         public override Task EarlyUpdate()
@@ -80,8 +103,34 @@ namespace Tortuga.Graphics
 
         public override Task Update()
         {
+            #region pre render task
+
+            var uiTasks = new List<Task>();
+            if (_uiFramebuffer.Width != Window.Instance.Size.X || _uiFramebuffer.Height != Window.Instance.Size.Y)
+            {
+                var windowSize = Window.Instance.Size;
+                _uiFramebuffer = new API.Framebuffer(
+                    UI.UiResources.Instance.RenderPass,
+                    Convert.ToUInt32(windowSize.X),
+                    Convert.ToUInt32(windowSize.Y)
+                );
+                _descriptorHelper = new DescriptorSetHelper();
+                _descriptorHelper.InsertKey(UI_PROJECTION_KEY, UI.UiResources.Instance.DescriptorSetLayouts[0]);
+                uiTasks.Add(
+                    _descriptorHelper.BindBuffer(UI_PROJECTION_KEY, 0, new Matrix4x4[]
+                    {
+                        Matrix4x4.CreateOrthographicOffCenter(
+                            0, Window.Instance.Size.X,
+                            0, Window.Instance.Size.Y,
+                            0, 1
+                        )
+                    })
+                );
+            }
             //fetch all renderable ui in the background
             var renderableUis = Task.Run(() => FetchRenderableUi(MyScene.UserInterface));
+
+            #endregion
 
             return Task.Run(() =>
             {
@@ -180,38 +229,43 @@ namespace Tortuga.Graphics
                     );
                     _deferredCommand.Draw(6);
                     _deferredCommand.EndRenderPass();
-                    //user interface
-                    _deferredCommand.BeginRenderPass(UI.UiResources.Instance.RenderPass, camera.DefferedFramebuffer);
-                    //wait for list of renderable ui
-                    renderableUis.Wait();
-                    //render user interface
-                    var uiCommands = new List<API.CommandPool.Command>();
-                    foreach (var ui in renderableUis.Result)
-                    {
-                        //get transfer commands
-                        foreach (var t in ui.CreateOrUpdateBuffers())
-                            transferCommands.Add(t.TransferCommand);
-
-                        //get draw command
-                        uiCommands.Add(ui.Draw(camera));
-                    }
-                    _deferredCommand.ExecuteCommands(uiCommands.ToArray());
-                    _deferredCommand.EndRenderPass();
                 }
                 _deferredCommand.End();
 
                 #endregion
 
-                #region Update Window Swapchain Image
+                #region Draw UI & Update Window Swapchain Image
+
+                //wait for ui tasks 
+                Task.WaitAll(uiTasks.ToArray());
 
                 _presentCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+                _presentCommand.BeginRenderPass(
+                    UI.UiResources.Instance.RenderPass,
+                    _uiFramebuffer
+                );
+                var uiRenderCommand = new List<API.CommandPool.Command>();
+                foreach (var ui in renderableUis.Result)
+                {
+                    foreach (var t in ui.CreateOrUpdateBuffers())
+                        transferCommands.Add(t.TransferCommand);
+
+                    uiRenderCommand.Add(
+                        ui.Draw(
+                            _uiFramebuffer,
+                            _descriptorHelper.DescriptorObjectMapper[UI_PROJECTION_KEY].Set
+                        )
+                    );
+                }
+                _presentCommand.ExecuteCommands(uiRenderCommand.ToArray());
+                _presentCommand.EndRenderPass();
                 var windowSize = Window.Instance.Size;
                 var windowWidth = Convert.ToInt32(windowSize.X);
                 var windowHeight = Convert.ToInt32(windowSize.Y);
                 foreach (var camera in cameras)
                 {
                     _presentCommand.BlitImage(
-                        camera.DefferedFramebuffer.AttachmentImages[0].ImageHandle,
+                        _uiFramebuffer.AttachmentImages[0].ImageHandle,
                         0,
                         0,
                         Convert.ToInt32(camera.DefferedFramebuffer.Width),

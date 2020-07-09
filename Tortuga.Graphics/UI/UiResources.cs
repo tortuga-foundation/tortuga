@@ -97,10 +97,7 @@ namespace Tortuga.UI
                 Handler.MainDevice,
                 new RenderPass.CreateInfo[]
                 {
-                    new RenderPass.CreateInfo(false, true)
-                    {
-                        InitialLayout = VkImageLayout.ColorAttachmentOptimal
-                    }
+                    new RenderPass.CreateInfo()
                 }
             );
             _pipeline = new Pipeline(
