@@ -85,14 +85,17 @@ namespace Tortuga.Test
 
             //user interface
             {
-                var temp = new UI.UiText();
-                temp.Text = "Hello World";
-                scene.AddUserInterface(temp);
-                var win = new UI.UiRenderable();
-                win.RenderFromCamera = mainCamera;
+                var win = new UI.UiWindow();
                 win.Position = new Vector2(100, 100);
                 win.Scale = new Vector2(500, 500);
                 scene.AddUserInterface(win);
+                var windowContent = new UI.UiRenderable();
+                windowContent.RenderFromCamera = mainCamera;
+                windowContent.PositionXConstraint = new UI.PercentConstraint(0.0f);
+                windowContent.PositionYConstraint = new UI.PercentConstraint(0.0f);
+                windowContent.ScaleXConstraint = new UI.PercentConstraint(1.0f);
+                windowContent.ScaleYConstraint = new UI.PercentConstraint(1.0f);
+                win.Content.Add(windowContent);
             }
 
             scene.AddSystem<Audio.AudioSystem>();

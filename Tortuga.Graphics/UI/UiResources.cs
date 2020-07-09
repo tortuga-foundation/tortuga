@@ -49,7 +49,7 @@ namespace Tortuga.UI
         private UiResources()
         {
             //setup ui font
-            _defaultFont = new UiFont("Assets/Fonts/Roboto-Regular.ttf");
+            _defaultFont = UI.UiFont.LoadFromTTF("Assets/Fonts/Roboto-Regular.ttf");
 
             //setup default ui descriptor set layouts
             _descriptorSetLayouts = new DescriptorSetLayout[]

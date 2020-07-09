@@ -1,8 +1,10 @@
 #pragma warning disable 1591
+using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Tortuga.Graphics;
 using Vulkan;
+using Tortuga.Input;
 
 namespace Tortuga.UI
 {
@@ -11,7 +13,6 @@ namespace Tortuga.UI
     /// </summary>
     public class UiRenderable : UiElement
     {
-        public Vector4 Color = new Vector4(1, 1, 1, 1);
         private const string DATA_KEY = "DATA";
         private const string TEXTURE_KEY = "TEXTURE";
 
@@ -26,6 +27,22 @@ namespace Tortuga.UI
         private Graphics.API.CommandPool _commandPool;
         private Graphics.API.CommandPool.Command _command;
         public Camera RenderFromCamera = null;
+
+        public bool IsMouseInside
+        {
+            get
+            {
+                var pos = AbsolutePosition;
+                var scale = Scale;
+                var mousePosition = InputModule.MousePosition;
+                return (
+                    mousePosition.X >= pos.X &&
+                    mousePosition.Y >= pos.Y &&
+                    mousePosition.X <= scale.X + pos.X &&
+                    mousePosition.Y <= scale.Y + pos.Y
+                );
+            }
+        }
 
         public UiRenderable()
         {
@@ -81,7 +98,12 @@ namespace Tortuga.UI
                                 BorderRadiusBottomLeft,
                                 BorderRadiusBottomRight
                             ),
-                            Color = Color
+                            Color = new Vector4(
+                                Background.R / 255.0f,
+                                Background.G / 255.0f,
+                                Background.B / 255.0f,
+                                Background.A / 255.0f
+                            )
                         }
                     }
                 )
@@ -95,27 +117,48 @@ namespace Tortuga.UI
                 UiResources.Instance.RenderPass,
                 frameBuffer
             );
-            _command.BindPipeline(UiResources.Instance.Pipeline);
-            _command.BindDescriptorSets(
-                UiResources.Instance.Pipeline,
-                new Graphics.API.DescriptorSetPool.DescriptorSet[]
-                {
+            var scissorPosition = AbsolutePosition;
+            var scissorScale = Scale;
+            if (Mask != null)
+            {
+                //update position with mask
+                var maskPosition = Mask.AbsolutePosition;
+                if (scissorPosition.X > maskPosition.X)
+                    scissorPosition.X = maskPosition.X;
+                if (scissorPosition.Y > maskPosition.Y)
+                    scissorPosition.Y = maskPosition.Y;
+
+                //update scale with mask
+                if (scissorScale.X < Mask.Scale.X)
+                    scissorScale.X = Mask.Scale.X;
+                if (scissorScale.Y < Mask.Scale.Y)
+                    scissorScale.Y = Mask.Scale.Y;
+            }
+            if (scissorScale.X > 0 && scissorScale.Y > 0)
+            {
+                _command.BindPipeline(UiResources.Instance.Pipeline);
+                _command.BindDescriptorSets(
+                    UiResources.Instance.Pipeline,
+                    new Graphics.API.DescriptorSetPool.DescriptorSet[]
+                    {
                     ProjectionDescriptorSet,
                     _descriptorHelper.DescriptorObjectMapper[DATA_KEY].Set,
                     _descriptorHelper.DescriptorObjectMapper[TEXTURE_KEY].Set,
-                }
-            );
-            _command.SetScissor(
-                0, 0,
-                frameBuffer.Width,
-                frameBuffer.Height
-            );
-            _command.SetViewport(
-                0, 0,
-                frameBuffer.Width,
-                frameBuffer.Height
-            );
-            _command.Draw(6);
+                    }
+                );
+                _command.SetScissor(
+                    Convert.ToInt32(scissorPosition.X),
+                    Convert.ToInt32(scissorPosition.Y),
+                    Convert.ToUInt32(scissorScale.X),
+                    Convert.ToUInt32(scissorScale.Y)
+                );
+                _command.SetViewport(
+                    0, 0,
+                    frameBuffer.Width,
+                    frameBuffer.Height
+                );
+                _command.Draw(6);
+            }
             _command.End();
             return _command;
         }

@@ -87,6 +87,7 @@ namespace Tortuga.Graphics
             var renderable = new List<UI.UiRenderable>();
             foreach (var e in elements)
             {
+                e.UpdatePositionsWithConstraints(Window.Instance.Size);
                 var renderableElement = e as UI.UiRenderable;
                 if (renderableElement != null)
                     renderable.Add(renderableElement);

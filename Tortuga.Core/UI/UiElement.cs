@@ -84,7 +84,7 @@ namespace Tortuga.UI
                 _background = value;
             }
         }
-        private Color _background;
+        private Color _background = Color.White;
 
         /// <summary>
         /// Position X Constraints

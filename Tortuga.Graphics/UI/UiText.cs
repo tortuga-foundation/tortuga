@@ -9,12 +9,32 @@ namespace Tortuga.UI
     /// </summary>
     public class UiText : UiRenderable
     {
+        public UiHorizontalAlignment HorizontalAlignment
+        {
+            get => _horizontalAlignment;
+            set
+            {
+                _isDirty = true;
+                _horizontalAlignment = value;
+            }
+        }
+        private UiHorizontalAlignment _horizontalAlignment;
+        public UiVerticalAlignment VerticalAlignment
+        {
+            get => _verticalAlignment;
+            set
+            {
+                _isDirty = true;
+                _verticalAlignment = value;
+            }
+        }
+        private UiVerticalAlignment _verticalAlignment;
         public UiFont Font
         {
             get => _font;
             set
             {
-                _isTextDirty = true;
+                _isDirty = true;
                 _font = value;
             }
         }
@@ -24,7 +44,7 @@ namespace Tortuga.UI
             get => _text;
             set
             {
-                _isTextDirty = true;
+                _isDirty = true;
                 _text = value;
             }
         }
@@ -34,30 +54,32 @@ namespace Tortuga.UI
             get => _fontSize;
             set
             {
-                _isTextDirty = true;
+                _isDirty = true;
                 _fontSize = value;
             }
         }
         private int _fontSize = 10;
-        private bool _isTextDirty = false;
 
         public UiText()
         {
             _font = UiResources.Instance.DefaultFont;
+            _horizontalAlignment = UiHorizontalAlignment.Left;
+            _verticalAlignment = UiVerticalAlignment.Top;
         }
 
         internal override Graphics.API.BufferTransferObject[] CreateOrUpdateBuffers()
         {
-            if (_isTextDirty)
+            if (_isDirty)
             {
-                var textImage = Font.DrawText(
-                    _text,
-                    0, 0,
-                    Convert.ToInt32(Scale.X), Convert.ToInt32(Scale.Y),
-                    _fontSize
-                );
-                SetTexture(textImage.Pixels, textImage.Width, textImage.Height);
-                _isTextDirty = false;
+                //var textImage = Font.DrawText(
+                //    _text,
+                //    0, 0,
+                //    Convert.ToInt32(Scale.X), Convert.ToInt32(Scale.Y),
+                //    _fontSize,
+                //    _horizontalAlignment,
+                //    _verticalAlignment
+                //);
+                //SetTexture(textImage.Pixels, textImage.Width, textImage.Height);
             }
             return base.CreateOrUpdateBuffers();
         }
