@@ -113,7 +113,26 @@ namespace Tortuga.UI
                     Handler.MainDevice,
                     "Assets/Shaders/Default/UI.frag"
                 ),
-                new Graphics.PipelineInputBuilder()
+                new Graphics.PipelineInputBuilder(
+                    new Graphics.PipelineInputBuilder.BindingElement[]
+                    {
+                        new Graphics.PipelineInputBuilder.BindingElement()
+                        {
+                            Type = Graphics.PipelineInputBuilder.BindingElement.BindingType.Vertex,
+                            Elements = new Graphics.PipelineInputBuilder.AttributeElement[]
+                            {
+                                //position
+                                new Graphics.PipelineInputBuilder.AttributeElement(
+                                    Graphics.PipelineInputBuilder.AttributeElement.FormatType.Float2
+                                ),
+                                //uv
+                                new Graphics.PipelineInputBuilder.AttributeElement(
+                                    Graphics.PipelineInputBuilder.AttributeElement.FormatType.Float2
+                                )
+                            }
+                        }
+                    }
+                )
             );
         }
     }

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Tortuga.Graphics;
 using Vulkan;
 using Tortuga.Input;
+using System.Runtime.CompilerServices;
 
 namespace Tortuga.UI
 {
@@ -15,6 +16,12 @@ namespace Tortuga.UI
     {
         private const string DATA_KEY = "DATA";
         private const string TEXTURE_KEY = "TEXTURE";
+
+        public struct UiVertex
+        {
+            public Vector2 Position;
+            public Vector2 UV;
+        }
 
         private struct RenderData
         {
@@ -27,6 +34,9 @@ namespace Tortuga.UI
         private Graphics.API.CommandPool _commandPool;
         private Graphics.API.CommandPool.Command _command;
         public Camera RenderFromCamera = null;
+
+        private Graphics.API.Buffer VertexBuffer;
+        private Graphics.API.Buffer IndexBuffer;
 
         public bool IsMouseInside
         {
@@ -43,6 +53,52 @@ namespace Tortuga.UI
                 );
             }
         }
+
+        public virtual UiVertex[] BuildVertices
+        {
+            get
+            {
+                var position = AbsolutePosition;
+                var scale = Scale + position;
+
+                return new UiVertex[4]
+                {
+                    new UiVertex()
+                    {
+                        Position = position,
+                        UV = new Vector2(1, 0)
+                    },
+                    new UiVertex()
+                    {
+                        Position = new Vector2(scale.X, position.Y),
+                        UV = new Vector2(0, 0)
+                    },
+                    new UiVertex()
+                    {
+                        Position = new Vector2(position.X, scale.Y),
+                        UV = new Vector2(1, 1)
+                    },
+                    new UiVertex()
+                    {
+                        Position = scale,
+                        UV = new Vector2(0, 1)
+                    }
+                };
+            }
+        }
+        public virtual ushort[] BuildIndices
+        {
+            get
+            {
+                _indicesLength = 6;
+                return new ushort[6]
+                {
+                    0, 1, 2,
+                    3, 2, 1
+                };
+            }
+        }
+        protected uint _indicesLength = 0;
 
         public UiRenderable()
         {
@@ -68,6 +124,20 @@ namespace Tortuga.UI
                 Graphics.API.Handler.MainDevice.GraphicsQueueFamily
             );
             _command = _commandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
+
+            //setup basic vertex and index buffer
+            VertexBuffer = Graphics.API.Buffer.CreateDevice(
+                Graphics.API.Handler.MainDevice,
+                Convert.ToUInt32(Unsafe.SizeOf<UiVertex>()) * 4,
+                VkBufferUsageFlags.VertexBuffer
+            );
+            IndexBuffer = Graphics.API.Buffer.CreateDevice(
+                Graphics.API.Handler.MainDevice,
+                Convert.ToUInt32(sizeof(short)) * 6,
+                VkBufferUsageFlags.IndexBuffer
+            );
+            VertexBuffer.SetDataWithStaging(BuildVertices).Wait();
+            IndexBuffer.SetDataWithStaging(BuildIndices).Wait();
         }
 
         internal virtual Graphics.API.BufferTransferObject[] CreateOrUpdateBuffers()
@@ -86,6 +156,8 @@ namespace Tortuga.UI
             _isDirty = false;
             return new Graphics.API.BufferTransferObject[]
             {
+                VertexBuffer.SetDataGetTransferObject(BuildVertices),
+                IndexBuffer.SetDataGetTransferObject(BuildIndices),
                 _descriptorHelper.BindBufferWithTransferObject(DATA_KEY, 0, new RenderData[]
                     {
                         new RenderData()
@@ -146,6 +218,8 @@ namespace Tortuga.UI
                     _descriptorHelper.DescriptorObjectMapper[TEXTURE_KEY].Set,
                     }
                 );
+                _command.BindVertexBuffer(VertexBuffer);
+                _command.BindIndexBuffer(IndexBuffer);
                 _command.SetScissor(
                     Convert.ToInt32(scissorPosition.X),
                     Convert.ToInt32(scissorPosition.Y),
@@ -157,11 +231,12 @@ namespace Tortuga.UI
                     frameBuffer.Width,
                     frameBuffer.Height
                 );
-                _command.Draw(6);
+                _command.DrawIndexed(_indicesLength);
             }
             _command.End();
             return _command;
         }
+
         public Task SetTexture(ShaderPixel pixel)
         {
             if (RenderFromCamera != null)
@@ -177,6 +252,7 @@ namespace Tortuga.UI
             _isDirty = true;
             return _descriptorHelper.BindImage(TEXTURE_KEY, 0, new ShaderPixel[] { pixel }, 1, 1);
         }
+
         public Task SetTexture(ShaderPixel[] pixels, int width, int height)
         {
             if (RenderFromCamera != null)

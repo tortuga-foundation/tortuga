@@ -18,7 +18,7 @@ namespace Tortuga.UI
         /// describes the layout of the atlas image
         /// </summary>
         [System.Serializable]
-        public struct FontAtlasDescription
+        public class FontAtlasDescription
         {
             /// <summary>
             /// the character at a specific position
@@ -42,16 +42,44 @@ namespace Tortuga.UI
             public float SizeY { get; set; }
         }
 
+        [System.Serializable]
+        private class JsonFontSerializer
+        {
+            public string Name { get; set; }
+            public float LineHeight { get; set; }
+            public int FontSize { get; set; }
+            public List<FontAtlasDescription> Descriptions { get; set; }
+        }
+
         /// <summary>
         /// atlas image texture
         /// </summary>
         public Graphics.Texture Atlas => _atlas;
+
         /// <summary>
         /// description specifing where each character is in the atlas
         /// </summary>
         public List<FontAtlasDescription> Descriptions => _descriptions;
         private Graphics.Texture _atlas;
         private List<FontAtlasDescription> _descriptions;
+
+        /// <summary>
+        /// name of the current font
+        /// </summary>
+        public string Name => _name;
+        private string _name;
+
+        /// <summary>
+        /// line height of the current font
+        /// </summary>
+        public float LineHeight => _lineHeight;
+        private float _lineHeight;
+
+        /// <summary>
+        /// font size of the atlas
+        /// </summary>
+        public int FontSize => _fontSize;
+        private int _fontSize;
 
         /// <summary>
         /// Constructor for ui font
@@ -69,8 +97,8 @@ namespace Tortuga.UI
         {
             return Task.Run(() =>
             {
-                string content = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 !@#$%^&*()-=_+[];',./{}:\"?><~`";
-                int fontSize = 50;
+                string content = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 !@#$%^&*()-=_+[];',./{}:\"?><~`";
+                int fontSize = 40;
                 int atlasSize = 512;
 
                 //load ttf file
@@ -80,7 +108,13 @@ namespace Tortuga.UI
                 //setup resources for creating atlas
                 var font = new Font(fontCollection.Families[0], fontSize);
                 var atlas = new Bitmap(atlasSize, atlasSize);
-                var description = new List<FontAtlasDescription>();
+                var jsonData = new JsonFontSerializer()
+                {
+                    Name = font.Name,
+                    FontSize = fontSize,
+                    LineHeight = font.GetHeight(),
+                    Descriptions = new List<FontAtlasDescription>()
+                };
 
                 //setup draw resources
                 var textBrush = new SolidBrush(Color.White);
@@ -99,7 +133,7 @@ namespace Tortuga.UI
                         if (offset.Y > atlasSize)
                             break;
                     }
-                    description.Add(new FontAtlasDescription()
+                    jsonData.Descriptions.Add(new FontAtlasDescription()
                     {
                         Character = character,
                         OffsetX = offset.X,
@@ -131,7 +165,7 @@ namespace Tortuga.UI
                 //save atlas to a temporary path
                 atlas.Save(string.Format("{0}.png", path), ImageFormat.Png);
                 var jsonDescription = JsonSerializer.Serialize(
-                    description.ToArray(),
+                    jsonData,
                     new JsonSerializerOptions()
                     {
                         WriteIndented = true,
@@ -162,12 +196,15 @@ namespace Tortuga.UI
         {
             var atlasImageTask = Graphics.Texture.Load(atlasImage);
             var jsonContent = File.ReadAllText(atlasDescription);
-            var descriptions = JsonSerializer.Deserialize<List<FontAtlasDescription>>(jsonContent);
+            var jsonData = JsonSerializer.Deserialize<JsonFontSerializer>(jsonContent);
 
             return new UiFont()
             {
                 _atlas = await atlasImageTask,
-                _descriptions = descriptions
+                _descriptions = jsonData.Descriptions,
+                _name = jsonData.Name,
+                _fontSize = jsonData.FontSize,
+                _lineHeight = jsonData.LineHeight
             };
         }
     }

@@ -12,37 +12,17 @@ layout(set = 1, binding = 0) readonly uniform DATA
     vec4 color;
 } model;
 
+layout(location=0) in vec2 inPosition;
+layout(location=1) in vec2 inUV;
+
 layout(location=0) out vec2 outUV;
 layout(location=1) out vec2 outPosition;
 
 void main()
 {
-    vec2 scalePlusPosition = vec2(
-        model.position.x + model.scale.x,
-        model.position.y + model.scale.y
-    );
-
-    vec2 vertexPositions[6] = vec2[](
-        vec2(model.position.x, model.position.y),
-        vec2(scalePlusPosition.x, model.position.y),
-        vec2(model.position.x, scalePlusPosition.y),
-        vec2(scalePlusPosition.x, scalePlusPosition.y),
-        vec2(model.position.x, scalePlusPosition.y),
-        vec2(scalePlusPosition.x, model.position.y)
-    );
-    vec2 uv[] = vec2[](
-        vec2(1, 0),
-        vec2(0, 0),
-        vec2(1, 1),
-        vec2(0, 1),
-        vec2(1, 1),
-        vec2(0, 0)
-    );
-
-    vec2 position = vertexPositions[gl_VertexIndex];
-    gl_Position = projection * vec4(position, 1, 1);
+    gl_Position = projection * vec4(inPosition, 1, 1);
 
     //outputs
-	outUV = uv[gl_VertexIndex];
-    outPosition = position;
+	outUV = inUV;
+    outPosition = inPosition;
 }

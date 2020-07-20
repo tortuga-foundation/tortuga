@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Vulkan;
+using FbxSharp;
 
 namespace Tortuga.Graphics
 {
@@ -18,23 +19,23 @@ namespace Tortuga.Graphics
         /// <summary>
         /// Position of the vertex
         /// </summary>
-        public Vector3 Position;
+        public System.Numerics.Vector3 Position;
         /// <summary>
         /// Texture coordinate of the vertex
         /// </summary>
-        public Vector2 TextureCoordinates;
+        public System.Numerics.Vector2 TextureCoordinates;
         /// <summary>
         /// Normal position of the vertex
         /// </summary>
-        public Vector3 Normal;
+        public System.Numerics.Vector3 Normal;
         /// <summary>
         /// Used for normal mapping
         /// </summary>
-        public Vector3 Tangent;
+        public System.Numerics.Vector3 Tangent;
         /// <summary>
         /// Used for normal mapping
         /// </summary>
-        public Vector3 BiTangent;
+        public System.Numerics.Vector3 BiTangent;
     }
 
 
@@ -67,9 +68,9 @@ namespace Tortuga.Graphics
 
         private static Mesh LoadOBJ(string file)
         {
-            var vertices = new List<Vector3>();
-            var textures = new List<Vector2>();
-            var normals = new List<Vector3>();
+            var vertices = new List<System.Numerics.Vector3>();
+            var textures = new List<System.Numerics.Vector2>();
+            var normals = new List<System.Numerics.Vector3>();
             var indices = new List<OBJIndex>();
 
             var rawOBJ = File.ReadAllText(file).Split('\n');
@@ -80,7 +81,7 @@ namespace Tortuga.Graphics
                     var match = Regex.Match(line, @"v ([0-9\.\-]+) ([0-9\.\-]+) ([0-9\.\-]+)");
                     if (match.Success)
                     {
-                        vertices.Add(new Vector3(
+                        vertices.Add(new System.Numerics.Vector3(
                             Convert.ToSingle(match.Groups[1].Value),
                             Convert.ToSingle(match.Groups[2].Value),
                             Convert.ToSingle(match.Groups[3].Value)
@@ -92,7 +93,7 @@ namespace Tortuga.Graphics
                     var match = Regex.Match(line, @"vt ([0-9\.\-]+) ([0-9\.\-]+)");
                     if (match.Success)
                     {
-                        textures.Add(new Vector2(
+                        textures.Add(new System.Numerics.Vector2(
                             Convert.ToSingle(match.Groups[1].Value),
                             Convert.ToSingle(match.Groups[2].Value)
                         ));
@@ -103,7 +104,7 @@ namespace Tortuga.Graphics
                     var match = Regex.Match(line, @"vn ([0-9\.\-]+) ([0-9\.\-]+) ([0-9\.\-]+)");
                     if (match.Success)
                     {
-                        normals.Add(new Vector3(
+                        normals.Add(new System.Numerics.Vector3(
                             Convert.ToSingle(match.Groups[1].Value),
                             Convert.ToSingle(match.Groups[2].Value),
                             Convert.ToSingle(match.Groups[3].Value)
@@ -154,6 +155,14 @@ namespace Tortuga.Graphics
             }
             mesh.Vertices = output.ToArray();
             return mesh;
+        }
+
+        private static Mesh LoadFBX(string file)
+        {
+            var fimporter = new Importer();
+            var scene = fimporter.Import(file);
+
+            return new Mesh();
         }
 
         /// <summary>

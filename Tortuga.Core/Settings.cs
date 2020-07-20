@@ -12,4 +12,4 @@ namespace Tortuga.Settings
         /// </summary>
         public static float MaxLoopsPerSecond = 60.0f;
     }
-} 
+}
