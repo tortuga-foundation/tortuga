@@ -294,7 +294,7 @@ namespace Tortuga.Graphics
                     API.CommandPool.Command.Submit(
                         API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
                         transferCommands.ToArray(),
-                        semaphores.ToArray()
+                        new API.Semaphore[] { _transferCommandSemaphore }
                     );
                 }
                 //process light commands (Shadow Mapping)

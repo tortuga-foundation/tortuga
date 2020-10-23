@@ -42,6 +42,8 @@ namespace Tortuga.Test
             Engine.Instance.AddModule<Input.InputModule>();
             //setup vulkan instance
             Engine.Instance.AddModule<Graphics.GraphicsModule>();
+            //setup open al
+            Engine.Instance.AddModule<Audio.AudioModule>();
 
             //create new scene
             var scene = new Core.Scene();

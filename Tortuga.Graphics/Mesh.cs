@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Vulkan;
-using FbxSharp;
 
 namespace Tortuga.Graphics
 {
@@ -159,8 +157,8 @@ namespace Tortuga.Graphics
 
         private static Mesh LoadFBX(string file)
         {
-            var fimporter = new Importer();
-            var scene = fimporter.Import(file);
+            //var fimporter = new Importer();
+            //var scene = fimporter.Import(file);
 
             return new Mesh();
         }

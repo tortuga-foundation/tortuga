@@ -1,5 +1,13 @@
 namespace Tortuga.Utils.OpenAL
 {
+    internal enum AlcConstants
+    {
+        DefaultDeviceSpecifier = 0x1004,
+        DeviceSpecifier = 0x1005,
+        AllDevicesSpecifier = 0x1013,
+        Extensions = 0x1006,
+    }
+
     internal enum ALSourceState
     {
         Initial = 0x1011,
@@ -49,7 +57,7 @@ namespace Tortuga.Utils.OpenAL
     }
 
     internal enum ALSource
-    { 
+    {
         SourceRelative = 0x202,
         ConeInnerAngle = 0x1001,
         ConeOuterAngle = 0x1002,
