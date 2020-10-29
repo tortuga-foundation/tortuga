@@ -138,8 +138,8 @@ namespace Tortuga.UI
                 VkBufferUsageFlags.IndexBuffer,
                 Graphics.API.BufferAccessibility.DeviceOnly
             );
-            VertexBuffer.SetDataWithStaging(BuildVertices).Wait();
-            IndexBuffer.SetDataWithStaging(BuildIndices).Wait();
+            VertexBuffer.SetData(BuildVertices).Wait();
+            IndexBuffer.SetData(BuildIndices).Wait();
         }
 
         internal virtual Graphics.API.BufferTransferObject[] CreateOrUpdateBuffers()

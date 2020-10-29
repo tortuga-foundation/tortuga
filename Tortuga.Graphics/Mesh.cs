@@ -201,7 +201,7 @@ namespace Tortuga.Graphics
                     API.BufferAccessibility.DeviceOnly
                 );
             }
-            var indexTask = _indexBuffers.SetDataWithStaging(this.Indices);
+            var indexTask = _indexBuffers.SetData(this.Indices);
             if (_vertexBuffers == null || _vertexBuffers.Size != expectedVertexSize || force)
             {
                 _vertexBuffers = new Graphics.API.Buffer(
@@ -211,7 +211,7 @@ namespace Tortuga.Graphics
                     API.BufferAccessibility.DeviceOnly
                 );
             }
-            var vertexTask = _vertexBuffers.SetDataWithStaging(this.Vertices);
+            var vertexTask = _vertexBuffers.SetData(this.Vertices);
             await indexTask;
             await vertexTask;
         }

@@ -2,8 +2,8 @@ using System;
 using System.Threading.Tasks;
 using System.Runtime.CompilerServices;
 using Vulkan;
-using Tortuga.Utils;
 using static Vulkan.VulkanNative;
+using System.Runtime.InteropServices;
 
 namespace Tortuga.Graphics.API
 {
@@ -57,29 +57,6 @@ namespace Tortuga.Graphics.API
                 VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent :
                 VkMemoryPropertyFlags.DeviceLocal
             );
-
-            if (accessibility == BufferAccessibility.DeviceOnly)
-            {
-                _staging = new Buffer(
-                    _device,
-                    size,
-                    bufferUsage,
-                    BufferAccessibility.HostAndDevice
-                );
-                //setup transfer commands
-                _commandPool = new CommandPool(
-                    _device,
-                    _device.TransferQueueFamily
-                );
-                _transferToCommand = _commandPool.AllocateCommands()[0];
-                _transferToCommand.Begin(VkCommandBufferUsageFlags.SimultaneousUse);
-                _transferToCommand.CopyBuffer(_staging, this);
-                _transferToCommand.End();
-                _transferFromCommand = _commandPool.AllocateCommands()[0];
-                _transferFromCommand.Begin(VkCommandBufferUsageFlags.SimultaneousUse);
-                _transferFromCommand.CopyBuffer(this, _staging);
-                _transferFromCommand.End();
-            }
         }
         ~Buffer()
         {
@@ -154,6 +131,31 @@ namespace Tortuga.Graphics.API
                 0
             ) != VkResult.Success)
                 throw new Exception("failed to bind buffer handler to device memory");
+
+
+            //setup staging buffer
+            if ((memoryProperty & VkMemoryPropertyFlags.HostVisible) == 0)
+            {
+                _staging = new Buffer(
+                        _device,
+                        size,
+                        bufferUsage,
+                        BufferAccessibility.HostAndDevice
+                    );
+                //setup transfer commands
+                _commandPool = new CommandPool(
+                    _device,
+                    _device.TransferQueueFamily
+                );
+                _transferToCommand = _commandPool.AllocateCommands()[0];
+                _transferToCommand.Begin(VkCommandBufferUsageFlags.SimultaneousUse);
+                _transferToCommand.CopyBuffer(_staging, this);
+                _transferToCommand.End();
+                _transferFromCommand = _commandPool.AllocateCommands()[0];
+                _transferFromCommand.Begin(VkCommandBufferUsageFlags.SimultaneousUse);
+                _transferFromCommand.CopyBuffer(this, _staging);
+                _transferFromCommand.End();
+            }
         }
 
         private unsafe VkMemoryRequirements GetMemoryRequirements(
@@ -197,13 +199,25 @@ namespace Tortuga.Graphics.API
         public void Resize(int size)
         {
             Dispose();
+            Init(
+                _device,
+                Convert.ToUInt32(size),
+                _bufferUsage,
+                _memoryProperty
+            );
         }
 
-        public unsafe void SetData(IntPtr ptr, int sourceOffset, int destinationOffset, int size)
+        private unsafe void SetData(
+            IntPtr ptr,
+            int sourceOffset,
+            int destinationOffset,
+            int size
+        )
         {
-            //if size is null then no need to set any data
             if (size == 0)
                 return;
+            if (size > _size)
+                Console.WriteLine("[WARNING]: new data size is bigger than buffer size");
 
             IntPtr mappedMemory;
             if (vkMapMemory(
@@ -214,25 +228,21 @@ namespace Tortuga.Graphics.API
                 0,
                 (void**)&mappedMemory
             ) != VkResult.Success)
-                throw new System.Exception("failed to map vulkan memory");
+                throw new Exception("failed to map device memory");
+
             System.Buffer.MemoryCopy(
                 IntPtr.Add(ptr, sourceOffset).ToPointer(),
                 IntPtr.Add(mappedMemory, destinationOffset).ToPointer(),
                 size, size
             );
-            vkUnmapMemory(
-                _device.LogicalDevice,
-                _deviceMemory
-            );
-        }
 
-        public unsafe void SetData<T>(T[] data) where T : struct
+            vkUnmapMemory(_device.LogicalDevice, _deviceMemory);
+        }
+        private unsafe IntPtr GetData()
         {
-            var source = new NativeList<T>();
-            foreach (var t in data)
-                source.Add(t);
-            source.Count = Convert.ToUInt32(data.Length);
-            void* mappedMemory;
+            var data = Marshal.AllocHGlobal(Convert.ToInt32(_size));
+
+            IntPtr mappedMemory;
             if (vkMapMemory(
                 _device.LogicalDevice,
                 _deviceMemory,
@@ -241,75 +251,125 @@ namespace Tortuga.Graphics.API
                 0,
                 (void**)&mappedMemory
             ) != VkResult.Success)
-                throw new System.Exception("failed to map vulkan memory");
-            System.Buffer.MemoryCopy(source.Data.ToPointer(), mappedMemory, _size, _size);
-            vkUnmapMemory(
-                _device.LogicalDevice,
-                _deviceMemory
-            );
-        }
-        public unsafe T[] GetData<T>() where T : struct
-        {
-            uint tSize = Convert.ToUInt32(Unsafe.SizeOf<T>());
-            var destination = new NativeList<T>(tSize);
-            destination.Count = _size / tSize;
+                throw new Exception("failed to map device memory");
 
-            void* mappedMemory;
-            if (vkMapMemory(
-                _device.LogicalDevice,
-                _deviceMemory,
-                0,
-                _size,
-                0,
-                (void**)&mappedMemory
-            ) != VkResult.Success)
-                throw new System.Exception("failed to map vulkan memory");
-            System.Buffer.MemoryCopy(mappedMemory, destination.Data.ToPointer(), _size, _size);
-            vkUnmapMemory(
-                _device.LogicalDevice,
-                _deviceMemory
+            System.Buffer.MemoryCopy(
+                mappedMemory.ToPointer(),
+                data.ToPointer(),
+                _size, _size
             );
-            var data = new T[destination.Count];
-            for (int i = 0; i < destination.Count; i++)
-                data[i] = destination[i];
+
+            vkUnmapMemory(_device.LogicalDevice, _deviceMemory);
             return data;
         }
 
-        public async Task SetDataWithStaging<T>(T[] data) where T : struct
+        public async Task SetData<T>(T[] data) where T : struct
         {
-            //if new size is zero then return
+            if (data.Length == 0) return;
             var size = Unsafe.SizeOf<T>() * data.Length;
-            if (size == 0)
-                return;
-
-            _staging.SetData(data);
-            await Task.Run(() =>
+            if (size > _size)
             {
-                var fence = new Fence(_device);
-                _transferToCommand.Submit(
-                    _device.TransferQueueFamily.Queues[0],
-                    null, null,
-                    fence
-                );
-                fence.Wait();
-            });
-        }
-        public async Task<T[]> GetDataWithStaging<T>() where T : struct
-        {
-            //setup transfer command
-            var fence = new Fence(_device);
-            _transferFromCommand.Submit(
-                _device.TransferQueueFamily.Queues[0],
-                null, null,
-                fence
-            );
-            fence.Wait();
-            return await Task.FromResult(_staging.GetData<T>());
+                Resize(size);
+                size = Convert.ToInt32(_size);
+            }
+
+            if ((_memoryProperty & VkMemoryPropertyFlags.HostVisible) == 0)
+            {
+                //staging buffer is required
+                unsafe
+                {
+                    _staging.SetData(
+                        new IntPtr(Unsafe.AsPointer<T>(ref data[0])),
+                        0, 0,
+                        size
+                    );
+                }
+                await Task.Run(() =>
+                {
+                    var fence = new Fence(_device);
+                    _transferToCommand.Submit(
+                        _device.TransferQueueFamily.Queues[0],
+                        null, null,
+                        fence
+                    );
+                    fence.Wait();
+                });
+            }
+            else
+            {
+                //set buffer data directly
+                unsafe
+                {
+                    SetData(
+                        new IntPtr(Unsafe.AsPointer<T>(ref data[0])),
+                        0, 0,
+                        size
+                    );
+                }
+            }
         }
 
-        internal BufferTransferObject GetTransferCmdForSetData<T>(T[] data) where T : struct
+        public async Task<T[]> GetData<T>() where T : struct
         {
-            _staging.SetData(data);
+            var elementSize = Unsafe.SizeOf<T>();
+            var data = new T[_size / elementSize];
+            var ptr = IntPtr.Zero;
+
+            if ((_memoryProperty & VkMemoryPropertyFlags.HostVisible) == 0)
+            {
+                //use staging buffer to get data
+                await Task.Run(() =>
+                {
+                    var fence = new Fence(_device);
+                    _transferFromCommand.Submit(
+                        _device.TransferQueueFamily.Queues[0],
+                        null, null,
+                        fence
+                    );
+                    fence.Wait();
+                });
+                ptr = _staging.GetData();
+            }
+            else
+            {
+                //get data from buffer
+                ptr = GetData();
+            }
+            //copy data to array
+            unsafe
+            {
+                for (int i = 0; i < data.Length; i++)
+                {
+                    data[i] = Unsafe.Read<T>(
+                        IntPtr.Add(ptr, i * elementSize).ToPointer()
+                    );
+                }
+            }
+            Marshal.FreeHGlobal(ptr);
+            return data;
+        }
+
+        public BufferTransferObject GetTransferCmdForSetData<T>(T[] data) where T : struct
+        {
+            if (data.Length == 0)
+                throw new Exception("data size is zero bytes");
+            if ((_memoryProperty & VkMemoryPropertyFlags.HostVisible) != 0)
+                throw new Exception("'GetTransferCCmdForSetData()' cannot be called for memory that is accessible by host system");
+            var size = Unsafe.SizeOf<T>() * data.Length;
+            if (size > _size)
+            {
+                Resize(size);
+                size = Convert.ToInt32(_size);
+            }
+
+            unsafe
+            {
+                _staging.SetData(
+                    new IntPtr(Unsafe.AsPointer<T>(ref data[0])),
+                    0, 0,
+                    size
+                );
+            }
             return new BufferTransferObject
             {
                 commandPool = _commandPool,

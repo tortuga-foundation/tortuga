@@ -127,7 +127,7 @@ namespace Tortuga.Graphics
 
                 if (pixels != null)
                 {
-                    _descriptorObjectMapper[key].Buffers[binding].SetData(pixels);
+                    _descriptorObjectMapper[key].Buffers[binding].SetData(pixels).Wait();
                     _descriptorObjectMapper[key].Command.Begin(
                         VkCommandBufferUsageFlags.OneTimeSubmit
                     );
@@ -225,7 +225,7 @@ namespace Tortuga.Graphics
         {
             this.BufferSetup(key, binding, data, size);
             if (data != null)
-                await _descriptorObjectMapper[key].Buffers[binding].SetDataWithStaging(data);
+                await _descriptorObjectMapper[key].Buffers[binding].SetData(data);
         }
 
         internal API.BufferTransferObject BindBufferWithTransferObject<T>(string key, int binding, T[] data) where T : struct
