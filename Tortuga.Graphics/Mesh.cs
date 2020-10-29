@@ -194,19 +194,21 @@ namespace Tortuga.Graphics
 
             if (_indexBuffers == null || _indexBuffers.Size != expectedIndexSize || force)
             {
-                _indexBuffers = Graphics.API.Buffer.CreateDevice(
+                _indexBuffers = new Graphics.API.Buffer(
                     API.Handler.MainDevice,
                     expectedIndexSize,
-                    VkBufferUsageFlags.IndexBuffer
+                    VkBufferUsageFlags.IndexBuffer,
+                    API.BufferAccessibility.DeviceOnly
                 );
             }
             var indexTask = _indexBuffers.SetDataWithStaging(this.Indices);
             if (_vertexBuffers == null || _vertexBuffers.Size != expectedVertexSize || force)
             {
-                _vertexBuffers = Graphics.API.Buffer.CreateDevice(
+                _vertexBuffers = new Graphics.API.Buffer(
                     API.Handler.MainDevice,
                     expectedVertexSize,
-                    VkBufferUsageFlags.VertexBuffer
+                    VkBufferUsageFlags.VertexBuffer,
+                    API.BufferAccessibility.DeviceOnly
                 );
             }
             var vertexTask = _vertexBuffers.SetDataWithStaging(this.Vertices);

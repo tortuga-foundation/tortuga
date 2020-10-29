@@ -92,10 +92,11 @@ namespace Tortuga.Graphics
                 {
                     if (_descriptorObjectMapper[key].Buffers[binding] != null)
                         _descriptorObjectMapper[key].Buffers[binding].Dispose();
-                    _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateHost(
+                    _descriptorObjectMapper[key].Buffers[binding] = new API.Buffer(
                         _descriptorObjectMapper[key].Layout.DeviceUsed,
                         Convert.ToUInt32(width * height * Unsafe.SizeOf<T>() * elementPerPixel),
-                        VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst
+                        VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst,
+                        API.BufferAccessibility.DeviceOnly
                     );
                     _descriptorObjectMapper[key].Images[binding] = new API.Image(
                         _descriptorObjectMapper[key].Layout.DeviceUsed,
@@ -198,10 +199,11 @@ namespace Tortuga.Graphics
             {
                 if (_descriptorObjectMapper[key].Buffers[binding] != null)
                     _descriptorObjectMapper[key].Buffers[binding].Dispose();
-                _descriptorObjectMapper[key].Buffers[binding] = API.Buffer.CreateDevice(
+                _descriptorObjectMapper[key].Buffers[binding] = new API.Buffer(
                     _descriptorObjectMapper[key].Layout.DeviceUsed,
                     Convert.ToUInt32(actualSize),
-                    VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.UniformBuffer
+                    VkBufferUsageFlags.UniformBuffer,
+                    API.BufferAccessibility.DeviceOnly
                 );
                 _descriptorObjectMapper[key].Set.UpdateBuffer(
                     _descriptorObjectMapper[key].Buffers[binding],
@@ -232,7 +234,7 @@ namespace Tortuga.Graphics
                 throw new InvalidOperationException("data cannot be null");
 
             this.BufferSetup(key, binding, data, -1);
-            return _descriptorObjectMapper[key].Buffers[binding].SetDataGetTransferObject(data);
+            return _descriptorObjectMapper[key].Buffers[binding].GetTransferCmdForSetData(data);
         }
 
         public void RemoveBinding(string key, int binding)

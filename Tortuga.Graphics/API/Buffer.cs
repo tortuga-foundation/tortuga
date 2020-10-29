@@ -11,8 +11,13 @@ namespace Tortuga.Graphics.API
     {
         public CommandPool commandPool;
         public CommandPool.Command TransferCommand;
-        public Buffer StagingBuffer;
     };
+
+    internal enum BufferAccessibility
+    {
+        HostAndDevice,
+        DeviceOnly
+    }
 
     internal class Buffer
     {
@@ -20,82 +25,46 @@ namespace Tortuga.Graphics.API
         public uint Size => _size;
         public Device DeviceUsed => _device;
 
-        private VkBuffer _buffer;
-        private VkMemoryRequirements _memoryRequirements;
-        private VkDeviceMemory _deviceMemory;
-        private uint _size;
+        //staging buffer
         private Buffer _staging;
         private CommandPool _commandPool;
         private CommandPool.Command _transferToCommand;
         private CommandPool.Command _transferFromCommand;
+
+        //buffer & memory handlers
+        private VkBuffer _buffer;
+        private VkMemoryRequirements _memoryRequirements;
+        private VkDeviceMemory _deviceMemory;
+
+        //details used to create the buffer
         private Device _device;
+        private uint _size;
+        private VkBufferUsageFlags _bufferUsage;
+        private VkMemoryPropertyFlags _memoryProperty;
 
-        public unsafe Buffer(Device device, uint size, VkBufferUsageFlags usageFlags, VkMemoryPropertyFlags memoryProperties, bool isStaging = false)
+        public Buffer(
+            Device device,
+            uint size,
+            VkBufferUsageFlags bufferUsage,
+            BufferAccessibility accessibility
+        )
         {
-            _device = device;
-            if ((usageFlags & VkBufferUsageFlags.TransferSrc) == 0)
-                usageFlags |= VkBufferUsageFlags.TransferSrc;
-            if ((usageFlags & VkBufferUsageFlags.TransferDst) == 0)
-                usageFlags |= VkBufferUsageFlags.TransferDst;
-
-            this._size = size;
-            var bufferCreateInfo = VkBufferCreateInfo.New();
-            bufferCreateInfo.size = size;
-            bufferCreateInfo.usage = usageFlags;
-            bufferCreateInfo.sharingMode = VkSharingMode.Exclusive;
-
-            VkBuffer buffer;
-            if (vkCreateBuffer(
-                _device.LogicalDevice,
-                &bufferCreateInfo,
-                null,
-                &buffer
-            ) != VkResult.Success)
-                throw new System.Exception("failed to create vulkan buffer");
-            _buffer = buffer;
-
-            VkMemoryRequirements memoryRequirements;
-            vkGetBufferMemoryRequirements(
-                _device.LogicalDevice,
-                _buffer,
-                &memoryRequirements
-            );
-            _memoryRequirements = memoryRequirements;
-
-            var allocInfo = VkMemoryAllocateInfo.New();
-            allocInfo.allocationSize = _memoryRequirements.size;
-            allocInfo.memoryTypeIndex = _device.FindMemoryType(
-                _memoryRequirements.memoryTypeBits,
-                memoryProperties
+            Init(
+                device,
+                size,
+                bufferUsage,
+                accessibility == BufferAccessibility.HostAndDevice ?
+                VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent :
+                VkMemoryPropertyFlags.DeviceLocal
             );
 
-            VkDeviceMemory deviceMemory;
-            if (vkAllocateMemory(
-                _device.LogicalDevice,
-                &allocInfo,
-                null,
-                &deviceMemory
-            ) != VkResult.Success)
-                throw new System.Exception("failed to allocate device memory for vulkan buffer");
-            _deviceMemory = deviceMemory;
-            if (vkBindBufferMemory(
-                _device.LogicalDevice,
-                _buffer,
-                _deviceMemory,
-                0
-            ) != VkResult.Success)
-                throw new System.Exception("failed to bind buffer handle to device memory");
-
-
-            //setup staging buffer
-            if (!isStaging)
+            if (accessibility == BufferAccessibility.DeviceOnly)
             {
                 _staging = new Buffer(
                     _device,
-                    _size,
-                    VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst,
-                    VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent,
-                    true
+                    size,
+                    bufferUsage,
+                    BufferAccessibility.HostAndDevice
                 );
                 //setup transfer commands
                 _commandPool = new CommandPool(
@@ -115,6 +84,90 @@ namespace Tortuga.Graphics.API
         ~Buffer()
         {
             Dispose();
+        }
+
+        private unsafe void Init(
+            Device device,
+            uint size,
+            VkBufferUsageFlags bufferUsage,
+            VkMemoryPropertyFlags memoryProperty
+        )
+        {
+            if (size == 0)
+                throw new Exception("cannot create buffer with size of zero bytes");
+
+            //make sure buffer usage supports transfer data to and from buffer
+            if ((bufferUsage & VkBufferUsageFlags.TransferSrc) == 0)
+                bufferUsage |= VkBufferUsageFlags.TransferSrc;
+            if ((bufferUsage & VkBufferUsageFlags.TransferDst) == 0)
+                bufferUsage |= VkBufferUsageFlags.TransferDst;
+
+            //store parameter information
+            _size = size;
+            _device = device;
+            _bufferUsage = bufferUsage;
+            _memoryProperty = memoryProperty;
+
+            //buffer create info
+            var bufferCreateInfo = VkBufferCreateInfo.New();
+            bufferCreateInfo.size = size;
+            bufferCreateInfo.usage = bufferUsage;
+            bufferCreateInfo.sharingMode = VkSharingMode.Exclusive;
+
+            //setup buffer handler
+            VkBuffer buffer;
+            if (vkCreateBuffer(
+                device.LogicalDevice,
+                &bufferCreateInfo,
+                null,
+                &buffer
+            ) != VkResult.Success)
+                throw new Exception("failed to create vulkan buffer handler");
+            _buffer = buffer;
+
+            //memory allocation info
+            var memoryRequirements = GetMemoryRequirements(device.LogicalDevice, buffer);
+            _memoryRequirements = memoryRequirements;
+            var memoryAllocateInfo = VkMemoryAllocateInfo.New();
+            memoryAllocateInfo.allocationSize = memoryRequirements.size;
+            memoryAllocateInfo.memoryTypeIndex = _device.FindMemoryType(
+                memoryRequirements.memoryTypeBits,
+                memoryProperty
+            );
+
+            //setup device memory
+            VkDeviceMemory deviceMemory;
+            if (vkAllocateMemory(
+                device.LogicalDevice,
+                &memoryAllocateInfo,
+                null,
+                &deviceMemory
+            ) != VkResult.Success)
+                throw new Exception("failed to allocate device memory");
+            _deviceMemory = deviceMemory;
+
+            //bind buffer handler with device memory
+            if (vkBindBufferMemory(
+                device.LogicalDevice,
+                buffer,
+                deviceMemory,
+                0
+            ) != VkResult.Success)
+                throw new Exception("failed to bind buffer handler to device memory");
+        }
+
+        private unsafe VkMemoryRequirements GetMemoryRequirements(
+            VkDevice device,
+            VkBuffer buffer
+        )
+        {
+            VkMemoryRequirements memoryRequirements;
+            vkGetBufferMemoryRequirements(
+                device,
+                buffer,
+                &memoryRequirements
+            );
+            return memoryRequirements;
         }
 
         public unsafe void Dispose()
@@ -141,26 +194,17 @@ namespace Tortuga.Graphics.API
                 _staging.Dispose();
         }
 
-        public static Buffer CreateHost(Device device, uint size, VkBufferUsageFlags usageFlags)
-            => new Buffer(
-            device,
-            size,
-            usageFlags,
-            VkMemoryPropertyFlags.HostVisible | VkMemoryPropertyFlags.HostCoherent,
-            true
-        );
-
-        public static Buffer CreateDevice(Device device, uint size, VkBufferUsageFlags usageFlags)
-            => new Buffer(
-            device,
-            size,
-            usageFlags,
-            VkMemoryPropertyFlags.DeviceLocal,
-            false
-        );
+        public void Resize(int size)
+        {
+            Dispose();
+        }
 
         public unsafe void SetData(IntPtr ptr, int sourceOffset, int destinationOffset, int size)
         {
+            //if size is null then no need to set any data
+            if (size == 0)
+                return;
+
             IntPtr mappedMemory;
             if (vkMapMemory(
                 _device.LogicalDevice,
@@ -233,6 +277,11 @@ namespace Tortuga.Graphics.API
 
         public async Task SetDataWithStaging<T>(T[] data) where T : struct
         {
+            //if new size is zero then return
+            var size = Unsafe.SizeOf<T>() * data.Length;
+            if (size == 0)
+                return;
+
             _staging.SetData(data);
             await Task.Run(() =>
             {
@@ -258,29 +307,12 @@ namespace Tortuga.Graphics.API
             return await Task.FromResult(_staging.GetData<T>());
         }
 
-        internal BufferTransferObject SetDataGetTransferObject<T>(T[] data) where T : struct
+        internal BufferTransferObject GetTransferCmdForSetData<T>(T[] data) where T : struct
         {
             _staging.SetData(data);
             return new BufferTransferObject
             {
                 commandPool = _commandPool,
-                StagingBuffer = _staging,
-                TransferCommand = _transferToCommand
-            };
-        }
-
-        internal BufferTransferObject SetDataGetTransferObject(
-            IntPtr ptr,
-            int sourceOffset,
-            int destinationOffset,
-            int size
-        )
-        {
-            _staging.SetData(ptr, sourceOffset, destinationOffset, size);
-            return new BufferTransferObject
-            {
-                commandPool = _commandPool,
-                StagingBuffer = _staging,
                 TransferCommand = _transferToCommand
             };
         }

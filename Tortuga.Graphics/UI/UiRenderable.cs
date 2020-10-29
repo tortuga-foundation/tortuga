@@ -126,15 +126,17 @@ namespace Tortuga.UI
             _command = _commandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
 
             //setup basic vertex and index buffer
-            VertexBuffer = Graphics.API.Buffer.CreateDevice(
+            VertexBuffer = new Graphics.API.Buffer(
                 Graphics.API.Handler.MainDevice,
                 Convert.ToUInt32(Unsafe.SizeOf<UiVertex>()) * 4,
-                VkBufferUsageFlags.VertexBuffer
+                VkBufferUsageFlags.VertexBuffer,
+                Graphics.API.BufferAccessibility.DeviceOnly
             );
-            IndexBuffer = Graphics.API.Buffer.CreateDevice(
+            IndexBuffer = new Graphics.API.Buffer(
                 Graphics.API.Handler.MainDevice,
                 Convert.ToUInt32(sizeof(short)) * 6,
-                VkBufferUsageFlags.IndexBuffer
+                VkBufferUsageFlags.IndexBuffer,
+                Graphics.API.BufferAccessibility.DeviceOnly
             );
             VertexBuffer.SetDataWithStaging(BuildVertices).Wait();
             IndexBuffer.SetDataWithStaging(BuildIndices).Wait();
@@ -156,8 +158,8 @@ namespace Tortuga.UI
             _isDirty = false;
             return new Graphics.API.BufferTransferObject[]
             {
-                VertexBuffer.SetDataGetTransferObject(BuildVertices),
-                IndexBuffer.SetDataGetTransferObject(BuildIndices),
+                VertexBuffer.GetTransferCmdForSetData(BuildVertices),
+                IndexBuffer.GetTransferCmdForSetData(BuildIndices),
                 _descriptorHelper.BindBufferWithTransferObject(DATA_KEY, 0, new RenderData[]
                     {
                         new RenderData()
