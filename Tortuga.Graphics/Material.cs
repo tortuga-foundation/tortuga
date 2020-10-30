@@ -20,7 +20,7 @@ namespace Tortuga.Graphics
     /// <summary>
     /// Material used for rendering a mesh
     /// </summary>
-    public class Material
+    public class Material : DescriptorSetHelper
     {
         private const string TEXTURES_KEY = "TEXTURES";
         private const string MATERIAL_KEY = "MATERIAL";
@@ -31,11 +31,10 @@ namespace Tortuga.Graphics
         private API.Pipeline _pipeline;
 
         internal API.DescriptorSetPool.DescriptorSet TexturesDescriptorSet
-            => _descriptorHelper.DescriptorObjectMapper[TEXTURES_KEY].Set;
-        internal API.DescriptorSetPool.DescriptorSet MaterialDescriptorSet 
-            => _descriptorHelper.DescriptorObjectMapper[MATERIAL_KEY].Set;
+            => DescriptorObjectMapper[TEXTURES_KEY].Set;
+        internal API.DescriptorSetPool.DescriptorSet MaterialDescriptorSet
+            => DescriptorObjectMapper[MATERIAL_KEY].Set;
 
-        private DescriptorSetHelper _descriptorHelper;
 
         /// <summary>
         /// constructor for material
@@ -44,24 +43,23 @@ namespace Tortuga.Graphics
         {
             var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
             SetupShader(vertexPath, fragmentPath);
-            _descriptorHelper = new DescriptorSetHelper();
-            _descriptorHelper.InsertKey(
+            this.InsertKey(
                 TEXTURES_KEY,
                 Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[3]
             );
             //color texture
-            _descriptorHelper.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
+            this.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
             //normal texture
-            _descriptorHelper.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { ShaderPixel.Blue }, 1, 1).Wait();
+            this.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { ShaderPixel.Blue }, 1, 1).Wait();
             //detail texture
-            _descriptorHelper.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
+            this.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
 
             //material
-            _descriptorHelper.InsertKey(
+            this.InsertKey(
                 MATERIAL_KEY,
                 Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[4]
             );
-            _descriptorHelper.BindBuffer(MATERIAL_KEY, 0, new int[] { 0 }).Wait();
+            this.BindBuffer(MATERIAL_KEY, 0, new int[] { 0 }).Wait();
         }
 
         /// <summary>
@@ -127,7 +125,7 @@ namespace Tortuga.Graphics
         /// <param name="pixel">color to set</param>
         public Task SetColor(ShaderPixel pixel)
         {
-            return _descriptorHelper.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { pixel }, 1, 1);
+            return this.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { pixel }, 1, 1);
         }
         /// <summary>
         /// Set an image as albedo texture
@@ -137,7 +135,7 @@ namespace Tortuga.Graphics
         /// <param name="height">height</param>
         public Task SetColor(ShaderPixel[] pixels, int width, int height)
         {
-            return _descriptorHelper.BindImage(TEXTURES_KEY, 0, pixels, width, height);
+            return this.BindImage(TEXTURES_KEY, 0, pixels, width, height);
         }
 
         /// <summary>
@@ -146,7 +144,7 @@ namespace Tortuga.Graphics
         /// <param name="pixel"></param>
         public Task SetNormal(ShaderPixel pixel)
         {
-            return _descriptorHelper.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { pixel }, 1, 1);
+            return this.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { pixel }, 1, 1);
         }
 
         /// <summary>
@@ -157,7 +155,7 @@ namespace Tortuga.Graphics
         /// <param name="height">height</param>
         public Task SetNormal(ShaderPixel[] pixels, int width, int height)
         {
-            return _descriptorHelper.BindImage(TEXTURES_KEY, 1, pixels, width, height);
+            return this.BindImage(TEXTURES_KEY, 1, pixels, width, height);
         }
 
         /// <summary>
@@ -166,7 +164,7 @@ namespace Tortuga.Graphics
         /// <param name="pixel"></param>
         public Task SetDetail(ShaderPixel pixel)
         {
-            return _descriptorHelper.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { pixel }, 1, 1);
+            return this.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { pixel }, 1, 1);
         }
 
         /// <summary>
@@ -177,7 +175,7 @@ namespace Tortuga.Graphics
         /// <param name="height">height</param>
         public Task SetDetail(ShaderPixel[] pixels, int width, int height)
         {
-            return _descriptorHelper.BindImage(TEXTURES_KEY, 2, pixels, width, height);
+            return this.BindImage(TEXTURES_KEY, 2, pixels, width, height);
         }
 
         /// <summary>
@@ -186,7 +184,7 @@ namespace Tortuga.Graphics
         /// <param name="type">type of shading model (flat, smooth)</param>
         public Task SetShading(ShadingType type)
         {
-            return _descriptorHelper.BindBuffer(MATERIAL_KEY, 0, new int[] { (int)type });
+            return this.BindBuffer(MATERIAL_KEY, 0, new int[] { (int)type });
         }
     }
 }

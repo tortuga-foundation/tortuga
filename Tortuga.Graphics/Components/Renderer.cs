@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Vulkan;
@@ -62,11 +63,11 @@ namespace Tortuga.Graphics
 
                 //setup draw command
                 _renderCommandPool = new API.CommandPool(
-                    API.Handler.MainDevice, 
+                    API.Handler.MainDevice,
                     API.Handler.MainDevice.GraphicsQueueFamily
                 );
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
-                
+
                 //setup descriptor helpers
                 _descriptorHelper = new DescriptorSetHelper();
                 _descriptorHelper.InsertKey(MODEL_KEY, _module.MeshDescriptorSetLayouts[2]);
@@ -77,11 +78,11 @@ namespace Tortuga.Graphics
         internal API.BufferTransferObject[] UpdateModel()
         {
             if (this.IsStatic)
-                return new API.BufferTransferObject[]{};
-            
+                return new API.BufferTransferObject[] { };
+
             var transfer = _descriptorHelper.BindBufferWithTransferObject(
-                MODEL_KEY, 
-                0, 
+                MODEL_KEY,
+                0,
                 DescriptorSetHelper.MatrixToBytes(this.Matrix)
             );
             return new API.BufferTransferObject[] { transfer };
@@ -97,15 +98,17 @@ namespace Tortuga.Graphics
                 camera.Framebuffer
             );
             _renderCommand.BindPipeline(MaterialData.Pipeline);
+            //get descriptor sets
+            var descriptorSets = new List<API.DescriptorSetPool.DescriptorSet>();
+            descriptorSets.Add(camera.ProjectionDescriptor);
+            descriptorSets.Add(camera.ViewDescriptor);
+            descriptorSets.Add(this.ModelDescriptorSet);
+            descriptorSets.Add(MaterialData.TexturesDescriptorSet);
+            descriptorSets.Add(MaterialData.MaterialDescriptorSet);
+            //bind descriptor sets
             _renderCommand.BindDescriptorSets(
-                MaterialData.Pipeline, 
-                new API.DescriptorSetPool.DescriptorSet[]{
-                    camera.ProjectionDescriptor,
-                    camera.ViewDescriptor,
-                    this.ModelDescriptorSet,
-                    MaterialData.TexturesDescriptorSet,
-                    MaterialData.MaterialDescriptorSet
-                }
+                MaterialData.Pipeline,
+                descriptorSets.ToArray()
             );
             _renderCommand.SetScissor(
                 0, 0,

@@ -65,6 +65,8 @@ namespace Tortuga.Test
                 transform.Position = new Vector3(0, 0, -5);
                 var renderer = await entity.AddComponent<Graphics.Renderer>();
                 renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
+                //renderer.MaterialData = await Graphics.Material.Load("Assets/Materials/Bricks.json");
+
                 renderer.MaterialData = new Graphics.Material("Assets/Shaders/Default/MRT.vert", "Assets/Shaders/Default/MRT.frag");
                 await renderer.MaterialData.SetShading(Graphics.ShadingType.Smooth);
                 var colorTexture = await Graphics.Texture.Load("Assets/Images/Bricks/Color.jpg");

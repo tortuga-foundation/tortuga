@@ -5,6 +5,7 @@ using System;
 using Vulkan;
 using Tortuga.Utils;
 using static Vulkan.VulkanNative;
+using System.Linq;
 
 /*
 -- GPU DATA STRUCTURE --
@@ -66,6 +67,19 @@ namespace Tortuga.Graphics.API
     {
         public DescriptorType type;
         public ShaderStageType stage;
+
+        public static DescriptorSetCreateInfo TryParse(
+            string type,
+            string stage
+        )
+        {
+            var info = new DescriptorSetCreateInfo();
+            if (Enum.TryParse<DescriptorType>(type, out DescriptorType outType))
+                info.type = outType;
+            if (Enum.TryParse<ShaderStageType>(stage, out ShaderStageType outStage))
+                info.stage = outStage;
+            return info;
+        }
     };
 
     public class DescriptorSetLayout
