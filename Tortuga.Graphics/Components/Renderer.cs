@@ -92,6 +92,9 @@ namespace Tortuga.Graphics
 
         internal API.CommandPool.Command BuildDrawCommand(Camera camera)
         {
+            if (MaterialData.IsDirty)
+                MaterialData.ReCompilePipeline();
+
             _renderCommand.Begin(
                 VkCommandBufferUsageFlags.RenderPassContinue,
                 _module.MeshRenderPassMRT,
@@ -103,8 +106,8 @@ namespace Tortuga.Graphics
             descriptorSets.Add(camera.ProjectionDescriptor);
             descriptorSets.Add(camera.ViewDescriptor);
             descriptorSets.Add(this.ModelDescriptorSet);
-            descriptorSets.Add(MaterialData.TexturesDescriptorSet);
-            descriptorSets.Add(MaterialData.MaterialDescriptorSet);
+            foreach (var mapper in MaterialData.DescriptorObjectMapper.Values)
+                descriptorSets.Add(mapper.Set);
             //bind descriptor sets
             _renderCommand.BindDescriptorSets(
                 MaterialData.Pipeline,

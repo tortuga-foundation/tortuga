@@ -85,40 +85,6 @@ namespace Tortuga.Graphics
                             type = API.DescriptorType.UniformBuffer
                         }
                     }
-                ),
-                //color, normal and detail textures
-                new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
-                    new API.DescriptorSetCreateInfo[]
-                    {
-                        new API.DescriptorSetCreateInfo()
-                        {
-                            stage = API.ShaderStageType.Fragment,
-                            type = API.DescriptorType.CombinedImageSampler
-                        },
-                        new API.DescriptorSetCreateInfo()
-                        {
-                            stage = API.ShaderStageType.Fragment,
-                            type = API.DescriptorType.CombinedImageSampler
-                        },
-                        new API.DescriptorSetCreateInfo()
-                        {
-                            stage = API.ShaderStageType.Fragment,
-                            type = API.DescriptorType.CombinedImageSampler
-                        }
-                    }
-                ),
-                //material info
-                new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
-                    new API.DescriptorSetCreateInfo[]
-                    {
-                        new API.DescriptorSetCreateInfo()
-                        {
-                            stage = API.ShaderStageType.Vertex,
-                            type = API.DescriptorType.UniformBuffer
-                        }
-                    }
                 )
             };
 

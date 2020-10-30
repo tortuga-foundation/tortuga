@@ -112,7 +112,7 @@ namespace Tortuga.Graphics.API
         /// </summary>
         /// <param name="device">vulkan device</param>
         /// <param name="file">shader file path</param>
-        public Shader(Device device, string file)
+        internal Shader(Device device, string file)
         {
             _specialization = new List<Specialization>();
             _type = GetShaderTypeFromExtension(file);
@@ -125,12 +125,13 @@ namespace Tortuga.Graphics.API
         }
 
         /// <summary>
-        /// Load shader from string
+        /// Load shader from file
         /// </summary>
-        /// <param name="device">vulkan device</param>
-        /// <param name="code">shader code</param>
-        /// <param name="type">shader type</param>
-        public Shader(Device device, string code, ShaderType type)
+        /// <param name="file">shader file path</param>
+        public Shader(string file)
+        : this(API.Handler.MainDevice, file) { }
+
+        internal Shader(Device device, string code, ShaderType type)
         {
             _specialization = new List<Specialization>();
             _type = type;
@@ -152,20 +153,29 @@ namespace Tortuga.Graphics.API
             File.Delete(shaderFile);
             File.Delete(compileTask.Result);
         }
-
         /// <summary>
-        /// Load shader from spv
+        /// Load shader from string
         /// </summary>
-        /// <param name="device">vulkan device</param>
-        /// <param name="compiledCode">compiled shader code</param>
+        /// <param name="code">shader code</param>
         /// <param name="type">shader type</param>
-        public Shader(Device device, byte[] compiledCode, ShaderType type)
+        public Shader(string code, ShaderType type)
+        : this(API.Handler.MainDevice, code, type) { }
+
+
+        internal Shader(Device device, byte[] compiledCode, ShaderType type)
         {
             _specialization = new List<Specialization>();
             _type = type;
             _device = device;
             SetupShader(compiledCode);
         }
+        /// <summary>
+        /// Load shader from spv
+        /// </summary>
+        /// <param name="compiledCode">compiled shader code</param>
+        /// <param name="type">shader type</param>
+        public Shader(byte[] compiledCode, ShaderType type)
+        : this(API.Handler.MainDevice, compiledCode, type) { }
 
         /// <summary>
         /// deconstructor for shader

@@ -1,4 +1,9 @@
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tortuga.Graphics.API;
+using System.IO;
+using System.Text.Json;
+using Tortuga.Graphics.Json;
 
 namespace Tortuga.Graphics
 {
@@ -30,47 +35,27 @@ namespace Tortuga.Graphics
         internal API.Pipeline Pipeline => _pipeline;
         private API.Pipeline _pipeline;
 
-        internal API.DescriptorSetPool.DescriptorSet TexturesDescriptorSet
-            => DescriptorObjectMapper[TEXTURES_KEY].Set;
-        internal API.DescriptorSetPool.DescriptorSet MaterialDescriptorSet
-            => DescriptorObjectMapper[MATERIAL_KEY].Set;
-
+        internal bool IsDirty => _isDirty;
+        private bool _isDirty;
 
         /// <summary>
         /// constructor for material
         /// </summary>
-        public Material(string vertexPath, string fragmentPath)
+        public Material(Shader vertex, Shader fragment)
         {
-            var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
-            SetupShader(vertexPath, fragmentPath);
-            this.InsertKey(
-                TEXTURES_KEY,
-                Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[3]
-            );
-            //color texture
-            this.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
-            //normal texture
-            this.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { ShaderPixel.Blue }, 1, 1).Wait();
-            //detail texture
-            this.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { ShaderPixel.White }, 1, 1).Wait();
-
-            //material
-            this.InsertKey(
-                MATERIAL_KEY,
-                Engine.Instance.GetModule<GraphicsModule>().MeshDescriptorSetLayouts[4]
-            );
-            this.BindBuffer(MATERIAL_KEY, 0, new int[] { 0 }).Wait();
+            SetShaders(vertex, fragment);
         }
 
         /// <summary>
-        /// update shaders
-        /// NOTE: this will auto call Re Compile pipeline
+        /// update's the current pipeline to use specific shaders
         /// </summary>
-        public void SetupShader(string vertexPath, string fragmentPath)
+        /// <param name="vertex">vertex shader</param>
+        /// <param name="fragment">fragment shader</param>
+        public void SetShaders(Shader vertex, Shader fragment)
         {
-            _vertexShader = new API.Shader(API.Handler.MainDevice, vertexPath);
-            _fragmentShader = new API.Shader(API.Handler.MainDevice, fragmentPath);
-            ReCompilePipeline();
+            _isDirty = true;
+            _vertexShader = vertex;
+            _fragmentShader = fragment;
         }
 
         /// <summary>
@@ -79,9 +64,16 @@ namespace Tortuga.Graphics
         public void ReCompilePipeline()
         {
             var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
+
+            var descriptorSetLayoutList = new List<DescriptorSetLayout>();
+            foreach (var layout in graphicsModule.MeshDescriptorSetLayouts)
+                descriptorSetLayoutList.Add(layout);
+            foreach (var mapper in DescriptorObjectMapper.Values)
+                descriptorSetLayoutList.Add(mapper.Layout);
+
             _pipeline = new API.Pipeline(
                 graphicsModule.MeshRenderPassMRT,
-                graphicsModule.MeshDescriptorSetLayouts,
+                descriptorSetLayoutList.ToArray(),
                 _vertexShader,
                 _fragmentShader,
                 new PipelineInputBuilder(
@@ -120,71 +112,36 @@ namespace Tortuga.Graphics
         }
 
         /// <summary>
-        /// Set a single color as the albedo texture
+        /// creates a descriptor set that can be used to pass data to the graphics card
         /// </summary>
-        /// <param name="pixel">color to set</param>
-        public Task SetColor(ShaderPixel pixel)
+        /// <param name="key">unique key for this descriptor set</param>
+        /// <param name="layout">defines the type of data and at which stage the data should be passed to the graphics card</param>
+        public override void InsertKey(string key, DescriptorSetLayout layout)
         {
-            return this.BindImage(TEXTURES_KEY, 0, new ShaderPixel[] { pixel }, 1, 1);
-        }
-        /// <summary>
-        /// Set an image as albedo texture
-        /// </summary>
-        /// <param name="pixels">pixels</param>
-        /// <param name="width">width</param>
-        /// <param name="height">height</param>
-        public Task SetColor(ShaderPixel[] pixels, int width, int height)
-        {
-            return this.BindImage(TEXTURES_KEY, 0, pixels, width, height);
+            _isDirty = true;
+            base.InsertKey(key, layout);
         }
 
         /// <summary>
-        /// Set a single color as the normal texture
+        /// Removes a descriptor set
         /// </summary>
-        /// <param name="pixel"></param>
-        public Task SetNormal(ShaderPixel pixel)
+        /// <param name="key">unique key for this descriptor set</param>
+        public override void RemoveKey(string key)
         {
-            return this.BindImage(TEXTURES_KEY, 1, new ShaderPixel[] { pixel }, 1, 1);
+            _isDirty = true;
+            base.RemoveKey(key);
         }
 
         /// <summary>
-        /// Set an image as normal texture
+        /// loads a material from json file
         /// </summary>
-        /// <param name="pixels">pixels</param>
-        /// <param name="width">width</param>
-        /// <param name="height">height</param>
-        public Task SetNormal(ShaderPixel[] pixels, int width, int height)
+        /// <param name="filePath">path to jsonn file</param>
+        /// <returns>material object</returns>
+        public static async Task<Material> Load(string filePath)
         {
-            return this.BindImage(TEXTURES_KEY, 1, pixels, width, height);
-        }
-
-        /// <summary>
-        /// Set a single color as the detail texture
-        /// </summary>
-        /// <param name="pixel"></param>
-        public Task SetDetail(ShaderPixel pixel)
-        {
-            return this.BindImage(TEXTURES_KEY, 2, new ShaderPixel[] { pixel }, 1, 1);
-        }
-
-        /// <summary>
-        /// Set an image as detail texture
-        /// </summary>
-        /// <param name="pixels">pixels</param>
-        /// <param name="width">width</param>
-        /// <param name="height">height</param>
-        public Task SetDetail(ShaderPixel[] pixels, int width, int height)
-        {
-            return this.BindImage(TEXTURES_KEY, 2, pixels, width, height);
-        }
-
-        /// <summary>
-        /// Update's the shading model used for rendering the mesh
-        /// </summary>
-        /// <param name="type">type of shading model (flat, smooth)</param>
-        public Task SetShading(ShadingType type)
-        {
-            return this.BindBuffer(MATERIAL_KEY, 0, new int[] { (int)type });
+            var content = File.ReadAllText(filePath);
+            var data = JsonSerializer.Deserialize<JsonMaterial>(content);
+            return await data.ToMaterial();
         }
     }
 }

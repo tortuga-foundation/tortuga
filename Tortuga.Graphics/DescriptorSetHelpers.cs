@@ -32,7 +32,7 @@ namespace Tortuga.Graphics
             _descriptorObjectMapper = new Dictionary<string, DescriptorObject>();
         }
 
-        public void InsertKey(string key, API.DescriptorSetLayout layout)
+        public virtual void InsertKey(string key, API.DescriptorSetLayout layout)
         {
             if (_descriptorObjectMapper.ContainsKey(key) == false)
             {
@@ -54,7 +54,7 @@ namespace Tortuga.Graphics
             }
         }
 
-        public void RemoveKey(string key)
+        public virtual void RemoveKey(string key)
         {
             if (_descriptorObjectMapper.ContainsKey(key))
                 _descriptorObjectMapper.Remove(key);
@@ -70,7 +70,7 @@ namespace Tortuga.Graphics
         /// <param name="width">width of the image</param>
         /// <param name="height">height of the image</param>
         /// <param name="elementPerPixel">the amount of T data creates one pixel</param>
-        public Task BindImage<T>(string key, int binding, T[] pixels, int width, int height, int elementPerPixel = 1) where T : struct
+        public virtual Task BindImage<T>(string key, int binding, T[] pixels, int width, int height, int elementPerPixel = 1) where T : struct
         {
             return Task.Run(() =>
             {
@@ -151,7 +151,7 @@ namespace Tortuga.Graphics
             });
         }
 
-        internal void BindImage(string key, int binding, API.Image image, API.ImageView view = null, API.Sampler sampler = null)
+        internal virtual void BindImage(string key, int binding, API.Image image, API.ImageView view = null, API.Sampler sampler = null)
         {
             if (image == null)
                 throw new Exception("image is required for this function");
@@ -221,14 +221,14 @@ namespace Tortuga.Graphics
         /// <param name="binding">binding for the descriptor set</param>
         /// <param name="data">data to transfer to the shader</param>
         /// <param name="size">size of the data, only required if data is null</param>
-        public async Task BindBuffer<T>(string key, int binding, T[] data, int size = -1) where T : struct
+        public virtual async Task BindBuffer<T>(string key, int binding, T[] data, int size = -1) where T : struct
         {
             this.BufferSetup(key, binding, data, size);
             if (data != null)
                 await _descriptorObjectMapper[key].Buffers[binding].SetData(data);
         }
 
-        internal API.BufferTransferObject BindBufferWithTransferObject<T>(string key, int binding, T[] data) where T : struct
+        internal virtual API.BufferTransferObject BindBufferWithTransferObject<T>(string key, int binding, T[] data) where T : struct
         {
             if (data == null)
                 throw new InvalidOperationException("data cannot be null");
@@ -237,7 +237,7 @@ namespace Tortuga.Graphics
             return _descriptorObjectMapper[key].Buffers[binding].GetTransferCmdForSetData(data);
         }
 
-        public void RemoveBinding(string key, int binding)
+        public virtual void RemoveBinding(string key, int binding)
         {
             _descriptorObjectMapper[key].Buffers[binding] = null;
             _descriptorObjectMapper[key].Images[binding] = null;

@@ -7,21 +7,6 @@
   "DescriptorSets": [
     {
       "Type": "DescriptorSet",
-      "Name": "MATERIAL",
-      "Bindings": [
-        {
-          "Type": "Binding",
-          "Stage": "Vertex",
-          "DescriptorType": "UniformBuffer",
-          "Value": {
-            "Type": "Int32",
-            "Data": 1
-          }
-        }
-      ]
-    },
-    {
-      "Type": "DescriptorSet",
       "Name": "TEXTURES",
       "Bindings": [
         {
@@ -53,6 +38,21 @@
               "G": "Assets/Images/Bricks/Roughness.jpg",
               "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
             }
+          }
+        }
+      ]
+    },
+    {
+      "Type": "DescriptorSet",
+      "Name": "MATERIAL",
+      "Bindings": [
+        {
+          "Type": "Binding",
+          "Stage": "Vertex",
+          "DescriptorType": "UniformBuffer",
+          "Value": {
+            "Type": "Int32",
+            "Data": 1
           }
         }
       ]

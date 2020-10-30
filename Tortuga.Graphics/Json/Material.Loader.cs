@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
-using Tortuga.Core;
 
 namespace Tortuga.Graphics.Json
 {
@@ -92,8 +91,8 @@ namespace Tortuga.Graphics.Json
         {
             var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
             var mat = new Material(
-                material.Shaders.VertexPath,
-                material.Shaders.FragmentPath
+                new API.Shader(material.Shaders.VertexPath),
+                new API.Shader(material.Shaders.FragmentPath)
             );
             foreach (var descriptor in material.DescriptorSets)
             {
@@ -112,13 +111,13 @@ namespace Tortuga.Graphics.Json
                 }
 
                 //setup descriptor type
-                // mat.InsertKey(
-                //     descriptor.Name,
-                //     new API.DescriptorSetLayout(
-                //         API.Handler.MainDevice,
-                //         bindingsCreateInfo.ToArray()
-                //     )
-                // );
+                mat.InsertKey(
+                    descriptor.Name,
+                    new API.DescriptorSetLayout(
+                        API.Handler.MainDevice,
+                        bindingsCreateInfo.ToArray()
+                    )
+                );
 
                 //update descriptor set
                 for (int i = 0; i < bindings.Count; i++)
@@ -130,24 +129,24 @@ namespace Tortuga.Graphics.Json
                         case "Int32":
                             {
                                 var data = binding.Value.GetProperty("Data").GetInt32();
-                                // await mat.BindBuffer(
-                                //     descriptor.Name,
-                                //     i,
-                                //     new int[] { data }
-                                // );
+                                await mat.BindBuffer(
+                                    descriptor.Name,
+                                    i,
+                                    new int[] { data }
+                                );
                             }
                             break;
                         case "Image":
                             {
                                 var data = binding.Value.GetProperty("Data").GetString();
                                 var texture = await Texture.Load(data);
-                                // await mat.BindImage(
-                                //     descriptor.Name,
-                                //     i,
-                                //     texture.Pixels,
-                                //     texture.Width,
-                                //     texture.Height
-                                // );
+                                await mat.BindImage(
+                                    descriptor.Name,
+                                    i,
+                                    texture.Pixels,
+                                    texture.Width,
+                                    texture.Height
+                                );
                             }
                             break;
                         case "ImageChannels":
@@ -159,13 +158,13 @@ namespace Tortuga.Graphics.Json
                                 var B = await Texture.Load(imageChannels.B);
                                 R.CopyChannel(G, Texture.Channel.G);
                                 R.CopyChannel(B, Texture.Channel.B);
-                                // await mat.BindImage(
-                                //     descriptor.Name,
-                                //     i,
-                                //     R.Pixels,
-                                //     R.Width,
-                                //     R.Height
-                                // );
+                                await mat.BindImage(
+                                    descriptor.Name,
+                                    i,
+                                    R.Pixels,
+                                    R.Width,
+                                    R.Height
+                                );
                             }
                             break;
                     }
