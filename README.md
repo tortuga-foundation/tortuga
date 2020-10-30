@@ -38,108 +38,130 @@ You can use nuget to install the package `TortugaEngine`
 ## Example
 
 #### Sample Code:
+
 ```c#
-//setup engine and load required modules
-var engine = new Engine();
-engine.AddModule<Audio.AudioModule>();
-engine.AddModule<Input.InputModule>();
-engine.AddModule<Graphics.GraphicsModule>();
+//setup sdl input system
+Engine.Instance.AddModule<Input.InputModule>();
+//setup vulkan instance
+Engine.Instance.AddModule<Graphics.GraphicsModule>();
+//setup open al
+Engine.Instance.AddModule<Audio.AudioModule>();
 
 //create new scene
 var scene = new Core.Scene();
+Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
-//audio mixer
-var mixer = new Audio.MixerGroup();
-mixer.Gain = 2.0f;
-mixer.AddEffect(new Audio.Effect.Echo());
-
-//on key down
-Input.InputModule.OnKeyDown += (Input.KeyCode key, Input.ModifierKeys modifiers) =>
-{
-    System.Console.WriteLine(key.ToString());
-};
-
-//create window
-var window = new Graphics.Window(
-    "Tortuga",
-    0, 0,
-    1920, 1080,
-    Graphics.WindowType.Window
-);
-//if window is closed then quit
-Input.InputModule.OnWindowClose += (uint windowId) =>
-{
-    if (window.WindowIdentifier == windowId)
-        engine.IsRunning = false;
-};
-//if application is quit then stop
-Input.InputModule.OnApplicationClose += () =>
-{
-    engine.IsRunning = false;
-};
-
-//entity
+//camera
+Graphics.Camera mainCamera;
 {
     var entity = new Core.Entity();
-    var camera = await entity.AddComponent<Graphics.Camera>();
-    camera.RenderToWindow = window; //render this camera on the window
+    mainCamera = await entity.AddComponent<Graphics.Camera>();
+    mainCamera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.DeferredRendering;
     scene.AddEntity(entity);
 }
 
+//mesh
+{
+    var entity = new Core.Entity();
+    var transform = entity.GetComponent<Core.Transform>();
+    transform.Position = new Vector3(0, 0, -5);
+    var renderer = await entity.AddComponent<Graphics.Renderer>();
+    renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
+    renderer.MaterialData = await Graphics.Material.Load("Assets/Materials/Bricks.json");
+    scene.AddEntity(entity);
+}
+
+//light
+{
+    var entity = new Core.Entity();
+    var light = await entity.AddComponent<Graphics.Light>();
+    scene.AddEntity(entity);
+}
+
+//user interface
+{
+    var win = new UI.UiWindow();
+    win.Position = new Vector2(100, 100);
+    win.Scale = new Vector2(500, 500);
+    scene.AddUserInterface(win);
+    var windowContent = new UI.UiRenderable();
+    windowContent.RenderFromCamera = mainCamera;
+    windowContent.PositionXConstraint = new UI.PercentConstraint(0.0f);
+    windowContent.PositionYConstraint = new UI.PercentConstraint(0.0f);
+    windowContent.ScaleXConstraint = new UI.PercentConstraint(1.0f);
+    windowContent.ScaleYConstraint = new UI.PercentConstraint(1.0f);
+    win.Content.Add(windowContent);
+}
+
+//add systems to the scene
 scene.AddSystem<Audio.AudioSystem>();
 scene.AddSystem<Graphics.RenderingSystem>();
 
-engine.LoadScene(scene);
-await engine.Run();
+//load scene
+Engine.Instance.LoadScene(scene);
+//run main loop
+await Engine.Instance.Run();
 ```
 
 #### Material JSON
+
 ```json
 {
   "Type": "Material",
-  "IsInstanced": false,
   "Shaders": {
-    "Vertex": "Assets/Shaders/Default/Default.vert",
-    "Fragment": "Assets/Shaders/Default/Default.frag"
+    "VertexPath": "Assets/Shaders/Default/MRT.vert",
+    "FragmentPath": "Assets/Shaders/Default/MRT.frag"
   },
   "DescriptorSets": [
     {
-      "Type": "UniformData",
-      "Name": "LIGHT"
-    },
-    {
-      "Type": "UniformData",
-      "Name": "Data",
+      "Type": "DescriptorSet",
+      "Name": "TEXTURES",
       "Bindings": [
         {
-          "Values": [
-            {
-              "Type": "Int",
-              "Value": 0
+          "Type": "Binding",
+          "Stage": "Fragment",
+          "DescriptorType": "CombinedImageSampler",
+          "Value": {
+            "Type": "Image",
+            "Data": "Assets/Images/Bricks/Color.jpg"
+          }
+        },
+        {
+          "Type": "Binding",
+          "Stage": "Fragment",
+          "DescriptorType": "CombinedImageSampler",
+          "Value": {
+            "Type": "Image",
+            "Data": "Assets/Images/Bricks/Normal.jpg"
+          }
+        },
+        {
+          "Type": "Binding",
+          "Stage": "Fragment",
+          "DescriptorType": "CombinedImageSampler",
+          "Value": {
+            "Type": "ImageChannels",
+            "Data": {
+              "R": "Assets/Images/Bricks/Metal.jpg",
+              "G": "Assets/Images/Bricks/Roughness.jpg",
+              "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
             }
-          ]
+          }
         }
       ]
     },
     {
-      "Type": "SampledImage2D",
-      "Name": "Textures",
+      "Type": "DescriptorSet",
+      "Name": "MATERIAL",
       "Bindings": [
         {
-          "Image": "Assets/Images/Bricks/Albedo.jpg",
-          "MipLevel": 1
-        },
-        {
-          "Image": "Assets/Images/Bricks/Normal.jpg",
-          "MipLevel": 1
-        },
-        {
-          "BuildImage": {
-            "R": "Assets/Images/Bricks/Metalness.jpg",
-            "G": "Assets/Images/Bricks/Roughness.jpg",
-            "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
-          },
-          "MipLevel": 1
+          "Type": "Binding",
+          "Stage": "Vertex",
+          "DescriptorType": "UniformBuffer",
+          "Value": {
+            "Type": "Int32",
+            "Data": 1
+          }
         }
       ]
     }
