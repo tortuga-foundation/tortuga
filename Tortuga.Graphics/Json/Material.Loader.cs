@@ -189,9 +189,9 @@ namespace Tortuga.Graphics.Json
             {
                 Texture image = null;
                 if (objectType.Equals(typeof(string)))
-                {
-                    image = await Texture.Load(((string)rawData));
-                }
+                    image = await UpdateTexture(image, Channel.R, (string)rawData, typeof(string));
+                else if (objectType.Equals(typeof(Vector4)))
+                    image = await UpdateTexture(image, Channel.R, (Vector4)rawData, typeof(Vector4));
                 else if (objectType.Equals(typeof(JsonImageChannel)))
                 {
                     var data = (JsonImageChannel)rawData;

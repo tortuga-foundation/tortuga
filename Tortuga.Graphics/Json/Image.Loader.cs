@@ -2,7 +2,7 @@ using System.Text.Json;
 
 namespace Tortuga.Graphics.Json
 {
-    public class JsonImageChannel
+    internal class JsonImageChannel
     {
         public JsonElement R;
         public JsonElement G;
