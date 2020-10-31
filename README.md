@@ -38,7 +38,6 @@ You can use nuget to install the package `TortugaEngine`
 ## Example
 
 #### Sample Code:
-
 ```c#
 //setup sdl input system
 Engine.Instance.AddModule<Input.InputModule>();
@@ -104,7 +103,6 @@ await Engine.Instance.Run();
 ```
 
 #### Material JSON
-
 ```json
 {
   "Type": "Material",

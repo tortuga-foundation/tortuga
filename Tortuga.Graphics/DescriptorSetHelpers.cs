@@ -244,50 +244,5 @@ namespace Tortuga.Graphics
             _descriptorObjectMapper[key].Views[binding] = null;
             _descriptorObjectMapper[key].Sampler[binding] = null;
         }
-
-        public static byte[] MatrixToBytes(Matrix4x4 mat)
-        {
-            var bytes = new List<byte>();
-            //1
-            foreach (var b in BitConverter.GetBytes(mat.M11))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M12))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M13))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M14))
-                bytes.Add(b);
-            //2
-            foreach (var b in BitConverter.GetBytes(mat.M21))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M22))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M23))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M24))
-                bytes.Add(b);
-
-            //3
-            foreach (var b in BitConverter.GetBytes(mat.M31))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M32))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M33))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M34))
-                bytes.Add(b);
-
-            //4
-            foreach (var b in BitConverter.GetBytes(mat.M41))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M42))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M43))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(mat.M44))
-                bytes.Add(b);
-
-            return bytes.ToArray();
-        }
     }
 }

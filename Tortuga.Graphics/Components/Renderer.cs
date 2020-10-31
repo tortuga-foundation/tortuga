@@ -71,7 +71,7 @@ namespace Tortuga.Graphics
                 //setup descriptor helpers
                 _descriptorHelper = new DescriptorSetHelper();
                 _descriptorHelper.InsertKey(MODEL_KEY, _module.MeshDescriptorSetLayouts[2]);
-                _descriptorHelper.BindBuffer(MODEL_KEY, 0, DescriptorSetHelper.MatrixToBytes(this.Matrix)).Wait();
+                _descriptorHelper.BindBuffer(MODEL_KEY, 0, this.Matrix.GetBytes()).Wait();
             });
         }
 
@@ -83,7 +83,7 @@ namespace Tortuga.Graphics
             var transfer = _descriptorHelper.BindBufferWithTransferObject(
                 MODEL_KEY,
                 0,
-                DescriptorSetHelper.MatrixToBytes(this.Matrix)
+                this.Matrix.GetBytes()
             );
             return new API.BufferTransferObject[] { transfer };
         }

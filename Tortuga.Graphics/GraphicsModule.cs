@@ -1,5 +1,11 @@
 #pragma warning disable 1591
 
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+using Tortuga.Core.Json;
+using Tortuga.Graphics.Json;
+
 namespace Tortuga.Graphics
 {
     /// <summary>
@@ -33,6 +39,38 @@ namespace Tortuga.Graphics
         {
             //initialize vulkan
             API.Handler.Init();
+
+            #region Setup Json Data Types
+
+            JsonUtility.DataConverter.Add(
+                "String",
+                new KeyValuePair<Type, Func<JsonElement, object>>(
+                    typeof(string),
+                    (JsonElement el) => el.GetString()
+                )
+            );
+
+            JsonUtility.DataConverter.Add(
+                "Channels",
+                new KeyValuePair<Type, Func<JsonElement, object>>(
+                    typeof(JsonImageChannel),
+                    (JsonElement el) =>
+                    {
+                        var elements = new JsonImageChannel();
+                        if (el.TryGetProperty("R", out JsonElement R))
+                            elements.R = R;
+                        if (el.TryGetProperty("G", out JsonElement G))
+                            elements.G = G;
+                        if (el.TryGetProperty("B", out JsonElement B))
+                            elements.B = B;
+                        if (el.TryGetProperty("A", out JsonElement A))
+                            elements.A = A;
+                        return elements;
+                    }
+                )
+            );
+
+            #endregion
 
             #region MRT Renderer
 

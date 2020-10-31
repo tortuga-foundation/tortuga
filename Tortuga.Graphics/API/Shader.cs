@@ -239,7 +239,7 @@ namespace Tortuga.Graphics.API
         /// <param name="data">specialization data</param>
         public void CreateOrUpdateSpecialization(uint identifier, int data)
         {
-            var bytes = BitConverter.GetBytes(data);
+            var bytes = data.GetBytes();
             CreateOrUpdateSpecialization(identifier, bytes);
         }
         /// <summary>
@@ -249,7 +249,7 @@ namespace Tortuga.Graphics.API
         /// <param name="data">specialization data</param>
         public void CreateOrUpdateSpecialization(uint identifier, float data)
         {
-            var bytes = BitConverter.GetBytes(data);
+            var bytes = data.GetBytes();
             CreateOrUpdateSpecialization(identifier, bytes);
         }
         /// <summary>
@@ -269,12 +269,7 @@ namespace Tortuga.Graphics.API
         /// <param name="data">specialization data</param>
         public void CreateOrUpdateSpecialization(uint identifier, Vector2 data)
         {
-            var bytes = new List<byte>();
-            foreach (var b in BitConverter.GetBytes(data.X))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(data.Y))
-                bytes.Add(b);
-            CreateOrUpdateSpecialization(identifier, bytes.ToArray());
+            CreateOrUpdateSpecialization(identifier, data.GetBytes());
         }
         /// <summary>
         /// apply shader specilization
@@ -283,14 +278,7 @@ namespace Tortuga.Graphics.API
         /// <param name="data">specialization data</param>
         public void CreateOrUpdateSpecialization(uint identifier, Vector3 data)
         {
-            var bytes = new List<byte>();
-            foreach (var b in BitConverter.GetBytes(data.X))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(data.Y))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(data.Z))
-                bytes.Add(b);
-            CreateOrUpdateSpecialization(identifier, bytes.ToArray());
+            CreateOrUpdateSpecialization(identifier, data.GetBytes());
         }
         /// <summary>
         /// apply shader specilization
@@ -299,16 +287,7 @@ namespace Tortuga.Graphics.API
         /// <param name="data">specialization data</param>
         public void CreateOrUpdateSpecialization(uint identifier, Vector4 data)
         {
-            var bytes = new List<byte>();
-            foreach (var b in BitConverter.GetBytes(data.X))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(data.Y))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(data.Z))
-                bytes.Add(b);
-            foreach (var b in BitConverter.GetBytes(data.W))
-                bytes.Add(b);
-            CreateOrUpdateSpecialization(identifier, bytes.ToArray());
+            CreateOrUpdateSpecialization(identifier, data.GetBytes());
         }
 
         /// <summary>

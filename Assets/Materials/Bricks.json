@@ -14,7 +14,7 @@
           "Stage": "Fragment",
           "DescriptorType": "CombinedImageSampler",
           "Value": {
-            "Type": "Image",
+            "Type": "String",
             "Data": "Assets/Images/Bricks/Color.jpg"
           }
         },
@@ -23,7 +23,7 @@
           "Stage": "Fragment",
           "DescriptorType": "CombinedImageSampler",
           "Value": {
-            "Type": "Image",
+            "Type": "String",
             "Data": "Assets/Images/Bricks/Normal.jpg"
           }
         },
@@ -32,11 +32,20 @@
           "Stage": "Fragment",
           "DescriptorType": "CombinedImageSampler",
           "Value": {
-            "Type": "ImageChannels",
+            "Type": "Channels",
             "Data": {
-              "R": "Assets/Images/Bricks/Metal.jpg",
-              "G": "Assets/Images/Bricks/Roughness.jpg",
-              "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+              "R": {
+                "Type": "String",
+                "Data": "Assets/Images/Bricks/Metal.jpg"
+              },
+              "G": {
+                "Type": "String",
+                "Data": "Assets/Images/Bricks/Roughness.jpg"
+              },
+              "B": {
+                "Type": "String",
+                "Data": "Assets/Images/Bricks/AmbientOclusion.jpg"
+              }
             }
           }
         }

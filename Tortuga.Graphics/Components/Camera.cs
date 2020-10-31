@@ -38,7 +38,7 @@ namespace Tortuga.Graphics
             set
             {
                 _type = value;
-                _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();
+                _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, ProjectionMatrix.GetBytes()).Wait();
             }
         }
         private ProjectionType _type = ProjectionType.Perspective;
@@ -183,8 +183,8 @@ namespace Tortuga.Graphics
                 _descriptorHelper = new DescriptorSetHelper();
                 _descriptorHelper.InsertKey(PROJECTION_KEY, module.MeshDescriptorSetLayouts[0]);
                 _descriptorHelper.InsertKey(VIEW_KEY, module.MeshDescriptorSetLayouts[1]);
-                _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, DescriptorSetHelper.MatrixToBytes(ProjectionMatrix)).Wait();
-                _descriptorHelper.BindBuffer(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix)).Wait();
+                _descriptorHelper.BindBuffer(PROJECTION_KEY, 0, ProjectionMatrix.GetBytes()).Wait();
+                _descriptorHelper.BindBuffer(VIEW_KEY, 0, ViewMatrix.GetBytes()).Wait();
 
                 //mrt descriptor set
                 _descriptorHelper.InsertKey(MRT_KEY, module.DefferedDescriptorSetLayouts[0]);
@@ -195,23 +195,13 @@ namespace Tortuga.Graphics
 
                 //camera position descriptor set
                 _descriptorHelper.InsertKey(CAMERA_POSITION_KEY, module.DefferedDescriptorSetLayouts[1]);
-                var bytes = new List<byte>();
+                var pos = Vector4.Zero;
                 {
-                    var pos = Vector4.Zero;
                     var transform = MyEntity.GetComponent<Core.Transform>();
                     if (transform != null)
                         pos = new Vector4(transform.Position, 1.0f);
-
-                    foreach (var b in BitConverter.GetBytes(pos.X))
-                        bytes.Add(b);
-                    foreach (var b in BitConverter.GetBytes(pos.Y))
-                        bytes.Add(b);
-                    foreach (var b in BitConverter.GetBytes(pos.Z))
-                        bytes.Add(b);
-                    foreach (var b in BitConverter.GetBytes(pos.W))
-                        bytes.Add(b);
                 }
-                _descriptorHelper.BindBuffer(CAMERA_POSITION_KEY, 0, bytes.ToArray()).Wait();
+                _descriptorHelper.BindBuffer(CAMERA_POSITION_KEY, 0, pos.GetBytes()).Wait();
 
                 //light descriptor set
                 _descriptorHelper.InsertKey(LIGHT_KEY, module.DefferedDescriptorSetLayouts[2]);
@@ -270,7 +260,7 @@ namespace Tortuga.Graphics
 
             return new API.BufferTransferObject[]
             {
-                _descriptorHelper.BindBufferWithTransferObject(VIEW_KEY, 0, DescriptorSetHelper.MatrixToBytes(ViewMatrix))
+                _descriptorHelper.BindBufferWithTransferObject(VIEW_KEY, 0, ViewMatrix.GetBytes())
             };
         }
     }

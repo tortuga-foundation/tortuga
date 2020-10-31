@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Tortuga
@@ -47,6 +50,9 @@ namespace Tortuga
                 throw new System.Exception("there can only be one instance of engine");
 
             _modules = new List<Core.BaseModule>();
+
+            //setup data types required for json importing
+            Tortuga.Core.Json.JsonUtility.InitDataTypes();
         }
 
         /// <summary>
@@ -71,13 +77,13 @@ namespace Tortuga
                     try
                     {
                         #region Compute Delta Time
-                        
+
                         oldTime = currentTime;
                         currentTime = stopWatch.ElapsedMilliseconds;
                         Time.DeltaTime = (currentTime - oldTime) / 1000.0f;
-                        
+
                         #endregion
-                        
+
                         #region Update Modules
 
                         foreach (var module in _modules)
@@ -128,7 +134,7 @@ namespace Tortuga
                         #endregion
 
                         #region OnGui
-                        
+
                         tasks = new List<Task>();
 #if TORTUGA_PROFILER
                         profiler.Restart();
@@ -167,7 +173,7 @@ namespace Tortuga
                         #endregion
 
                         #region Update
-                        
+
                         tasks = new List<Task>();
 #if TORTUGA_PROFILER
                         profiler.Restart();
