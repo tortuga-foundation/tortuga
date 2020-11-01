@@ -31,8 +31,8 @@ namespace Tortuga.Graphics
 
             //render command
             _graphicsCommandPool = new API.CommandPool(
-                API.Handler.MainDevice,
-                API.Handler.MainDevice.GraphicsQueueFamily
+                API.VulkanService.MainDevice,
+                API.VulkanService.MainDevice.GraphicsQueueFamily
             );
             _renderCommand = _graphicsCommandPool.AllocateCommands()[0];
             _lightCommand = _graphicsCommandPool.AllocateCommands()[0];
@@ -40,11 +40,11 @@ namespace Tortuga.Graphics
             _presentCommand = _graphicsCommandPool.AllocateCommands()[0];
 
             //sync
-            _waitFence = new API.Fence(API.Handler.MainDevice);
-            _transferCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
-            _lightCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
-            _renderCommandSemaphore = new API.Semaphore(API.Handler.MainDevice);
-            _presentSemaphore = new API.Semaphore(API.Handler.MainDevice);
+            _waitFence = new API.Fence(API.VulkanService.MainDevice);
+            _transferCommandSemaphore = new API.Semaphore(API.VulkanService.MainDevice);
+            _lightCommandSemaphore = new API.Semaphore(API.VulkanService.MainDevice);
+            _renderCommandSemaphore = new API.Semaphore(API.VulkanService.MainDevice);
+            _presentSemaphore = new API.Semaphore(API.VulkanService.MainDevice);
 
             //setup a framebuffer for user interface
             var windowSize = Window.Instance.Size;
@@ -292,32 +292,32 @@ namespace Tortuga.Graphics
                 {
                     semaphores.Add(_transferCommandSemaphore);
                     API.CommandPool.Command.Submit(
-                        API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                        API.VulkanService.MainDevice.GraphicsQueueFamily.Queues[0],
                         transferCommands.ToArray(),
                         new API.Semaphore[] { _transferCommandSemaphore }
                     );
                 }
                 //process light commands (Shadow Mapping)
                 _lightCommand.Submit(
-                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    API.VulkanService.MainDevice.GraphicsQueueFamily.Queues[0],
                     new API.Semaphore[] { _lightCommandSemaphore },
                     semaphores.ToArray()
                 );
                 //process render commands (MRT)
                 _renderCommand.Submit(
-                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    API.VulkanService.MainDevice.GraphicsQueueFamily.Queues[0],
                     new API.Semaphore[] { _renderCommandSemaphore },
                     semaphores.ToArray()
                 );
                 //process deffered commands
                 _deferredCommand.Submit(
-                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    API.VulkanService.MainDevice.GraphicsQueueFamily.Queues[0],
                     new API.Semaphore[] { _presentSemaphore },
                     new API.Semaphore[] { _lightCommandSemaphore, _renderCommandSemaphore }
                 );
                 //copy rendered image to window swapchain
                 _presentCommand.Submit(
-                    API.Handler.MainDevice.GraphicsQueueFamily.Queues[0],
+                    API.VulkanService.MainDevice.GraphicsQueueFamily.Queues[0],
                     null,
                     new API.Semaphore[] { _presentSemaphore },
                     _waitFence

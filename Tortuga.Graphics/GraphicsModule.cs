@@ -38,7 +38,7 @@ namespace Tortuga.Graphics
         public override void Init()
         {
             //initialize vulkan
-            API.Handler.Init();
+            API.VulkanService.Init();
 
             #region Setup Json Data Types
 
@@ -75,7 +75,7 @@ namespace Tortuga.Graphics
             #region MRT Renderer
 
             _meshRenderPassMRT = new API.RenderPass(
-                API.Handler.MainDevice,
+                API.VulkanService.MainDevice,
                 new API.RenderPass.CreateInfo[]
                 {
                     new API.RenderPass.CreateInfo(),
@@ -90,7 +90,7 @@ namespace Tortuga.Graphics
             {
                 //PROJECTION
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -102,7 +102,7 @@ namespace Tortuga.Graphics
                 ),
                 //VIEW
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -114,7 +114,7 @@ namespace Tortuga.Graphics
                 ),
                 //MODEL
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -131,7 +131,7 @@ namespace Tortuga.Graphics
             #region light
 
             _lightRenderPass = new API.RenderPass(
-                API.Handler.MainDevice,
+                API.VulkanService.MainDevice,
                 new API.RenderPass.CreateInfo[]
                 {
                     new API.RenderPass.CreateInfo()
@@ -142,7 +142,7 @@ namespace Tortuga.Graphics
             {
                 //PROJECTION
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -154,7 +154,7 @@ namespace Tortuga.Graphics
                 ),
                 //VIEW
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -166,7 +166,7 @@ namespace Tortuga.Graphics
                 ),
                 //MODEL
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -183,7 +183,7 @@ namespace Tortuga.Graphics
             #region Deffered
 
             _defferedRenderPass = new API.RenderPass(
-                API.Handler.MainDevice,
+                API.VulkanService.MainDevice,
                 new API.RenderPass.CreateInfo[]
                 {
                     new API.RenderPass.CreateInfo()
@@ -192,7 +192,7 @@ namespace Tortuga.Graphics
             _defferedDescriptorSetLayouts = new API.DescriptorSetLayout[]
             {
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         //color
@@ -222,7 +222,7 @@ namespace Tortuga.Graphics
                     }
                 ),
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()
@@ -233,7 +233,7 @@ namespace Tortuga.Graphics
                     }
                 ),
                 new API.DescriptorSetLayout(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     new API.DescriptorSetCreateInfo[]
                     {
                         new API.DescriptorSetCreateInfo()

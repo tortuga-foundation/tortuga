@@ -63,8 +63,8 @@ namespace Tortuga.Graphics
 
                 //setup draw command
                 _renderCommandPool = new API.CommandPool(
-                    API.Handler.MainDevice,
-                    API.Handler.MainDevice.GraphicsQueueFamily
+                    API.VulkanService.MainDevice,
+                    API.VulkanService.MainDevice.GraphicsQueueFamily
                 );
                 _renderCommand = _renderCommandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
 

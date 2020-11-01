@@ -139,7 +139,7 @@ namespace Tortuga.Graphics
                 var processHandle = Process.GetCurrentProcess().SafeHandle.DangerousGetHandle();
                 surfaceInfo.hinstance = processHandle;
                 surfaceInfo.hwnd = win32Info.window;
-                err = vkCreateWin32SurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateWin32SurfaceKHR(API.VulkanService.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.X11)
             {
@@ -150,7 +150,7 @@ namespace Tortuga.Graphics
                 {
                     Value = x11Info.window
                 };
-                err = vkCreateXlibSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateXlibSurfaceKHR(API.VulkanService.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.Wayland)
             {
@@ -158,14 +158,14 @@ namespace Tortuga.Graphics
                 var surfaceInfo = VkWaylandSurfaceCreateInfoKHR.New();
                 surfaceInfo.display = (Vulkan.Wayland.wl_display*)waylandInfo.display;
                 surfaceInfo.surface = (Vulkan.Wayland.wl_surface*)waylandInfo.surface;
-                err = vkCreateWaylandSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateWaylandSurfaceKHR(API.VulkanService.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.Android)
             {
                 var androidInfo = Unsafe.Read<AndroidWindowInfo>(&sysWindowInfo.info);
                 var surfaceInfo = VkAndroidSurfaceCreateInfoKHR.New();
                 surfaceInfo.window = (Vulkan.Android.ANativeWindow*)androidInfo.window;
-                err = vkCreateAndroidSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateAndroidSurfaceKHR(API.VulkanService.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else if (sysWindowInfo.subsystem == SysWMType.Mir)
             {
@@ -173,7 +173,7 @@ namespace Tortuga.Graphics
                 var surfaceInfo = VkMirSurfaceCreateInfoKHR.New();
                 surfaceInfo.connection = (Vulkan.Mir.MirConnection*)mirInfo.connection;
                 surfaceInfo.mirSurface = (Vulkan.Mir.MirSurface*)mirInfo.mirSurface;
-                err = vkCreateMirSurfaceKHR(API.Handler.Vulkan.Handle, &surfaceInfo, null, &surface);
+                err = vkCreateMirSurfaceKHR(API.VulkanService.Vulkan.Handle, &surfaceInfo, null, &surface);
             }
             else
                 throw new PlatformNotSupportedException("This platform (window manager) is currently not supported");
@@ -182,8 +182,8 @@ namespace Tortuga.Graphics
                 throw new Exception("failed to create window surface");
 
             this._surface = surface;
-            this._swapchain = new API.Swapchain(API.Handler.MainDevice, this);
-            this._swapchianFence = new API.Fence(API.Handler.MainDevice);
+            this._swapchain = new API.Swapchain(API.VulkanService.MainDevice, this);
+            this._swapchianFence = new API.Fence(API.VulkanService.MainDevice);
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace Tortuga.Graphics
         {
             _exists = false;
             SDL_DestroyWindow(_windowHandle);
-            vkDestroySurfaceKHR(API.Handler.Vulkan.Handle, this._surface, null);
+            vkDestroySurfaceKHR(API.VulkanService.Vulkan.Handle, this._surface, null);
         }
 
         internal static unsafe SDL_version SDLVersion
@@ -288,7 +288,7 @@ namespace Tortuga.Graphics
                     unsafe
                     {
                         acquireResponse = vkAcquireNextImageKHR(
-                            API.Handler.MainDevice.LogicalDevice.Handle,
+                            API.VulkanService.MainDevice.LogicalDevice.Handle,
                             _swapchain.Handle,
                             ulong.MaxValue,
                             VkSemaphore.Null,

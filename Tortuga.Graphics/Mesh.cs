@@ -195,7 +195,7 @@ namespace Tortuga.Graphics
             if (_indexBuffers == null || _indexBuffers.Size != expectedIndexSize || force)
             {
                 _indexBuffers = new Graphics.API.Buffer(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     expectedIndexSize,
                     VkBufferUsageFlags.IndexBuffer,
                     API.BufferAccessibility.DeviceOnly
@@ -205,7 +205,7 @@ namespace Tortuga.Graphics
             if (_vertexBuffers == null || _vertexBuffers.Size != expectedVertexSize || force)
             {
                 _vertexBuffers = new Graphics.API.Buffer(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     expectedVertexSize,
                     VkBufferUsageFlags.VertexBuffer,
                     API.BufferAccessibility.DeviceOnly

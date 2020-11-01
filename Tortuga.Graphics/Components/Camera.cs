@@ -209,11 +209,11 @@ namespace Tortuga.Graphics
 
                 //deffered pipeline
                 _vertexShader = new API.Shader(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     "Assets/Shaders/Default/Deffered.vert"
                 );
                 _fragmentShader = new API.Shader(
-                    API.Handler.MainDevice,
+                    API.VulkanService.MainDevice,
                     "Assets/Shaders/Default/Deffered.frag"
                 );
                 _fragmentShader.CreateOrUpdateSpecialization(0, 0);

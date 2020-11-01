@@ -58,7 +58,7 @@ namespace Tortuga.UI
             {
                 //projection
                 new DescriptorSetLayout(
-                    Handler.MainDevice,
+                    VulkanService.MainDevice,
                     new DescriptorSetCreateInfo[]
                     {
                         new DescriptorSetCreateInfo()
@@ -70,7 +70,7 @@ namespace Tortuga.UI
                 ),
                 //ui data
                 new DescriptorSetLayout(
-                    Handler.MainDevice,
+                    VulkanService.MainDevice,
                     new DescriptorSetCreateInfo[]
                     {
                         new DescriptorSetCreateInfo()
@@ -82,7 +82,7 @@ namespace Tortuga.UI
                 ),
                 //texture
                 new DescriptorSetLayout(
-                    Handler.MainDevice,
+                    VulkanService.MainDevice,
                     new DescriptorSetCreateInfo[]
                     {
                         new DescriptorSetCreateInfo()
@@ -96,7 +96,7 @@ namespace Tortuga.UI
 
             //setup defult ui pipeline
             _renderPass = new RenderPass(
-                Handler.MainDevice,
+                VulkanService.MainDevice,
                 new RenderPass.CreateInfo[]
                 {
                     new RenderPass.CreateInfo()
@@ -106,11 +106,11 @@ namespace Tortuga.UI
                 _renderPass,
                 _descriptorSetLayouts,
                 new Shader(
-                    Handler.MainDevice,
+                    VulkanService.MainDevice,
                     "Assets/Shaders/Default/UI.vert"
                 ),
                 new Shader(
-                    Handler.MainDevice,
+                    VulkanService.MainDevice,
                     "Assets/Shaders/Default/UI.frag"
                 ),
                 new Graphics.PipelineInputBuilder(

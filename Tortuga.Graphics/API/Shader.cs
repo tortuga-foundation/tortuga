@@ -129,7 +129,7 @@ namespace Tortuga.Graphics.API
         /// </summary>
         /// <param name="file">shader file path</param>
         public Shader(string file)
-        : this(API.Handler.MainDevice, file) { }
+        : this(API.VulkanService.MainDevice, file) { }
 
         internal Shader(Device device, string code, ShaderType type)
         {
@@ -159,7 +159,7 @@ namespace Tortuga.Graphics.API
         /// <param name="code">shader code</param>
         /// <param name="type">shader type</param>
         public Shader(string code, ShaderType type)
-        : this(API.Handler.MainDevice, code, type) { }
+        : this(API.VulkanService.MainDevice, code, type) { }
 
 
         internal Shader(Device device, byte[] compiledCode, ShaderType type)
@@ -175,7 +175,7 @@ namespace Tortuga.Graphics.API
         /// <param name="compiledCode">compiled shader code</param>
         /// <param name="type">shader type</param>
         public Shader(byte[] compiledCode, ShaderType type)
-        : this(API.Handler.MainDevice, compiledCode, type) { }
+        : this(API.VulkanService.MainDevice, compiledCode, type) { }
 
         /// <summary>
         /// deconstructor for shader

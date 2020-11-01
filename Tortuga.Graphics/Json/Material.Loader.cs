@@ -247,7 +247,7 @@ namespace Tortuga.Graphics.Json
                 mat.InsertKey(
                     descriptor.Name,
                     new API.DescriptorSetLayout(
-                        API.Handler.MainDevice,
+                        API.VulkanService.MainDevice,
                         bindingsCreateInfos.ToArray()
                     )
                 );

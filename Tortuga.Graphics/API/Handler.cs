@@ -1,6 +1,6 @@
 namespace Tortuga.Graphics.API
 {
-    internal static class Handler
+    internal static class VulkanService
     {
         public static VulkanInstance Vulkan
         {

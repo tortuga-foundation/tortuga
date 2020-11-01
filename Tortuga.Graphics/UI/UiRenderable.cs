@@ -120,20 +120,20 @@ namespace Tortuga.UI
 
             //setup render command
             _commandPool = new Graphics.API.CommandPool(
-                Graphics.API.Handler.MainDevice,
-                Graphics.API.Handler.MainDevice.GraphicsQueueFamily
+                Graphics.API.VulkanService.MainDevice,
+                Graphics.API.VulkanService.MainDevice.GraphicsQueueFamily
             );
             _command = _commandPool.AllocateCommands(VkCommandBufferLevel.Secondary)[0];
 
             //setup basic vertex and index buffer
             VertexBuffer = new Graphics.API.Buffer(
-                Graphics.API.Handler.MainDevice,
+                Graphics.API.VulkanService.MainDevice,
                 Convert.ToUInt32(Unsafe.SizeOf<UiVertex>()) * 4,
                 VkBufferUsageFlags.VertexBuffer,
                 Graphics.API.BufferAccessibility.DeviceOnly
             );
             IndexBuffer = new Graphics.API.Buffer(
-                Graphics.API.Handler.MainDevice,
+                Graphics.API.VulkanService.MainDevice,
                 Convert.ToUInt32(sizeof(short)) * 6,
                 VkBufferUsageFlags.IndexBuffer,
                 Graphics.API.BufferAccessibility.DeviceOnly

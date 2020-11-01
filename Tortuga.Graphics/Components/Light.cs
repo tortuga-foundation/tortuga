@@ -38,11 +38,11 @@ namespace Tortuga.Graphics
                 1024, 1024
             );
             _vertexShader = new API.Shader(
-                API.Handler.MainDevice,
+                API.VulkanService.MainDevice,
                 "Assets/Shaders/Default/Light.vert"
             );
             _fragmentShader = new API.Shader(
-                API.Handler.MainDevice,
+                API.VulkanService.MainDevice,
                 "Assets/Shaders/Default/Light.frag"
             );
             _pipeline = new API.Pipeline(
