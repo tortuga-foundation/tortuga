@@ -27,7 +27,8 @@ namespace Tortuga.Core.Json
         /// </summary>
         /// <param name="element">json element</param>
         /// <param name="dataType">returns what type of object this is</param>
-        /// <returns>returns the converted object</returns>
+        /// <param name="data">returns the converted object</param>
+        /// <returns>true if manage to convert json to object</returns>
         public static bool ToObject(
             this JsonElement element,
             out Type dataType,

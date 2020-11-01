@@ -12,6 +12,9 @@ namespace Tortuga
     /// </summary>
     public static class BitConverterExtension
     {
+        /// <summary>
+        /// convert's object to byte array
+        /// </summary>
         public static byte[] GetBytes(this object obj, Type type)
         {
             if (type.Equals(typeof(int)))
@@ -47,10 +50,19 @@ namespace Tortuga
             else
                 throw new NotImplementedException("unsupported json type was passed");
         }
+        /// <summary>
+        /// convert's int to byte array
+        /// </summary>
         public static byte[] GetBytes(this int obj)
             => BitConverter.GetBytes(obj);
+        /// <summary>
+        /// converts uint to byte array
+        /// </summary>
         public static byte[] GetBytes(this uint obj)
             => BitConverter.GetBytes(obj);
+        /// <summary>
+        /// converts int array to byte array
+        /// </summary>
         public static byte[] GetBytes(this int[] obj)
         {
             var bytes = new List<byte>();
@@ -59,8 +71,14 @@ namespace Tortuga
                     bytes.Add(b);
             return bytes.ToArray();
         }
+        /// <summary>
+        /// converts float to byte array
+        /// </summary>
         public static byte[] GetBytes(this float obj)
             => BitConverter.GetBytes(obj);
+        /// <summary>
+        /// converts float array to byte array
+        /// </summary>
         public static byte[] GetBytes(this float[] obj)
         {
             var bytes = new List<byte>();
@@ -69,6 +87,9 @@ namespace Tortuga
                     bytes.Add(b);
             return bytes.ToArray();
         }
+        /// <summary>
+        /// converts 4x4 matrix to byte array
+        /// </summary>
         public static byte[] GetBytes(this Matrix4x4 obj)
         {
             var bytes = new List<byte>();
@@ -113,6 +134,9 @@ namespace Tortuga
 
             return bytes.ToArray();
         }
+        /// <summary>
+        /// converts vector 2 to byte array
+        /// </summary>
         public static byte[] GetBytes(this Vector2 obj)
         {
             var bytes = new List<byte>();
@@ -122,6 +146,9 @@ namespace Tortuga
                 bytes.Add(b);
             return bytes.ToArray();
         }
+        /// <summary>
+        /// converts vector 3 to byte array
+        /// </summary>
         public static byte[] GetBytes(this Vector3 obj)
         {
             var bytes = new List<byte>();
@@ -133,6 +160,9 @@ namespace Tortuga
                 bytes.Add(b);
             return bytes.ToArray();
         }
+        /// <summary>
+        /// converts vector 4 to byte array
+        /// </summary>
         public static byte[] GetBytes(this Vector4 obj)
         {
             var bytes = new List<byte>();
