@@ -9,7 +9,7 @@
       "type": "coreclr",
       "request": "launch",
       "preLaunchTask": "build",
-      "program": "${workspaceFolder}/Tortuga.Test/bin/Debug/netcoreapp3.1/Tortuga.Test.dll",
+      "program": "${workspaceFolder}/Tortuga.Test/bin/Debug/net5.0/Tortuga.Test.dll",
       "args": [],
       "cwd": "${workspaceFolder}",
       "console": "internalConsole",
