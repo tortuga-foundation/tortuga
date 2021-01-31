@@ -31,35 +31,35 @@ namespace Tortuga.Audio.API
 
         public void UpdateDoplerFactor()
         {
-            alDopplerFactor(Settings.Audio.DoplerFactor);
+            alDopplerFactor(Settings.DoplerFactor);
             alHandleError("failed to update dopler factor");
         }
 
         public void UpdateSpeedOfSound()
         {
-            alSpeedOfSound(Settings.Audio.SpeedOfSound);
+            alSpeedOfSound(Settings.SpeedOfSound);
             alHandleError("failed to update speed of sound");
         }
 
         public void UpdateDistanceModel()
         {
-            if (Settings.Audio.DistanceModel == Settings.AudioDistanceModel.LinearDistance)
+            if (Settings.DistanceModel == AudioDistanceModel.LinearDistance)
             {
-                if (Settings.Audio.IsDistanceModelClamped)
+                if (Settings.IsDistanceModelClamped)
                     alDistanceModel(ALDistanceModel.LinearDistanceClamped);
                 else
                     alDistanceModel(ALDistanceModel.LinearDistance);
             }
-            else if (Settings.Audio.DistanceModel == Settings.AudioDistanceModel.ExponentDistance)
+            else if (Settings.DistanceModel == AudioDistanceModel.ExponentDistance)
             {
-                if (Settings.Audio.IsDistanceModelClamped)
+                if (Settings.IsDistanceModelClamped)
                     alDistanceModel(ALDistanceModel.ExponentDistanceClamped);
                 else
                     alDistanceModel(ALDistanceModel.ExponentDistance);
             }
-            else if (Settings.Audio.DistanceModel == Settings.AudioDistanceModel.InverseDistance)
+            else if (Settings.DistanceModel == AudioDistanceModel.InverseDistance)
             {
-                if (Settings.Audio.IsDistanceModelClamped)
+                if (Settings.IsDistanceModelClamped)
                     alDistanceModel(ALDistanceModel.InverseDistanceClamped);
                 else
                     alDistanceModel(ALDistanceModel.InverseDistance);

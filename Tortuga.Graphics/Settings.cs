@@ -1,39 +1,59 @@
-using Tortuga.Graphics;
+using System;
 
-namespace Tortuga.Settings
+namespace Tortuga.Graphics
 {
     /// <summary>
-    /// Graphics api debug level
+    /// different types of debug level
     /// </summary>
+    [Flags]
     public enum GraphicsApiDebugLevelType
     {
         /// <summary>
-        /// No Graphics API Debuging
-        /// </summary>
+        /// disable graphics api output
+        /// This is for production use
+        /// </summary> 
         None,
         /// <summary>
-        /// Show Graphics API Errors and Warnings
+        /// enables errors
         /// </summary>
-        ErrorAndWarnings,
+        Error,
         /// <summary>
-        /// Show full Graphics API Information
+        /// enables warnings
         /// </summary>
-        Full
+        Warning,
+        /// <summary>
+        /// enables information
+        /// </summary>
+        Info,
+        /// <summary>
+        /// enables verbose input
+        /// </summary>
+        Debug
     }
 
-    /// <summary>
-    /// Graphics Settings
-    /// </summary>
-    public static class Graphics
+    public static partial class Settings
     {
         /// <summary>
-        /// Graphics api debug level
-        /// Changing this will require restart and this should be setup before the engine is loaded
+        /// what type of debug information should the graphics api output
         /// </summary>
-        public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = GraphicsApiDebugLevelType.Full;
-        /// <summary>
-        /// How window is displayed
-        /// </summary>
-        public static WindowType Window = WindowType.Resizeable;
+        public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = (
+            GraphicsApiDebugLevelType.Error |
+            GraphicsApiDebugLevelType.Warning |
+            GraphicsApiDebugLevelType.Info |
+            GraphicsApiDebugLevelType.Debug
+        );
+
+        internal static bool EnableGraphicsApiDebugging
+        {
+            get
+            {
+                return (
+                    (Settings.GraphicsApiDebugLevel & GraphicsApiDebugLevelType.Error) != 0 ||
+                    (Settings.GraphicsApiDebugLevel & GraphicsApiDebugLevelType.Warning) != 0 ||
+                    (Settings.GraphicsApiDebugLevel & GraphicsApiDebugLevelType.Info) != 0 ||
+                    (Settings.GraphicsApiDebugLevel & GraphicsApiDebugLevelType.Debug) != 0
+                );
+            }
+        }
     }
 }

@@ -12,15 +12,17 @@
         "/consoleloggerparameters:NoSummary",
         "/p:DefineConstants=TORTUGA_PROFILER"
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "restore",
       "command": "restore",
       "type": "shell",
-      "args": [
-        "${workspaceFolder}/tortuga.sln"
-      ],
+      "args": ["${workspaceFolder}/tortuga.sln"],
       "problemMatcher": []
     },
     {
@@ -40,20 +42,13 @@
         "${workspaceFolder}/Tortuga.Graphics/obj",
         "${workspaceFolder}/Tortuga.Graphics/bin"
       ],
-      "problemMatcher": [],
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      }
+      "problemMatcher": []
     },
     {
       "label": "pack",
       "command": "dotnet",
       "type": "shell",
-      "args": [
-        "pack",
-        "${workspaceFolder}/tortuga.sln"
-      ],
+      "args": ["pack", "${workspaceFolder}/tortuga.sln"],
       "problemMatcher": []
     }
   ]

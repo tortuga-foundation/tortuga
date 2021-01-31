@@ -1,9 +1,9 @@
-namespace Tortuga.Settings
+namespace Tortuga
 {
     /// <summary>
     /// Core tortuga settings
     /// </summary>
-    public class Core
+    public static partial class Settings
     {
         /// <summary>
         /// How many times does the main loop run, per second,

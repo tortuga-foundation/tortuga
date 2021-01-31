@@ -1,92 +1,161 @@
+#pragma warning disable CS1591
 using System;
 using Vulkan;
-using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Image
+    public class Image
     {
-        public VkImage ImageHandle => _imageHandle;
-        public VkDeviceMemory Memory => _deviceMemory;
-        public VkFormat Format => _format;
+        public Device Device => _device;
+        public uint Width => _width;
+        public uint Height => _height;
         public uint MipLevel => _mipLevel;
-        public int Width => _width;
-        public int Height => _height;
-        public Device DeviceUsed => _device;
+        public VkFormat Format => _format;
+        public VkImageLayout Layout
+        {
+            get => _layout;
+            set => _layout = value;
+        }
+        public VkImage Handle => _handle;
+        public VkDeviceMemory MemoryHandle => _memoryHandle;
 
-        private VkImage _imageHandle;
-        private VkDeviceMemory _deviceMemory;
+        private Device _device;
+        private uint _width;
+        private uint _height;
         private VkFormat _format;
         private uint _mipLevel;
-        private int _width;
-        private int _height;
-        private Device _device;
+        private VkImageLayout _layout;
+        private VkImage _handle;
+        private VkDeviceMemory _memoryHandle;
 
         private Image() { }
-        public unsafe Image(Device device, uint width, uint height, VkFormat format, VkImageUsageFlags usageFlags, uint mipMapLevel = 1)
+        public unsafe Image(
+            Device device,
+            uint width, uint height,
+            VkFormat format,
+            VkImageUsageFlags usageFlags,
+            uint mipLevel = 1
+        )
         {
             _device = device;
-            this._width = Convert.ToInt32(width);
-            this._height = Convert.ToInt32(height);
-            this._format = format;
-            this._mipLevel = mipMapLevel;
+            _width = width;
+            _height = height;
+            _format = format;
+            _mipLevel = mipLevel;
+            _layout = VkImageLayout.Undefined;
 
-            var imageInfo = VkImageCreateInfo.New();
-            imageInfo.imageType = VkImageType.Image2D;
-            imageInfo.format = format;
-            imageInfo.extent = new VkExtent3D
+            var imageInfo = new VkImageCreateInfo
             {
-                width = width,
-                height = height,
-                depth = 1
+                sType = VkStructureType.ImageCreateInfo,
+                imageType = VkImageType.Image2D,
+                format = format,
+                extent = new VkExtent3D
+                {
+                    width = width,
+                    height = height,
+                    depth = 1
+                },
+                mipLevels = mipLevel,
+                arrayLayers = 1,
+                samples = VkSampleCountFlags.Count1,
+                tiling = VkImageTiling.Optimal,
+                usage = usageFlags,
+                sharingMode = VkSharingMode.Exclusive,
+                initialLayout = VkImageLayout.Undefined
             };
-            imageInfo.mipLevels = mipMapLevel;
-            imageInfo.arrayLayers = 1;
-            imageInfo.samples = VkSampleCountFlags.Count1;
-            imageInfo.tiling = VkImageTiling.Optimal;
-            imageInfo.usage = usageFlags;
-            imageInfo.sharingMode = VkSharingMode.Exclusive;
-            imageInfo.initialLayout = VkImageLayout.Undefined;
 
             VkImage image;
-            if (vkCreateImage(_device.LogicalDevice, &imageInfo, null, &image) != VkResult.Success)
-                throw new Exception("failed to create image");
-            _imageHandle = image;
+            if (VulkanNative.vkCreateImage(
+                device.Handle,
+                &imageInfo,
+                null,
+                &image
+            ) != VkResult.Success)
+                throw new Exception("failed to create vulkan image");
+            _handle = image;
 
-            //memory
+            //memory 
             VkMemoryRequirements memoryRequirements;
-            vkGetImageMemoryRequirements(_device.LogicalDevice, _imageHandle, out memoryRequirements);
+            VulkanNative.vkGetImageMemoryRequirements(
+                device.Handle,
+                image,
+                out memoryRequirements
+            );
 
-            var allocateInfo = VkMemoryAllocateInfo.New();
-            allocateInfo.memoryTypeIndex = _device.FindMemoryType(memoryRequirements.memoryTypeBits, VkMemoryPropertyFlags.DeviceLocal);
-            allocateInfo.allocationSize = memoryRequirements.size;
+            var allocateInfo = new VkMemoryAllocateInfo
+            {
+                sType = VkStructureType.MemoryAllocateInfo,
+                memoryTypeIndex = device.FindMemoryType(
+                    memoryRequirements.memoryTypeBits,
+                    VkMemoryPropertyFlags.DeviceLocal
+                ),
+                allocationSize = memoryRequirements.size
+            };
 
             VkDeviceMemory deviceMemory;
-            if (vkAllocateMemory(_device.LogicalDevice, &allocateInfo, null, &deviceMemory) != VkResult.Success)
-                throw new Exception("failed to allocate image memory on device");
-            _deviceMemory = deviceMemory;
-            if (vkBindImageMemory(_device.LogicalDevice, _imageHandle, _deviceMemory, 0) != VkResult.Success)
+            if (VulkanNative.vkAllocateMemory(
+                device.Handle,
+                &allocateInfo,
+                null,
+                &deviceMemory
+            ) != VkResult.Success)
+                throw new Exception("failed to allocate device memory");
+            _memoryHandle = deviceMemory;
+
+            //bind memory with image
+            if (VulkanNative.vkBindImageMemory(
+                device.Handle,
+                image,
+                deviceMemory,
+                0
+            ) != VkResult.Success)
                 throw new Exception("failed to bind image to device memory");
         }
+
         unsafe ~Image()
         {
-            vkDestroyImage(_device.LogicalDevice, _imageHandle, null);
-            vkFreeMemory(_device.LogicalDevice, _deviceMemory, null);
-        }
-        public static Image GetImageObject(VkImage image, VkFormat format, VkDeviceMemory memory, int width, int height, uint mipLevel = 1)
-        {
-            return new Image()
+            if (_device == null)
+                return;
+
+            if (_handle != VkImage.Null)
             {
-                _width = width,
-                _height = height,
-                _deviceMemory = memory,
-                _format = format,
-                _imageHandle = image,
-                _mipLevel = mipLevel
-            };
+                VulkanNative.vkDestroyImage(_device.Handle, _handle, null);
+                _handle = VkImage.Null;
+            }
+            if (_memoryHandle != VkDeviceMemory.Null)
+            {
+                VulkanNative.vkFreeMemory(_device.Handle, _memoryHandle, null);
+                _memoryHandle = VkDeviceMemory.Null;
+            }
         }
 
-        public bool HasStencilComponent => _format == VkFormat.D32SfloatS8Uint || _format == VkFormat.D24UnormS8Uint;
-        public static bool HasStencil(VkFormat format) => format == VkFormat.D32SfloatS8Uint || format == VkFormat.D24UnormS8Uint;
+        public static Image CreateImageObject(
+            uint width, uint height,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout layout,
+            VkDeviceMemory? memory,
+            uint mipLevel = 1
+        ) => new Image
+        {
+            _width = width,
+            _height = height,
+            _handle = image,
+            _format = format,
+            _memoryHandle = (
+                memory != null ?
+                (VkDeviceMemory)memory :
+                VkDeviceMemory.Null
+            ),
+            _layout = layout,
+            _mipLevel = mipLevel,
+            _device = null
+        };
+
+        public bool HasStencilComponent => HasStencil(_format);
+        public static bool HasStencil(VkFormat format) => (
+            format == VkFormat.D32SfloatS8Uint ||
+            format == VkFormat.D24UnormS8Uint
+        );
     }
 }

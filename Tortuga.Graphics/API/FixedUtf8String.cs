@@ -1,10 +1,11 @@
+#pragma warning disable CS1591
 using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Tortuga.Graphics.API
 {
-    internal unsafe class FixedUtf8String : IDisposable
+    public unsafe class FixedUtf8String : IDisposable
     {
         private GCHandle _handle;
         private uint _numBytes;

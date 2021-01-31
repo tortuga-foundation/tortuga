@@ -1,53 +1,62 @@
+#pragma warning disable CS1591
+using System;
 using Vulkan;
-using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Sampler
+    public class Sampler
     {
-        public VkSampler Handle => _sampler;
-        public Device DeviceUsed => _device;
+        public Device Device => _device;
+        public VkSampler Handle => _handle;
 
-        private VkSampler _sampler;
         private Device _device;
+        private VkSampler _handle;
 
         public unsafe Sampler(Device device)
         {
             _device = device;
-            var samplerInfo = VkSamplerCreateInfo.New();
-            samplerInfo.magFilter = VkFilter.Linear;
-            samplerInfo.minFilter = VkFilter.Linear;
-            samplerInfo.addressModeU = VkSamplerAddressMode.Repeat;
-            samplerInfo.addressModeV = VkSamplerAddressMode.Repeat;
-            samplerInfo.addressModeW = VkSamplerAddressMode.Repeat;
-            samplerInfo.anisotropyEnable = true;
-            samplerInfo.maxAnisotropy = 16;
-            samplerInfo.borderColor = VkBorderColor.IntOpaqueBlack;
-            samplerInfo.unnormalizedCoordinates = false;
-            samplerInfo.compareEnable = false;
-            samplerInfo.compareOp = VkCompareOp.Always;
-            samplerInfo.mipmapMode = VkSamplerMipmapMode.Linear;
-            samplerInfo.mipLodBias = 0.0f;
-            samplerInfo.minLod = 0.0f;
-            samplerInfo.maxLod = 0.0f;
+            var createInfo = new VkSamplerCreateInfo
+            {
+                sType = VkStructureType.SamplerCreateInfo,
+                magFilter = VkFilter.Linear,
+                minFilter = VkFilter.Linear,
+                addressModeU = VkSamplerAddressMode.Repeat,
+                addressModeV = VkSamplerAddressMode.Repeat,
+                addressModeW = VkSamplerAddressMode.Repeat,
+                anisotropyEnable = true,
+                maxAnisotropy = 16,
+                borderColor = VkBorderColor.IntOpaqueBlack,
+                unnormalizedCoordinates = false,
+                compareEnable = false,
+                compareOp = VkCompareOp.Always,
+                mipmapMode = VkSamplerMipmapMode.Linear,
+                mipLodBias = 0.0f,
+                minLod = 0.0f,
+                maxLod = 0.0f
+            };
 
             VkSampler sampler;
-            if (vkCreateSampler(
-                _device.LogicalDevice,
-                &samplerInfo,
+            if (VulkanNative.vkCreateSampler(
+                device.Handle,
+                &createInfo,
                 null,
                 &sampler
             ) != VkResult.Success)
-                throw new System.Exception("failed to create sampler");
-            _sampler = sampler;
+                throw new Exception("failed to create sampler");
+            _handle = sampler;
         }
-        unsafe ~Sampler()
+
+        unsafe Sampler()
         {
-            vkDestroySampler(
-                _device.LogicalDevice,
-                _sampler,
-                null
-            );
+            if (_handle != VkSampler.Null)
+            {
+                VulkanNative.vkDestroySampler(
+                    _device.Handle,
+                    _handle,
+                    null
+                );
+                _handle = VkSampler.Null;
+            }
         }
     }
 }

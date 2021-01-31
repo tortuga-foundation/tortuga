@@ -1,55 +1,71 @@
+#pragma warning disable CS1591
 using System;
 using Vulkan;
-using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class ImageView
+    public class ImageView
     {
-        public VkImageView Handle => _imageViewHandle;
-        public Device DeviceUsed => _device;
+        public Device Device => _device;
+        public VkImageView Handle => _handle;
+        public Image Image => _image;
 
-        private VkImageView _imageViewHandle;
         private Device _device;
+        private VkImageView _handle;
+        private Image _image;
 
-        public unsafe ImageView(Device device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint mipLevel = 1)
+        public unsafe ImageView(
+            Image image,
+            VkImageAspectFlags aspectMask
+        )
         {
-            _device = device;
-            var imageViewInfo = VkImageViewCreateInfo.New();
-            imageViewInfo.image = image;
-            imageViewInfo.viewType = VkImageViewType.Image2D;
-            imageViewInfo.format = format;
-            //components
-            imageViewInfo.components = new VkComponentMapping
+            _device = image.Device;
+            _image = image;
+            var imageViewInfo = new VkImageViewCreateInfo
             {
-                r = VkComponentSwizzle.Identity,
-                g = VkComponentSwizzle.Identity,
-                b = VkComponentSwizzle.Identity,
-                a = VkComponentSwizzle.Identity
-            };
-            //subresource
-            imageViewInfo.subresourceRange = new VkImageSubresourceRange
-            {
-                aspectMask = aspectFlags,
-                baseMipLevel = 0,
-                levelCount = mipLevel,
-                baseArrayLayer = 0,
-                layerCount = 1
+                sType = VkStructureType.ImageCreateInfo,
+                image = image.Handle,
+                viewType = VkImageViewType.Image2D,
+                format = image.Format,
+                components = new VkComponentMapping
+                {
+                    r = VkComponentSwizzle.Identity,
+                    g = VkComponentSwizzle.Identity,
+                    b = VkComponentSwizzle.Identity,
+                    a = VkComponentSwizzle.Identity
+                },
+                subresourceRange = new VkImageSubresourceRange
+                {
+                    aspectMask = aspectMask,
+                    baseMipLevel = 0,
+                    levelCount = image.MipLevel,
+                    baseArrayLayer = 0,
+                    layerCount = 1
+                }
             };
 
             VkImageView imageView;
-            if (vkCreateImageView(_device.LogicalDevice, &imageViewInfo, null, &imageView) != VkResult.Success)
+            if (VulkanNative.vkCreateImageView(
+                _device.Handle,
+                &imageViewInfo,
+                null,
+                &imageView
+            ) != VkResult.Success)
                 throw new Exception("failed to create image view");
-            _imageViewHandle = imageView;
-        }
-
-        public unsafe ImageView(Image image, VkImageAspectFlags aspectFlags) : this(image.DeviceUsed, image.ImageHandle, image.Format, aspectFlags, image.MipLevel)
-        {
+            _handle = imageView;
         }
 
         unsafe ~ImageView()
         {
-            vkDestroyImageView(_device.LogicalDevice, _imageViewHandle, null);
+            if (_handle != VkImageView.Null)
+            {
+                VulkanNative.vkDestroyImageView(
+                    _device.Handle,
+                    _handle,
+                    null
+                );
+                _handle = VkImageView.Null;
+            }
         }
     }
 }

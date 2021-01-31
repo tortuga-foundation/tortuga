@@ -1,4 +1,4 @@
-namespace Tortuga.Settings
+namespace Tortuga.Audio
 {
     /// <summary>
     /// Different type of distance models to use for 3D audio
@@ -26,7 +26,7 @@ namespace Tortuga.Settings
     /// <summary>
     /// Audio Settings
     /// </summary>
-    public static partial class Audio
+    public static partial class Settings
     {
         /// <summary>
         /// Type of distance model to use for audio

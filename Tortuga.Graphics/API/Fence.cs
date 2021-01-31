@@ -1,78 +1,75 @@
+#pragma warning disable CS1591
 using System;
-using System.Threading.Tasks;
 using Vulkan;
-using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Fence
+    public class Fence
     {
-        public VkFence Handle => _fence;
-        public Device DeviceUsed => _device;
-
-        private VkFence _fence;
+        public VkFence Handle => _handle;
+        private VkFence _handle;
         private Device _device;
 
-        public unsafe Fence(Device device, bool signaled = false)
+        public unsafe Fence(Device device, bool isSignaled = false)
         {
             _device = device;
-            var fenceInfo = VkFenceCreateInfo.New();
-            if (signaled)
-                fenceInfo.flags = VkFenceCreateFlags.Signaled;
+            var createInfo = new VkFenceCreateInfo
+            {
+                sType = VkStructureType.FenceCreateInfo,
+                flags = (
+                    isSignaled ?
+                    VkFenceCreateFlags.Signaled :
+                    VkFenceCreateFlags.None
+                )
+            };
 
             VkFence fence;
-            if (vkCreateFence(
-                _device.LogicalDevice,
-                &fenceInfo,
+            if (VulkanNative.vkCreateFence(
+                device.Handle,
+                &createInfo,
                 null,
                 &fence
             ) != VkResult.Success)
-                throw new Exception("failed to create semaphore");
-            _fence = fence;
+                throw new Exception("failed to create fence");
+            _handle = fence;
         }
-
         unsafe ~Fence()
         {
-            vkDestroyFence(
-                _device.LogicalDevice,
-                _fence,
-                null
-            );
+            if (_handle != VkFence.Null)
+            {
+                VulkanNative.vkDestroyFence(
+                    _device.Handle,
+                    _handle,
+                    null
+                );
+                _handle = VkFence.Null;
+            }
         }
 
         public unsafe bool IsSignaled()
-        {
-            return (
-                vkGetFenceStatus(
-                    _device.LogicalDevice,
-                    _fence
-                ) == VkResult.Success
-            );
-        }
+        => VulkanNative.vkGetFenceStatus(
+            _device.Handle,
+            _handle
+        ) == VkResult.Success;
 
-        public unsafe void Wait()
+        public unsafe void Wait(ulong timeout = ulong.MaxValue)
         {
-            VkFence fence = _fence;
-            if (vkWaitForFences(
-                _device.LogicalDevice,
+            var fence = _handle;
+            if (VulkanNative.vkWaitForFences(
+                _device.Handle,
                 1,
                 &fence,
                 true,
-                ulong.MaxValue
+                timeout
             ) != VkResult.Success)
                 throw new Exception("failed to wait on a fence");
         }
 
-        public Task WaitAsync()
-        {
-            return Task.Run(() => Wait());
-        }
-
         public unsafe void Reset()
         {
-            VkFence fence = _fence;
-            if (vkResetFences(
-                _device.LogicalDevice,
+            var fence = _handle;
+            if (VulkanNative.vkResetFences(
+                _device.Handle,
                 1,
                 &fence
             ) != VkResult.Success)

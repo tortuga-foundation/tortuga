@@ -1,94 +1,93 @@
+#pragma warning disable CS1591
 using System;
-using Vulkan;
-using Tortuga.Utils;
-using static Vulkan.VulkanNative;
 using System.Collections.Generic;
+using Tortuga.Utils;
+using Vulkan;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Framebuffer
+    public class Framebuffer
     {
-        public VkFramebuffer Handle => _frameBuffer;
-        public Image[] AttachmentImages => _attachmentImages;
-        public ImageView[] AttachmentViews => _attachmentViews;
         public uint Width => _width;
         public uint Height => _height;
+        public Device Device => _device;
+        public RenderPass RenderPass => _renderPass;
+        public VkFramebuffer Handle => _handle;
+        public List<Image> Images => _images;
+        public List<ImageView> ImageViews => _imageViews;
 
-        private Image[] _attachmentImages;
-        private ImageView[] _attachmentViews;
-        private VkFramebuffer _frameBuffer;
-        private uint _width, _height;
+        private uint _width;
+        private uint _height;
         private Device _device;
+        private RenderPass _renderPass;
+        private VkFramebuffer _handle;
+        private List<Image> _images;
+        private List<ImageView> _imageViews;
 
-        public unsafe Framebuffer(RenderPass renderPass, uint width, uint height)
+        public unsafe Framebuffer(
+            RenderPass renderPass,
+            uint width, uint height
+        )
         {
             _width = width;
             _height = height;
-            _device = renderPass.DeviceInUse;
+            _device = renderPass.Device;
+            _renderPass = renderPass;
 
-            var attachmentImages = new List<Image>();
-            var attachmentViews = new List<ImageView>();
-            for (int i = 0; i < renderPass.ColorAttachments.Length; i++)
+            _images = new List<Image>();
+            _imageViews = new List<ImageView>();
+            foreach (var attachment in renderPass.Attachments)
             {
                 var img = new Image(
                     _device,
                     width, height,
-                    RenderPass.DEFAULT_COLOR_FORMAT,
-                    VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
+                    attachment.Format,
+                    attachment.ImageUsageFlags
                 );
-                attachmentImages.Add(img);
-                attachmentViews.Add(new ImageView(
+                _images.Add(img);
+                _imageViews.Add(new ImageView(
                     img,
-                    VkImageAspectFlags.Color
+                    attachment.ImageAspectFlags
                 ));
             }
-            if (renderPass.DepthAttachment != null)
-            {
-                var img = new Image(
-                    _device,
-                    width, height,
-                    RenderPass.DEFAULT_DEPTH_FORMAT,
-                    VkImageUsageFlags.DepthStencilAttachment | VkImageUsageFlags.TransferSrc | VkImageUsageFlags.TransferDst
-                );
-                attachmentImages.Add(img);
-                attachmentViews.Add(new ImageView(
-                    img,
-                    VkImageAspectFlags.Depth
-                ));
-            }
-            _attachmentImages = attachmentImages.ToArray();
-            _attachmentViews = attachmentViews.ToArray();
 
             var attachments = new NativeList<VkImageView>();
-            foreach (var views in _attachmentViews)
-                attachments.Add(views.Handle);
+            foreach (var view in _imageViews)
+                attachments.Add(view.Handle);
 
-            var framebufferCreateInfo = VkFramebufferCreateInfo.New();
-            framebufferCreateInfo.renderPass = renderPass.Handle;
-            framebufferCreateInfo.attachmentCount = attachments.Count;
-            framebufferCreateInfo.pAttachments = (VkImageView*)attachments.Data.ToPointer();
-            framebufferCreateInfo.width = width;
-            framebufferCreateInfo.height = height;
-            framebufferCreateInfo.layers = 1;
+            var framebufferCreateInfo = new VkFramebufferCreateInfo
+            {
+                sType = VkStructureType.FramebufferCreateInfo,
+                renderPass = renderPass.Handle,
+                attachmentCount = attachments.Count,
+                pAttachments = (VkImageView*)attachments.Data.ToPointer(),
+                width = width,
+                height = height,
+                layers = 1
+            };
 
-            VkFramebuffer frameBuffer;
-            if (vkCreateFramebuffer(
-                _device.LogicalDevice,
+            VkFramebuffer framebuffer;
+            if (VulkanNative.vkCreateFramebuffer(
+                _device.Handle,
                 &framebufferCreateInfo,
                 null,
-                &frameBuffer
+                &framebuffer
             ) != VkResult.Success)
                 throw new Exception("failed to create framebuffer");
-            _frameBuffer = frameBuffer;
+            _handle = framebuffer;
         }
 
         unsafe ~Framebuffer()
         {
-            vkDestroyFramebuffer(
-                _device.LogicalDevice,
-                _frameBuffer,
-                null
-            );
+            if (_handle != VkFramebuffer.Null)
+            {
+                VulkanNative.vkDestroyFramebuffer(
+                    _device.Handle,
+                    _handle,
+                    null
+                );
+                _handle = VkFramebuffer.Null;
+            }
         }
     }
 }

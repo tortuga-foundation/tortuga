@@ -1,40 +1,46 @@
+#pragma warning disable CS1591
 using System;
 using Vulkan;
-using static Vulkan.VulkanNative;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Semaphore
+    public class Semaphore
     {
-        public VkSemaphore Handle => _semaphore;
-        public Device DeviceUsed => _device;
+        public Device Device => _device;
+        public VkSemaphore Handle => _handle;
 
-        private VkSemaphore _semaphore;
         private Device _device;
+        private VkSemaphore _handle;
 
         public unsafe Semaphore(Device device)
         {
             _device = device;
-            var semaphoreInfo = VkSemaphoreCreateInfo.New();
+            var createInfo = new VkSemaphoreCreateInfo
+            {
+                sType = VkStructureType.SemaphoreCreateInfo
+            };
 
             VkSemaphore semaphore;
-            if (vkCreateSemaphore(
-                _device.LogicalDevice,
-                &semaphoreInfo,
+            if (VulkanNative.vkCreateSemaphore(
+                _device.Handle,
+                &createInfo,
                 null,
                 &semaphore
             ) != VkResult.Success)
                 throw new Exception("failed to create semaphore");
-            _semaphore = semaphore;
+            _handle = semaphore;
         }
-
         unsafe ~Semaphore()
         {
-            vkDestroySemaphore(
-                _device.LogicalDevice,
-                _semaphore,
-                null
-            );
+            if (_handle != VkSemaphore.Null)
+            {
+                VulkanNative.vkDestroySemaphore(
+                    _device.Handle,
+                    _handle,
+                    null
+                );
+                _handle = VkSemaphore.Null;
+            }
         }
     }
 }

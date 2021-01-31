@@ -261,12 +261,12 @@ namespace Tortuga
 
                         #region Frame Limiter
 
-                        if (Settings.Core.MaxLoopsPerSecond > 0)
+                        if (Settings.MaxLoopsPerSecond > 0)
                         {
                             int waitTime = System.Convert.ToInt32(
                                 System.MathF.Round(
                                 (
-                                    1000.0f / Settings.Core.MaxLoopsPerSecond) -
+                                    1000.0f / Settings.MaxLoopsPerSecond) -
                                     (stopWatch.ElapsedMilliseconds - currentTime)
                                 )
                             );

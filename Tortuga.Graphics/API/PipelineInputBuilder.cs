@@ -1,3 +1,4 @@
+#pragma warning disable CS1591
 using Vulkan;
 using System;
 using Tortuga.Utils;

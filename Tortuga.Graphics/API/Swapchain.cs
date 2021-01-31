@@ -1,325 +1,355 @@
+#pragma warning disable CS1591
 using System;
 using System.Collections.Generic;
-using Vulkan;
+using System.Linq;
 using Tortuga.Utils;
-using static Vulkan.VulkanNative;
+using Vulkan;
 
 namespace Tortuga.Graphics.API
 {
-    internal class Swapchain
+    public class Swapchain
     {
-        public Device.QueueFamily DevicePresentQueueFamily => _presentQueueFamily;
-        public VkSwapchainKHR Handle => _swapchain;
-        public NativeList<VkImage> Images => _images;
-        public VkFormat ImagesFormat => _format.format;
-        public VkExtent2D Extent => _extent;
-        private Device DeviceUsed => _device;
-
-        private Device.QueueFamily _presentQueueFamily;
-        private bool[] _queuesSupportingPresentation;
+        private Device _device;
+        private Window _window;
+        private QueueFamily _presentQueueFamily;
         private VkSurfaceCapabilitiesKHR _surfaceCapabilities;
-        private NativeList<VkSurfaceFormatKHR> _surfaceSupportedFormats;
-        private NativeList<VkPresentModeKHR> _surfaceSupportedPresentModes;
-        private VkSurfaceFormatKHR _format;
-        private VkPresentModeKHR _presentMode;
-        private VkExtent2D _extent;
-        private VkSwapchainKHR _swapchain;
-        private uint _imagesCount;
-        private NativeList<VkImage> _images;
+        private List<VkSurfaceFormatKHR> _supportedSurfaceFormats;
+        private List<VkPresentModeKHR> _supportedPresentModes;
+        private VkSurfaceFormatKHR _surfaceFormat;
+        private VkPresentModeKHR _surfacePresentMode;
+        private VkExtent2D _surfaceExtent;
+        private VkSwapchainKHR _handle;
+        private List<Image> _images;
         private List<ImageView> _imageViews;
         private Image _depthImage;
         private ImageView _depthImageView;
-        private Window _window;
-        private Device _device;
 
         public unsafe Swapchain(Device device, Window window)
         {
             _device = device;
             _window = window;
-            var windowSize = window.Size;
-            //get device presentation queue
-            _queuesSupportingPresentation = new bool[_device.QueueFamilyProperties.Count];
-            for (int i = 0; i < _device.QueueFamilyProperties.Count; i++)
+
+            //get present queue
+            _presentQueueFamily = GetQueueFamilyWithPresentationSupport(
+                device,
+                window
+            );
+
+            //get surface capabilities
+            _surfaceCapabilities = GetSurfaceCapabilities(
+                device,
+                window
+            );
+
+            //get surface format support
+            _supportedSurfaceFormats = GetSupportedSurfaceFormats(
+                device,
+                window
+            );
+
+            //get present mode support
+            _supportedPresentModes = GetSupportedPresentModes(
+                device,
+                window
+            );
+
+            //choose best surface format
+            #region Surface Format
+
+            if (
+                _supportedSurfaceFormats.Count == 1 &&
+                _supportedSurfaceFormats[0].format == VkFormat.Undefined
+            )
             {
-                VkBool32 isSupported = false;
-                if (vkGetPhysicalDeviceSurfaceSupportKHR(
+                _surfaceFormat = new VkSurfaceFormatKHR
+                {
+                    colorSpace = VkColorSpaceKHR.SrgbNonlinearKHR,
+                    format = VkFormat.R8g8b8Unorm
+                };
+            }
+            else
+            {
+                bool choosenFormat = false;
+                foreach (var format in _supportedSurfaceFormats)
+                {
+                    if (
+                        format.format == VkFormat.R8g8b8Unorm &&
+                        format.colorSpace == VkColorSpaceKHR.SrgbNonlinearKHR
+                    )
+                    {
+                        _surfaceFormat = format;
+                        choosenFormat = true;
+                        break;
+                    }
+                }
+                if (choosenFormat == false)
+                    _surfaceFormat = _supportedSurfaceFormats[0];
+            }
+
+            #endregion
+
+            #region Surface Present Mode
+
+            _surfacePresentMode = VkPresentModeKHR.FifoKHR;
+            foreach (var presentMode in _supportedPresentModes)
+            {
+                if (presentMode == VkPresentModeKHR.MailboxKHR)
+                {
+                    _surfacePresentMode = presentMode;
+                    break;
+                }
+                else if (presentMode == VkPresentModeKHR.ImmediateKHR)
+                    _surfacePresentMode = presentMode;
+            }
+
+            #endregion
+
+            #region Surface Extent
+
+            if (_surfaceCapabilities.currentExtent.width != uint.MaxValue)
+                _surfaceExtent = _surfaceCapabilities.currentExtent;
+            else
+            {
+                _surfaceExtent = new VkExtent2D
+                {
+                    width = Math.Clamp(
+                        Convert.ToUInt32(window.Width),
+                        _surfaceCapabilities.minImageExtent.width,
+                        _surfaceCapabilities.maxImageExtent.width
+                    ),
+                    height = Math.Clamp(
+                        Convert.ToUInt32(window.Height),
+                        _surfaceCapabilities.minImageExtent.height,
+                        _surfaceCapabilities.maxImageExtent.height
+                    )
+                };
+            }
+
+            #endregion
+
+            #region Images Count
+
+            var imagesCount = _surfaceCapabilities.minImageCount + 1;
+            if (_surfaceCapabilities.maxImageCount > 0)
+                if (imagesCount > _surfaceCapabilities.maxImageCount)
+                    imagesCount = Math.Min(_surfaceCapabilities.maxImageCount, 2);
+
+            #endregion
+
+            var swapchainInfo = new VkSwapchainCreateInfoKHR
+            {
+                sType = VkStructureType.SwapchainCreateInfoKHR,
+                compositeAlpha = VkCompositeAlphaFlagsKHR.OpaqueKHR,
+                minImageCount = imagesCount,
+                imageFormat = _surfaceFormat.format,
+                imageColorSpace = _surfaceFormat.colorSpace,
+                imageExtent = _surfaceExtent,
+                imageArrayLayers = 1,
+                imageUsage = (
+                    VkImageUsageFlags.ColorAttachment |
+                    VkImageUsageFlags.TransferDst
+                ),
+                imageSharingMode = VkSharingMode.Exclusive,
+                preTransform = _surfaceCapabilities.currentTransform,
+                presentMode = _surfacePresentMode,
+                clipped = true
+            };
+
+            VkSwapchainKHR swapchain;
+            if (VulkanNative.vkCreateSwapchainKHR(
+                device.Handle,
+                &swapchainInfo,
+                null,
+                &swapchain
+            ) != VkResult.Success)
+                throw new Exception("failed to create swapchain");
+            _handle = swapchain;
+
+            SetupSwapchainImages();
+        }
+
+        private unsafe void SetupSwapchainImages()
+        {
+            #region get swapchain images
+
+            uint imagesCount = 0;
+            if (VulkanNative.vkGetSwapchainImagesKHR(
+                _device.Handle,
+                _handle,
+                &imagesCount,
+                null
+            ) != VkResult.Success)
+                throw new Exception("failed to get swapchain images");
+            var swapchainNativeImages = new NativeList<VkImage>(imagesCount);
+            swapchainNativeImages.Count = imagesCount;
+            if (VulkanNative.vkGetSwapchainImagesKHR(
+                _device.Handle,
+                _handle,
+                &imagesCount,
+                (VkImage*)swapchainNativeImages.Data.ToPointer()
+            ) != VkResult.Success)
+                throw new Exception("failed to get swapchain images");
+
+            #endregion
+
+            #region setup images and image views
+
+            _images = swapchainNativeImages.Select(
+                image => Image.CreateImageObject(
+                    _surfaceExtent.width,
+                    _surfaceExtent.height,
+                    image,
+                    _surfaceFormat.format,
+                    VkImageLayout.Undefined,
+                    null
+                )
+            ).ToList();
+            _imageViews = new List<ImageView>();
+            foreach (var image in _images)
+                _imageViews.Add(new ImageView(image, VkImageAspectFlags.Color));
+
+            #endregion
+
+            #region setup depth image and depth image view
+
+            _depthImage = new Image(
+                _device,
+                _surfaceExtent.width,
+                _surfaceExtent.height,
+                _device.FindDepthFormat,
+                VkImageUsageFlags.DepthStencilAttachment
+            );
+            _depthImageView = new ImageView(
+                _depthImage,
+                VkImageAspectFlags.Depth
+            );
+
+            #endregion
+
+            #region transfer images to correct layout
+
+            var graphicsQueue = _device.GraphicsQueueFamily;
+            var fence = new Fence(_device);
+            var commandPool = new CommandPool(graphicsQueue);
+            var command = new CommandBuffer(commandPool);
+            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+            //transfer images to correct layout
+            foreach (var image in _images)
+            {
+                command.TransferImageLayout(
+                    image,
+                    VkImageLayout.PresentSrcKHR
+                );
+            }
+            //transfer depth image to correct layout
+            command.TransferImageLayout(
+                _depthImage,
+                VkImageLayout.DepthStencilAttachmentOptimal
+            );
+            command.End();
+            command.Submit(
+                graphicsQueue.Queues[0],
+                null,
+                null,
+                fence
+            );
+            fence.Wait();
+
+            #endregion
+        }
+
+        private unsafe QueueFamily GetQueueFamilyWithPresentationSupport(
+            Device device,
+            Window window
+        )
+        {
+            var queueFamiliesSupportingPresentation = new List<bool>();
+            foreach (var queueFamily in device.QueueFamilies)
+            {
+                var isSupported = VkBool32.False;
+                if (VulkanNative.vkGetPhysicalDeviceSurfaceSupportKHR(
                     _device.PhysicalDevice,
                     0,
                     window.Surface,
-                    &isSupported) != VkResult.Success
-                )
+                    &isSupported
+                ) != VkResult.Success)
                     throw new Exception("failed to check if device supports presentation");
-                _queuesSupportingPresentation[i] = isSupported;
+                queueFamiliesSupportingPresentation.Add(isSupported);
             }
 
-            var familySupportingPresentation = Array.FindIndex(
-                _queuesSupportingPresentation,
-                0,
-                _queuesSupportingPresentation.Length,
-                b => b
+            var familySupportingPresentation = queueFamiliesSupportingPresentation.FindIndex(
+                0, queueFamiliesSupportingPresentation.Count,
+                q => q
             );
             if (familySupportingPresentation == -1)
                 throw new NotSupportedException("device does not support presentation");
-            _presentQueueFamily = _device.QueueFamilyProperties[familySupportingPresentation];
+            return device.QueueFamilies[familySupportingPresentation];
+        }
 
-            //get surface capabilities
+        private unsafe List<VkSurfaceFormatKHR> GetSupportedSurfaceFormats(
+            Device device,
+            Window window
+        )
+        {
+            uint surfaceSupportedFormatsCount;
+            if (VulkanNative.vkGetPhysicalDeviceSurfaceFormatsKHR(
+                device.PhysicalDevice,
+                window.Surface,
+                &surfaceSupportedFormatsCount,
+                null
+            ) != VkResult.Success)
+                throw new Exception("failed to get device support formats");
+            var surfaceSupportFormats = new NativeList<VkSurfaceFormatKHR>(surfaceSupportedFormatsCount);
+            surfaceSupportFormats.Count = surfaceSupportedFormatsCount;
+            if (VulkanNative.vkGetPhysicalDeviceSurfaceFormatsKHR(
+                device.PhysicalDevice,
+                window.Surface,
+                &surfaceSupportedFormatsCount,
+                (VkSurfaceFormatKHR*)surfaceSupportFormats.Data.ToPointer()
+            ) != VkResult.Success)
+                throw new Exception("failed to get device support formats");
+
+            return surfaceSupportFormats.ToList();
+        }
+
+        private unsafe VkSurfaceCapabilitiesKHR GetSurfaceCapabilities(
+            Device device,
+            Window window
+        )
+        {
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-                _device.PhysicalDevice,
+            if (VulkanNative.vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+                device.PhysicalDevice,
                 window.Surface,
-                out surfaceCapabilities) != VkResult.Success
-            )
-                throw new Exception("failed to get device surface capabilities");
-            _surfaceCapabilities = surfaceCapabilities;
+                out surfaceCapabilities
+            ) != VkResult.Success)
+                throw new Exception("failed to get device surface presentation");
+            return surfaceCapabilities;
+        }
 
-            //get surface format support
-            uint surfaceFormatCount;
-            if (vkGetPhysicalDeviceSurfaceFormatsKHR(
-                _device.PhysicalDevice,
-                window.Surface,
-                &surfaceFormatCount,
-                null) != VkResult.Success
-            )
-                throw new Exception("failed to get device supported formats");
-            var surfaceSupportedFormats = new NativeList<VkSurfaceFormatKHR>(surfaceFormatCount);
-            surfaceSupportedFormats.Count = surfaceFormatCount;
-            if (vkGetPhysicalDeviceSurfaceFormatsKHR(
-                _device.PhysicalDevice,
-                window.Surface,
-                &surfaceFormatCount,
-                (VkSurfaceFormatKHR*)surfaceSupportedFormats.Data.ToPointer()) != VkResult.Success
-            )
-                throw new Exception("failed to get device supported formats");
-            _surfaceSupportedFormats = surfaceSupportedFormats;
-
-            //get present mode support
+        private unsafe List<VkPresentModeKHR> GetSupportedPresentModes(
+            Device device,
+            Window window
+        )
+        {
             uint presentModeCount;
-            if (vkGetPhysicalDeviceSurfacePresentModesKHR(
-                _device.PhysicalDevice,
+            if (VulkanNative.vkGetPhysicalDeviceSurfacePresentModesKHR(
+                device.PhysicalDevice,
                 window.Surface,
                 &presentModeCount,
                 null
             ) != VkResult.Success)
                 throw new Exception("failed to get device supported present modes");
-            var surfaceSupportedPresentModes = new NativeList<VkPresentModeKHR>(presentModeCount);
-            surfaceSupportedPresentModes.Count = presentModeCount;
-            if (vkGetPhysicalDeviceSurfacePresentModesKHR(
-                _device.PhysicalDevice,
+            var supporedPresentModes = new NativeList<VkPresentModeKHR>(presentModeCount);
+            supporedPresentModes.Count = presentModeCount;
+            if (VulkanNative.vkGetPhysicalDeviceSurfacePresentModesKHR(
+                device.PhysicalDevice,
                 window.Surface,
                 &presentModeCount,
-                (VkPresentModeKHR*)surfaceSupportedPresentModes.Data.ToPointer()
+                (VkPresentModeKHR*)supporedPresentModes.Data.ToPointer()
             ) != VkResult.Success)
                 throw new Exception("failed to get device supported present modes");
-            _surfaceSupportedPresentModes = surfaceSupportedPresentModes;
-
-            //choose best surface format
-            if (surfaceSupportedFormats.Count == 1 && surfaceSupportedFormats[0].format == VkFormat.Undefined)
-                _format = new VkSurfaceFormatKHR
-                {
-                    colorSpace = VkColorSpaceKHR.SrgbNonlinearKHR,
-                    format = VkFormat.R8g8b8Unorm
-                };
-            else
-            {
-                bool choosenFormat = false;
-                foreach (var format in surfaceSupportedFormats)
-                {
-                    if (format.format == VkFormat.R8g8b8Unorm &&
-                        format.colorSpace == VkColorSpaceKHR.SrgbNonlinearKHR)
-                    {
-                        _format = format;
-                        choosenFormat = true;
-                        break;
-                    }
-                }
-
-                if (!choosenFormat)
-                    _format = surfaceSupportedFormats[0];
-            }
-
-            //choose best present mode
-            _presentMode = VkPresentModeKHR.FifoKHR;
-            foreach (var presentMode in surfaceSupportedPresentModes)
-            {
-                if (presentMode == VkPresentModeKHR.MailboxKHR)
-                {
-                    _presentMode = presentMode;
-                    break;
-                }
-                else if (presentMode == VkPresentModeKHR.ImmediateKHR)
-                    _presentMode = presentMode;
-            }
-
-            //choose extent
-            if (surfaceCapabilities.currentExtent.width != uint.MaxValue)
-                _extent = surfaceCapabilities.currentExtent;
-            else
-            {
-                VkExtent2D actualExtent = new VkExtent2D
-                {
-                    width = Convert.ToUInt32(windowSize.X),
-                    height = Convert.ToUInt32(windowSize.Y)
-                };
-                actualExtent.width = Clamp(
-                    actualExtent.width,
-                    surfaceCapabilities.minImageExtent.width,
-                    surfaceCapabilities.maxImageExtent.width
-                );
-                actualExtent.height = Clamp(
-                    actualExtent.height,
-                    surfaceCapabilities.minImageExtent.height,
-                    surfaceCapabilities.maxImageExtent.height
-                );
-                _extent = actualExtent;
-            }
-
-            _imagesCount = surfaceCapabilities.minImageCount + 1;
-            if (surfaceCapabilities.maxImageCount > 0)
-                if (_imagesCount > surfaceCapabilities.maxImageCount)
-                    _imagesCount = Math.Min(surfaceCapabilities.maxImageCount, 2);
-
-            var swapchainInfo = VkSwapchainCreateInfoKHR.New();
-            swapchainInfo.compositeAlpha = VkCompositeAlphaFlagsKHR.OpaqueKHR;
-            swapchainInfo.surface = window.Surface;
-            swapchainInfo.minImageCount = _imagesCount;
-            swapchainInfo.imageFormat = _format.format;
-            swapchainInfo.imageColorSpace = _format.colorSpace;
-            swapchainInfo.imageExtent = _extent;
-            swapchainInfo.imageArrayLayers = 1;
-            swapchainInfo.imageUsage = VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferDst;
-            swapchainInfo.imageSharingMode = VkSharingMode.Exclusive;
-            swapchainInfo.preTransform = surfaceCapabilities.currentTransform;
-            swapchainInfo.presentMode = _presentMode;
-            swapchainInfo.clipped = true;
-
-            VkSwapchainKHR swapchain;
-            if (vkCreateSwapchainKHR(_device.LogicalDevice, &swapchainInfo, null, &swapchain) != VkResult.Success)
-                throw new Exception("failed to create swapchain");
-            _swapchain = swapchain;
-
-            SetupSwapchainImages(
-                Convert.ToInt32(windowSize.X), 
-                Convert.ToInt32(windowSize.Y)
-            );
-        }
-
-        unsafe ~Swapchain()
-        {
-            vkDestroySwapchainKHR(_device.LogicalDevice, _swapchain, null);
-        }
-
-        private unsafe void SetupSwapchainImages(int width, int height)
-        {
-            //get swapchain images
-            uint imagesCount = 0;
-            if (vkGetSwapchainImagesKHR(_device.LogicalDevice, _swapchain, &imagesCount, null) != VkResult.Success)
-                throw new Exception("failed to get swapchain images");
-            var images = new NativeList<VkImage>(imagesCount);
-            images.Count = imagesCount;
-            if (vkGetSwapchainImagesKHR(_device.LogicalDevice, _swapchain, &imagesCount, (VkImage*)images.Data.ToPointer()) != VkResult.Success)
-                throw new Exception("failed to get swapchain images");
-            _images = new NativeList<VkImage>();
-            foreach (var image in images)
-                _images.Add(image);
-
-            //get swapchain image views
-            _imageViews = new List<ImageView>(Convert.ToInt32(_images.Count));
-            for (int i = 0; i < _imageViews.Count; i++)
-                _imageViews[i] = new ImageView(_device, _images[i], _format.format, VkImageAspectFlags.Color);
-
-            //get swapchaing depth image & depth image view
-            var depthFormat = _device.FindDepthFormat;
-            _depthImage = new Image(_device, _extent.width, _extent.height, depthFormat, VkImageUsageFlags.DepthStencilAttachment);
-            _depthImageView = new ImageView(_depthImage, VkImageAspectFlags.Depth);
-
-            //initialize depth image
-            var creationFence = new Fence(_device);
-            var commandPool = new CommandPool(_device, _device.GraphicsQueueFamily);
-            var command = commandPool.AllocateCommands()[0];
-            command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            command.TransferImageLayout(_depthImage, VkImageLayout.Undefined, VkImageLayout.DepthStencilAttachmentOptimal);
-            foreach (var image in _images)
-                command.TransferImageLayout(image, _format.format, VkImageLayout.Undefined, VkImageLayout.PresentSrcKHR);
-            command.End();
-            CommandPool.Command.Submit(
-                _device.GraphicsQueueFamily.Queues[0],
-                new CommandPool.Command[]{
-                command
-                },
-                new Semaphore[0],
-                new Semaphore[0],
-                creationFence
-            );
-            creationFence.Wait();
-        }
-
-        public T Clamp<T>(T val, T min, T max) where T : IComparable<T>
-        {
-            if (val.CompareTo(min) < 0) return min;
-            else if (val.CompareTo(max) > 0) return max;
-            else return val;
-        }
-
-        public unsafe void Resize()
-        {
-            var windowSize = _window.Size;
-            //get surface capabilities
-            VkSurfaceCapabilitiesKHR surfaceCapabilities;
-            if (vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
-                _device.PhysicalDevice,
-                _window.Surface,
-                out surfaceCapabilities) != VkResult.Success
-            )
-                throw new Exception("failed to get device surface capabilities");
-            _surfaceCapabilities = surfaceCapabilities;
-
-            //choose extent
-            if (_surfaceCapabilities.currentExtent.width != uint.MaxValue)
-                _extent = _surfaceCapabilities.currentExtent;
-            else
-            {
-                VkExtent2D actualExtent = new VkExtent2D
-                {
-                    width = Convert.ToUInt32(windowSize.X),
-                    height = Convert.ToUInt32(windowSize.Y)
-                };
-                actualExtent.width = Clamp(
-                    actualExtent.width,
-                    _surfaceCapabilities.minImageExtent.width,
-                    _surfaceCapabilities.maxImageExtent.width
-                );
-                actualExtent.height = Clamp(
-                    actualExtent.height,
-                    _surfaceCapabilities.minImageExtent.height,
-                    _surfaceCapabilities.maxImageExtent.height
-                );
-                _extent = actualExtent;
-            }
-
-            var swapchainInfo = VkSwapchainCreateInfoKHR.New();
-            swapchainInfo.compositeAlpha = VkCompositeAlphaFlagsKHR.OpaqueKHR;
-            swapchainInfo.surface = _window.Surface;
-            swapchainInfo.minImageCount = _imagesCount;
-            swapchainInfo.imageFormat = _format.format;
-            swapchainInfo.imageColorSpace = _format.colorSpace;
-            swapchainInfo.imageExtent = _extent;
-            swapchainInfo.imageArrayLayers = 1;
-            swapchainInfo.imageUsage = VkImageUsageFlags.ColorAttachment | VkImageUsageFlags.TransferDst;
-            swapchainInfo.imageSharingMode = VkSharingMode.Exclusive;
-            swapchainInfo.preTransform = _surfaceCapabilities.currentTransform;
-            swapchainInfo.presentMode = _presentMode;
-            swapchainInfo.clipped = true;
-            swapchainInfo.oldSwapchain = _swapchain;
-
-            VkSwapchainKHR swapchain;
-            if (vkCreateSwapchainKHR(_device.LogicalDevice, &swapchainInfo, null, &swapchain) != VkResult.Success)
-                throw new Exception("failed to create swapchain");
-            _swapchain = swapchain;
-
-            SetupSwapchainImages(
-                Convert.ToInt32(windowSize.X), 
-                Convert.ToInt32(windowSize.Y)
-            );
+            return supporedPresentModes.ToList();
         }
     }
 }

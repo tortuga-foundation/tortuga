@@ -1,11 +1,8 @@
-#pragma warning disable 1591
-#pragma warning disable 0649
-
+#pragma warning disable CS1591
 using System;
-using Vulkan;
+using System.Collections.Generic;
 using Tortuga.Utils;
-using static Vulkan.VulkanNative;
-using System.Linq;
+using Vulkan;
 
 /*
 -- GPU DATA STRUCTURE --
@@ -27,115 +24,82 @@ struct PipelineLayout {
 
 namespace Tortuga.Graphics.API
 {
-
-    /// <summary>
-    /// Different type of descriptor set types, for more information please look at VkDescriptorType
-    /// </summary>
-    public enum DescriptorType
+    public struct DescriptorBindingInfo
     {
-        Sampler = VkDescriptorType.Sampler,
-        CombinedImageSampler = VkDescriptorType.CombinedImageSampler,
-        SampledImage = VkDescriptorType.SampledImage,
-        StorageImage = VkDescriptorType.StorageImage,
-        UniformTexelBuffer = VkDescriptorType.UniformTexelBuffer,
-        StorageTexelBuffer = VkDescriptorType.StorageTexelBuffer,
-        UniformBuffer = VkDescriptorType.UniformBuffer,
-        StorageBuffer = VkDescriptorType.StorageBuffer,
-        UniformBufferDynamic = VkDescriptorType.UniformBufferDynamic,
-        StorageBufferDynamic = VkDescriptorType.StorageBufferDynamic,
-        InputAttachment = VkDescriptorType.InputAttachment
-    }
+        public uint Index;
+        public VkDescriptorType DescriptorType;
+        public uint DescriptorCounts;
+        public VkShaderStageFlags ShaderStageFlags;
 
-    /// <summary>
-    /// Different type of shader stages, for more information please look at VkShaderStageFlags
-    /// </summary>
-    [Flags]
-    public enum ShaderStageType
-    {
-        None = VkShaderStageFlags.None,
-        Vertex = VkShaderStageFlags.Vertex,
-        TessellationControl = VkShaderStageFlags.TessellationControl,
-        TessellationEvaluation = VkShaderStageFlags.TessellationEvaluation,
-        Geometry = VkShaderStageFlags.Geometry,
-        Fragment = VkShaderStageFlags.Fragment,
-        AllGraphics = VkShaderStageFlags.AllGraphics,
-        Compute = VkShaderStageFlags.Compute,
-        All = VkShaderStageFlags.All
-    }
-
-    public struct DescriptorSetCreateInfo
-    {
-        public DescriptorType type;
-        public ShaderStageType stage;
-
-        public static DescriptorSetCreateInfo TryParse(
-            string type,
-            string stage
+        public DescriptorBindingInfo(
+            uint index,
+            VkDescriptorType descriptorType,
+            uint descriptorCounts,
+            VkShaderStageFlags shaderStageFlags
         )
         {
-            var info = new DescriptorSetCreateInfo();
-            if (Enum.TryParse<DescriptorType>(type, out DescriptorType outType))
-                info.type = outType;
-            if (Enum.TryParse<ShaderStageType>(stage, out ShaderStageType outStage))
-                info.stage = outStage;
-            return info;
+            Index = index;
+            DescriptorType = descriptorType;
+            DescriptorCounts = descriptorCounts;
+            ShaderStageFlags = shaderStageFlags;
         }
-    };
+    }
 
-    public class DescriptorSetLayout
+    public class DescriptorLayout
     {
-        internal VkDescriptorSetLayout Handle => _layout;
-        public DescriptorSetCreateInfo[] CreateInfoUsed => _createInfo;
-        internal Device DeviceUsed => _device;
+        public Device Device => _device;
+        public VkDescriptorSetLayout Handle => _handle;
+        public List<DescriptorBindingInfo> Bindings => _bindings;
 
-        private VkDescriptorSetLayout _layout;
-        private DescriptorSetCreateInfo[] _createInfo;
         private Device _device;
+        private VkDescriptorSetLayout _handle;
+        private List<DescriptorBindingInfo> _bindings;
 
-
-        private unsafe void SetupDescriptorSetLayout(NativeList<VkDescriptorSetLayoutBinding> bindings)
-        {
-            var descriptorSetLayoutInfo = VkDescriptorSetLayoutCreateInfo.New();
-            descriptorSetLayoutInfo.bindingCount = bindings.Count;
-            descriptorSetLayoutInfo.pBindings = (VkDescriptorSetLayoutBinding*)bindings.Data.ToPointer();
-
-            VkDescriptorSetLayout layout;
-            if (vkCreateDescriptorSetLayout(
-              _device.LogicalDevice,
-              &descriptorSetLayoutInfo,
-              null,
-              &layout
-            ) != VkResult.Success)
-                throw new Exception("failed to create descriptor set layout");
-            _layout = layout;
-        }
-
-        public DescriptorSetLayout(Device device, DescriptorSetCreateInfo[] createInfo)
+        public unsafe DescriptorLayout(Device device, List<DescriptorBindingInfo> bindings)
         {
             _device = device;
-            this._createInfo = createInfo;
-            var bindings = new NativeList<VkDescriptorSetLayoutBinding>();
-            for (uint i = 0; i < createInfo.Length; i++)
+            _bindings = bindings;
+
+            var vulkanBindings = new NativeList<VkDescriptorSetLayoutBinding>();
+            foreach (var binding in bindings)
             {
-                var info = createInfo[i];
-                bindings.Add(new VkDescriptorSetLayoutBinding
+                vulkanBindings.Add(new VkDescriptorSetLayoutBinding
                 {
-                    binding = i,
-                    descriptorType = (VkDescriptorType)info.type,
-                    descriptorCount = 1,
-                    stageFlags = (VkShaderStageFlags)info.stage
+                    binding = binding.Index,
+                    descriptorType = binding.DescriptorType,
+                    descriptorCount = binding.DescriptorCounts,
+                    stageFlags = binding.ShaderStageFlags
                 });
             }
-            this.SetupDescriptorSetLayout(bindings);
-        }
 
-        unsafe ~DescriptorSetLayout()
+            var createInfo = new VkDescriptorSetLayoutCreateInfo
+            {
+                sType = VkStructureType.DescriptorSetLayoutCreateInfo,
+                bindingCount = vulkanBindings.Count,
+                pBindings = (VkDescriptorSetLayoutBinding*)vulkanBindings.Data.ToPointer()
+            };
+
+            VkDescriptorSetLayout layout;
+            if (VulkanNative.vkCreateDescriptorSetLayout(
+                device.Handle,
+                &createInfo,
+                null,
+                &layout
+            ) != VkResult.Success)
+                throw new Exception("failed to create descriptor set layout");
+            _handle = layout;
+        }
+        unsafe ~DescriptorLayout()
         {
-            vkDestroyDescriptorSetLayout(
-              _device.LogicalDevice,
-              _layout,
-              null
-            );
+            if (_handle != VkDescriptorSetLayout.Null)
+            {
+                VulkanNative.vkDestroyDescriptorSetLayout(
+                    _device.Handle,
+                    _handle,
+                    null
+                );
+                _handle = VkDescriptorSetLayout.Null;
+            }
         }
     }
 }
