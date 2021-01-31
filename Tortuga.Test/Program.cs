@@ -91,12 +91,12 @@ namespace Tortuga.Test
             //     win.Content.Add(windowContent);
             // }
 
-            // scene.AddSystem<Audio.AudioSystem>();
+            scene.AddSystem<Audio.AudioSystem>();
             // scene.AddSystem<Graphics.RenderingSystem>();
             // scene.AddSystem<RotatorSystem>();
 
-            // Engine.Instance.LoadScene(scene);
-            // await Engine.Instance.Run();
+            Engine.Instance.LoadScene(scene);
+            await Engine.Instance.Run();
         }
     }
 }

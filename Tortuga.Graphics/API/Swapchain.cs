@@ -10,7 +10,7 @@ namespace Tortuga.Graphics.API
     public class Swapchain
     {
         private Device _device;
-        private Window _window;
+        private NativeWindow _window;
         private QueueFamily _presentQueueFamily;
         private VkSurfaceCapabilitiesKHR _surfaceCapabilities;
         private List<VkSurfaceFormatKHR> _supportedSurfaceFormats;
@@ -24,7 +24,7 @@ namespace Tortuga.Graphics.API
         private Image _depthImage;
         private ImageView _depthImageView;
 
-        public unsafe Swapchain(Device device, Window window)
+        public unsafe Swapchain(Device device, NativeWindow window)
         {
             _device = device;
             _window = window;
@@ -247,7 +247,7 @@ namespace Tortuga.Graphics.API
                 VkImageLayout.DepthStencilAttachmentOptimal
             );
             command.End();
-            command.Submit(
+            command.SubmitCommand(
                 graphicsQueue.Queues[0],
                 null,
                 null,
@@ -260,7 +260,7 @@ namespace Tortuga.Graphics.API
 
         private unsafe QueueFamily GetQueueFamilyWithPresentationSupport(
             Device device,
-            Window window
+            NativeWindow window
         )
         {
             var queueFamiliesSupportingPresentation = new List<bool>();
@@ -288,7 +288,7 @@ namespace Tortuga.Graphics.API
 
         private unsafe List<VkSurfaceFormatKHR> GetSupportedSurfaceFormats(
             Device device,
-            Window window
+            NativeWindow window
         )
         {
             uint surfaceSupportedFormatsCount;
@@ -314,7 +314,7 @@ namespace Tortuga.Graphics.API
 
         private unsafe VkSurfaceCapabilitiesKHR GetSurfaceCapabilities(
             Device device,
-            Window window
+            NativeWindow window
         )
         {
             VkSurfaceCapabilitiesKHR surfaceCapabilities;
@@ -329,7 +329,7 @@ namespace Tortuga.Graphics.API
 
         private unsafe List<VkPresentModeKHR> GetSupportedPresentModes(
             Device device,
-            Window window
+            NativeWindow window
         )
         {
             uint presentModeCount;

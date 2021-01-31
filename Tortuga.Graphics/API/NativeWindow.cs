@@ -7,7 +7,7 @@ using Vulkan;
 
 namespace Tortuga.Graphics.API
 {
-    public class Window
+    public class NativeWindow
     {
         public GraphicsService GraphicsService => _graphicsService;
         public SDL_Window Handle => _handle;
@@ -23,7 +23,7 @@ namespace Tortuga.Graphics.API
         private int _width;
         private int _height;
 
-        public unsafe Window(
+        public unsafe NativeWindow(
             GraphicsService graphicsService,
             string title,
             int x, int y,
@@ -78,6 +78,7 @@ namespace Tortuga.Graphics.API
                 var x11Info = Unsafe.Read<X11WindowInfo>(&sysWindowInfo.info);
                 var surfaceInfo = new VkXlibSurfaceCreateInfoKHR
                 {
+                    sType = VkStructureType.XlibSurfaceCreateInfoKHR,
                     dpy = (Vulkan.Xlib.Display*)x11Info.display,
                     window = new Vulkan.Xlib.Window
                     {
@@ -96,6 +97,7 @@ namespace Tortuga.Graphics.API
                 var waylandINfo = Unsafe.Read<WaylandWindowInfo>(&sysWindowInfo.info);
                 var surfaceInfo = new VkWaylandSurfaceCreateInfoKHR
                 {
+                    sType = VkStructureType.WaylandSurfaceCreateInfoKHR,
                     display = (Vulkan.Wayland.wl_display*)waylandINfo.display,
                     surface = (Vulkan.Wayland.wl_surface*)waylandINfo.surface
                 };
@@ -111,6 +113,7 @@ namespace Tortuga.Graphics.API
                 var androidInfo = Unsafe.Read<AndroidWindowInfo>(&sysWindowInfo.info);
                 var surfaceInfo = new VkAndroidSurfaceCreateInfoKHR
                 {
+                    sType = VkStructureType.AndroidSurfaceCreateInfoKHR,
                     window = (Vulkan.Android.ANativeWindow*)androidInfo.window
                 };
                 error = VulkanNative.vkCreateAndroidSurfaceKHR(
@@ -125,6 +128,7 @@ namespace Tortuga.Graphics.API
                 var mirInfo = Unsafe.Read<MirWindowInfo>(&sysWindowInfo.info);
                 var surfaceInfo = new VkMirSurfaceCreateInfoKHR
                 {
+                    sType = VkStructureType.MirSurfaceCreateInfoKHR,
                     connection = (Vulkan.Mir.MirConnection*)mirInfo.connection,
                     mirSurface = (Vulkan.Mir.MirSurface*)mirInfo.mirSurface
                 };
@@ -144,7 +148,7 @@ namespace Tortuga.Graphics.API
             _surface = surface;
         }
 
-        unsafe ~Window()
+        unsafe ~NativeWindow()
         {
             if (_handle != IntPtr.Zero)
             {

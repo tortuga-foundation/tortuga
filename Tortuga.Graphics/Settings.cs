@@ -31,6 +31,9 @@ namespace Tortuga.Graphics
         Debug
     }
 
+    /// <summary>
+    /// Tortuga engine settings
+    /// </summary>
     public static partial class Settings
     {
         /// <summary>

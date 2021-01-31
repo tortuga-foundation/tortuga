@@ -503,13 +503,13 @@ namespace Tortuga.Graphics.API
             );
         }
 
-        public unsafe void Submit(
+        internal unsafe void SubmitCommand(
             VkQueue queue,
             List<Semaphore> signalSemaphore = null,
             List<Semaphore> waitSemaphore = null,
             Fence fence = null,
             VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe
-        ) => Submit(
+        ) => SubmitCommands(
             new List<CommandBuffer> { this },
             queue,
             signalSemaphore,
@@ -518,7 +518,7 @@ namespace Tortuga.Graphics.API
             waitStageMask
         );
 
-        public static unsafe void Submit(
+        internal static unsafe void SubmitCommands(
             List<CommandBuffer> commandBuffers,
             VkQueue queue,
             List<Semaphore> signalSemaphores = null,

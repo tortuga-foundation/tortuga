@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 using System;
+using System.Threading.Tasks;
 using Vulkan;
 
 namespace Tortuga.Graphics.API
@@ -64,6 +65,20 @@ namespace Tortuga.Graphics.API
             ) != VkResult.Success)
                 throw new Exception("failed to wait on a fence");
         }
+
+        public unsafe Task WaitAsync(ulong timeout = ulong.MaxValue)
+        => Task.Run(() =>
+        {
+            var fence = _handle;
+            if (VulkanNative.vkWaitForFences(
+                _device.Handle,
+                1,
+                &fence,
+                true,
+                timeout
+            ) != VkResult.Success)
+                throw new Exception("failed to wait on a fence");
+        });
 
         public unsafe void Reset()
         {
