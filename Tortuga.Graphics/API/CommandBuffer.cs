@@ -26,6 +26,7 @@ namespace Tortuga.Graphics.API
             var allocateInfo = new VkCommandBufferAllocateInfo
             {
                 sType = VkStructureType.CommandBufferAllocateInfo,
+                commandPool = commandPool.Handle,
                 level = level,
                 commandBufferCount = 1
             };
@@ -47,6 +48,7 @@ namespace Tortuga.Graphics.API
 
             var beginInfo = new VkCommandBufferBeginInfo
             {
+                sType = VkStructureType.CommandBufferBeginInfo,
                 flags = commandBufferUsageFlag
             };
 
@@ -289,7 +291,7 @@ namespace Tortuga.Graphics.API
             );
         }
 
-        public unsafe void BufferToImage(
+        public unsafe void CopyBufferToImage(
             Buffer buffer,
             Image image,
             uint mipLevel = 0
@@ -547,6 +549,7 @@ namespace Tortuga.Graphics.API
 
             var submitInfo = new VkSubmitInfo
             {
+                sType = VkStructureType.SubmitInfo,
                 signalSemaphoreCount = signals.Count,
                 pSignalSemaphores = (VkSemaphore*)signals.Data.ToPointer(),
                 waitSemaphoreCount = waits.Count,

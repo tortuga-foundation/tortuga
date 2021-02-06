@@ -89,7 +89,8 @@ namespace Tortuga.Graphics.API
             //enable extra device features
             var enabledFeatures = new VkPhysicalDeviceFeatures()
             {
-                samplerAnisotropy = true
+                samplerAnisotropy = true,
+                dualSrcBlend = true
             };
 
             //enable swapchain extension for window support

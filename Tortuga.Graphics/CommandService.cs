@@ -19,7 +19,6 @@ namespace Tortuga.Graphics
         private List<VkQueue> _queuesInUse;
         private Dictionary<QueueFamilyType, QueueFamily> _queueFamilies;
         private Dictionary<QueueFamilyType, CommandPool> _commandPools;
-        private Dictionary<CommandPool, CommandBuffer> _commandBuffers;
         private List<Task> _tasks;
 
         public CommandBufferService(Device device)
@@ -46,6 +45,9 @@ namespace Tortuga.Graphics
             _commandPools = new Dictionary<QueueFamilyType, CommandPool>();
             foreach (var queueFamily in _queueFamilies)
                 _commandPools.Add(queueFamily.Key, new CommandPool(queueFamily.Value));
+
+            _tasks = new List<Task>();
+            _queuesInUse = new List<VkQueue>();
         }
 
         public CommandBuffer GetNewCommand(
@@ -99,8 +101,7 @@ namespace Tortuga.Graphics
             if (commands.Count == 0) return;
 
             //remove all completed tasks
-            foreach (var task in _tasks.Where(t => t.IsCompleted))
-                _tasks.Remove(task);
+            _tasks.RemoveAll(t => t.IsCompleted);
 
             //if no fence is provided, create one
             if (fence == null)

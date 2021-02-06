@@ -22,10 +22,13 @@ namespace Tortuga.Graphics.API
             _descriptorPool = descriptorPool;
 
             var layouts = new NativeList<VkDescriptorSetLayout>(setCount);
+            for (int i = 0; i < setCount; i++)
+                layouts.Add(descriptorPool.Layout.Handle);
 
             var allocateInfo = new VkDescriptorSetAllocateInfo
             {
                 sType = VkStructureType.DescriptorSetAllocateInfo,
+                descriptorPool = descriptorPool.Handle,
                 descriptorSetCount = setCount,
                 pSetLayouts = (VkDescriptorSetLayout*)layouts.Data.ToPointer()
             };

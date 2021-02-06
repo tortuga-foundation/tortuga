@@ -228,10 +228,13 @@ namespace Tortuga.Graphics.API
 
             #region transfer images to correct layout
 
+            var module = Engine.Instance.GetModule<GraphicsModule>();
             var graphicsQueue = _device.GraphicsQueueFamily;
             var fence = new Fence(_device);
-            var commandPool = new CommandPool(graphicsQueue);
-            var command = new CommandBuffer(commandPool);
+            var command = module.CommandBufferService.GetNewCommand(
+                QueueFamilyType.Graphics,
+                CommandType.Primary
+            );
             command.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             //transfer images to correct layout
             foreach (var image in _images)
@@ -247,10 +250,9 @@ namespace Tortuga.Graphics.API
                 VkImageLayout.DepthStencilAttachmentOptimal
             );
             command.End();
-            command.SubmitCommand(
-                graphicsQueue.Queues[0],
-                null,
-                null,
+            module.CommandBufferService.Submit(
+                command,
+                null, null,
                 fence
             );
             fence.Wait();

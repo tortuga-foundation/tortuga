@@ -23,7 +23,7 @@ namespace Tortuga.Graphics.API
             _image = image;
             var imageViewInfo = new VkImageViewCreateInfo
             {
-                sType = VkStructureType.ImageCreateInfo,
+                sType = VkStructureType.ImageViewCreateInfo,
                 image = image.Handle,
                 viewType = VkImageViewType.Image2D,
                 format = image.Format,

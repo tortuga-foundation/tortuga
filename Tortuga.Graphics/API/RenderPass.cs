@@ -17,28 +17,21 @@ namespace Tortuga.Graphics.API
         public VkImageUsageFlags ImageUsageFlags;
         public VkImageAspectFlags ImageAspectFlags;
 
-        public RenderPassAttachment(
-            VkFormat format = VkFormat.R32g32b32a32Sfloat,
-            bool clear = true,
-            bool store = true,
-            VkImageLayout initialLayout = VkImageLayout.Undefined,
-            VkImageLayout finalLayout = VkImageLayout.ColorAttachmentOptimal,
-            VkImageUsageFlags imageUsageFlags = (
+        public static RenderPassAttachment Default
+        => new RenderPassAttachment
+        {
+            Format = VkFormat.R32g32b32a32Sfloat,
+            Clear = true,
+            Store = true,
+            InitialLayout = VkImageLayout.Undefined,
+            FinalLayout = VkImageLayout.ColorAttachmentOptimal,
+            ImageUsageFlags = (
                 VkImageUsageFlags.TransferDst |
                 VkImageUsageFlags.TransferSrc |
                 VkImageUsageFlags.ColorAttachment
             ),
-            VkImageAspectFlags imageAspectFlags = VkImageAspectFlags.Color
-        )
-        {
-            Format = format;
-            Clear = clear;
-            Store = store;
-            InitialLayout = initialLayout;
-            FinalLayout = finalLayout;
-            ImageUsageFlags = imageUsageFlags;
-            ImageAspectFlags = imageAspectFlags;
-        }
+            ImageAspectFlags = VkImageAspectFlags.Color
+        };
     }
 
     public struct RenderPassSubPass
