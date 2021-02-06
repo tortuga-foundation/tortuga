@@ -31,6 +31,8 @@ namespace Tortuga.Graphics.API
             SDL_WindowFlags flags
         )
         {
+            _width = width;
+            _height = height;
             _graphicsService = graphicsService;
             _handle = SDL2Native.SDL_CreateWindow(
                 title,

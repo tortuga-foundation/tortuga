@@ -99,6 +99,7 @@ namespace Tortuga.Graphics.API
 
             var deviceInfo = new VkDeviceCreateInfo
             {
+                sType = VkStructureType.DeviceCreateInfo,
                 pEnabledFeatures = &enabledFeatures,
                 enabledExtensionCount = enabledExtensions.Count,
                 ppEnabledExtensionNames = (byte**)enabledExtensions.Data,

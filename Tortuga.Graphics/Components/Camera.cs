@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
 using Tortuga.Graphics.API;
+using Tortuga.Core;
 
 namespace Tortuga.Graphics
 {
@@ -27,6 +28,27 @@ namespace Tortuga.Graphics
     public class Camera : Core.BaseComponent
     {
         /// <summary>
+        /// What resolution the camera renders at
+        /// </summary>
+        public Vector2 Resolution
+        {
+            get => _resolution;
+            set
+            {
+                uint width = Convert.ToUInt32(value.X);
+                uint height = Convert.ToUInt32(value.Y);
+                _mrtFramebuffer = new Framebuffer(
+                    _graphicsModule.RenderPasses["_MRT"],
+                    width, height
+                );
+                _defferedFramebuffer = new Framebuffer(
+                    _graphicsModule.RenderPasses["_DEFFERED"],
+                    width, height
+                );
+                _resolution = value;
+            }
+        }
+        /// <summary>
         /// Field of view for the camera
         /// </summary>
         public float FieldOfView = 70.0f;
@@ -42,11 +64,19 @@ namespace Tortuga.Graphics
         /// How close an object the camera can see
         /// </summary>
         public float NearClipPlane = 0.01f;
+
+        internal DescriptorService DescriptorService => _descriptorService;
+        internal Framebuffer MrtFramebuffer => _mrtFramebuffer;
+        internal Framebuffer DefferedFramebuffer => _defferedFramebuffer;
+        internal Pipeline DefferedPipeline => _defferedPipeline;
+
         private ProjectionType _projectionType = ProjectionType.Perspective;
         private Vector2 _resolution;
         private DescriptorService _descriptorService;
-        private Framebuffer _framebuffer;
+        private Framebuffer _mrtFramebuffer;
+        private Framebuffer _defferedFramebuffer;
         private Pipeline _defferedPipeline;
+        private GraphicsModule _graphicsModule;
 
         /// <summary>
         /// Runs when component is enabled in the scene
@@ -54,60 +84,66 @@ namespace Tortuga.Graphics
         public override Task OnEnable()
         => Task.Run(() =>
         {
-            var module = Engine.Instance.GetModule<GraphicsModule>();
+            _graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
             _descriptorService = new DescriptorService();
             _resolution = new Vector2(1920, 1080);
 
             //PROJECTION
             var PROJECTION_KEY = "_PROJECTION";
-            _descriptorService.InsertKey(PROJECTION_KEY, module.DescriptorLayouts[PROJECTION_KEY]);
+            _descriptorService.InsertKey(PROJECTION_KEY, _graphicsModule.DescriptorLayouts[PROJECTION_KEY]);
             _descriptorService.BindBuffer(PROJECTION_KEY, 0, ProjectionMatrix.GetBytes());
 
             //VIEW
             var VIEW_KEY = "_VIEW";
-            _descriptorService.InsertKey(VIEW_KEY, module.DescriptorLayouts[VIEW_KEY]);
+            _descriptorService.InsertKey(VIEW_KEY, _graphicsModule.DescriptorLayouts[VIEW_KEY]);
             _descriptorService.BindBuffer(VIEW_KEY, 0, ViewMatrix.GetBytes());
 
             //MRT
             var MRT_KEY = "_MRT";
-            //make sure frame buffer is created with the correct MRT details
-            _framebuffer = new Framebuffer(
-                module.RenderPasses[MRT_KEY],
+            _mrtFramebuffer = new Framebuffer(
+                _graphicsModule.RenderPasses[MRT_KEY],
                 Convert.ToUInt32(_resolution.X),
                 Convert.ToUInt32(_resolution.Y)
             );
-            _descriptorService.InsertKey(MRT_KEY, module.DescriptorLayouts[MRT_KEY]);
-            _descriptorService.BindImage(MRT_KEY, 0, _framebuffer.Images[0], _framebuffer.ImageViews[0]);
-            _descriptorService.BindImage(MRT_KEY, 1, _framebuffer.Images[1], _framebuffer.ImageViews[1]);
-            _descriptorService.BindImage(MRT_KEY, 2, _framebuffer.Images[2], _framebuffer.ImageViews[2]);
-            _descriptorService.BindImage(MRT_KEY, 3, _framebuffer.Images[3], _framebuffer.ImageViews[3]);
+            //make sure frame buffer is created with the correct MRT details
+            _descriptorService.InsertKey(MRT_KEY, _graphicsModule.DescriptorLayouts[MRT_KEY]);
+            _descriptorService.BindImage(MRT_KEY, 0, _mrtFramebuffer.Images[0], _mrtFramebuffer.ImageViews[0]);
+            _descriptorService.BindImage(MRT_KEY, 1, _mrtFramebuffer.Images[1], _mrtFramebuffer.ImageViews[1]);
+            _descriptorService.BindImage(MRT_KEY, 2, _mrtFramebuffer.Images[2], _mrtFramebuffer.ImageViews[2]);
+            _descriptorService.BindImage(MRT_KEY, 3, _mrtFramebuffer.Images[3], _mrtFramebuffer.ImageViews[3]);
 
             //camera position descriptor set
             var CAMERA_KEY = "_CAMERA";
-            _descriptorService.InsertKey(CAMERA_KEY, module.DescriptorLayouts[CAMERA_KEY]);
+            _descriptorService.InsertKey(CAMERA_KEY, _graphicsModule.DescriptorLayouts[CAMERA_KEY]);
             _descriptorService.BindBuffer(CAMERA_KEY, 0, Position.GetBytes());
 
             //light
             var LIGHT_KEY = "_LIGHT";
-            _descriptorService.InsertKey(LIGHT_KEY, module.DescriptorLayouts[LIGHT_KEY]);
+            _descriptorService.InsertKey(LIGHT_KEY, _graphicsModule.DescriptorLayouts[LIGHT_KEY]);
             _descriptorService.BindBuffer(LIGHT_KEY, 0, new byte[] { 1 });
 
             //deffered pipeline
+            var DEFFERED_KEY = "_DEFFERED";
+            _defferedFramebuffer = new Framebuffer(
+                _graphicsModule.RenderPasses[DEFFERED_KEY],
+                Convert.ToUInt32(_resolution.X),
+                Convert.ToUInt32(_resolution.Y)
+            );
             _defferedPipeline = new GraphicsPipeline(
-                module.GraphicsService.PrimaryDevice,
-                module.RenderPasses[MRT_KEY],
+                _graphicsModule.GraphicsService.PrimaryDevice,
+                _graphicsModule.RenderPasses[DEFFERED_KEY],
                 new List<DescriptorLayout>
                 {
-                    module.DescriptorLayouts[MRT_KEY],
-                    module.DescriptorLayouts[CAMERA_KEY],
-                    module.DescriptorLayouts[LIGHT_KEY]
+                    _graphicsModule.DescriptorLayouts[MRT_KEY],
+                    _graphicsModule.DescriptorLayouts[CAMERA_KEY],
+                    _graphicsModule.DescriptorLayouts[LIGHT_KEY]
                 },
                 new ShaderModule(
-                    module.GraphicsService.PrimaryDevice,
+                    _graphicsModule.GraphicsService.PrimaryDevice,
                     "Assets/Shaders/Default/Deffered.vert"
                 ),
                 new ShaderModule(
-                    module.GraphicsService.PrimaryDevice,
+                    _graphicsModule.GraphicsService.PrimaryDevice,
                     "Assets/Shaders/Default/Deffered.frag"
                 ),
                 new PipelineInputBuilder()
@@ -138,7 +174,7 @@ namespace Tortuga.Graphics
                 if (_projectionType == ProjectionType.Perspective)
                 {
                     return Matrix4x4.CreatePerspectiveFieldOfView(
-                        ToRadians(FieldOfView),
+                        FieldOfView.ToRadians(),
                         _resolution.X / _resolution.Y,
                         NearClipPlane,
                         FarClipPlane
@@ -186,11 +222,6 @@ namespace Tortuga.Graphics
                     return Vector4.Zero;
                 return new Vector4(transform.Position, 1.0f);
             }
-        }
-
-        private float ToRadians(float degree)
-        {
-            return (degree / 360) * MathF.PI;
         }
     }
 }

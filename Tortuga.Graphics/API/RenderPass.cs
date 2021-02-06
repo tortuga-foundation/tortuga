@@ -32,6 +32,22 @@ namespace Tortuga.Graphics.API
             ),
             ImageAspectFlags = VkImageAspectFlags.Color
         };
+
+        public static RenderPassAttachment DefaultDepth
+        => new RenderPassAttachment()//depth
+        {
+            Format = VkFormat.D32Sfloat,
+            Clear = true,
+            Store = true,
+            InitialLayout = VkImageLayout.Undefined,
+            FinalLayout = VkImageLayout.DepthStencilAttachmentOptimal,
+            ImageUsageFlags = (
+                VkImageUsageFlags.TransferSrc |
+                VkImageUsageFlags.TransferDst |
+                VkImageUsageFlags.DepthStencilAttachment
+            ),
+            ImageAspectFlags = VkImageAspectFlags.Depth
+        };
     }
 
     public struct RenderPassSubPass

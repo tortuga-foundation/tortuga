@@ -50,20 +50,7 @@ namespace Tortuga.Graphics
                     RenderPassAttachment.Default,//normal
                     RenderPassAttachment.Default,//position
                     RenderPassAttachment.Default,//detail
-                    new RenderPassAttachment()//depth
-                    {
-                        Format = VkFormat.D32Sfloat,
-                        Clear = true,
-                        Store = true,
-                        InitialLayout = VkImageLayout.Undefined,
-                        FinalLayout = VkImageLayout.DepthStencilAttachmentOptimal,
-                        ImageUsageFlags = (
-                            VkImageUsageFlags.TransferSrc |
-                            VkImageUsageFlags.TransferDst |
-                            VkImageUsageFlags.DepthStencilAttachment
-                        ),
-                        ImageAspectFlags = VkImageAspectFlags.Depth
-                    }
+                    RenderPassAttachment.DefaultDepth
                 },
                 new List<RenderPassSubPass>
                 {
@@ -75,6 +62,24 @@ namespace Tortuga.Graphics
                             0, 1, 2, 3
                         },
                         DepthAttachments = 4
+                    }
+                }
+            );
+
+            _renderPasses["_DEFFERED"] = new RenderPass(
+                _graphicsService.PrimaryDevice,
+                new List<RenderPassAttachment>
+                {
+                    RenderPassAttachment.Default,
+                    RenderPassAttachment.DefaultDepth
+                },
+                new List<RenderPassSubPass>
+                {
+                    new RenderPassSubPass
+                    {
+                        BindPoint = VkPipelineBindPoint.Graphics,
+                        ColorAttachments = new List<uint> { 0 },
+                        DepthAttachments = 1
                     }
                 }
             );
