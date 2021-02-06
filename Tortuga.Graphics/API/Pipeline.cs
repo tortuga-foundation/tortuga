@@ -146,11 +146,15 @@ namespace Tortuga.Graphics.API
                 alphaToOneEnable = VkBool32.False
             };
 
+            bool hasDepthAttachment = false;
             var colorBlendAttachments = new NativeList<VkPipelineColorBlendAttachmentState>();
             foreach (var attachment in renderPass.Attachments)
             {
-                if ((attachment.ImageAspectFlags & VkImageAspectFlags.Depth) != 0)
+                if ((attachment.ImageUsageFlags & VkImageUsageFlags.DepthStencilAttachment) != 0)
+                {
+                    hasDepthAttachment = true;
                     continue;
+                }
 
                 colorBlendAttachments.Add(new VkPipelineColorBlendAttachmentState
                 {
@@ -235,7 +239,7 @@ namespace Tortuga.Graphics.API
                 pViewportState = &viewportState,
                 pRasterizationState = &rasterizer,
                 pMultisampleState = &multisampling,
-                pDepthStencilState = &depthStencil,
+                pDepthStencilState = hasDepthAttachment ? &depthStencil : null,
                 pColorBlendState = &colorBlending,
                 pDynamicState = &dynamicStateInfo,
                 layout = _layout,
