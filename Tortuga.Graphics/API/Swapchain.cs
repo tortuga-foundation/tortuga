@@ -152,6 +152,7 @@ namespace Tortuga.Graphics.API
                 imageSharingMode = VkSharingMode.Exclusive,
                 preTransform = _surfaceCapabilities.currentTransform,
                 presentMode = _surfacePresentMode,
+                surface = window.Surface,
                 clipped = true
             };
 
@@ -196,6 +197,7 @@ namespace Tortuga.Graphics.API
 
             _images = swapchainNativeImages.Select(
                 image => Image.CreateImageObject(
+                    _device,
                     _surfaceExtent.width,
                     _surfaceExtent.height,
                     image,

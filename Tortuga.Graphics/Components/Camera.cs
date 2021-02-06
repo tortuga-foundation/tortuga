@@ -53,7 +53,8 @@ namespace Tortuga.Graphics
         /// </summary>
         public float FieldOfView = 70.0f;
         /// <summary>
-        /// Viewport, where in the window this camera should be rendered
+        /// Viewport, where in the render target this camera should be rendered
+        /// 0,0,1,1 = full screen
         /// </summary>
         public Vector4 Viewport = new Vector4(0, 0, 1, 1);
         /// <summary>
@@ -64,6 +65,11 @@ namespace Tortuga.Graphics
         /// How close an object the camera can see
         /// </summary>
         public float NearClipPlane = 0.01f;
+
+        /// <summary>
+        /// Where the camera rendered output should be stored
+        /// </summary>
+        public RenderTarget RenderTarget = null;
 
         internal DescriptorService DescriptorService => _descriptorService;
         internal Framebuffer MrtFramebuffer => _mrtFramebuffer;

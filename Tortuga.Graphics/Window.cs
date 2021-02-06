@@ -6,7 +6,7 @@ namespace Tortuga.Graphics
     /// <summary>
     /// This class is used to create a window used by tortuga engine
     /// </summary>
-    public class Window
+    public class Window : RenderTarget
     {
         /// <summary>
         /// Native SDL window class

@@ -352,7 +352,7 @@ namespace Tortuga.Graphics.API
             {
                 sType = VkStructureType.ImageMemoryBarrier,
                 oldLayout = image.Layout,
-                newLayout = image.Layout,
+                newLayout = newLayout,
                 srcQueueFamilyIndex = VulkanNative.QueueFamilyIgnored,
                 dstQueueFamilyIndex = VulkanNative.QueueFamilyIgnored,
                 image = image.Handle,

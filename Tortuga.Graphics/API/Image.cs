@@ -130,6 +130,7 @@ namespace Tortuga.Graphics.API
         }
 
         public static Image CreateImageObject(
+            Device device,
             uint width, uint height,
             VkImage image,
             VkFormat format,
@@ -149,7 +150,7 @@ namespace Tortuga.Graphics.API
             ),
             _layout = layout,
             _mipLevel = mipLevel,
-            _device = null
+            _device = device
         };
 
         public bool HasStencilComponent => HasStencil(_format);

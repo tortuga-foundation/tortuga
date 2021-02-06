@@ -49,11 +49,19 @@ namespace Tortuga.Test
             var scene = new Core.Scene();
             Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
+            //create a window
+            var window = new Graphics.Window(
+                "Tortuga",
+                0, 0,
+                1920, 1080
+            );
+
             //camera
             Graphics.Camera mainCamera;
             {
                 var entity = new Core.Entity();
                 mainCamera = await entity.AddComponent<Graphics.Camera>();
+                mainCamera.RenderTarget = window;
                 scene.AddEntity(entity);
             }
 
