@@ -27,10 +27,15 @@ namespace Tortuga.Graphics
         /// <param name="y">y position</param>
         /// <param name="width">width of the window</param>
         /// <param name="height">height of the window</param>
+        /// <param name="flags">flags for window</param>
         public Window(
             string title,
             int x, int y,
-            int width, int height
+            int width, int height,
+            WindowFlags flags = (
+                WindowFlags.AllowHighDpi |
+                WindowFlags.Shown
+            )
         )
         {
             var graphicsModule = Engine.Instance.GetModule<GraphicsModule>();
@@ -39,7 +44,7 @@ namespace Tortuga.Graphics
                 title,
                 x, y,
                 width, height,
-                SDL_WindowFlags.Shown
+                (SDL_WindowFlags)flags
             );
             _swapchain = new Swapchain(
                 graphicsModule.GraphicsService.PrimaryDevice,
