@@ -83,6 +83,24 @@ namespace Tortuga.Graphics
                     }
                 }
             );
+
+            _renderPasses["_LIGHT"] = new RenderPass(
+                _graphicsService.PrimaryDevice,
+                new List<RenderPassAttachment>
+                {
+                    RenderPassAttachment.Default,
+                    RenderPassAttachment.DefaultDepth
+                },
+                new List<RenderPassSubPass>
+                {
+                    new RenderPassSubPass
+                    {
+                        BindPoint = VkPipelineBindPoint.Graphics,
+                        ColorAttachments = new List<uint>{ 0 },
+                        DepthAttachments = 1
+                    }
+                }
+            );
         }
 
         private void InitDescriptorLayouts()

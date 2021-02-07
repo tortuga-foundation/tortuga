@@ -59,8 +59,9 @@ namespace Tortuga.Test
             //camera
             Graphics.Camera mainCamera;
             {
-                var entity = new Core.Entity();
+                var entity = new Core.Entity();5
                 mainCamera = await entity.AddComponent<Graphics.Camera>();
+                //set camera's render target to be the window
                 mainCamera.RenderTarget = window;
                 scene.AddEntity(entity);
             }

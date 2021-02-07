@@ -74,14 +74,14 @@ namespace Tortuga.Graphics
         internal DescriptorService DescriptorService => _descriptorService;
         internal Framebuffer MrtFramebuffer => _mrtFramebuffer;
         internal Framebuffer DefferedFramebuffer => _defferedFramebuffer;
-        internal Pipeline DefferedPipeline => _defferedPipeline;
+        internal static Pipeline DefferedPipeline => _defferedPipeline;
 
         private ProjectionType _projectionType = ProjectionType.Perspective;
         private Vector2 _resolution;
         private DescriptorService _descriptorService;
         private Framebuffer _mrtFramebuffer;
         private Framebuffer _defferedFramebuffer;
-        private Pipeline _defferedPipeline;
+        private static Pipeline _defferedPipeline;
         private GraphicsModule _graphicsModule;
 
         /// <summary>
@@ -135,25 +135,28 @@ namespace Tortuga.Graphics
                 Convert.ToUInt32(_resolution.X),
                 Convert.ToUInt32(_resolution.Y)
             );
-            _defferedPipeline = new GraphicsPipeline(
-                _graphicsModule.GraphicsService.PrimaryDevice,
-                _graphicsModule.RenderPasses[DEFFERED_KEY],
-                new List<DescriptorLayout>
-                {
-                    _graphicsModule.DescriptorLayouts[MRT_KEY],
-                    _graphicsModule.DescriptorLayouts[CAMERA_KEY],
-                    _graphicsModule.DescriptorLayouts[LIGHT_KEY]
-                },
-                new ShaderModule(
+            if (_defferedPipeline == null)
+            {
+                _defferedPipeline = new GraphicsPipeline(
                     _graphicsModule.GraphicsService.PrimaryDevice,
-                    "Assets/Shaders/Default/Deffered.vert"
-                ),
-                new ShaderModule(
-                    _graphicsModule.GraphicsService.PrimaryDevice,
-                    "Assets/Shaders/Default/Deffered.frag"
-                ),
-                new PipelineInputBuilder()
-            );
+                    _graphicsModule.RenderPasses[DEFFERED_KEY],
+                    new List<DescriptorLayout>
+                    {
+                        _graphicsModule.DescriptorLayouts[MRT_KEY],
+                        _graphicsModule.DescriptorLayouts[CAMERA_KEY],
+                        _graphicsModule.DescriptorLayouts[LIGHT_KEY]
+                    },
+                    new ShaderModule(
+                        _graphicsModule.GraphicsService.PrimaryDevice,
+                        "Assets/Shaders/Default/Deffered.vert"
+                    ),
+                    new ShaderModule(
+                        _graphicsModule.GraphicsService.PrimaryDevice,
+                        "Assets/Shaders/Default/Deffered.frag"
+                    ),
+                    new PipelineInputBuilder()
+                );
+            }
         });
 
         /// <summary>
