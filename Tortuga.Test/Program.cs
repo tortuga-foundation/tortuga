@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
+using Tortuga.Graphics;
 
 namespace Tortuga.Test
 {
@@ -56,10 +57,13 @@ namespace Tortuga.Test
                 1920, 1080
             );
 
+            var mesh = new Graphics.Mesh();
+            await mesh.LoadObj("Assets/Models/Sphere.obj");
+
             //camera
             Graphics.Camera mainCamera;
             {
-                var entity = new Core.Entity();5
+                var entity = new Core.Entity();
                 mainCamera = await entity.AddComponent<Graphics.Camera>();
                 //set camera's render target to be the window
                 mainCamera.RenderTarget = window;
