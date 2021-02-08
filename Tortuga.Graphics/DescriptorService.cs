@@ -25,7 +25,10 @@ namespace Tortuga.Graphics
             internal API.Sampler[] Samplers;
             internal API.CommandBuffer[] CommandBuffer;
         }
-        private Dictionary<string, DescriptorObject> _descriptor;
+        /// <summary>
+        /// All of the descriptor set created by the service
+        /// </summary>
+        protected Dictionary<string, DescriptorObject> _descriptor;
         private GraphicsModule _module;
 
         /// <summary>
