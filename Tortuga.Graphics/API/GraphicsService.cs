@@ -40,7 +40,7 @@ namespace Tortuga.Graphics.API
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 instanceExtensions.Add(GraphicsApiConstants.VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                throw new NotSupportedException("Currently OSX is not supported");
+                instanceExtensions.Add(GraphicsApiConstants.VK_MVK_SURFACE_EXTENSION_NAME);
             else
                 throw new NotSupportedException("This platform is not supported");
 

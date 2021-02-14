@@ -1,7 +1,5 @@
 #pragma warning disable 649
 #pragma warning disable 1591
-
-
 using System;
 
 namespace Tortuga.Utils.SDL2
@@ -36,6 +34,11 @@ namespace Tortuga.Utils.SDL2
     {
         public IntPtr display;
         public IntPtr window;
+    }
+
+    public struct CocoaWindowInfo
+    {
+        public IntPtr Window;
     }
 
     public struct WaylandWindowInfo

@@ -44,7 +44,7 @@ namespace Tortuga.Test
             //setup vulkan instance
             Engine.Instance.AddModule<Graphics.GraphicsModule>();
             //setup open al
-            Engine.Instance.AddModule<Audio.AudioModule>();
+            //Engine.Instance.AddModule<Audio.AudioModule>();
 
             //create new scene
             var scene = new Core.Scene();
@@ -112,7 +112,7 @@ namespace Tortuga.Test
             //     win.Content.Add(windowContent);
             // }
 
-            scene.AddSystem<Audio.AudioSystem>();
+            //scene.AddSystem<Audio.AudioSystem>();
             // scene.AddSystem<Graphics.RenderingSystem>();
             // scene.AddSystem<RotatorSystem>();
 

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Tortuga.Utils.SDL2;
 using Vulkan;
+using Veldrid.MetalBindings;
 
 namespace Tortuga.Graphics.API
 {
@@ -135,6 +136,27 @@ namespace Tortuga.Graphics.API
                     mirSurface = (Vulkan.Mir.MirSurface*)mirInfo.mirSurface
                 };
                 error = VulkanNative.vkCreateMirSurfaceKHR(
+                    graphicsService.Handle,
+                    &surfaceInfo,
+                    null,
+                    &surface
+                );
+            }
+            else if (sysWindowInfo.subsystem == SysWMType.Cocoa)
+            {
+                var cocaInfo = Unsafe.Read<CocoaWindowInfo>(&sysWindowInfo.info);
+                
+                var nsWindow = new NSWindow(cocaInfo.Window);
+                var contentView = nsWindow.contentView;
+                contentView.wantsLayer = true;
+                contentView.layer = CAMetalLayer.New().NativePtr;
+
+                var surfaceInfo = new VkMacOSSurfaceCreateInfoMVK
+                {
+                    sType = VkStructureType.MacosSurfaceCreateInfoMvk,
+                    pView = nsWindow.contentView.NativePtr.ToPointer()
+                };
+                error = VulkanNative.vkCreateMacOSSurfaceMVK(
                     graphicsService.Handle,
                     &surfaceInfo,
                     null,
