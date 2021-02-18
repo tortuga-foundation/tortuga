@@ -60,8 +60,8 @@ namespace Tortuga.Graphics.API
                     &supportedLayersCount,
                     (VkLayerProperties*)supportedLayers.Data.ToPointer()
                 );
-                foreach (var validationLayer in supportedLayers)
-                    validationLayer.Add(new IntPtr(validationLayer.layerName));
+                foreach (var vl in supportedLayers)
+                    validationLayer.Add(new IntPtr(vl.layerName));
             }
 
             var instanceInfo = new VkInstanceCreateInfo
