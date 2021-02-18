@@ -61,7 +61,11 @@ namespace Tortuga.Graphics.API
                     (VkLayerProperties*)supportedLayers.Data.ToPointer()
                 );
                 foreach (var vl in supportedLayers)
+                {
+                    var validationName = Encoding.ASCII.GetString(vl.layerName, 256);
+                    Console.WriteLine($"Supported Validation Layer: {validationName}");
                     validationLayer.Add(new IntPtr(vl.layerName));
+                }
             }
 
             var instanceInfo = new VkInstanceCreateInfo
