@@ -27,6 +27,12 @@ namespace Tortuga.Graphics
         private int _height;
         private GraphicsColor[] _pixels;
 
+
+        /// <summary>
+        /// creates a 1x1 black image
+        /// </summary>
+        public Texture() : this(Color.Black) { }
+        
         /// <summary>
         /// constructor for texture
         /// </summary>

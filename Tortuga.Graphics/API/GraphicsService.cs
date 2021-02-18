@@ -5,6 +5,7 @@ using Tortuga.Utils;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Tortuga.Graphics.API
 {
@@ -50,7 +51,18 @@ namespace Tortuga.Graphics.API
             //vulkan validation layers
             var validationLayer = new NativeList<IntPtr>();
             if (Settings.EnableGraphicsApiDebugging)
-                validationLayer.Add(GraphicsApiConstants.StandardValidationLayerName);
+            {
+                uint supportedLayersCount;
+                VulkanNative.vkEnumerateInstanceLayerProperties(&supportedLayersCount, null);
+                var supportedLayers = new NativeList<VkLayerProperties>(supportedLayersCount);
+                supportedLayers.Count = supportedLayersCount;
+                VulkanNative.vkEnumerateInstanceLayerProperties(
+                    &supportedLayersCount,
+                    (VkLayerProperties*)supportedLayers.Data.ToPointer()
+                );
+                foreach (var validationLayer in supportedLayers)
+                    validationLayer.Add(new IntPtr(validationLayer.layerName));
+            }
 
             var instanceInfo = new VkInstanceCreateInfo
             {
