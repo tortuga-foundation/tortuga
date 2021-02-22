@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 namespace Tortuga.Graphics
 {
     /// <summary>
-    /// Responsible for loading a obj file into a mesh object
+    /// Responsible for mesh object io
     /// </summary>
     public static class ObjLoader
     {
