@@ -8,4 +8,4 @@ jobs:
 
     steps:
     - name: Build with dotnet
-      run: dotnet build --configuration Release tortuga.sln
+      run: dotnet build --configuration Release
