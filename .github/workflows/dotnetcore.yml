@@ -4,10 +4,9 @@ on: [push]
 
 jobs:
   build:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
+    - uses: actions/checkout@v2
     - name: Build with dotnet
-      run: |
-        echo $PWD
-        dotnet build --configuration Release
+      run: dotnet build --configuration Release tortuga.sln
