@@ -8,4 +8,6 @@ jobs:
 
     steps:
     - name: Build with dotnet
-      run: dotnet build --configuration Release
+      run: |
+        echo $PWD
+        dotnet build --configuration Release
