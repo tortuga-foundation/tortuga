@@ -6,8 +6,6 @@ Tortua is an open source game engine built using C# dot net core 3.0
 
 ![IMG](https://raw.githubusercontent.com/tortuga-foundation/tortuga/master/Assets/Images/Render/Bricks.png)
 
-Roadmap: https://trello.com/b/McNszhI0/tortuga
-
 ## Prerequisites
 
 - Dot Net Core 3.0
