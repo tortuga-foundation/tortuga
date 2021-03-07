@@ -71,15 +71,15 @@ namespace Tortuga.Graphics
             ) == -1).ToList();
             while (freeQueues.Count == 0)
             {
+                Task.Delay(1).Wait();
                 freeQueues = queueFamily.Queues.Where(queue =>
                 {
                     if (_queuesInUse == null || _queuesInUse.Count == 0)
-                        return false;
+                        return true;
 
                     if (_queuesInUse.FindIndex(q => q.Handle == queue.Handle) == -1)
-                        return false;
-
-                    return true;
+                        return true;
+                    return false;
                 }).ToList();
             }
             var queueFound = freeQueues[0];
@@ -155,13 +155,12 @@ namespace Tortuga.Graphics
             var swapchains = new NativeList<VkSwapchainKHR>();
             swapchains.Add(swapchain.Handle);
 
-            uint index = imageIndex;
             var presentInfo = new VkPresentInfoKHR
             {
                 sType = VkStructureType.PresentInfoKHR,
                 swapchainCount = 1,
                 pSwapchains = (VkSwapchainKHR*)swapchains.Data.ToPointer(),
-                pImageIndices = &index,
+                pImageIndices = &imageIndex,
                 waitSemaphoreCount = semaphores.Count,
                 pWaitSemaphores = (VkSemaphore*)semaphores.Data.ToPointer(),
             };
