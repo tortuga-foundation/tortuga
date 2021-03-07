@@ -45,12 +45,12 @@ namespace Tortuga.Graphics.API
             else
                 throw new NotSupportedException("This platform is not supported");
 
-            if (Settings.EnableGraphicsApiDebugging)
+            if (Settings.IsGraphicsApiDebugingEnabled)
                 instanceExtensions.Add(GraphicsApiConstants.VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
 
             //vulkan validation layers
             var validationLayer = new NativeList<IntPtr>();
-            if (Settings.EnableGraphicsApiDebugging)
+            if (Settings.IsGraphicsApiDebugingEnabled)
             {
                 uint supportedLayersCount;
                 VulkanNative.vkEnumerateInstanceLayerProperties(&supportedLayersCount, null);
@@ -87,7 +87,7 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to initialize graphics api");
             _handle = instance;
 
-            if (Settings.EnableGraphicsApiDebugging)
+            if (Settings.IsGraphicsApiDebugingEnabled)
             {
                 if (CreateDebugReportCallback(
                     GetVulkanDebugFlags
@@ -122,7 +122,7 @@ namespace Tortuga.Graphics.API
 
         unsafe ~GraphicsService()
         {
-            if (Settings.EnableGraphicsApiDebugging)
+            if (Settings.IsGraphicsApiDebugingEnabled)
                 DestroyDebugReportCallback();
 
             if (_handle != VkInstance.Null)

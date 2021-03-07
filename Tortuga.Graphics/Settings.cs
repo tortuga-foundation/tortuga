@@ -40,13 +40,10 @@ namespace Tortuga.Graphics
         /// what type of debug information should the graphics api output
         /// </summary>
         public static GraphicsApiDebugLevelType GraphicsApiDebugLevel = (
-            GraphicsApiDebugLevelType.Error |
-            GraphicsApiDebugLevelType.Warning |
-            GraphicsApiDebugLevelType.Info |
-            GraphicsApiDebugLevelType.Debug
+            GraphicsApiDebugLevelType.None
         );
 
-        internal static bool EnableGraphicsApiDebugging
+        internal static bool IsGraphicsApiDebugingEnabled
         {
             get
             {

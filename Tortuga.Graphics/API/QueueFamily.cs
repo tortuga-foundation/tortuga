@@ -52,7 +52,7 @@ namespace Tortuga.Graphics.API
         public unsafe void GetQueuesFromDevice(Device device)
         {
             if (_queues != null)
-                throw new Exception("queuest are already setup");
+                throw new Exception("queues are already setup");
             _device = device;
             _queues = new List<VkQueue>();
             for (uint i = 0; i < _queueCount; i++)

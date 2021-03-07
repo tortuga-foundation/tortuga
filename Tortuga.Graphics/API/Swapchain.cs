@@ -141,6 +141,10 @@ namespace Tortuga.Graphics.API
 
             #endregion
 
+            var queueFamilyIndices = new NativeList<uint>();
+            foreach (var queueFamily in device.QueueFamilies)
+                queueFamilyIndices.Add(queueFamily.Index);
+
             var swapchainInfo = new VkSwapchainCreateInfoKHR
             {
                 sType = VkStructureType.SwapchainCreateInfoKHR,
@@ -154,11 +158,13 @@ namespace Tortuga.Graphics.API
                     VkImageUsageFlags.ColorAttachment |
                     VkImageUsageFlags.TransferDst
                 ),
-                imageSharingMode = VkSharingMode.Exclusive,
+                imageSharingMode = VkSharingMode.Concurrent,
                 preTransform = _surfaceCapabilities.currentTransform,
                 presentMode = _surfacePresentMode,
                 surface = window.Surface,
-                clipped = true
+                clipped = true,
+                queueFamilyIndexCount = queueFamilyIndices.Count,
+                pQueueFamilyIndices = (uint*)queueFamilyIndices.Data.ToPointer()
             };
 
             VkSwapchainKHR swapchain;

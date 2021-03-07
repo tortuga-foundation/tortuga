@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 using System;
+using Tortuga.Utils;
 using Vulkan;
 
 namespace Tortuga.Graphics.API
@@ -44,6 +45,10 @@ namespace Tortuga.Graphics.API
             _mipLevel = mipLevel;
             _layout = VkImageLayout.Undefined;
 
+            var queueFamilyIndices = new NativeList<uint>();
+            foreach (var queueFamily in device.QueueFamilies)
+                queueFamilyIndices.Add(queueFamily.Index);
+
             var imageInfo = new VkImageCreateInfo
             {
                 sType = VkStructureType.ImageCreateInfo,
@@ -60,8 +65,10 @@ namespace Tortuga.Graphics.API
                 samples = VkSampleCountFlags.Count1,
                 tiling = VkImageTiling.Optimal,
                 usage = usageFlags,
-                sharingMode = VkSharingMode.Exclusive,
-                initialLayout = VkImageLayout.Undefined
+                sharingMode = VkSharingMode.Concurrent,
+                initialLayout = VkImageLayout.Undefined,
+                queueFamilyIndexCount = queueFamilyIndices.Count,
+                pQueueFamilyIndices = (uint*)queueFamilyIndices.Data.ToPointer()
             };
 
             VkImage image;

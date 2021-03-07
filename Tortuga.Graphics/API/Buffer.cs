@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Tortuga.Utils;
 using Vulkan;
 
 namespace Tortuga.Graphics.API
@@ -46,13 +47,19 @@ namespace Tortuga.Graphics.API
             _bufferUsage = bufferUsageFlags;
             _memoryProperty = memoryProperty;
 
+            var queueFamilyIndices = new NativeList<uint>();
+            foreach (var queueFamily in device.QueueFamilies)
+                queueFamilyIndices.Add(queueFamily.Index);
+
             //buffer create info
             var bufferCreateInfo = new VkBufferCreateInfo
             {
                 sType = VkStructureType.BufferCreateInfo,
                 size = size,
                 usage = bufferUsageFlags,
-                sharingMode = VkSharingMode.Exclusive
+                sharingMode = VkSharingMode.Concurrent,
+                queueFamilyIndexCount = queueFamilyIndices.Count,
+                pQueueFamilyIndices = (uint*)queueFamilyIndices.Data.ToPointer()
             };
 
             //setup buffer handler

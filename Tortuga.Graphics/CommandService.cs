@@ -71,9 +71,16 @@ namespace Tortuga.Graphics
             ) == -1).ToList();
             while (freeQueues.Count == 0)
             {
-                freeQueues = queueFamily.Queues.Where(queue => (
-                    _queuesInUse.FindIndex(q => q.Handle == queue.Handle)
-                ) == -1).ToList();
+                freeQueues = queueFamily.Queues.Where(queue =>
+                {
+                    if (_queuesInUse == null || _queuesInUse.Count == 0)
+                        return false;
+
+                    if (_queuesInUse.FindIndex(q => q.Handle == queue.Handle) == -1)
+                        return false;
+
+                    return true;
+                }).ToList();
             }
             var queueFound = freeQueues[0];
             _queuesInUse.Add(queueFound);
@@ -145,14 +152,18 @@ namespace Tortuga.Graphics
                     semaphores.Add(s.Handle);
             }
 
+            var swapchains = new NativeList<VkSwapchainKHR>();
+            swapchains.Add(swapchain.Handle);
+
+            uint index = imageIndex;
             var presentInfo = new VkPresentInfoKHR
             {
                 sType = VkStructureType.PresentInfoKHR,
                 swapchainCount = 1,
-                pSwapchains = (VkSwapchainKHR*)swapchain.Handle.Handle,
-                pImageIndices = &imageIndex,
+                pSwapchains = (VkSwapchainKHR*)swapchains.Data.ToPointer(),
+                pImageIndices = &index,
                 waitSemaphoreCount = semaphores.Count,
-                pWaitSemaphores = (VkSemaphore*)semaphores.Data.ToPointer()
+                pWaitSemaphores = (VkSemaphore*)semaphores.Data.ToPointer(),
             };
 
             //get a free device queue
