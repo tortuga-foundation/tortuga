@@ -15,9 +15,10 @@ namespace Tortuga.Graphics
         private CommandBuffer _renderCommand;
         private CommandBuffer _deferredCommand;
         private CommandBuffer _presentCommand;
+        private Semaphore _transferCommandSemaphore;
         private Semaphore _renderCommandSemaphore;
         private Semaphore _deferredCommandSemaphore;
-        private Fence _waitFence;
+        private Semaphore _presentCommandSemaphore;
         private Dictionary<Window, Task<uint>> _swapchainIndexes;
 
         /// <summary>
@@ -42,9 +43,10 @@ namespace Tortuga.Graphics
             );
 
             //sync helpers
+            _transferCommandSemaphore = new Semaphore(_device);
             _renderCommandSemaphore = new Semaphore(_device);
             _deferredCommandSemaphore = new Semaphore(_device);
-            _waitFence = new API.Fence(_device);
+            _presentCommandSemaphore = new Semaphore(_device);
         }
 
         /// <summary>
@@ -74,6 +76,7 @@ namespace Tortuga.Graphics
         {
             var cameras = MyScene.GetComponents<Camera>();
             var meshRenderers = MyScene.GetComponents<MeshRenderer>();
+            var transferCommands = new List<CommandBuffer>();
 
             #region transfer command
 
@@ -81,8 +84,10 @@ namespace Tortuga.Graphics
                 camera.UpdateDescriptorSets();
 
             foreach (var meshRenderer in meshRenderers)
+            {
                 meshRenderer.UpdateDescriptorSet();
-
+                transferCommands.Add(meshRenderer.Material.TransferImages());
+            }
             #endregion
 
             #region render command
@@ -90,6 +95,17 @@ namespace Tortuga.Graphics
             _renderCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
             foreach (var camera in cameras)
             {
+                int attachmentCount = 0;
+                foreach (var attachment in camera.MrtFramebuffer.RenderPass.Attachments)
+                {
+                    if (attachment.Format != API.RenderPassAttachment.Default.Format) continue;
+
+                    _renderCommand.TransferImageLayout(
+                        camera.MrtFramebuffer.Images[attachmentCount],
+                        Vulkan.VkImageLayout.ColorAttachmentOptimal
+                    );
+                    attachmentCount++;
+                }
                 _renderCommand.BeginRenderPass(
                     camera.MrtFramebuffer,
                     Vulkan.VkSubpassContents.SecondaryCommandBuffers
@@ -122,6 +138,17 @@ namespace Tortuga.Graphics
             _deferredCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
             foreach (var camera in cameras)
             {
+                int attachmentCount = 0;
+                foreach (var attachment in camera.MrtFramebuffer.RenderPass.Attachments)
+                {
+                    if (attachment.Format != API.RenderPassAttachment.Default.Format) continue;
+
+                    _deferredCommand.TransferImageLayout(
+                        camera.MrtFramebuffer.Images[attachmentCount],
+                        Vulkan.VkImageLayout.ShaderReadOnlyOptimal
+                    );
+                    attachmentCount++;
+                }
                 _deferredCommand.BeginRenderPass(
                     camera.DefferedFramebuffer,
                     Vulkan.VkSubpassContents.Inline
@@ -157,6 +184,14 @@ namespace Tortuga.Graphics
             {
                 if (camera.RenderTarget == null) continue;
 
+                _presentCommand.TransferImageLayout(
+                    camera.DefferedFramebuffer.Images[0],
+                    Vulkan.VkImageLayout.TransferSrcOptimal
+                );
+                _presentCommand.TransferImageLayout(
+                    camera.RenderTarget.RenderedImage,
+                    Vulkan.VkImageLayout.TransferDstOptimal
+                );
                 // copy image from camera framebuffer to render target
                 _presentCommand.BlitImage(
                     camera.DefferedFramebuffer.Images[0],
@@ -177,6 +212,14 @@ namespace Tortuga.Graphics
                 swapchain.Value.Wait();
                 var swapchainIndex = (int)swapchain.Value.Result;
                 var window = swapchain.Key;
+                _presentCommand.TransferImageLayout(
+                    window.RenderedImage,
+                    Vulkan.VkImageLayout.TransferSrcOptimal
+                );
+                _presentCommand.TransferImageLayout(
+                    window.Swapchain.Images[swapchainIndex],
+                    Vulkan.VkImageLayout.TransferDstOptimal
+                );
                 _presentCommand.BlitImage(
                     window.RenderedImage,
                     0, 0,
@@ -198,8 +241,13 @@ namespace Tortuga.Graphics
             #region submit Commands
 
             _module.CommandBufferService.Submit(
+                transferCommands,
+                new List<Semaphore> { _transferCommandSemaphore }
+            );
+            _module.CommandBufferService.Submit(
                 _renderCommand,
-                new List<Semaphore> { _renderCommandSemaphore }
+                new List<Semaphore> { _renderCommandSemaphore },
+                new List<Semaphore> { _transferCommandSemaphore }
             );
             _module.CommandBufferService.Submit(
                 _deferredCommand,
@@ -208,11 +256,18 @@ namespace Tortuga.Graphics
             );
             _module.CommandBufferService.Submit(
                 _presentCommand,
-                new List<Semaphore> { _deferredCommandSemaphore },
-                new List<Semaphore> { },
-                _waitFence
+                new List<Semaphore> { _presentCommandSemaphore },
+                new List<Semaphore> { _deferredCommandSemaphore }
             );
-            _waitFence.Wait();
+            foreach (var swapchain in _swapchainIndexes)
+            {
+                var window = swapchain.Key;
+                _module.CommandBufferService.Present(
+                    window.Swapchain,
+                    swapchain.Value.Result,
+                    new List<Semaphore>{ _presentCommandSemaphore }
+                );
+            }
 
             #endregion
         });

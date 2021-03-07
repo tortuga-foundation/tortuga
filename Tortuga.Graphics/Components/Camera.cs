@@ -84,6 +84,17 @@ namespace Tortuga.Graphics
         private static Pipeline _defferedPipeline;
         private GraphicsModule _graphicsModule;
 
+        private struct LightShaderInfo
+        {
+            public Vector4 Position;
+            public Vector4 Forward;
+            public Vector4 Color;
+            public int Type;
+            public float Intensity;
+            public int Reserved1;
+            public int Reserved2;
+        }
+
         /// <summary>
         /// Runs when component is enabled in the scene
         /// </summary>
@@ -113,10 +124,19 @@ namespace Tortuga.Graphics
             );
             //make sure frame buffer is created with the correct MRT details
             _descriptorService.InsertKey(MRT_KEY, _graphicsModule.DescriptorLayouts[MRT_KEY]);
-            _descriptorService.BindImage(MRT_KEY, 0, _mrtFramebuffer.Images[0], _mrtFramebuffer.ImageViews[0]);
-            _descriptorService.BindImage(MRT_KEY, 1, _mrtFramebuffer.Images[1], _mrtFramebuffer.ImageViews[1]);
-            _descriptorService.BindImage(MRT_KEY, 2, _mrtFramebuffer.Images[2], _mrtFramebuffer.ImageViews[2]);
-            _descriptorService.BindImage(MRT_KEY, 3, _mrtFramebuffer.Images[3], _mrtFramebuffer.ImageViews[3]);
+            int mrtBindingCount = 0;
+            foreach (var attachment in _mrtFramebuffer.RenderPass.Attachments)
+            {
+                if (attachment.Format != API.RenderPassAttachment.Default.Format) continue;
+
+                _descriptorService.BindImage(
+                    MRT_KEY,
+                    mrtBindingCount,
+                    _mrtFramebuffer.Images[mrtBindingCount],
+                    _mrtFramebuffer.ImageViews[mrtBindingCount]
+                );
+                mrtBindingCount++;
+            }
 
             //camera position descriptor set
             var CAMERA_KEY = "_CAMERA";
@@ -126,7 +146,18 @@ namespace Tortuga.Graphics
             //light
             var LIGHT_KEY = "_LIGHT";
             _descriptorService.InsertKey(LIGHT_KEY, _graphicsModule.DescriptorLayouts[LIGHT_KEY]);
-            _descriptorService.BindBuffer(LIGHT_KEY, 0, new byte[] { 1 });
+
+            _descriptorService.BindBuffer(LIGHT_KEY, 0, new LightShaderInfo[]
+            {
+                new LightShaderInfo
+                {
+                    Position = Vector4.Zero,
+                    Forward = new Vector4(0, 0, 1, 0),
+                    Color = new Vector4(255, 255, 255, 255),
+                    Type = 0,
+                    Intensity = 1.0f
+                }
+            });
 
             //deffered pipeline
             var DEFFERED_KEY = "_DEFFERED";

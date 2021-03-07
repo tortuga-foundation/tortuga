@@ -4,6 +4,8 @@ using System.Linq;
 using Tortuga.Graphics.API;
 using Vulkan;
 using System.Threading.Tasks;
+using Tortuga.Utils;
+using System;
 
 namespace Tortuga.Graphics
 {
@@ -128,6 +130,42 @@ namespace Tortuga.Graphics
                     _queuesInUse.Remove(queue);
                 })
             );
+        }
+
+        public unsafe void Present(
+            Swapchain swapchain,
+            uint imageIndex = 0,
+            List<Semaphore> waitSemaphores = null
+        )
+        {
+            var semaphores = new NativeList<VkSemaphore>();
+            if (waitSemaphores != null)
+            {
+                foreach (var s in waitSemaphores)
+                    semaphores.Add(s.Handle);
+            }
+
+            var presentInfo = new VkPresentInfoKHR
+            {
+                sType = VkStructureType.PresentInfoKHR,
+                swapchainCount = 1,
+                pSwapchains = (VkSwapchainKHR*)swapchain.Handle.Handle,
+                pImageIndices = &imageIndex,
+                waitSemaphoreCount = semaphores.Count,
+                pWaitSemaphores = (VkSemaphore*)semaphores.Data.ToPointer()
+            };
+
+            //get a free device queue
+            var queue = WaitForFreeQueue(swapchain.PresentQueueFamily);
+
+            if (VulkanNative.vkQueuePresentKHR(
+                queue,
+                &presentInfo
+            ) != VkResult.Success)
+                throw new Exception("failed to present swapchain image");
+
+            //create a task to free queue when command is complete
+            _queuesInUse.Remove(queue);
         }
     }
 }

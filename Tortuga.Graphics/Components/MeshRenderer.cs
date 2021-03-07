@@ -89,6 +89,7 @@ namespace Tortuga.Graphics
         )
         {
             _materialData.ReCompilePipeline();
+
             //construct descriptor set list
             var materialDescriptorSets = new List<DescriptorSet>();
             materialDescriptorSets.Add(ProjectionDescriptorSet);

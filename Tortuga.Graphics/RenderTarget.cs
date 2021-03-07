@@ -37,8 +37,10 @@ namespace Tortuga.Graphics
             _renderedImage = new Image(
                 device,
                 width, height,
-                VkFormat.R32g32b32a32Sfloat,
-                VkImageUsageFlags.ColorAttachment
+                API.RenderPassAttachment.Default.Format,
+                VkImageUsageFlags.ColorAttachment |
+                VkImageUsageFlags.TransferDst |
+                VkImageUsageFlags.TransferSrc
             );
             _renderedImageView = new ImageView(
                 _renderedImage,

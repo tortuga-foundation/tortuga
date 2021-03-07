@@ -84,6 +84,31 @@ namespace Tortuga.Graphics
             _handle.Remove(key);
         }
 
+        private void TransferImageAndUpdateDescriptorSet(string key, int binding)
+        {
+            //update image layout for descriptor set
+            var transferImageFence = new API.Fence(_module.GraphicsService.PrimaryDevice);
+            var transferImageCommand = _module.CommandBufferService.GetNewCommand(
+                API.QueueFamilyType.Graphics,
+                CommandType.Primary
+            );
+            transferImageCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+            transferImageCommand.TransferImageLayout(_handle[key].Images[binding], VkImageLayout.ShaderReadOnlyOptimal);
+            transferImageCommand.End();
+            _module.CommandBufferService.Submit(
+                transferImageCommand,
+                null, null,
+                transferImageFence
+            );
+            transferImageFence.Wait();
+
+            _handle[key].Set.UpdateSampledImage(
+                _handle[key].ImageViews[binding],
+                _handle[key].Samplers[binding],
+                binding
+            );
+        }
+
         private void SetupBuffers(string key, int binding, uint size)
         {
             if (_handle.ContainsKey(key) == false)
@@ -111,6 +136,10 @@ namespace Tortuga.Graphics
             _handle[key].CommandBuffer[binding] = _module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Transfer,
                 CommandType.Primary
+            );
+            _handle[key].Set.UpdateBuffer(
+                _handle[key].Buffers[binding],
+                binding
             );
 
             //record command
@@ -163,6 +192,7 @@ namespace Tortuga.Graphics
                 API.QueueFamilyType.Transfer,
                 CommandType.Primary
             );
+            TransferImageAndUpdateDescriptorSet(key, binding);
 
             //record command
             _handle[key].CommandBuffer[binding].Begin(VkCommandBufferUsageFlags.SimultaneousUse);
@@ -264,6 +294,39 @@ namespace Tortuga.Graphics
             _handle[key].Samplers[binding] = new API.Sampler(
                 image.Device
             );
+
+            TransferImageAndUpdateDescriptorSet(key, binding);
+        }
+
+        /// <summary>
+        /// transfers images being used by the mesh to correct layout for rendering
+        /// NOTE: you need to submit the command yourself
+        /// </summary>
+        public API.CommandBuffer TransferImages(Vulkan.VkImageLayout layout = VkImageLayout.ShaderReadOnlyOptimal)
+        {
+            var transferCommand = _module.CommandBufferService.GetNewCommand(
+                API.QueueFamilyType.Graphics,
+                CommandType.Primary
+            );
+            transferCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
+            //transfer images to correct layouts
+            foreach (var o in _handle)
+            {
+                if (o.Value.Images == null) continue;
+
+                foreach (var image in o.Value.Images)
+                {
+                    if (image == null) continue;
+                    if (image.Layout == layout) continue;
+
+                    transferCommand.TransferImageLayout(
+                        image,
+                        layout
+                    );
+                }
+            }
+            transferCommand.End();
+            return transferCommand;
         }
     }
 }

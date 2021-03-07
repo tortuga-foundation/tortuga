@@ -609,6 +609,16 @@ namespace Tortuga.Graphics.API
                         VkAccessFlags.DepthStencilAttachmentRead | VkAccessFlags.DepthStencilAttachmentWrite,
                         VkPipelineStageFlags.EarlyFragmentTests
                     );
+                case VkImageLayout.General:
+                    return new KeyValuePair<VkAccessFlags, VkPipelineStageFlags>(
+                        VkAccessFlags.ColorAttachmentRead | VkAccessFlags.ColorAttachmentWrite,
+                        VkPipelineStageFlags.ColorAttachmentOutput
+                    );
+                case VkImageLayout.ShaderReadOnlyOptimal:
+                    return new KeyValuePair<VkAccessFlags, VkPipelineStageFlags>(
+                        VkAccessFlags.ShaderRead,
+                        VkPipelineStageFlags.AllGraphics
+                    );
             }
 
             return new KeyValuePair<VkAccessFlags, VkPipelineStageFlags>(

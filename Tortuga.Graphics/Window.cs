@@ -97,40 +97,6 @@ namespace Tortuga.Graphics
         });
 
         /// <summary>
-        /// presents a swapchain image to the screen
-        /// </summary>
-        /// <param name="imageIndex">the index of the swapchain</param>
-        /// <param name="waitSemaphore">wait for these semaphores before presenting</param>
-        public unsafe void Present(
-            uint imageIndex = 0,
-            List<Semaphore> waitSemaphore = null
-        )
-        {
-            var semaphores = new NativeList<VkSemaphore>();
-            if (waitSemaphore != null)
-            {
-                foreach (var s in waitSemaphore)
-                    semaphores.Add(s.Handle);
-            }
-
-            var presentInfo = new VkPresentInfoKHR
-            {
-                sType = VkStructureType.PresentInfoKHR,
-                swapchainCount = 1,
-                pSwapchains = (VkSwapchainKHR*)_swapchain.Handle.Handle,
-                pImageIndices = &imageIndex,
-                waitSemaphoreCount = semaphores.Count,
-                pWaitSemaphores = (VkSemaphore*)semaphores.Data.ToPointer(),
-            };
-
-            if (VulkanNative.vkQueuePresentKHR(
-                _swapchain.PresentQueueFamily.Queues[0],
-                &presentInfo
-            ) != VkResult.Success)
-                throw new Exception("failed to present swapchain image");
-        }
-
-        /// <summary>
         /// shows a message box
         /// </summary>
         /// <param name="flags">type of message box</param>

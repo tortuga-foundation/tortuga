@@ -28,7 +28,8 @@ namespace Tortuga.Graphics.API
             ImageUsageFlags = (
                 VkImageUsageFlags.TransferDst |
                 VkImageUsageFlags.TransferSrc |
-                VkImageUsageFlags.ColorAttachment
+                VkImageUsageFlags.ColorAttachment |
+                VkImageUsageFlags.Sampled
             ),
             ImageAspectFlags = VkImageAspectFlags.Color
         };
