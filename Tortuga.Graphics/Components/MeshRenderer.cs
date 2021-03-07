@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
+using Tortuga.Graphics.API;
 using Vulkan;
 
 namespace Tortuga.Graphics
@@ -11,11 +12,29 @@ namespace Tortuga.Graphics
     /// </summary>
     public class MeshRenderer : Core.BaseComponent
     {
+        /// <summary>
+        /// mesh to use for rendering
+        /// </summary>
+        public Mesh Mesh
+        {
+            get => _meshData;
+            set => _meshData = value;
+        }
+        /// <summary>
+        /// material to use for rendering
+        /// </summary>
+        public Material Material
+        {
+            get => _materialData;
+            set => _materialData = value;
+        }
+
         private const string MODEL_KEY = "_MODEL";
         private GraphicsModule _module;
         private API.CommandBuffer _renderCommand;
         private DescriptorService _descriptorService;
-        private Mesh MeshData;
+        private Mesh _meshData;
+        private Material _materialData;
 
         /// <summary>
         /// runs on start
@@ -39,7 +58,7 @@ namespace Tortuga.Graphics
         /// <summary>
         /// updates model matrix
         /// </summary>
-        public void UpdateModel()
+        public void UpdateDescriptorSet()
         {
             if (IsStatic)
                 return;
@@ -55,7 +74,6 @@ namespace Tortuga.Graphics
         /// Constructs the secondary render command (for object).
         /// Used by the primary draw command
         /// </summary>
-        /// <param name="renderPass">RenderPass to use for the secondary command buffer</param>
         /// <param name="framebuffer">Framebuffer to use for the secondary command buffer</param>
         /// <param name="subPass">SubPass to use for the secondary command buffer</param>
         /// <param name="ProjectionDescriptorSet">The projection matrix descriptor set</param>
@@ -63,7 +81,6 @@ namespace Tortuga.Graphics
         /// <param name="viewport">The viewport where the objct should be rendered</param>
         /// <returns>Secondary command buffer</returns>
         public API.CommandBuffer DrawCommand(
-            API.RenderPass renderPass,
             API.Framebuffer framebuffer,
             uint subPass,
             API.DescriptorSet ProjectionDescriptorSet,
@@ -71,7 +88,14 @@ namespace Tortuga.Graphics
             Vector4 viewport
         )
         {
-            //TODO: If material data is changes re-compile pipeline
+            _materialData.ReCompilePipeline();
+            //construct descriptor set list
+            var materialDescriptorSets = new List<DescriptorSet>();
+            materialDescriptorSets.Add(ProjectionDescriptorSet);
+            materialDescriptorSets.Add(ViewDescriptorSet);
+            materialDescriptorSets.Add(_descriptorService.Handle[MODEL_KEY].Set);
+            foreach (var o in _materialData.Handle.Values)
+                materialDescriptorSets.Add(o.Set);
 
             var viewportX = Convert.ToInt32(viewport.X);
             var viewportY = Convert.ToInt32(viewport.Y);
@@ -80,12 +104,17 @@ namespace Tortuga.Graphics
 
             _renderCommand.Begin(
                 VkCommandBufferUsageFlags.RenderPassContinue,
-                renderPass,
+                framebuffer.RenderPass,
                 framebuffer,
                 subPass
             );
-            //TODO: Bind Pipeline
-            //TODO: Bind DescriptorSets
+            _renderCommand.BindPipeline(
+                _materialData.Pipeline
+            );
+            _renderCommand.BindDescriptorSets(
+                _materialData.Pipeline,
+                materialDescriptorSets
+            );
             _renderCommand.SetScissor(
                 viewportX, viewportY,
                 viewportWidth, viewportHeight
@@ -94,11 +123,11 @@ namespace Tortuga.Graphics
                 viewportX, viewportY,
                 viewportWidth, viewportHeight
             );
-            _renderCommand.BindIndexBuffer(MeshData.IndexBuffer);
-            _renderCommand.BindVertexBuffers(new List<API.Buffer> { MeshData.VertexBuffer });
+            _renderCommand.BindIndexBuffer(_meshData.IndexBuffer);
+            _renderCommand.BindVertexBuffers(new List<API.Buffer> { _meshData.VertexBuffer });
             _renderCommand.DrawIndexed(
                 Convert.ToUInt32(
-                    MeshData.Indices.Length
+                    _meshData.Indices.Length
                 ),
                 1
             );

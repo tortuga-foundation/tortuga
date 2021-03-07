@@ -57,8 +57,7 @@ namespace Tortuga.Test
                 1920, 1080
             );
 
-            var mesh = new Graphics.Mesh();
-            await mesh.LoadObj("Assets/Models/Sphere.obj");
+
 
             //camera
             Graphics.Camera mainCamera;
@@ -70,25 +69,95 @@ namespace Tortuga.Test
                 scene.AddEntity(entity);
             }
 
-            // //camera
-            // Graphics.Camera mainCamera;
-            // {
-            //     var entity = new Core.Entity();
-            //     mainCamera = await entity.AddComponent<Graphics.Camera>();
-            //     mainCamera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.DeferredRendering;
-            //     scene.AddEntity(entity);
-            // }
+            //mesh
+            {
+                var entity = new Core.Entity();
+                var transform = entity.GetComponent<Core.Transform>();
+                transform.Position = new Vector3(0, 0, -5);
+                var renderer = await entity.AddComponent<Graphics.MeshRenderer>();
+                renderer.Mesh = new Graphics.Mesh();
+                await renderer.Mesh.LoadObj("Assets/Models/Sphere.obj");
+                renderer.Material = new Material();
+                renderer.Material.SetShaders(
+                    "Assets/Shaders/Default/MRT.vert",
+                    "Assets/Shaders/Default/MRT.frag"
+                );
+                renderer.Material.InsertKey(
+                    "TEXTURES",
+                    new Graphics.API.DescriptorLayout(
+                        Engine.Instance.GetModule<GraphicsModule>().GraphicsService.PrimaryDevice,
+                        new System.Collections.Generic.List<Graphics.API.DescriptorBindingInfo>
+                        {
+                            new Graphics.API.DescriptorBindingInfo
+                            {
+                                DescriptorCounts = 1,
+                                DescriptorType = Vulkan.VkDescriptorType.CombinedImageSampler,
+                                Index = 0,
+                                ShaderStageFlags = Vulkan.VkShaderStageFlags.Fragment
+                            },
+                            new Graphics.API.DescriptorBindingInfo
+                            {
+                                DescriptorCounts = 1,
+                                DescriptorType = Vulkan.VkDescriptorType.CombinedImageSampler,
+                                Index = 1,
+                                ShaderStageFlags = Vulkan.VkShaderStageFlags.Fragment
+                            },
+                            new Graphics.API.DescriptorBindingInfo
+                            {
+                                DescriptorCounts = 1,
+                                DescriptorType = Vulkan.VkDescriptorType.CombinedImageSampler,
+                                Index = 2,
+                                ShaderStageFlags = Vulkan.VkShaderStageFlags.Fragment
+                            }
+                        }
+                    )
+                );
+                renderer.Material.InsertKey(
+                    "MATERIAL",
+                    new Graphics.API.DescriptorLayout(
+                        Engine.Instance.GetModule<GraphicsModule>().GraphicsService.PrimaryDevice,
+                        new System.Collections.Generic.List<Graphics.API.DescriptorBindingInfo>
+                        {
+                            new Graphics.API.DescriptorBindingInfo
+                            {
+                                DescriptorCounts = 1,
+                                DescriptorType = Vulkan.VkDescriptorType.UniformBuffer,
+                                Index = 0,
+                                ShaderStageFlags = Vulkan.VkShaderStageFlags.All
+                            }
+                        }
+                    )
+                );
+                {
+                    var colorTexture = new Texture();
+                    await colorTexture.Load("Assets/Images/Bricks/Color.jpg");
+                    renderer.Material.BindImage("TEXTURES", 0, colorTexture);
+                }
+                {
+                    var normalTexture = new Texture();
+                    await normalTexture.Load("Assets/Images/Bricks/Normal.jpg");
+                    renderer.Material.BindImage("TEXTURES", 1, normalTexture);
+                }
+                {
+                    var metalTexture = new Texture();
+                    await metalTexture.Load("Assets/Images/Bricks/Metal.jpg");
+                    var roughness = new Texture();
+                    await roughness.Load("Assets/Images/Bricks/Roughness.jpg");
+                    var aoTexture = new Texture();
+                    await aoTexture.Load("Assets/Images/Bricks/AmbientOclusion.jpg");
 
-            // //mesh
-            // {
-            //     var entity = new Core.Entity();
-            //     var transform = entity.GetComponent<Core.Transform>();
-            //     transform.Position = new Vector3(0, 0, -5);
-            //     var renderer = await entity.AddComponent<Graphics.Renderer>();
-            //     renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
-            //     renderer.MaterialData = await Graphics.Material.Load("Assets/Materials/Bricks.json");
-            //     scene.AddEntity(entity);
-            // }
+                    metalTexture.CopyChannel(roughness, TextureChannelFlags.G);
+                    metalTexture.CopyChannel(roughness, TextureChannelFlags.B);
+                    renderer.Material.BindImage("TEXTURES", 2, metalTexture);
+                }
+                {
+                    renderer.Material.BindBuffer("MATERIAL", 0, new int[] { 1 });
+                }
+
+                // renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
+                // renderer.MaterialData = await Graphics.Material.Load("Assets/Materials/Bricks.json");
+                scene.AddEntity(entity);
+            }
 
             // //light
             // {
@@ -113,8 +182,8 @@ namespace Tortuga.Test
             // }
 
             //scene.AddSystem<Audio.AudioSystem>();
-            // scene.AddSystem<Graphics.RenderingSystem>();
-            // scene.AddSystem<RotatorSystem>();
+            scene.AddSystem<Graphics.RenderingSystem>();
+            //scene.AddSystem<RotatorSystem>();
 
             Engine.Instance.LoadScene(scene);
             await Engine.Instance.Run();

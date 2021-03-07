@@ -9,6 +9,11 @@ namespace Tortuga.Graphics.API
 {
     public class Swapchain
     {
+        public VkSwapchainKHR Handle => _handle;
+        public QueueFamily PresentQueueFamily => _presentQueueFamily;
+        public List<Image> Images => _images;
+        public VkExtent2D SurfaceExtent => _surfaceExtent;
+
         private Device _device;
         private NativeWindow _window;
         private QueueFamily _presentQueueFamily;

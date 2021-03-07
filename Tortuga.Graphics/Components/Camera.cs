@@ -232,5 +232,39 @@ namespace Tortuga.Graphics
                 return new Vector4(transform.Position, 1.0f);
             }
         }
+
+        /// <summary>
+        /// Descriptor set for projection
+        /// </summary>
+        public DescriptorSet ProjectionDescriptorSet
+        => _descriptorService.Handle["_PROJECTION"].Set;
+
+        /// <summary>
+        /// Descriptor set for view
+        /// </summary>
+        public DescriptorSet ViewDescriptorSet
+        => _descriptorService.Handle["_VIEW"].Set;
+
+        /// <summary>
+        /// Mrt descriptor sets
+        /// </summary>
+        public List<DescriptorSet> MrtDescriptorSets
+        => new List<DescriptorSet>
+        {
+            _descriptorService.Handle["_MRT"].Set,
+            _descriptorService.Handle["_CAMERA"].Set,
+            _descriptorService.Handle["_LIGHT"].Set
+        };
+
+        /// <summary>
+        /// updates camera's descriptor set objects
+        /// </summary>
+        public void UpdateDescriptorSets()
+        {
+            if (this.IsStatic)
+                return;
+
+            _descriptorService.BindBuffer("_VIEW", 0, ViewMatrix.GetBytes());
+        }
     }
 }

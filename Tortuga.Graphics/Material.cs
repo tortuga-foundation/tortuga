@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Tortuga.Graphics.API;
 using Vulkan;
 
@@ -69,7 +70,7 @@ namespace Tortuga.Graphics
             descriptorLayouts.Add(_module.DescriptorLayouts["_PROJECTION"]);
             descriptorLayouts.Add(_module.DescriptorLayouts["_VIEW"]);
             descriptorLayouts.Add(_module.DescriptorLayouts["_MODEL"]);
-            foreach (var o in _descriptor)
+            foreach (var o in _handle)
                 descriptorLayouts.Add(o.Value.Layout);
 
             _pipeline = new API.GraphicsPipeline(

@@ -1,4 +1,5 @@
 using System;
+using Tortuga.Graphics.API;
 using Vulkan;
 
 namespace Tortuga.Graphics
@@ -9,21 +10,40 @@ namespace Tortuga.Graphics
     public class RenderTarget
     {
         /// <summary>
+        /// Image
+        /// </summary>
+        public Image RenderedImage => _renderedImage;
+        /// <summary>
+        /// Image View
+        /// </summary>
+        public ImageView RenderedImageView => _renderedImageView;
+        /// <summary>
         /// Rendered image from the camera
         /// </summary>
-        VkImage RenderedImage { get; set; }
+        protected Image _renderedImage;
         /// <summary>
         /// Image view for the rendered image
         /// </summary>
-        VkImageView RenderedImageView { get; set; }
+        protected ImageView _renderedImageView;
 
         /// <summary>
         /// Constructor for RenderTarget
         /// </summary>
-        public RenderTarget()
+        public RenderTarget(
+            Device device,
+            uint width, uint height
+        )
         {
-            RenderedImage = VkImage.Null;
-            RenderedImageView = VkImageView.Null;
+            _renderedImage = new Image(
+                device,
+                width, height,
+                VkFormat.R32g32b32a32Sfloat,
+                VkImageUsageFlags.ColorAttachment
+            );
+            _renderedImageView = new ImageView(
+                _renderedImage,
+                VkImageAspectFlags.Color
+            );
         }
 
         /// <summary>

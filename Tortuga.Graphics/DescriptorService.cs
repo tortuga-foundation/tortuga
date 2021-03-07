@@ -28,7 +28,11 @@ namespace Tortuga.Graphics
         /// <summary>
         /// All of the descriptor set created by the service
         /// </summary>
-        protected Dictionary<string, DescriptorObject> _descriptor;
+        public Dictionary<string, DescriptorObject> Handle => _handle;
+        /// <summary>
+        /// All of the descriptor set created by the service
+        /// </summary>
+        protected Dictionary<string, DescriptorObject> _handle;
         private GraphicsModule _module;
 
         /// <summary>
@@ -36,7 +40,7 @@ namespace Tortuga.Graphics
         /// </summary>
         public DescriptorService()
         {
-            _descriptor = new Dictionary<string, DescriptorObject>();
+            _handle = new Dictionary<string, DescriptorObject>();
             _module = Engine.Instance.GetModule<GraphicsModule>();
         }
 
@@ -50,11 +54,11 @@ namespace Tortuga.Graphics
             API.DescriptorLayout layout
         )
         {
-            if (_descriptor.ContainsKey(key))
+            if (_handle.ContainsKey(key))
                 return;
 
             var pool = new API.DescriptorPool(layout, 1);
-            _descriptor[key] = new DescriptorObject
+            _handle[key] = new DescriptorObject
             {
                 Layout = layout,
                 Pool = pool,
@@ -74,69 +78,69 @@ namespace Tortuga.Graphics
         /// <param name="key">key of the descriptor set</param>
         public virtual void RemoveKey(string key)
         {
-            if (_descriptor.ContainsKey(key) == false)
+            if (_handle.ContainsKey(key) == false)
                 return;
 
-            _descriptor.Remove(key);
+            _handle.Remove(key);
         }
 
         private void SetupBuffers(string key, int binding, uint size)
         {
-            if (_descriptor.ContainsKey(key) == false)
+            if (_handle.ContainsKey(key) == false)
                 throw new InvalidOperationException("you must insert this key before using it");
 
-            if (_descriptor[key].StagingBuffers[binding] != null)
+            if (_handle[key].StagingBuffers[binding] != null)
             {
-                if (_descriptor[key].StagingBuffers[binding].Size <= size)
+                if (_handle[key].StagingBuffers[binding].Size <= size)
                     return;
             }
 
-            var device = _descriptor[key].Layout.Device;
-            _descriptor[key].StagingBuffers[binding] = new API.Buffer(
+            var device = _handle[key].Layout.Device;
+            _handle[key].StagingBuffers[binding] = new API.Buffer(
                 device,
                 size,
                 VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst,
                 VkMemoryPropertyFlags.HostCoherent | VkMemoryPropertyFlags.HostVisible
             );
-            _descriptor[key].Buffers[binding] = new API.Buffer(
+            _handle[key].Buffers[binding] = new API.Buffer(
                 device,
                 size,
                 VkBufferUsageFlags.TransferDst | VkBufferUsageFlags.UniformBuffer,
                 VkMemoryPropertyFlags.DeviceLocal
             );
-            _descriptor[key].CommandBuffer[binding] = _module.CommandBufferService.GetNewCommand(
+            _handle[key].CommandBuffer[binding] = _module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Transfer,
                 CommandType.Primary
             );
 
             //record command
-            _descriptor[key].CommandBuffer[binding].Begin(VkCommandBufferUsageFlags.SimultaneousUse);
-            _descriptor[key].CommandBuffer[binding].CopyBuffer(
-                _descriptor[key].StagingBuffers[binding],
-                _descriptor[key].Buffers[binding]
+            _handle[key].CommandBuffer[binding].Begin(VkCommandBufferUsageFlags.SimultaneousUse);
+            _handle[key].CommandBuffer[binding].CopyBuffer(
+                _handle[key].StagingBuffers[binding],
+                _handle[key].Buffers[binding]
             );
-            _descriptor[key].CommandBuffer[binding].End();
+            _handle[key].CommandBuffer[binding].End();
         }
 
         private void SetupImage(string key, int binding, uint size, uint width, uint height)
         {
-            if (_descriptor.ContainsKey(key) == false)
+            if (_handle.ContainsKey(key) == false)
                 throw new InvalidOperationException("you must insert this key before using it");
 
-            if (_descriptor[key].StagingBuffers[binding] != null)
+            if (_handle[key].StagingBuffers[binding] != null)
             {
-                if (_descriptor[key].StagingBuffers[binding].Size <= size)
+                if (_handle[key].StagingBuffers[binding].Size <= size)
                     return;
             }
 
-            var device = _descriptor[key].Layout.Device;
-            _descriptor[key].StagingBuffers[binding] = new API.Buffer(
+            var device = _handle[key].Layout.Device;
+            _handle[key].StagingBuffers[binding] = new API.Buffer(
                 device,
                 size,
                 VkBufferUsageFlags.TransferSrc | VkBufferUsageFlags.TransferDst,
                 VkMemoryPropertyFlags.HostCoherent | VkMemoryPropertyFlags.HostVisible
             );
-            _descriptor[key].Images[binding] = new API.Image(
+            _handle[key].Images[binding] = new API.Image(
                 device,
                 width,
                 height,
@@ -148,25 +152,29 @@ namespace Tortuga.Graphics
                     VkImageUsageFlags.Sampled
                 )
             );
-            _descriptor[key].ImageViews[binding] = new API.ImageView(
-                _descriptor[key].Images[binding],
+            _handle[key].ImageViews[binding] = new API.ImageView(
+                _handle[key].Images[binding],
                 VkImageAspectFlags.Color
             );
-            _descriptor[key].Samplers[binding] = new API.Sampler(
+            _handle[key].Samplers[binding] = new API.Sampler(
                 device
             );
-            _descriptor[key].CommandBuffer[binding] = _module.CommandBufferService.GetNewCommand(
+            _handle[key].CommandBuffer[binding] = _module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Transfer,
                 CommandType.Primary
             );
 
             //record command
-            _descriptor[key].CommandBuffer[binding].Begin(VkCommandBufferUsageFlags.SimultaneousUse);
-            _descriptor[key].CommandBuffer[binding].CopyBufferToImage(
-                _descriptor[key].StagingBuffers[binding],
-                _descriptor[key].Images[binding]
+            _handle[key].CommandBuffer[binding].Begin(VkCommandBufferUsageFlags.SimultaneousUse);
+            _handle[key].CommandBuffer[binding].TransferImageLayout(
+                _handle[key].Images[binding],
+                VkImageLayout.TransferDstOptimal
             );
-            _descriptor[key].CommandBuffer[binding].End();
+            _handle[key].CommandBuffer[binding].CopyBufferToImage(
+                _handle[key].StagingBuffers[binding],
+                _handle[key].Images[binding]
+            );
+            _handle[key].CommandBuffer[binding].End();
         }
 
         /// <summary>
@@ -181,9 +189,9 @@ namespace Tortuga.Graphics
                 Unsafe.SizeOf<T>() * data.Length
             );
             SetupBuffers(key, binding, size);
-            _descriptor[key].StagingBuffers[binding].SetData(data);
+            _handle[key].StagingBuffers[binding].SetData(data);
             _module.CommandBufferService.Submit(
-                _descriptor[key].CommandBuffer[binding]
+                _handle[key].CommandBuffer[binding]
             );
         }
 
@@ -209,11 +217,26 @@ namespace Tortuga.Graphics
             );
 
             SetupImage(key, binding, size, width, height);
-            _descriptor[key].StagingBuffers[binding].SetData(pixels);
+            _handle[key].StagingBuffers[binding].SetData(pixels);
             _module.CommandBufferService.Submit(
-                _descriptor[key].CommandBuffer[binding]
+                _handle[key].CommandBuffer[binding]
             );
         }
+
+        /// <summary>
+        /// Bind a texture to the material
+        /// </summary>
+        public virtual void BindImage(
+            string key,
+            int binding,
+            Texture texture
+        ) => BindImage(
+            key,
+            binding,
+            texture.Pixels,
+            (uint)texture.Width,
+            (uint)texture.Height
+        );
 
         /// <summary>
         /// bind an existing image to this descriptor set
@@ -233,12 +256,12 @@ namespace Tortuga.Graphics
                 return;
 
             //un-used variables
-            _descriptor[key].CommandBuffer[binding] = null;
-            _descriptor[key].StagingBuffers[binding] = null;
+            _handle[key].CommandBuffer[binding] = null;
+            _handle[key].StagingBuffers[binding] = null;
 
-            _descriptor[key].Images[binding] = image;
-            _descriptor[key].ImageViews[binding] = imageView;
-            _descriptor[key].Samplers[binding] = new API.Sampler(
+            _handle[key].Images[binding] = image;
+            _handle[key].ImageViews[binding] = imageView;
+            _handle[key].Samplers[binding] = new API.Sampler(
                 image.Device
             );
         }

@@ -62,7 +62,7 @@ namespace Tortuga.Graphics.API
                 );
                 foreach (var vl in supportedLayers)
                 {
-                    var validationName = Encoding.ASCII.GetString(vl.layerName, 256);
+                    var validationName = Encoding.ASCII.GetString(vl.layerName, 256).Replace("\0", "");
                     Console.WriteLine($"Supported Validation Layer: {validationName}");
                     validationLayer.Add(new IntPtr(vl.layerName));
                 }

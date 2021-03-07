@@ -11,7 +11,7 @@ namespace Tortuga.Graphics
     /// </summary>
     public class GraphicsModule : Core.BaseModule
     {
-        internal GraphicsService GraphicsService => _graphicsService;
+        public GraphicsService GraphicsService => _graphicsService;
         internal CommandBufferService CommandBufferService => _commandBufferService;
         internal Dictionary<string, DescriptorLayout> DescriptorLayouts => _descriptorLayouts;
         internal Dictionary<string, RenderPass> RenderPasses => _renderPasses;

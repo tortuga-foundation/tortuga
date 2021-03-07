@@ -78,6 +78,7 @@ namespace Tortuga.Graphics.API
 
             var beginInfo = new VkCommandBufferBeginInfo
             {
+                sType = VkStructureType.CommandBufferBeginInfo,
                 flags = commandBufferUsageFlag,
                 pInheritanceInfo = &inheritanceInfo
             };
@@ -198,7 +199,7 @@ namespace Tortuga.Graphics.API
         )
         {
             var sets = new NativeList<VkDescriptorSet>();
-            if (descriptorSets == null)
+            if (descriptorSets != null)
             {
                 foreach (var set in descriptorSets)
                     sets.Add(set.Handle);
