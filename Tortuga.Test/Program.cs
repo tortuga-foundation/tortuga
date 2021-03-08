@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using System.Numerics;
 using Tortuga.Graphics;
+using System.Collections.Generic;
 
 namespace Tortuga.Test
 {
@@ -78,10 +79,13 @@ namespace Tortuga.Test
                 renderer.Mesh = new Graphics.Mesh();
                 await renderer.Mesh.LoadObj("Assets/Models/Sphere.obj");
                 renderer.Material = new Material();
+                await renderer.Material.Load("Assets/Materials/Bricks.json");
                 renderer.Material.SetShaders(
-                    "Assets/Shaders/Default/MRT.vert",
-                    "Assets/Shaders/Default/MRT.frag"
-                );
+                    new List<string>
+                    {
+                        "Assets/Shaders/Default/MRT.vert",
+                        "Assets/Shaders/Default/MRT.frag"
+                    });
                 renderer.Material.InsertKey(
                     "TEXTURES",
                     new Graphics.API.DescriptorLayout(

@@ -60,8 +60,7 @@ namespace Tortuga.Graphics.API
             Device device,
             RenderPass renderPass,
             List<DescriptorLayout> layouts,
-            ShaderModule vertex,
-            ShaderModule fragment,
+            List<ShaderModule> shaders,
             PipelineInputBuilder pipelineInputBuilder,
             uint subPass = 0,
             VkPrimitiveTopology topology = VkPrimitiveTopology.TriangleList
@@ -214,20 +213,16 @@ namespace Tortuga.Graphics.API
             };
 
             var shaderInfo = new NativeList<VkPipelineShaderStageCreateInfo>();
-            shaderInfo.Add(new VkPipelineShaderStageCreateInfo
+            foreach (var shader in shaders)
             {
-                sType = VkStructureType.PipelineShaderStageCreateInfo,
-                module = vertex.Handle,
-                stage = VkShaderStageFlags.Vertex,
-                pName = GraphicsApiConstants.MAIN
-            });
-            shaderInfo.Add(new VkPipelineShaderStageCreateInfo
-            {
-                sType = VkStructureType.PipelineShaderStageCreateInfo,
-                module = fragment.Handle,
-                stage = VkShaderStageFlags.Fragment,
-                pName = GraphicsApiConstants.MAIN
-            });
+                shaderInfo.Add(new VkPipelineShaderStageCreateInfo
+                {
+                    sType = VkStructureType.PipelineShaderStageCreateInfo,
+                    module = shader.Handle,
+                    stage = (VkShaderStageFlags)shader.Type,
+                    pName = GraphicsApiConstants.MAIN
+                });
+            }
 
             var pipelineInfo = new VkGraphicsPipelineCreateInfo
             {

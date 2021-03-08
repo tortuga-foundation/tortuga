@@ -19,9 +19,9 @@ namespace Tortuga.Graphics
         /// This material's pipeline
         /// </summary>
         public API.Pipeline Pipeline => _pipeline;
+        internal Device Device => _module.GraphicsService.PrimaryDevice;
 
-        private API.ShaderModule _vertexShader;
-        private API.ShaderModule _fragmentShader;
+        private List<API.ShaderModule> _shaders;
         private API.Pipeline _pipeline;
         private bool _isDirty;
         private GraphicsModule _module;
@@ -38,18 +38,17 @@ namespace Tortuga.Graphics
         /// <summary>
         /// set's the shaders being used for the pipeline
         /// </summary>
-        /// <param name="vertex">vertex shader file path</param>
-        /// <param name="fragment">fragment shader file path</param>
-        public void SetShaders(string vertex, string fragment)
+        /// <param name="shadersPaths">path to shader files</param>
+        public void SetShaders(List<string> shadersPaths)
         {
-            _vertexShader = new API.ShaderModule(
-                _module.GraphicsService.PrimaryDevice,
-                vertex
-            );
-            _fragmentShader = new API.ShaderModule(
-                _module.GraphicsService.PrimaryDevice,
-                fragment
-            );
+            _shaders = new List<ShaderModule>();
+            foreach (var shaderPath in shadersPaths)
+            {
+                _shaders.Add(new ShaderModule(
+                    _module.GraphicsService.PrimaryDevice,
+                    shaderPath
+                ));
+            }
             _isDirty = true;
         }
 
@@ -61,10 +60,8 @@ namespace Tortuga.Graphics
             if (_isDirty == false)
                 return;
 
-            if (_vertexShader == null)
-                throw new InvalidOperationException("vertex shader is not set");
-            if (_fragmentShader == null)
-                throw new InvalidOperationException("fragment shader is not set");
+            if (_shaders == null || _shaders.Count == 0)
+                throw new Exception("No Shaders has been set for this material");
 
             var descriptorLayouts = new List<API.DescriptorLayout>();
             descriptorLayouts.Add(_module.DescriptorLayouts["_PROJECTION"]);
@@ -77,8 +74,7 @@ namespace Tortuga.Graphics
                 _module.GraphicsService.PrimaryDevice,
                 _module.RenderPasses["_MRT"],
                 descriptorLayouts,
-                _vertexShader,
-                _fragmentShader,
+                _shaders,
                 Vertex.PipelineInput
             );
         }

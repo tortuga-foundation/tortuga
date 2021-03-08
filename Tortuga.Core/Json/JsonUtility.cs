@@ -1,205 +1,133 @@
 using System;
+using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Text.Json;
 
-namespace Tortuga.Core.Json
+namespace Tortuga.Core
 {
-    /// <summary>
-    /// Used to import custom type of json
-    /// </summary>
-    public readonly struct Custom { }
-
-    /// <summary>
-    /// Responsible for converting json object to common data types
-    /// </summary>
     public static class JsonUtility
     {
         /// <summary>
-        /// Data converters for different types of objects
+        /// Takes a type object and json element. Then converts the json element to that type object
         /// </summary>
-        public static Dictionary<string, KeyValuePair<Type, Func<JsonElement, object>>> DataConverter
-        = new Dictionary<string, KeyValuePair<Type, Func<JsonElement, object>>>();
+        /// <param name="type"></param>
+        /// <param name="element"></param>
+        /// <returns></returns>
+        public delegate object DefaultPropertyParser(Type type, JsonElement element);
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <value></value>
+        public static Dictionary<string, DefaultPropertyParser> DefaultProperties = new Dictionary<string, DefaultPropertyParser>
+        {
+            {
+                typeof(Int32).Name,
+                (Type t, JsonElement el) =>
+                {
+                    var data = new List<Int32>();
+                    foreach (var d in el.EnumerateArray())
+                        data.Add(d.GetInt32());
+                    return data;
+                }
+            },
+            {
+                typeof(string).Name,
+                (Type t, JsonElement el) =>
+                {
+                    return el.GetString();
+                }
+            },
+            {
+                typeof(float).Name,
+                (Type t, JsonElement el) =>
+                {
+                    var data = new List<float>();
+                    foreach(var d in el.EnumerateArray())
+                        data.Add(d.GetSingle());
+                    return data;
+                }
+            },
+            {
+                typeof(object).Name,
+                (Type t, JsonElement el) =>
+                {
+                    var typeString = el.GetProperty("Type").GetString();
+                    var valueObject = el.GetProperty("Value");
+                    return DefaultProperties[typeString].Invoke(t, valueObject);
+                }
+            }
+        };
 
         /// <summary>
-        /// Convert a json element to common data type
+        /// 
         /// </summary>
-        /// <param name="element">json element</param>
-        /// <param name="dataType">returns what type of object this is</param>
-        /// <param name="data">returns the converted object</param>
-        /// <returns>true if manage to convert json to object</returns>
-        public static bool ToObject(
-            this JsonElement element,
-            out Type dataType,
-            out object data
-        )
+        /// <typeparam name="T"></typeparam>
+        public static T JsonToDataType<T>(string rawJson) where T : class
         {
-            dataType = null;
-            data = null;
-            try
-            {
-
-                //try to get json data type
-                if (element.TryGetProperty(
-                    "Type",
-                    out JsonElement typeJsonElement
-                ) == false)
-                    return false;
-
-                //check if data type is supported
-                var typeInString = typeJsonElement.GetString();
-                if (DataConverter.ContainsKey(typeInString) == false)
-                    throw new Exception("unknown data type was passed from json");
-
-                //get data type as 'Type' object
-                dataType = DataConverter[typeInString].Key;
-
-                //try to get content of the data
-                if (element.TryGetProperty(
-                    "Data",
-                    out JsonElement jsonData
-                ) == false)
-                    return false;
-
-                //use mapper function to map the data
-                data = DataConverter[typeInString].Value.Invoke(jsonData);
-                //return true
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
+            var element = JsonSerializer.Deserialize<JsonElement>(rawJson);
+            return JsonToDataType<T>(element);
         }
 
-        internal static void InitDataTypes()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public static T JsonToDataType<T>(JsonElement element) where T : class
         {
-            //int
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Int32",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(int),
-                    (JsonElement element) => element.GetInt32()
-                )
-            );
+            var type = typeof(T);
+            return JsonToDataType(element, type) as T;
+        }
 
-            //float
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Float",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(float),
-                    (JsonElement element) => element.GetSingle()
-                )
-            );
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="element"></param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static object JsonToDataType(JsonElement element, Type type)
+        {
+            //error handling
+            if (element.TryGetProperty("Type", out JsonElement jsonType) == false)
+                throw new JsonException("json does not contain type property");
+            if (element.TryGetProperty("Value", out JsonElement jsonValue) == false)
+                throw new JsonException("json does not contain value property");
+            if (type.Name != jsonType.GetString())
+                throw new InvalidOperationException("json type does not match the type provided");
 
-            //int array
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Int32Array",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(int[]),
-                    (JsonElement element) => (
-                        element.EnumerateArray()
-                        .Select(e => e.GetInt32())
-                        .ToArray()
-                    )
-                )
-            );
+            var data = Activator.CreateInstance(type);
+            var properties = type.GetProperties();
+            foreach (var property in properties)
+            {
+                if (jsonValue.TryGetProperty(property.Name, out JsonElement el) == false)
+                    continue;
 
-            //float array
-            Core.Json.JsonUtility.DataConverter.Add(
-                "FloatArray",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(float[]),
-                    (JsonElement element) => (
-                        element.EnumerateArray()
-                        .Select(e => e.GetSingle())
-                        .ToArray()
-                    )
-                )
-            );
-
-            //vector2
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Vector2",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(Vector2),
-                    (JsonElement element) => (
-                        new Vector2(
-                            element.GetProperty("X").GetSingle(),
-                            element.GetProperty("Y").GetSingle()
-                        )
-                    )
-                )
-            );
-
-            //vector3
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Vector3",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(Vector3),
-                    (JsonElement element) => (
-                        new Vector3(
-                            element.GetProperty("X").GetSingle(),
-                            element.GetProperty("Y").GetSingle(),
-                            element.GetProperty("Z").GetSingle()
-                        )
-                    )
-                )
-            );
-
-            //vector4
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Vector4",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(Vector4),
-                    (JsonElement element) => (
-                        new Vector4(
-                            element.GetProperty("X").GetSingle(),
-                            element.GetProperty("Y").GetSingle(),
-                            element.GetProperty("Z").GetSingle(),
-                            element.GetProperty("W").GetSingle()
-                        )
-                    )
-                )
-            );
-
-            //matrix4x4
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Matrix4x4",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(Matrix4x4),
-                    (JsonElement element) => (
-                        new Matrix4x4(
-                            element.GetProperty("M11").GetSingle(),
-                            element.GetProperty("M12").GetSingle(),
-                            element.GetProperty("M13").GetSingle(),
-                            element.GetProperty("M14").GetSingle(),
-                            element.GetProperty("M21").GetSingle(),
-                            element.GetProperty("M22").GetSingle(),
-                            element.GetProperty("M23").GetSingle(),
-                            element.GetProperty("M24").GetSingle(),
-                            element.GetProperty("M31").GetSingle(),
-                            element.GetProperty("M32").GetSingle(),
-                            element.GetProperty("M33").GetSingle(),
-                            element.GetProperty("M34").GetSingle(),
-                            element.GetProperty("M41").GetSingle(),
-                            element.GetProperty("M42").GetSingle(),
-                            element.GetProperty("M43").GetSingle(),
-                            element.GetProperty("M44").GetSingle()
-                        )
-                    )
-                )
-            );
-
-            //custom
-            Core.Json.JsonUtility.DataConverter.Add(
-                "Custom",
-                new KeyValuePair<System.Type, System.Func<JsonElement, object>>(
-                    typeof(Core.Json.Custom),
-                    (JsonElement element) => element
-                )
-            );
+                var propertyType = property.PropertyType;
+                if (DefaultProperties.ContainsKey(propertyType.Name))
+                {
+                    property.SetValue(
+                        data,
+                        DefaultProperties[propertyType.Name].Invoke(propertyType, el)
+                    );
+                }
+                else if (propertyType.IsGenericType)
+                {
+                    var arrayObject = (System.Collections.IList)Activator.CreateInstance(propertyType);
+                    var arrayElType = propertyType.GenericTypeArguments.First();
+                    foreach (var arrayEl in el.EnumerateArray())
+                        arrayObject.Add(JsonToDataType(arrayEl, arrayElType));
+                    property.SetValue(data, arrayObject);
+                }
+                else
+                {
+                    property.SetValue(
+                        data,
+                        JsonToDataType(el, property.GetType())
+                    );
+                }
+            }
+            return data;
         }
     }
 }

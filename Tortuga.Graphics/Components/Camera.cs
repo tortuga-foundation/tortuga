@@ -177,14 +177,17 @@ namespace Tortuga.Graphics
                         _graphicsModule.DescriptorLayouts[CAMERA_KEY],
                         _graphicsModule.DescriptorLayouts[LIGHT_KEY]
                     },
-                    new ShaderModule(
-                        _graphicsModule.GraphicsService.PrimaryDevice,
-                        "Assets/Shaders/Default/Deffered.vert"
-                    ),
-                    new ShaderModule(
-                        _graphicsModule.GraphicsService.PrimaryDevice,
-                        "Assets/Shaders/Default/Deffered.frag"
-                    ),
+                    new List<ShaderModule>()
+                    {
+                        new ShaderModule(
+                            _graphicsModule.GraphicsService.PrimaryDevice,
+                            "Assets/Shaders/Default/Deffered.vert"
+                        ),
+                        new ShaderModule(
+                            _graphicsModule.GraphicsService.PrimaryDevice,
+                            "Assets/Shaders/Default/Deffered.frag"
+                        )
+                    },
                     new PipelineInputBuilder()
                 );
             }

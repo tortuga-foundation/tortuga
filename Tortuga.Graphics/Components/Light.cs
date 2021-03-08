@@ -87,7 +87,7 @@ namespace Tortuga.Graphics
         /// Runs when component is enabled in the scene
         /// </summary>
         public override Task OnEnable()
-        => Task.Run(() => 
+        => Task.Run(() =>
         {
             var module = Engine.Instance.GetModule<GraphicsModule>();
             var LIGHT_KEY = "_LIGHT";
@@ -106,14 +106,17 @@ namespace Tortuga.Graphics
                         module.DescriptorLayouts["_VIEW"],
                         module.DescriptorLayouts["_MODEL"]
                     },
-                    new API.ShaderModule(
-                        module.GraphicsService.PrimaryDevice,
-                        "Assets/Shaders/Default/Light.vert"
-                    ),
-                    new API.ShaderModule(
-                        module.GraphicsService.PrimaryDevice,
-                        "Assets/Shaders/Default/Light.frag"
-                    ),
+                    new List<API.ShaderModule>()
+                    {
+                        new API.ShaderModule(
+                            module.GraphicsService.PrimaryDevice,
+                            "Assets/Shaders/Default/Light.vert"
+                        ),
+                        new API.ShaderModule(
+                            module.GraphicsService.PrimaryDevice,
+                            "Assets/Shaders/Default/Light.frag"
+                        )
+                    },
                     new PipelineInputBuilder()
                 );
             }

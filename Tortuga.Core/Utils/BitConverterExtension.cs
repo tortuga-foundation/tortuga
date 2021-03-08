@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text.Json;
-using Tortuga.Core.Json;
 
 namespace Tortuga
 {
@@ -12,44 +11,6 @@ namespace Tortuga
     /// </summary>
     public static class BitConverterExtension
     {
-        /// <summary>
-        /// convert's object to byte array
-        /// </summary>
-        public static byte[] GetBytes(this object obj, Type type)
-        {
-            if (type.Equals(typeof(int)))
-                return ((int)obj).GetBytes();
-            else if (type.Equals(typeof(int[])))
-                return ((int[])obj).GetBytes();
-            else if (type.Equals(typeof(float)))
-                return ((float)obj).GetBytes();
-            else if (type.Equals(typeof(float[])))
-                return ((float[])obj).GetBytes();
-            else if (type.Equals(typeof(Vector2)))
-                return ((Vector2)obj).GetBytes();
-            else if (type.Equals(typeof(Vector3)))
-                return ((Vector3)obj).GetBytes();
-            else if (type.Equals(typeof(Vector4)))
-                return ((Vector4)obj).GetBytes();
-            else if (type.Equals(typeof(Matrix4x4)))
-                return ((Matrix4x4)obj).GetBytes();
-            else if (type.Equals(typeof(Core.Json.Custom)))
-            {
-                var bytes = new List<byte>();
-                var jsonArray = ((JsonElement)obj).EnumerateArray().ToArray();
-                foreach (var json in jsonArray)
-                {
-                    if (json.ToObject(out System.Type objectType, out object data) == false)
-                        throw new Exception("invalid json was passed.");
-
-                    foreach (var b in data.GetBytes(objectType))
-                        bytes.Add(b);
-                }
-                return bytes.ToArray();
-            }
-            else
-                throw new NotImplementedException("unsupported json type was passed");
-        }
         /// <summary>
         /// convert's int to byte array
         /// </summary>

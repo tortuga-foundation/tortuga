@@ -23,9 +23,7 @@ namespace Tortuga.Graphics
         /// <summary>
         /// runs on engine close
         /// </summary>
-        public override void Destroy()
-        {
-        }
+        public override void Destroy(){}
 
         /// <summary>
         /// runs on engine start
@@ -38,6 +36,7 @@ namespace Tortuga.Graphics
             _renderPasses = new Dictionary<string, RenderPass>();
             InitDescriptorLayouts();
             InitRenderPasses();
+            MaterialLoader.Init();
         }
 
         private void InitRenderPasses()

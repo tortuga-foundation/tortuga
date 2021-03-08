@@ -7,26 +7,54 @@ using Vulkan;
 
 namespace Tortuga.Graphics.API
 {
+    public enum ShaderType
+    {
+        Vertex = 1,
+        TessellationControl = 2,
+        TessellationEvaluation = 4,
+        Geometry = 8,
+        Fragment = 16,
+        Compute = 32,
+    }
+
     public class ShaderModule
     {
         public Device Device => _device;
         public VkShaderModule Handle => _handle;
+        public ShaderType Type => _type;
 
         private Device _device;
         private VkShaderModule _handle;
+        private ShaderType _type;
 
         public ShaderModule(Device device, string filePath)
         {
+            ShaderType type;
+            if (filePath.EndsWith(".vert"))
+                type = ShaderType.Vertex;
+            else if (filePath.EndsWith(".frag"))
+                type = ShaderType.Fragment;
+            else if (filePath.EndsWith(".geom"))
+                type = ShaderType.Geometry;
+            else if (filePath.EndsWith(".tesc"))
+                type = ShaderType.TessellationControl;
+            else if (filePath.EndsWith(".tese"))
+                type = ShaderType.TessellationEvaluation;
+            else if (filePath.EndsWith(".comp"))
+                type = ShaderType.Compute;
+            else
+                throw new Exception("invalid file format");
+
             _device = device;
             var outFile = $"{Path.GetTempFileName()}.spv";
             CompileShader(filePath, outFile);
             var shaderCode = File.ReadAllBytes(outFile);
-            Init(shaderCode);
+            Init(type, shaderCode);
         }
-        public ShaderModule(Device device, byte[] compiledShaderCode)
+        public ShaderModule(Device device, ShaderType type, byte[] compiledShaderCode)
         {
             _device = device;
-            Init(compiledShaderCode);
+            Init(type, compiledShaderCode);
         }
 
         unsafe ~ShaderModule()
@@ -69,8 +97,9 @@ namespace Tortuga.Graphics.API
             process.WaitForExit();
         }
 
-        public unsafe void Init(byte[] compiledShaderCode)
+        public unsafe void Init(ShaderType type, byte[] compiledShaderCode)
         {
+            _type = type;
             fixed (byte* byteCodePtr = compiledShaderCode)
             {
                 var shaderInfo = new VkShaderModuleCreateInfo

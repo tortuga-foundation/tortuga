@@ -1,7 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Tortuga
@@ -50,9 +47,6 @@ namespace Tortuga
                 throw new System.Exception("there can only be one instance of engine");
 
             _modules = new List<Core.BaseModule>();
-
-            //setup data types required for json importing
-            Tortuga.Core.Json.JsonUtility.InitDataTypes();
         }
 
         /// <summary>
