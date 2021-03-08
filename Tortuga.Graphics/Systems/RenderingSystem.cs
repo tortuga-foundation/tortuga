@@ -81,8 +81,10 @@ namespace Tortuga.Graphics
             #region transfer command
 
             foreach (var camera in cameras)
+            {
                 camera.UpdateDescriptorSets();
-
+                camera.UpdateLights(MyScene.GetComponents<Light>());
+            }
             foreach (var meshRenderer in meshRenderers)
             {
                 meshRenderer.UpdateDescriptorSet();
@@ -265,7 +267,7 @@ namespace Tortuga.Graphics
                 _module.CommandBufferService.Present(
                     window.Swapchain,
                     swapchain.Value.Result,
-                    new List<Semaphore>{ _presentCommandSemaphore }
+                    new List<Semaphore> { _presentCommandSemaphore }
                 );
             }
 

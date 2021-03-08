@@ -58,8 +58,6 @@ namespace Tortuga.Test
                 1920, 1080
             );
 
-
-
             //camera
             Graphics.Camera mainCamera;
             {
@@ -73,22 +71,34 @@ namespace Tortuga.Test
             //mesh
             {
                 var entity = new Core.Entity();
+
+                //attach transform
                 var transform = entity.GetComponent<Core.Transform>();
                 transform.Position = new Vector3(0, 0, -5);
+
+                //attach mesh renderer
                 var renderer = await entity.AddComponent<Graphics.MeshRenderer>();
+
+                //setup mesh
                 renderer.Mesh = new Graphics.Mesh();
                 await renderer.Mesh.LoadObj("Assets/Models/Sphere.obj");
+
+                //setup material
                 renderer.Material = new Material();
                 await renderer.Material.Load("Assets/Materials/Bricks.json");
+
                 scene.AddEntity(entity);
             }
 
-            // //light
-            // {
-            //     var entity = new Core.Entity();
-            //     var light = await entity.AddComponent<Graphics.Light>();
-            //     scene.AddEntity(entity);
-            // }
+            //light
+            {
+                var entity = new Core.Entity();
+                
+                //attach light
+                var light = await entity.AddComponent<Graphics.Light>();
+
+                scene.AddEntity(entity);
+            }
 
             // //user interface
             // {

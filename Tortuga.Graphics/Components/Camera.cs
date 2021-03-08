@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Tortuga.Graphics.API;
 using Tortuga.Core;
 using static Tortuga.Graphics.Light;
+using System.Linq;
 
 namespace Tortuga.Graphics
 {
@@ -136,18 +137,6 @@ namespace Tortuga.Graphics
             //light
             var LIGHT_KEY = "_LIGHT";
             _descriptorService.InsertKey(LIGHT_KEY, _graphicsModule.DescriptorLayouts[LIGHT_KEY]);
-
-            _descriptorService.BindBuffer(LIGHT_KEY, 0, new LightShaderInfo[]
-            {
-                new LightShaderInfo
-                {
-                    Position = Vector4.Zero,
-                    Forward = new Vector4(0, 0, 1, 0),
-                    Color = new Vector4(255, 255, 255, 255),
-                    Type = 0,
-                    Intensity = 1.0f
-                }
-            });
 
             //deffered pipeline
             var DEFFERED_KEY = "_DEFFERED";
@@ -289,6 +278,19 @@ namespace Tortuga.Graphics
                 return;
 
             _descriptorService.BindBuffer("_VIEW", 0, ViewMatrix.GetBytes());
+        }
+
+        /// <summary>
+        /// updates the light information
+        /// </summary>
+        /// <param name="lights">list of lights to use for rendering</param>
+        public void UpdateLights(Light[] lights)
+        {
+            _descriptorService.BindBuffer(
+                "_LIGHT",
+                0,
+                lights.Select(light => light.ToShaderInfo).ToArray()
+            );
         }
     }
 }
