@@ -11,7 +11,7 @@ namespace Tortuga.Graphics
     /// </summary>
     public class GraphicsModule : Core.BaseModule
     {
-        public GraphicsService GraphicsService => _graphicsService;
+        internal GraphicsService GraphicsService => _graphicsService;
         internal CommandBufferService CommandBufferService => _commandBufferService;
         internal Dictionary<string, DescriptorLayout> DescriptorLayouts => _descriptorLayouts;
         internal Dictionary<string, RenderPass> RenderPasses => _renderPasses;
@@ -23,7 +23,7 @@ namespace Tortuga.Graphics
         /// <summary>
         /// runs on engine close
         /// </summary>
-        public override void Destroy(){}
+        public override void Destroy() { }
 
         /// <summary>
         /// runs on engine start

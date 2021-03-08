@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Threading.Tasks;
 using Tortuga.Graphics.API;
 using Tortuga.Core;
+using static Tortuga.Graphics.Light;
 
 namespace Tortuga.Graphics
 {
@@ -83,17 +84,6 @@ namespace Tortuga.Graphics
         private Framebuffer _defferedFramebuffer;
         private static Pipeline _defferedPipeline;
         private GraphicsModule _graphicsModule;
-
-        private struct LightShaderInfo
-        {
-            public Vector4 Position;
-            public Vector4 Forward;
-            public Vector4 Color;
-            public int Type;
-            public float Intensity;
-            public int Reserved1;
-            public int Reserved2;
-        }
 
         /// <summary>
         /// Runs when component is enabled in the scene

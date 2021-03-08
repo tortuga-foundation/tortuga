@@ -5,6 +5,8 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Tortuga.Graphics.API;
 using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Numerics;
 
 namespace Tortuga.Graphics
 {
@@ -49,6 +51,13 @@ namespace Tortuga.Graphics
                 public List<ShaderFile> Shaders { get; set; }
                 public List<DescriptorSet> DescriptorSets { get; set; }
             }
+        }
+
+        private class BindingHelper
+        {
+            public Vulkan.VkDescriptorType Type;
+            public Texture Image;
+            public byte[] Data;
         }
 
         private static bool TextureLoaderHelper(
@@ -136,8 +145,8 @@ namespace Tortuga.Graphics
             var jsonMaterial = JsonUtility.JsonToDataType<Loaders.Material>(content);
             var device = material.Device;
 
-            //initialize the material again
-            material = new Material();
+            //clear all bound images and buffers from material
+            material.Clear();
 
             // setup shaders
             var shaderPaths = new List<string>();
@@ -148,22 +157,60 @@ namespace Tortuga.Graphics
             //setup descriptor sets
             foreach (var descriptorSet in jsonMaterial.DescriptorSets)
             {
+                var bindingDataHelper = new List<BindingHelper>();
                 //construct descriptor layouts
                 var bindingInfo = new List<DescriptorBindingInfo>();
                 for (int i = 0; i < descriptorSet.Bindings.Count; i++)
                 {
                     var binding = descriptorSet.Bindings[i];
+                    var descriptorType = Enum.Parse<Vulkan.VkDescriptorType>(binding.DescriptorType);
+                    var shaderStage = Enum.Parse<Vulkan.VkShaderStageFlags>(binding.Stage);
                     bindingInfo.Add(new DescriptorBindingInfo
                     {
                         DescriptorCounts = 1,
-                        DescriptorType = Enum.Parse<Vulkan.VkDescriptorType>(
-                            binding.DescriptorType
-                        ),
+                        DescriptorType = descriptorType,
                         Index = Convert.ToUInt32(i),
-                        ShaderStageFlags = Enum.Parse<Vulkan.VkShaderStageFlags>(
-                            binding.Stage
-                        )
+                        ShaderStageFlags = shaderStage
                     });
+
+                    var bindingData = (KeyValuePair<string, object>)binding.Data;
+
+                    if (descriptorType == Vulkan.VkDescriptorType.UniformBuffer)
+                    {
+                        var byteArray = new byte[] { };
+                        if (bindingData.Key == "Int32")
+                            byteArray = (bindingData.Value as List<int>).ToArray().GetBytes();
+                        else if (bindingData.Key == "Float" || bindingData.Key == "float")
+                            byteArray = (bindingData.Value as List<float>).ToArray().GetBytes();
+                        else if (bindingData.Key == "Vector2")
+                            byteArray = ((Vector2)bindingData.Value).GetBytes();
+                        else if (bindingData.Key == "Vector3")
+                            byteArray = ((Vector3)bindingData.Value).GetBytes();
+                        else if (bindingData.Key == "Vector4")
+                            byteArray = ((Vector4)bindingData.Value).GetBytes();
+                        else if (bindingData.Key == "Matrix4x4")
+                            byteArray = ((Matrix4x4)bindingData.Value).GetBytes();
+                        else
+                            throw new NotSupportedException("This data type is not supported");
+
+                        bindingDataHelper.Add(new BindingHelper
+                        {
+                            Type = descriptorType,
+                            Image = null,
+                            Data = byteArray
+                        });
+                    }
+                    else if (descriptorType == Vulkan.VkDescriptorType.CombinedImageSampler)
+                    {
+                        bindingDataHelper.Add(new BindingHelper
+                        {
+                            Type = descriptorType,
+                            Image = bindingData.Value as Texture,
+                            Data = null
+                        });
+                    }
+                    else
+                        throw new NotSupportedException("Only `UniformBuffer` and `CombinedImageSampler` are currently supported");
                 }
                 material.InsertKey(
                     descriptorSet.Name,
@@ -174,7 +221,26 @@ namespace Tortuga.Graphics
                 );
 
                 //set descriptor values
-                
+                for (int i = 0; i < bindingDataHelper.Count; i++)
+                {
+                    var binding = bindingDataHelper[i];
+                    if (binding.Type == Vulkan.VkDescriptorType.UniformBuffer)
+                    {
+                        material.BindBuffer(
+                            descriptorSet.Name,
+                            i,
+                            binding.Data
+                        );
+                    }
+                    else if (binding.Type == Vulkan.VkDescriptorType.CombinedImageSampler)
+                    {
+                        material.BindImage(
+                            descriptorSet.Name,
+                            i,
+                            binding.Image
+                        );
+                    }
+                }
             }
         }
     }

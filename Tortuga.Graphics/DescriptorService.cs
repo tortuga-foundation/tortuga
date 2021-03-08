@@ -328,5 +328,13 @@ namespace Tortuga.Graphics
             transferCommand.End();
             return transferCommand;
         }
+
+        /// <summary>
+        /// Clear's all bound textures and buffers
+        /// </summary>
+        public void Clear()
+        {
+            _handle.Clear();
+        }
     }
 }

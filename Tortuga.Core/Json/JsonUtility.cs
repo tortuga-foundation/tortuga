@@ -7,6 +7,9 @@ using System.Linq;
 
 namespace Tortuga.Core
 {
+    /// <summary>
+    /// Responsible for parsing json into tortuga objects
+    /// </summary>
     public static class JsonUtility
     {
         /// <summary>
@@ -55,7 +58,10 @@ namespace Tortuga.Core
                 {
                     var typeString = el.GetProperty("Type").GetString();
                     var valueObject = el.GetProperty("Value");
-                    return DefaultProperties[typeString].Invoke(t, valueObject);
+                    return new KeyValuePair<string, object>(
+                        typeString,
+                        DefaultProperties[typeString].Invoke(t, valueObject)
+                    );
                 }
             }
         };

@@ -104,63 +104,91 @@ await Engine.Instance.Run();
 ```json
 {
   "Type": "Material",
-  "Shaders": {
-    "VertexPath": "Assets/Shaders/Default/MRT.vert",
-    "FragmentPath": "Assets/Shaders/Default/MRT.frag"
-  },
-  "DescriptorSets": [
-    {
-      "Type": "DescriptorSet",
-      "Name": "TEXTURES",
-      "Bindings": [
-        {
-          "Type": "Binding",
-          "Stage": "Fragment",
-          "DescriptorType": "CombinedImageSampler",
-          "Value": {
-            "Type": "Image",
-            "Data": "Assets/Images/Bricks/Color.jpg"
-          }
-        },
-        {
-          "Type": "Binding",
-          "Stage": "Fragment",
-          "DescriptorType": "CombinedImageSampler",
-          "Value": {
-            "Type": "Image",
-            "Data": "Assets/Images/Bricks/Normal.jpg"
-          }
-        },
-        {
-          "Type": "Binding",
-          "Stage": "Fragment",
-          "DescriptorType": "CombinedImageSampler",
-          "Value": {
-            "Type": "ImageChannels",
-            "Data": {
-              "R": "Assets/Images/Bricks/Metal.jpg",
-              "G": "Assets/Images/Bricks/Roughness.jpg",
-              "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+  "Value": {
+    "Shaders": [
+      {
+        "Type": "ShaderFile",
+        "Value": {
+          "ShaderType": "Vertex",
+          "Data": "Assets/Shaders/Default/MRT.vert"
+        }
+      },
+      {
+        "Type": "ShaderFile",
+        "Value": {
+          "ShaderType": "Fragment",
+          "Data": "Assets/Shaders/Default/MRT.frag"
+        }
+      }
+    ],
+    "DescriptorSets": [
+      {
+        "Type": "DescriptorSet",
+        "Value": {
+          "Name": "TEXTURES",
+          "Bindings": [
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "CombinedImageSampler",
+                "Stage": "Fragment",
+                "Data": {
+                  "Type": "TexturePath",
+                  "Value": "Assets/Images/Bricks/Color.jpg"
+                }
+              }
+            },
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "CombinedImageSampler",
+                "Stage": "Fragment",
+                "Data": {
+                  "Type": "TexturePath",
+                  "Value": "Assets/Images/Bricks/Normal.jpg"
+                }
+              }
+            },
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "CombinedImageSampler",
+                "Stage": "Fragment",
+                "Data": {
+                  "Type": "TexturePathChannels",
+                  "Value": {
+                    "R": "Assets/Images/Bricks/Metal.jpg",
+                    "G": "Assets/Images/Bricks/Roughness.jpg",
+                    "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+                  }
+                }
+              }
             }
-          }
+          ]
         }
-      ]
-    },
-    {
-      "Type": "DescriptorSet",
-      "Name": "MATERIAL",
-      "Bindings": [
-        {
-          "Type": "Binding",
-          "Stage": "Vertex",
-          "DescriptorType": "UniformBuffer",
-          "Value": {
-            "Type": "Int32",
-            "Data": 1
-          }
+      },
+      {
+        "Type": "DescriptorSet",
+        "Value": {
+          "Name": "MATERIAL",
+          "Bindings": [
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "UniformBuffer",
+                "Stage": "Vertex",
+                "Data": {
+                  "Type": "Int32",
+                  "Value": [
+                    1
+                  ]
+                }
+              }
+            }
+          ]
         }
-      ]
-    }
-  ]
+      }
+    ]
+  }
 }
 ```
