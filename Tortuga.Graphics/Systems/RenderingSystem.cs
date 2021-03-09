@@ -123,7 +123,8 @@ namespace Tortuga.Graphics
                         0,
                         camera.ProjectionDescriptorSet,
                         camera.ViewDescriptorSet,
-                        camera.Viewport
+                        camera.Viewport,
+                        camera.Resolution
                     ));
                 }
                 if (secondaryDrawCommands.Count > 0)
@@ -153,7 +154,7 @@ namespace Tortuga.Graphics
                 }
                 _deferredCommand.BeginRenderPass(
                     camera.DefferedFramebuffer,
-                    Vulkan.VkSubpassContents.Inline
+                    Vulkan.VkSubpassContents.SecondaryCommandBuffers
                 );
                 _deferredCommand.BindPipeline(Camera.DefferedPipeline);
                 _deferredCommand.BindDescriptorSets(

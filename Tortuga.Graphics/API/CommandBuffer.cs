@@ -131,19 +131,28 @@ namespace Tortuga.Graphics.API
             var clearValues = new NativeList<VkClearValue>();
             foreach (var attachment in renderPass.Attachments)
             {
-                clearValues.Add(new VkClearValue()
+                if (attachment.Format == RenderPassAttachment.Default.Format)
                 {
-                    color = new VkClearColorValue(
+                    clearValues.Add(new VkClearValue()
+                    {
+                        color = new VkClearColorValue(
                         0.0f,
                         0.0f,
                         0.0f,
                         0.0f
-                    ),
-                    depthStencil = new VkClearDepthStencilValue(
-                        1.0f,
-                        1
                     )
-                });
+                    });
+                }
+                else if (attachment.Format == RenderPassAttachment.DefaultDepth.Format)
+                {
+                    clearValues.Add(new VkClearValue()
+                    {
+                        depthStencil = new VkClearDepthStencilValue(
+                            1.0f,
+                            1
+                        )
+                    });
+                }
             }
 
             var renderPassBeginInfo = new VkRenderPassBeginInfo

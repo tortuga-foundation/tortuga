@@ -85,7 +85,8 @@ namespace Tortuga.Graphics
             uint subPass,
             API.DescriptorSet ProjectionDescriptorSet,
             API.DescriptorSet ViewDescriptorSet,
-            Vector4 viewport
+            Vector4 viewport,
+            Vector2 resolution
         )
         {
             _materialData.ReCompilePipeline();
@@ -98,10 +99,10 @@ namespace Tortuga.Graphics
             foreach (var o in _materialData.Handle.Values)
                 materialDescriptorSets.Add(o.Set);
 
-            var viewportX = Convert.ToInt32(viewport.X);
-            var viewportY = Convert.ToInt32(viewport.Y);
-            var viewportWidth = Convert.ToUInt32(viewport.Z);
-            var viewportHeight = Convert.ToUInt32(viewport.W);
+            var viewportX = Convert.ToInt32(viewport.X * resolution.X);
+            var viewportY = Convert.ToInt32(viewport.Y * resolution.Y);
+            var viewportWidth = Convert.ToUInt32(viewport.Z * resolution.X);
+            var viewportHeight = Convert.ToUInt32(viewport.W * resolution.Y);
 
             _renderCommand.Begin(
                 VkCommandBufferUsageFlags.RenderPassContinue,

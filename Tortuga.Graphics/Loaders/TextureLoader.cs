@@ -34,11 +34,8 @@ namespace Tortuga.Graphics
                     );
                 }
             }
-            texture = new Texture(
-                bitmap.Width,
-                bitmap.Height,
-                pixels
-            );
+            texture.Resize(bitmap.Width, bitmap.Height);
+            texture.SetPixels(pixels);
         });
     }
 }

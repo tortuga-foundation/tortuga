@@ -32,7 +32,7 @@ namespace Tortuga.Graphics
         /// creates a 1x1 black image
         /// </summary>
         public Texture() : this(Color.Black) { }
-        
+
         /// <summary>
         /// constructor for texture
         /// </summary>
@@ -68,6 +68,36 @@ namespace Tortuga.Graphics
         {
             _pixels = new GraphicsColor[] { color.ToGraphicsColor() };
         }
+
+        /// <summary>
+        /// resizes the image to a specific size
+        /// </summary>
+        /// <param name="width">new width of the image</param>
+        /// <param name="height">new height of the image</param>
+        public void Resize(int width, int height)
+        {
+            _width = width;
+            _height = height;
+            _pixels = new GraphicsColor[width * height];
+        }
+
+        /// <summary>
+        /// set pixels of the image
+        /// </summary>
+        /// <param name="pixels">pixel data for the iamge</param>
+        public void SetPixels(Color[] pixels)
+        {
+            if (pixels.Length != _pixels.Length)
+                throw new InvalidOperationException("pixels length does not match image size");
+
+            _pixels = pixels.Select(p => p.ToGraphicsColor()).ToArray();
+        }
+
+        /// <summary>
+        /// Get's the pixel data from the image
+        /// </summary>
+        public Color[] GetPixels()
+        => _pixels.Select(p => Color.FromArgb(p.A, p.R, p.G, p.B)).ToArray();
 
         /// <summary>
         /// copies a specific channel(s) from an image to this image
