@@ -79,6 +79,7 @@ namespace Tortuga.Graphics
         /// <param name="ProjectionDescriptorSet">The projection matrix descriptor set</param>
         /// <param name="ViewDescriptorSet">The view matrix descriptor set</param>
         /// <param name="viewport">The viewport where the objct should be rendered</param>
+        /// <param name="resolution">The resolution of the rendering viewport</param>
         /// <returns>Secondary command buffer</returns>
         public API.CommandBuffer DrawCommand(
             API.Framebuffer framebuffer,
