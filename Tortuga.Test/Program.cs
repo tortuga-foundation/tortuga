@@ -74,7 +74,7 @@ namespace Tortuga.Test
 
                 //attach transform
                 var transform = entity.GetComponent<Core.Transform>();
-                transform.Position = new Vector3(0, 0, -20);
+                transform.Position = new Vector3(0, 0, -5);
 
                 //attach mesh renderer
                 var renderer = await entity.AddComponent<Graphics.MeshRenderer>();

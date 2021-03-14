@@ -129,8 +129,8 @@ namespace Tortuga.Graphics.API
                 rasterizerDiscardEnable = VkBool32.False,
                 polygonMode = VkPolygonMode.Fill,
                 lineWidth = 1.0f,
-                cullMode = VkCullModeFlags.Back,
-                frontFace = VkFrontFace.CounterClockwise,
+                cullMode = VkCullModeFlags.None,
+                frontFace = VkFrontFace.Clockwise,
                 depthBiasEnable = VkBool32.False
             };
 
@@ -163,13 +163,7 @@ namespace Tortuga.Graphics.API
                         VkColorComponentFlags.B |
                         VkColorComponentFlags.A
                     ),
-                    blendEnable = VkBool32.True,
-                    srcColorBlendFactor = VkBlendFactor.SrcAlpha,
-                    dstColorBlendFactor = VkBlendFactor.OneMinusSrc1Alpha,
-                    colorBlendOp = VkBlendOp.Add,
-                    srcAlphaBlendFactor = VkBlendFactor.One,
-                    dstAlphaBlendFactor = VkBlendFactor.Zero,
-                    alphaBlendOp = VkBlendOp.Add
+                    blendEnable = VkBool32.False,
                 });
             }
 

@@ -26,7 +26,8 @@ namespace Tortuga.Graphics.API
 
         public unsafe Framebuffer(
             RenderPass renderPass,
-            uint width, uint height
+            uint width, uint height,
+            uint layers = 1
         )
         {
             _width = width;
@@ -63,7 +64,7 @@ namespace Tortuga.Graphics.API
                 pAttachments = (VkImageView*)attachments.Data.ToPointer(),
                 width = width,
                 height = height,
-                layers = 1
+                layers = layers
             };
 
             VkFramebuffer framebuffer;

@@ -69,16 +69,14 @@ namespace Tortuga.Graphics
                 _graphicsService.PrimaryDevice,
                 new List<RenderPassAttachment>
                 {
-                    RenderPassAttachment.Default,
-                    RenderPassAttachment.DefaultDepth
+                    RenderPassAttachment.Default
                 },
                 new List<RenderPassSubPass>
                 {
                     new RenderPassSubPass
                     {
                         BindPoint = VkPipelineBindPoint.Graphics,
-                        ColorAttachments = new List<uint> { 0 },
-                        DepthAttachments = 1
+                        ColorAttachments = new List<uint> { 0 }
                     }
                 }
             );
@@ -87,16 +85,14 @@ namespace Tortuga.Graphics
                 _graphicsService.PrimaryDevice,
                 new List<RenderPassAttachment>
                 {
-                    RenderPassAttachment.Default,
-                    RenderPassAttachment.DefaultDepth
+                    RenderPassAttachment.Default
                 },
                 new List<RenderPassSubPass>
                 {
                     new RenderPassSubPass
                     {
                         BindPoint = VkPipelineBindPoint.Graphics,
-                        ColorAttachments = new List<uint>{ 0 },
-                        DepthAttachments = 1
+                        ColorAttachments = new List<uint>{ 0 }
                     }
                 }
             );

@@ -20,7 +20,7 @@ namespace Tortuga.Graphics.API
         public static RenderPassAttachment Default
         => new RenderPassAttachment
         {
-            Format = VkFormat.R32g32b32a32Sfloat,
+            Format = VkFormat.R8g8b8a8Unorm,
             Clear = true,
             Store = true,
             InitialLayout = VkImageLayout.Undefined,
@@ -131,7 +131,7 @@ namespace Tortuga.Graphics.API
                     });
                 }
                 colorAttachmentRefs.Add(colorAttachmentRef);
-                VkAttachmentReference* depthAttachmentPointer = null;
+                VkAttachmentReference? depthAttachmentPointer = null;
                 if (subpass.DepthAttachments != null)
                 {
                     var depthAttachmentRef = new VkAttachmentReference
@@ -140,14 +140,18 @@ namespace Tortuga.Graphics.API
                         layout = attachments[Convert.ToInt32(subpass.DepthAttachments)].FinalLayout
                     };
                     depthAttachmentRefs.Add(depthAttachmentRef);
-                    depthAttachmentPointer = &depthAttachmentRef;
+                    depthAttachmentPointer = depthAttachmentRef;
                 }
                 subPassInfo.Add(new VkSubpassDescription
                 {
                     pipelineBindPoint = subpass.BindPoint,
                     colorAttachmentCount = colorAttachmentRef.Count,
                     pColorAttachments = (VkAttachmentReference*)colorAttachmentRef.Data.ToPointer(),
-                    pDepthStencilAttachment = depthAttachmentPointer
+                    pDepthStencilAttachment = (
+                        depthAttachmentPointer == null ?
+                        null :
+                        (VkAttachmentReference*)&depthAttachmentPointer
+                    )
                 });
             }
 

@@ -139,7 +139,7 @@ namespace Tortuga.Graphics.API
                         0.0f,
                         0.0f,
                         0.0f,
-                        0.0f
+                        1.0f
                     )
                     });
                 }
@@ -182,6 +182,9 @@ namespace Tortuga.Graphics.API
                 &renderPassBeginInfo,
                 subpassContents
             );
+            // update the layout for images
+            for (int i = 0; i < framebuffer.Images.Count; i++)
+                framebuffer.Images[i].Layout = framebuffer.RenderPass.Attachments[i].FinalLayout;
         }
 
         public unsafe void EndRenderPass()

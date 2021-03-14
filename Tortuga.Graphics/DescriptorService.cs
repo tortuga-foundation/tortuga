@@ -151,7 +151,12 @@ namespace Tortuga.Graphics
             _handle[key].CommandBuffer[binding].End();
         }
 
-        private void SetupImage(string key, int binding, uint size, uint width, uint height)
+        private void SetupImage(
+            string key,
+            int binding,
+            uint size,
+            uint width, uint height,
+            VkFormat format)
         {
             if (_handle.ContainsKey(key) == false)
                 throw new InvalidOperationException("you must insert this key before using it");
@@ -173,7 +178,7 @@ namespace Tortuga.Graphics
                 device,
                 width,
                 height,
-                VkFormat.R8g8b8a8Unorm,
+                format,
                 (
                     VkImageUsageFlags.TransferDst |
                     VkImageUsageFlags.TransferSrc |
@@ -234,6 +239,7 @@ namespace Tortuga.Graphics
             T[] pixels,
             uint width,
             uint height,
+            VkFormat format = VkFormat.R8g8b8a8Unorm,
             int elementPerPixel = 1
         ) where T : struct
         {
@@ -246,7 +252,7 @@ namespace Tortuga.Graphics
                 Unsafe.SizeOf<T>() * pixels.Length
             );
 
-            SetupImage(key, binding, size, width, height);
+            SetupImage(key, binding, size, width, height, format);
             _handle[key].StagingBuffers[binding].SetData(pixels);
             _module.CommandBufferService.Submit(
                 _handle[key].CommandBuffer[binding]
@@ -259,13 +265,15 @@ namespace Tortuga.Graphics
         public virtual void BindImage(
             string key,
             int binding,
-            Texture texture
+            Texture texture,
+            VkFormat format = VkFormat.R8g8b8a8Unorm
         ) => BindImage(
             key,
             binding,
             texture.Pixels,
             (uint)texture.Width,
-            (uint)texture.Height
+            (uint)texture.Height,
+            format
         );
 
         /// <summary>
