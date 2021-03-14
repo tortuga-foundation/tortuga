@@ -162,8 +162,9 @@ namespace Tortuga.Graphics.API
 
         public bool HasStencilComponent => HasStencil(_format);
         public static bool HasStencil(VkFormat format) => (
-            format == VkFormat.D32SfloatS8Uint ||
-            format == VkFormat.D24UnormS8Uint
+            GraphicsApiConstants.DEPTH_FORMAT_CANDIDATES.IndexOf(
+                format
+            ) != -1
         );
     }
 }

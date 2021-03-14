@@ -139,7 +139,7 @@ namespace Tortuga.Graphics.API
                         0.0f,
                         0.0f,
                         0.0f,
-                        1.0f
+                        0.0f
                     )
                     });
                 }
@@ -149,7 +149,7 @@ namespace Tortuga.Graphics.API
                     {
                         depthStencil = new VkClearDepthStencilValue(
                             1.0f,
-                            1
+                            0
                         )
                     });
                 }

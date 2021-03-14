@@ -129,7 +129,7 @@ namespace Tortuga.Graphics.API
                 rasterizerDiscardEnable = VkBool32.False,
                 polygonMode = VkPolygonMode.Fill,
                 lineWidth = 1.0f,
-                cullMode = VkCullModeFlags.None,
+                cullMode = VkCullModeFlags.Back,
                 frontFace = VkFrontFace.Clockwise,
                 depthBiasEnable = VkBool32.False
             };
@@ -172,13 +172,9 @@ namespace Tortuga.Graphics.API
                 sType = VkStructureType.PipelineDepthStencilStateCreateInfo,
                 depthTestEnable = VkBool32.True,
                 depthWriteEnable = VkBool32.True,
-                depthCompareOp = VkCompareOp.LessOrEqual,
+                depthCompareOp = VkCompareOp.Less,
                 depthBoundsTestEnable = VkBool32.False,
-                minDepthBounds = 0.0f,
-                maxDepthBounds = 1.0f,
                 stencilTestEnable = VkBool32.False,
-                front = new VkStencilOpState(),
-                back = new VkStencilOpState()
             };
 
             var colorBlending = new VkPipelineColorBlendStateCreateInfo
