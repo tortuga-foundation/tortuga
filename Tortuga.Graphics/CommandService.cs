@@ -66,19 +66,22 @@ namespace Tortuga.Graphics
 
         private VkQueue WaitForFreeQueue(QueueFamily queueFamily)
         {
-            var freeQueues = queueFamily.Queues.Where(queue => (
-                _queuesInUse.FindIndex(q => q.Handle == queue.Handle)
-            ) == -1).ToList();
+            var freeQueues = new List<VkQueue>();
             while (freeQueues.Count == 0)
             {
                 Task.Delay(1).Wait();
                 freeQueues = queueFamily.Queues.Where(queue =>
                 {
-                    if (_queuesInUse == null || _queuesInUse.Count == 0)
-                        return true;
+                    try
+                    {
+                        if (_queuesInUse == null || _queuesInUse.Count == 0)
+                            return true;
 
-                    if (_queuesInUse.FindIndex(q => q.Handle == queue.Handle) == -1)
-                        return true;
+                        if (_queuesInUse.FindIndex(q => q.Handle == queue.Handle) == -1)
+                            return true;
+                    }
+                    catch (Exception) { }
+
                     return false;
                 }).ToList();
             }

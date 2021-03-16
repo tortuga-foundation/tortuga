@@ -20,7 +20,7 @@ namespace Tortuga.Graphics.API
         public static RenderPassAttachment Default
         => new RenderPassAttachment()
         {
-            Format = VkFormat.R8g8b8a8Unorm,
+            Format = VkFormat.R32g32b32a32Sfloat,
             Clear = true,
             Store = true,
             InitialLayout = VkImageLayout.Undefined,
