@@ -7,36 +7,36 @@ namespace Tortuga.Test
 {
     class Program
     {
-        // public class RotatorSystem : Core.BaseSystem
-        // {
-        //     private float _rotation = 0.0f;
-        //     private Vector3 _position = new Vector3(0, 0, -5);
-        //     public override Task Update()
-        //     {
-        //         return Task.Run(() =>
-        //         {
-        //             var meshes = MyScene.GetComponents<Graphics.Renderer>();
-        //             foreach (var mesh in meshes)
-        //             {
-        //                 var transform = mesh.MyEntity.GetComponent<Core.Transform>();
-        //                 if (transform != null)
-        //                 {
-        //                     transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
-        //                     _rotation += Time.DeltaTime * 1.0f;
-        //                     transform.Position = _position;
-        //                 }
-        //             }
-        //             if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
-        //                 _position.Z += Time.DeltaTime * 2.0f;
-        //             if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
-        //                 _position.Z -= Time.DeltaTime * 2.0f;
-        //             if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
-        //                 _position.X += Time.DeltaTime * 2.0f;
-        //             if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
-        //                 _position.X -= Time.DeltaTime * 2.0f;
-        //         });
-        //     }
-        // }
+        public class RotatorSystem : Core.BaseSystem
+        {
+            private float _rotation = 0.0f;
+            private Vector3 _position = new Vector3(0, 0, -5);
+            public override Task Update()
+            {
+                return Task.Run(() =>
+                {
+                    var meshes = MyScene.GetComponents<Graphics.MeshRenderer>();
+                    foreach (var mesh in meshes)
+                    {
+                        var transform = mesh.MyEntity.GetComponent<Core.Transform>();
+                        if (transform != null)
+                        {
+                            transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
+                            _rotation += Time.DeltaTime * 1.0f;
+                            transform.Position = _position;
+                        }
+                    }
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
+                        _position.Z += Time.DeltaTime * 2.0f;
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
+                        _position.Z -= Time.DeltaTime * 2.0f;
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
+                        _position.X += Time.DeltaTime * 2.0f;
+                    if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
+                        _position.X -= Time.DeltaTime * 2.0f;
+                });
+            }
+        }
 
         static async Task Main(string[] args)
         {
@@ -93,7 +93,7 @@ namespace Tortuga.Test
             //light
             {
                 var entity = new Core.Entity();
-                
+
                 //attach light
                 var light = await entity.AddComponent<Graphics.Light>();
 
@@ -117,7 +117,7 @@ namespace Tortuga.Test
 
             //scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<Graphics.RenderingSystem>();
-            //scene.AddSystem<RotatorSystem>();
+            scene.AddSystem<RotatorSystem>();
 
             Engine.Instance.LoadScene(scene);
             await Engine.Instance.Run();
