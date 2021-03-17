@@ -114,9 +114,15 @@ void main() {
 
     vec3 ambient = vec3(0.03) * albedo.rgb * ambientOcclusion;
     vec3 color = ambient + Lo;
+    
+    float exposure = 1.;
+    float gamma = 2.2;
 
-    //color = color / (color + vec3(1.));
-    //color = pow(color, vec3(1. / 2.2));
+    // HDR tone mapping
+    color = vec3(1.) - exp(-color * exposure);
+
+    // gamma correction
+    color = pow(color, vec3(1. / gamma));
 
     outColor = SRGBtoLINEAR(vec4(color, albedo.a));
 }
@@ -173,7 +179,7 @@ vec3 fresnelSchlick(
 )
 {
     return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
-}  
+}
 
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
@@ -181,7 +187,7 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 	vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
 	#else //SRGB_FAST_APPROXIMATION
 	vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
-	vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
+	vec3 linOut = mix(srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
 	#endif //SRGB_FAST_APPROXIMATION
 	return vec4(linOut,srgbIn.w);
 }
