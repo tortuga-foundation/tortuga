@@ -191,7 +191,7 @@ namespace Tortuga.Graphics
                 VkImageAspectFlags.Color
             );
             _handle[key].Samplers[binding] = new API.Sampler(
-                device
+                _handle[key].Images[binding]
             );
             _handle[key].CommandBuffer[binding] = _module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Transfer,
@@ -301,7 +301,7 @@ namespace Tortuga.Graphics
             _handle[key].Images[binding] = image;
             _handle[key].ImageViews[binding] = imageView;
             _handle[key].Samplers[binding] = new API.Sampler(
-                image.Device
+                _handle[key].Images[binding]
             );
 
             TransferImageAndUpdateDescriptorSet(key, binding);

@@ -12,9 +12,9 @@ namespace Tortuga.Graphics.API
         private Device _device;
         private VkSampler _handle;
 
-        public unsafe Sampler(Device device)
+        public unsafe Sampler(Image image)
         {
-            _device = device;
+            _device = image.Device;
             var createInfo = new VkSamplerCreateInfo
             {
                 sType = VkStructureType.SamplerCreateInfo,
@@ -32,12 +32,12 @@ namespace Tortuga.Graphics.API
                 mipmapMode = VkSamplerMipmapMode.Linear,
                 mipLodBias = 0.0f,
                 minLod = 0.0f,
-                maxLod = 0.0f
+                maxLod = image.MipLevel
             };
 
             VkSampler sampler;
             if (VulkanNative.vkCreateSampler(
-                device.Handle,
+                _device.Handle,
                 &createInfo,
                 null,
                 &sampler
