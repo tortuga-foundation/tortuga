@@ -75,140 +75,133 @@ namespace Tortuga.Graphics
         => Task.Run(() =>
         {
             var cameras = MyScene.GetComponents<Camera>();
+            var lights = MyScene.GetComponents<Light>();
             var meshRenderers = MyScene.GetComponents<MeshRenderer>();
             var transferCommands = new List<CommandBuffer>();
 
-            #region transfer command
-
-            foreach (var camera in cameras)
-            {
-                camera.UpdateDescriptorSets();
-                camera.UpdateLights(MyScene.GetComponents<Light>());
-            }
-            foreach (var meshRenderer in meshRenderers)
-            {
-                meshRenderer.UpdateDescriptorSet();
-                transferCommands.Add(meshRenderer.Material.TransferImages());
-            }
-            #endregion
-
-            #region render command
+            #region record command buffers
 
             _renderCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
+            _deferredCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
+            _presentCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
             foreach (var camera in cameras)
             {
-                int attachmentCount = 0;
-                foreach (var attachment in camera.MrtFramebuffer.RenderPass.Attachments)
+                // render command
                 {
-                    if (attachment.Format != API.RenderPassAttachment.Default.Format) continue;
+                    // update camera descriptor sets
+                    camera.UpdateDescriptorSets();
+                    // update lighting information
+                    camera.UpdateLights(lights);
 
-                    _renderCommand.TransferImageLayout(
-                        camera.MrtFramebuffer.Images[attachmentCount],
-                        Vulkan.VkImageLayout.ColorAttachmentOptimal
-                    );
-                    attachmentCount++;
-                }
-                _renderCommand.BeginRenderPass(
-                    camera.MrtFramebuffer,
-                    Vulkan.VkSubpassContents.SecondaryCommandBuffers
-                );
+                    int attachmentCount = 0;
+                    foreach (var attachment in camera.MrtFramebuffer.RenderPass.Attachments)
+                    {
+                        if (attachment.Format != API.RenderPassAttachment.Default.Format) continue;
 
-
-                var secondaryDrawCommands = new List<API.CommandBuffer>();
-                foreach (var meshRenderer in meshRenderers)
-                {
-                    meshRenderer.UpdateDescriptorSet();
-                    secondaryDrawCommands.Add(meshRenderer.DrawCommand(
+                        // transfer image layout to color attachment optimial
+                        // used in render command
+                        _renderCommand.TransferImageLayout(
+                            camera.MrtFramebuffer.Images[attachmentCount],
+                            Vulkan.VkImageLayout.ColorAttachmentOptimal
+                        );
+                        // transfer image layout to shader read only optimal
+                        // used in deffered command
+                        _deferredCommand.TransferImageLayout(
+                            camera.MrtFramebuffer.Images[attachmentCount],
+                            Vulkan.VkImageLayout.ShaderReadOnlyOptimal
+                        );
+                        attachmentCount++;
+                    }
+                    _renderCommand.BeginRenderPass(
                         camera.MrtFramebuffer,
-                        0,
-                        camera.ProjectionDescriptorSet,
-                        camera.ViewDescriptorSet,
-                        camera.Viewport,
-                        camera.Resolution
-                    ));
-                }
-                if (secondaryDrawCommands.Count > 0)
-                    _renderCommand.ExecuteCommands(secondaryDrawCommands);
+                        Vulkan.VkSubpassContents.SecondaryCommandBuffers
+                    );
 
-                _renderCommand.EndRenderPass();
+
+                    var secondaryDrawCommands = new List<API.CommandBuffer>();
+                    foreach (var meshRenderer in meshRenderers)
+                    {
+                        // transfer material textures to the correct image layout
+                        transferCommands.Add(meshRenderer.Material.TransferImages());
+                        // update mesh render descriptor sets
+                        meshRenderer.UpdateDescriptorSet();
+
+                        // setup mesh draw command
+                        secondaryDrawCommands.Add(meshRenderer.DrawCommand(
+                            camera.MrtFramebuffer,
+                            0,
+                            camera.ProjectionDescriptorSet,
+                            camera.ViewDescriptorSet,
+                            camera.Viewport,
+                            camera.Resolution
+                        ));
+                    }
+                    // execute all draw comands for meshes
+                    if (secondaryDrawCommands.Count > 0)
+                        _renderCommand.ExecuteCommands(secondaryDrawCommands);
+
+                    _renderCommand.EndRenderPass();
+                }
+
+                // deffered command
+                {
+                    _deferredCommand.BeginRenderPass(
+                        camera.DefferedFramebuffer,
+                        Vulkan.VkSubpassContents.SecondaryCommandBuffers
+                    );
+                    _deferredCommand.BindPipeline(Camera.DefferedPipeline);
+                    _deferredCommand.BindDescriptorSets(
+                        Camera.DefferedPipeline,
+                        camera.MrtDescriptorSets
+                    );
+                    _deferredCommand.SetScissor(
+                        0, 0,
+                        camera.DefferedFramebuffer.Width,
+                        camera.DefferedFramebuffer.Height
+                    );
+                    _deferredCommand.SetViewport(
+                        0, 0,
+                        camera.DefferedFramebuffer.Width,
+                        camera.DefferedFramebuffer.Height
+                    );
+                    _deferredCommand.Draw(6, 1);
+                    _deferredCommand.EndRenderPass();
+                }
+
+                // present command
+                {
+                    if (camera.RenderTarget != null)
+                    {
+                        _presentCommand.TransferImageLayout(
+                            camera.DefferedFramebuffer.Images[0],
+                            Vulkan.VkImageLayout.TransferSrcOptimal
+                        );
+                        _presentCommand.TransferImageLayout(
+                            camera.RenderTarget.RenderedImage,
+                            Vulkan.VkImageLayout.TransferDstOptimal
+                        );
+                        // copy image from camera framebuffer to render target
+                        _presentCommand.BlitImage(
+                            camera.DefferedFramebuffer.Images[0],
+                            0, 0,
+                            (int)camera.DefferedFramebuffer.Width,
+                            (int)camera.DefferedFramebuffer.Height,
+                            0,
+                            camera.RenderTarget.RenderedImage,
+                            0, 0,
+                            (int)camera.RenderTarget.RenderedImage.Width,
+                            (int)camera.RenderTarget.RenderedImage.Height,
+                            0
+                        );
+                    }
+                }
             }
             _renderCommand.End();
-
-            #endregion
-
-            #region deffered command
-
-            _deferredCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
-            foreach (var camera in cameras)
-            {
-                int attachmentCount = 0;
-                foreach (var attachment in camera.MrtFramebuffer.RenderPass.Attachments)
-                {
-                    if (attachment.Format != API.RenderPassAttachment.Default.Format) continue;
-
-                    _deferredCommand.TransferImageLayout(
-                        camera.MrtFramebuffer.Images[attachmentCount],
-                        Vulkan.VkImageLayout.ShaderReadOnlyOptimal
-                    );
-                    attachmentCount++;
-                }
-                _deferredCommand.BeginRenderPass(
-                    camera.DefferedFramebuffer,
-                    Vulkan.VkSubpassContents.SecondaryCommandBuffers
-                );
-                _deferredCommand.BindPipeline(Camera.DefferedPipeline);
-                _deferredCommand.BindDescriptorSets(
-                    Camera.DefferedPipeline,
-                    camera.MrtDescriptorSets
-                );
-                _deferredCommand.SetScissor(
-                    0, 0,
-                    camera.DefferedFramebuffer.Width,
-                    camera.DefferedFramebuffer.Height
-                );
-                _deferredCommand.SetViewport(
-                    0, 0,
-                    camera.DefferedFramebuffer.Width,
-                    camera.DefferedFramebuffer.Height
-                );
-                _deferredCommand.Draw(6, 1);
-                _deferredCommand.EndRenderPass();
-            }
             _deferredCommand.End();
 
             #endregion
 
             #region update render targets
-
-            _presentCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
-
-            Task.WaitAll(_swapchainIndexes.Values.ToArray());
-            foreach (var camera in cameras)
-            {
-                if (camera.RenderTarget == null) continue;
-
-                _presentCommand.TransferImageLayout(
-                    camera.DefferedFramebuffer.Images[0],
-                    Vulkan.VkImageLayout.TransferSrcOptimal
-                );
-                _presentCommand.TransferImageLayout(
-                    camera.RenderTarget.RenderedImage,
-                    Vulkan.VkImageLayout.TransferDstOptimal
-                );
-                // copy image from camera framebuffer to render target
-                _presentCommand.BlitImage(
-                    camera.DefferedFramebuffer.Images[0],
-                    0, 0,
-                    (int)camera.DefferedFramebuffer.Width,
-                    (int)camera.DefferedFramebuffer.Height,
-                    0,
-                    camera.RenderTarget.RenderedImage,
-                    0, 0,
-                    (int)camera.RenderTarget.RenderedImage.Width,
-                    (int)camera.RenderTarget.RenderedImage.Height,
-                    0
-                );
-            }
 
             foreach (var swapchain in _swapchainIndexes)
             {
@@ -243,14 +236,20 @@ namespace Tortuga.Graphics
 
             #region submit Commands
 
-            _module.CommandBufferService.Submit(
-                transferCommands,
-                new List<Semaphore> { _transferCommandSemaphore }
-            );
+            var transformCommandSemaphores = new List<Semaphore>();
+            transferCommands = transferCommands.Where(t => t != null).ToList();
+            if (transferCommands.Count > 0)
+            {
+                _module.CommandBufferService.Submit(
+                    transferCommands,
+                    new List<Semaphore> { _transferCommandSemaphore }
+                );
+                transformCommandSemaphores.Add(_transferCommandSemaphore);
+            }
             _module.CommandBufferService.Submit(
                 _renderCommand,
                 new List<Semaphore> { _renderCommandSemaphore },
-                new List<Semaphore> { _transferCommandSemaphore }
+                transformCommandSemaphores
             );
             _module.CommandBufferService.Submit(
                 _deferredCommand,

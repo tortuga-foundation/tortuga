@@ -1,9 +1,7 @@
 #pragma warning disable CS1591
 using System.Collections.Generic;
-using System.Linq;
 using Tortuga.Graphics.API;
 using Vulkan;
-using System.Threading.Tasks;
 using Tortuga.Utils;
 using System;
 
@@ -18,10 +16,9 @@ namespace Tortuga.Graphics
     public class CommandBufferService
     {
         private Device _device;
-        private List<VkQueue> _queuesInUse;
         private Dictionary<QueueFamilyType, QueueFamily> _queueFamilies;
         private Dictionary<QueueFamilyType, CommandPool> _commandPools;
-        private List<Task> _tasks;
+        private int _queueCounter = 0;
 
         public CommandBufferService(Device device)
         {
@@ -47,9 +44,6 @@ namespace Tortuga.Graphics
             _commandPools = new Dictionary<QueueFamilyType, CommandPool>();
             foreach (var queueFamily in _queueFamilies)
                 _commandPools.Add(queueFamily.Key, new CommandPool(queueFamily.Value));
-
-            _tasks = new List<Task>();
-            _queuesInUse = new List<VkQueue>();
         }
 
         public CommandBuffer GetNewCommand(
@@ -64,30 +58,15 @@ namespace Tortuga.Graphics
             return new CommandBuffer(_commandPools[queueType], type);
         }
 
-        private VkQueue WaitForFreeQueue(QueueFamily queueFamily)
+        private VkQueue GetQueue(QueueFamily queueFamily)
         {
-            var freeQueues = new List<VkQueue>();
-            while (freeQueues.Count == 0)
-            {
-                Task.Delay(1).Wait();
-                freeQueues = queueFamily.Queues.Where(queue =>
-                {
-                    try
-                    {
-                        if (_queuesInUse == null || _queuesInUse.Count == 0)
-                            return true;
+            if (queueFamily.Queues.Count == 0)
+                throw new InvalidOperationException("queue family does not contain any queues");
 
-                        if (_queuesInUse.FindIndex(q => q.Handle == queue.Handle) == -1)
-                            return true;
-                    }
-                    catch (Exception) { }
+            if (_queueCounter >= queueFamily.Queues.Count)
+                _queueCounter = 0;
 
-                    return false;
-                }).ToList();
-            }
-            var queueFound = freeQueues[0];
-            _queuesInUse.Add(queueFound);
-            return queueFound;
+            return queueFamily.Queues[_queueCounter];
         }
 
         public void Submit(
@@ -102,7 +81,7 @@ namespace Tortuga.Graphics
             fence
         );
 
-        public void Submit(
+        public async void Submit(
             List<CommandBuffer> commands,
             List<Semaphore> signalSemaphores = null,
             List<Semaphore> waitSemaphores = null,
@@ -112,17 +91,15 @@ namespace Tortuga.Graphics
             //make sure atleast one command is passed
             if (commands.Count == 0) return;
 
-            //remove all completed tasks
-            _tasks.RemoveAll(t => t.IsCompleted);
-
             //if no fence is provided, create one
             if (fence == null)
-                fence = new Fence(_device);
+                fence = commands[0].Fence;
 
             //get a free device queue
-            var queue = WaitForFreeQueue(commands[0].CommandPool.QueueFamily);
+            var queue = GetQueue(commands[0].CommandPool.QueueFamily);
 
             //submit command to queue
+            fence.Reset();
             CommandBuffer.SubmitCommands(
                 commands,
                 queue,
@@ -133,13 +110,7 @@ namespace Tortuga.Graphics
             );
 
             //create a task to free queue when command is complete
-            _tasks.Add(
-                Task.Run(() =>
-                {
-                    fence.Wait();
-                    _queuesInUse.Remove(queue);
-                })
-            );
+            await fence.WaitAsync();
         }
 
         public unsafe void Present(
@@ -169,16 +140,13 @@ namespace Tortuga.Graphics
             };
 
             //get a free device queue
-            var queue = WaitForFreeQueue(swapchain.PresentQueueFamily);
+            var queue = GetQueue(swapchain.PresentQueueFamily);
 
             if (VulkanNative.vkQueuePresentKHR(
                 queue,
                 &presentInfo
             ) != VkResult.Success)
                 throw new Exception("failed to present swapchain image");
-
-            //create a task to free queue when command is complete
-            _queuesInUse.Remove(queue);
         }
     }
 }

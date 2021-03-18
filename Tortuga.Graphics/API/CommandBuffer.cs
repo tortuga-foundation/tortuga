@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using Tortuga.Utils;
 using Vulkan;
 
@@ -10,11 +11,13 @@ namespace Tortuga.Graphics.API
     {
         public CommandPool CommandPool => _commandPool;
         public VkCommandBufferLevel Level => _level;
+        public Fence Fence => _fence;
         public VkCommandBuffer Handle => _handle;
 
         private CommandPool _commandPool;
         private VkCommandBufferLevel _level;
         private VkCommandBuffer _handle;
+        private Fence _fence;
 
         public unsafe CommandBuffer(
             CommandPool commandPool,
@@ -39,6 +42,7 @@ namespace Tortuga.Graphics.API
             ) != VkResult.Success)
                 throw new Exception("failed to allocate command buffers");
             _handle = commandBuffer;
+            _fence = new Fence(commandPool.Device);
         }
 
         public unsafe void Begin(VkCommandBufferUsageFlags commandBufferUsageFlag)

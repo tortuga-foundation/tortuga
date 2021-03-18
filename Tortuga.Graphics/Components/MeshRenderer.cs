@@ -55,6 +55,8 @@ namespace Tortuga.Graphics
             _descriptorService.BindBuffer(MODEL_KEY, 0, Matrix.GetBytes());
         });
 
+        private byte[] _matrixCache = null;
+
         /// <summary>
         /// updates model matrix
         /// </summary>
@@ -62,11 +64,16 @@ namespace Tortuga.Graphics
         {
             if (IsStatic)
                 return;
+            
+            var matrix = Matrix.GetBytes();
+            if (_matrixCache == matrix)
+                return;
 
+            _matrixCache = matrix;
             _descriptorService.BindBuffer(
                 MODEL_KEY,
                 0,
-                Matrix.GetBytes()
+                _matrixCache
             );
         }
 
