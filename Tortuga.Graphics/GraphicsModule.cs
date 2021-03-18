@@ -208,6 +208,33 @@ namespace Tortuga.Graphics
                     }
                 }
             );
+
+            _descriptorLayouts["_UI"] = new DescriptorLayout(
+                _graphicsService.PrimaryDevice,
+                new List<DescriptorBindingInfo>
+                {
+                    new DescriptorBindingInfo
+                    {
+                        DescriptorType = VkDescriptorType.UniformBuffer,
+                        ShaderStageFlags = VkShaderStageFlags.Vertex | VkShaderStageFlags.Fragment,
+                        DescriptorCounts = 1,
+                        Index = 0
+                    }
+                }
+            );
+            _descriptorLayouts["_UI_TEXTURE"] = new DescriptorLayout(
+                _graphicsService.PrimaryDevice,
+                new List<DescriptorBindingInfo>
+                {
+                    new DescriptorBindingInfo
+                    {
+                        DescriptorType = VkDescriptorType.CombinedImageSampler,
+                        ShaderStageFlags = VkShaderStageFlags.Fragment,
+                        DescriptorCounts = 1,
+                        Index = 0
+                    }
+                }
+            );
         }
 
         /// <summary>
