@@ -43,7 +43,8 @@ namespace Tortuga.Graphics.API
                     _device,
                     width, height,
                     attachment.Format,
-                    attachment.ImageUsageFlags
+                    attachment.ImageUsageFlags,
+                    1
                 );
                 _images.Add(img);
                 _imageViews.Add(new ImageView(

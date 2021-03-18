@@ -93,7 +93,7 @@ namespace Tortuga.Graphics
                 CommandType.Primary
             );
             transferImageCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            transferImageCommand.TransferImageLayout(_handle[key].Images[binding], VkImageLayout.ShaderReadOnlyOptimal);
+            transferImageCommand.TransferImageLayoutOnAllMipMaps(_handle[key].Images[binding], VkImageLayout.ShaderReadOnlyOptimal);
             transferImageCommand.End();
             _module.CommandBufferService.Submit(
                 transferImageCommand,
@@ -209,6 +209,7 @@ namespace Tortuga.Graphics
                 _handle[key].StagingBuffers[binding],
                 _handle[key].Images[binding]
             );
+            _handle[key].CommandBuffer[binding].GenerateMipMaps(_handle[key].Images[binding]);
             _handle[key].CommandBuffer[binding].End();
         }
 

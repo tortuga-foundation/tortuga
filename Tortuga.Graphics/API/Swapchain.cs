@@ -230,7 +230,8 @@ namespace Tortuga.Graphics.API
                 _surfaceExtent.width,
                 _surfaceExtent.height,
                 _device.FindDepthFormat,
-                VkImageUsageFlags.DepthStencilAttachment
+                VkImageUsageFlags.DepthStencilAttachment,
+                1
             );
             _depthImageView = new ImageView(
                 _depthImage,

@@ -40,7 +40,8 @@ namespace Tortuga.Graphics
                 API.RenderPassAttachment.Default.Format,
                 VkImageUsageFlags.ColorAttachment |
                 VkImageUsageFlags.TransferDst |
-                VkImageUsageFlags.TransferSrc
+                VkImageUsageFlags.TransferSrc,
+                1
             );
             _renderedImageView = new ImageView(
                 _renderedImage,

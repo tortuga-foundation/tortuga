@@ -304,6 +304,31 @@ namespace Tortuga.Graphics.API
             );
         }
 
+        public void GenerateMipMaps(Image image)
+        {
+            int mipMapWidth = (int)image.Width;
+            int mipMapHeight = (int)image.Height;
+            for (uint i = 1; i < image.MipLevel; i++)
+            {
+                // transfer image layout
+                TransferImageLayout(image, VkImageLayout.TransferSrcOptimal, i - 1);
+                TransferImageLayout(image, VkImageLayout.TransferDstOptimal, i);
+
+                // calculate mip map width and height
+                var newMapWidth = Math.Max(mipMapWidth / 2, 1);
+                var newMapHeight = Math.Max(mipMapHeight / 2, 1);
+
+                // create mip map
+                BlitImage(
+                    image, 0, 0, (int)mipMapWidth, (int)mipMapHeight, i - 1,
+                    image, 0, 0, (int)newMapWidth, (int)newMapHeight, i
+                );
+
+                mipMapWidth = newMapWidth;
+                mipMapHeight = newMapHeight;
+            }
+        }
+
         public unsafe void CopyBufferToImage(
             Buffer buffer,
             Image image,
@@ -350,11 +375,16 @@ namespace Tortuga.Graphics.API
             );
         }
 
+        public void TransferImageLayoutOnAllMipMaps(Image image, VkImageLayout layout)
+        {
+            for (uint i = 0; i < image.MipLevel; i++)
+                TransferImageLayout(image, layout, i);
+        }
+
         public unsafe void TransferImageLayout(
             Image image,
             VkImageLayout newLayout,
-            uint mipLevel = 0,
-            uint mipLevelCount = 1
+            uint mipLevel = 0
         )
         {
             var aspect = GetAspectFlags(image.Handle, image.Format, newLayout);
@@ -375,7 +405,7 @@ namespace Tortuga.Graphics.API
                 {
                     aspectMask = aspect,
                     baseMipLevel = mipLevel,
-                    levelCount = mipLevelCount,
+                    levelCount = 1,
                     baseArrayLayer = 0,
                     layerCount = 1,
                 }

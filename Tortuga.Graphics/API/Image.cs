@@ -30,14 +30,35 @@ namespace Tortuga.Graphics.API
         private VkDeviceMemory _memoryHandle;
 
         private Image() { }
+        /// <summary>
+        /// create a vulkan image
+        /// </summary>
+        /// <param name="device">the device to use, where is the image stored</param>
+        /// <param name="width">width of the image</param>
+        /// <param name="height">height of the image</param>
+        /// <param name="format">format of the image</param>
+        /// <param name="usageFlags">image usage flags, how the image will be used</param>
+        /// <param name="mipLevel">mip map levels of the image, if 0 then it will be auto-generated</param>
         public unsafe Image(
             Device device,
             uint width, uint height,
             VkFormat format,
             VkImageUsageFlags usageFlags,
-            uint mipLevel = 1
+            uint mipLevel = 0
         )
         {
+            // auto generate mip map levels
+            if (mipLevel == 0)
+            {
+                mipLevel = Convert.ToUInt32(
+                    MathF.Floor(
+                        MathF.Log2(
+                            MathF.Max(width, height)
+                        )
+                    ) + 1
+                );
+            }
+
             _device = device;
             _width = width;
             _height = height;
