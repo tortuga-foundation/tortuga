@@ -29,6 +29,7 @@ namespace Tortuga.Graphics
         private GraphicsModule _graphicsModule;
         private NativeWindow _nativeWindow;
         private Swapchain _swapchain;
+        private Fence _fence;
 
         /// <summary>
         /// Create a window
@@ -66,6 +67,7 @@ namespace Tortuga.Graphics
                 _graphicsModule.GraphicsService.PrimaryDevice,
                 _nativeWindow
             );
+            _fence = new Fence(_graphicsModule.GraphicsService.PrimaryDevice);
         }
         /// <summary>
         /// De-Constructor
@@ -79,22 +81,24 @@ namespace Tortuga.Graphics
         /// acquire's swapchain image index
         /// </summary>
         /// <returns>image index</returns>
-        public unsafe Task<uint> AcquireSwapchainImage()
-        => Task.Run(() =>
+        public async Task<uint> AcquireSwapchainImage()
         {
-            var fence = new Fence(_graphicsModule.GraphicsService.PrimaryDevice);
+            _fence.Reset();
             uint imageIndex = 0;
-            VulkanNative.vkAcquireNextImageKHR(
-                _graphicsModule.GraphicsService.PrimaryDevice.Handle,
-                _swapchain.Handle,
-                ulong.MaxValue,
-                VkSemaphore.Null,
-                fence.Handle,
-                &imageIndex
-            );
-            fence.Wait();
+            unsafe
+            {
+                VulkanNative.vkAcquireNextImageKHR(
+                    _graphicsModule.GraphicsService.PrimaryDevice.Handle,
+                    _swapchain.Handle,
+                    ulong.MaxValue,
+                    VkSemaphore.Null,
+                    _fence.Handle,
+                    &imageIndex
+                );
+            }
+            await _fence.WaitAsync();
             return imageIndex;
-        });
+        }
 
         /// <summary>
         /// shows a message box

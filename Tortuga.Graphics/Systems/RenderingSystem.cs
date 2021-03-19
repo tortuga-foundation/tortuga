@@ -15,7 +15,6 @@ namespace Tortuga.Graphics
         private CommandBuffer _renderCommand;
         private CommandBuffer _deferredCommand;
         private CommandBuffer _presentCommand;
-        private Dictionary<Window, Task<uint>> _swapchainIndexes;
 
         /// <summary>
         /// 
@@ -42,28 +41,10 @@ namespace Tortuga.Graphics
         /// <summary>
         /// 
         /// </summary>
-        public override Task EarlyUpdate()
-        => Task.Run(() =>
-        {
-            _swapchainIndexes = new Dictionary<Window, Task<uint>>();
-            var cameras = MyScene.GetComponents<Camera>();
-            foreach (var camera in cameras)
-            {
-                var window = camera.RenderTarget as Window;
-                if (window == null) continue;
-                _swapchainIndexes.Add(
-                    window,
-                    window.AcquireSwapchainImage()
-                );
-            }
-        });
-
-        /// <summary>
-        /// 
-        /// </summary>
         public override Task Update()
         => Task.Run(() =>
         {
+            var swapchainIndexes = new Dictionary<Window, Task<uint>>();
             var cameras = MyScene.GetComponents<Camera>();
             var lights = MyScene.GetComponents<Light>();
             var meshRenderers = MyScene.GetComponents<MeshRenderer>();
@@ -76,6 +57,15 @@ namespace Tortuga.Graphics
             _presentCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
             foreach (var camera in cameras)
             {
+                var window = camera.RenderTarget as Window;
+                if (window != null)
+                {
+                    swapchainIndexes.Add(
+                        window,
+                        window.AcquireSwapchainImage()
+                    );
+                }
+
                 // update camera descriptor sets
                 camera.UpdateDescriptorSets();
                 // update lighting information
@@ -216,7 +206,7 @@ namespace Tortuga.Graphics
 
             #region update render targets
 
-            foreach (var swapchain in _swapchainIndexes)
+            foreach (var swapchain in swapchainIndexes)
             {
                 swapchain.Value.Wait();
                 var swapchainIndex = (int)swapchain.Value.Result;
@@ -245,22 +235,16 @@ namespace Tortuga.Graphics
 
             _presentCommand.End();
 
-            #endregion
-
-            #region present
-
             _module.CommandBufferService.Submit(
                 _presentCommand,
                 new List<Semaphore> { _deferredCommand.SignalSemaphore }
             );
 
             #endregion
-        });
 
-        public override Task LateUpdate()
-        => Task.Run(() =>
-        {
-            foreach (var swapchain in _swapchainIndexes)
+            #region update swapchain
+
+            foreach (var swapchain in swapchainIndexes)
             {
                 var window = swapchain.Key;
                 _module.CommandBufferService.Present(
@@ -269,6 +253,8 @@ namespace Tortuga.Graphics
                     new List<Semaphore> { _presentCommand.SignalSemaphore }
                 );
             }
+
+            #endregion
         });
     }
 }
