@@ -201,6 +201,31 @@ namespace Tortuga.Graphics
 
             #endregion
 
+            #region submit commands
+
+            var transformCommandSemaphores = new List<Semaphore>();
+            transferCommands = transferCommands.Where(t => t != null).ToList();
+            if (transferCommands.Count > 0)
+            {
+                _module.CommandBufferService.Submit(
+                    transferCommands,
+                    new List<Semaphore> { _transferCommandSemaphore }
+                );
+                transformCommandSemaphores.Add(_transferCommandSemaphore);
+            }
+            _module.CommandBufferService.Submit(
+                _renderCommand,
+                new List<Semaphore> { _renderCommandSemaphore },
+                transformCommandSemaphores
+            );
+            _module.CommandBufferService.Submit(
+                _deferredCommand,
+                new List<Semaphore> { _deferredCommandSemaphore },
+                new List<Semaphore> { _renderCommandSemaphore }
+            );
+
+            #endregion
+
             #region update render targets
 
             foreach (var swapchain in _swapchainIndexes)
@@ -234,28 +259,8 @@ namespace Tortuga.Graphics
 
             #endregion
 
-            #region submit Commands
+            #region present
 
-            var transformCommandSemaphores = new List<Semaphore>();
-            transferCommands = transferCommands.Where(t => t != null).ToList();
-            if (transferCommands.Count > 0)
-            {
-                _module.CommandBufferService.Submit(
-                    transferCommands,
-                    new List<Semaphore> { _transferCommandSemaphore }
-                );
-                transformCommandSemaphores.Add(_transferCommandSemaphore);
-            }
-            _module.CommandBufferService.Submit(
-                _renderCommand,
-                new List<Semaphore> { _renderCommandSemaphore },
-                transformCommandSemaphores
-            );
-            _module.CommandBufferService.Submit(
-                _deferredCommand,
-                new List<Semaphore> { _deferredCommandSemaphore },
-                new List<Semaphore> { _renderCommandSemaphore }
-            );
             _module.CommandBufferService.Submit(
                 _presentCommand,
                 new List<Semaphore> { _presentCommandSemaphore },

@@ -66,7 +66,9 @@ namespace Tortuga.Graphics
             if (_queueCounter >= queueFamily.Queues.Count)
                 _queueCounter = 0;
 
-            return queueFamily.Queues[_queueCounter];
+            var queue = queueFamily.Queues[_queueCounter];
+            _queueCounter++;
+            return queue;
         }
 
         public void Submit(
