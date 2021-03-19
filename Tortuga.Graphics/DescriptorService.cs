@@ -87,7 +87,6 @@ namespace Tortuga.Graphics
         private void TransferImageAndUpdateDescriptorSet(string key, int binding)
         {
             //update image layout for descriptor set
-            var transferImageFence = new API.Fence(_module.GraphicsService.PrimaryDevice);
             var transferImageCommand = _module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Graphics,
                 CommandType.Primary
@@ -95,12 +94,8 @@ namespace Tortuga.Graphics
             transferImageCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
             transferImageCommand.TransferImageLayoutOnAllMipMaps(_handle[key].Images[binding], VkImageLayout.ShaderReadOnlyOptimal);
             transferImageCommand.End();
-            _module.CommandBufferService.Submit(
-                transferImageCommand,
-                null, null,
-                transferImageFence
-            );
-            transferImageFence.Wait();
+            _module.CommandBufferService.Submit(transferImageCommand);
+            transferImageCommand.Fence.Wait();
 
             _handle[key].Set.UpdateSampledImage(
                 _handle[key].ImageViews[binding],

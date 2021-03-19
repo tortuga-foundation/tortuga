@@ -12,16 +12,19 @@ namespace Tortuga.Graphics.API
         public CommandPool CommandPool => _commandPool;
         public VkCommandBufferLevel Level => _level;
         public Fence Fence => _fence;
+        public Semaphore SignalSemaphore => _signalSemaphore;
         public VkCommandBuffer Handle => _handle;
 
         private CommandPool _commandPool;
         private VkCommandBufferLevel _level;
         private VkCommandBuffer _handle;
         private Fence _fence;
+        private Semaphore _signalSemaphore;
 
         public unsafe CommandBuffer(
             CommandPool commandPool,
-            VkCommandBufferLevel level = VkCommandBufferLevel.Primary
+            VkCommandBufferLevel level = VkCommandBufferLevel.Primary,
+            bool isFenceSignaled = false
         )
         {
             _commandPool = commandPool;
@@ -42,7 +45,8 @@ namespace Tortuga.Graphics.API
             ) != VkResult.Success)
                 throw new Exception("failed to allocate command buffers");
             _handle = commandBuffer;
-            _fence = new Fence(commandPool.Device);
+            _fence = new Fence(commandPool.Device, isFenceSignaled);
+            _signalSemaphore = new Semaphore(commandPool.Device);
         }
 
         public unsafe void Begin(VkCommandBufferUsageFlags commandBufferUsageFlag)
@@ -554,44 +558,41 @@ namespace Tortuga.Graphics.API
 
         internal unsafe void SubmitCommand(
             VkQueue queue,
-            List<Semaphore> signalSemaphore = null,
-            List<Semaphore> waitSemaphore = null,
-            Fence fence = null,
+            List<Semaphore> waitSemaphores,
             VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe
         ) => SubmitCommands(
             new List<CommandBuffer> { this },
             queue,
-            signalSemaphore,
-            waitSemaphore,
-            fence,
+            waitSemaphores,
             waitStageMask
         );
 
         internal static unsafe void SubmitCommands(
             List<CommandBuffer> commandBuffers,
             VkQueue queue,
-            List<Semaphore> signalSemaphores = null,
-            List<Semaphore> waitSemaphore = null,
-            Fence fence = null,
+            List<Semaphore> waitSemaphores = null,
             VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe
         )
         {
+            if (commandBuffers.Count == 0)
+                return;
+
             var commands = new NativeList<VkCommandBuffer>();
             foreach (var cmd in commandBuffers)
                 commands.Add(cmd.Handle);
 
             var signals = new NativeList<VkSemaphore>();
-            if (signalSemaphores != null)
+            foreach (var command in commandBuffers)
             {
-                foreach (var semaphore in signalSemaphores)
-                    signals.Add(semaphore.Handle);
+                command.Fence.Reset();
+                signals.Add(command.SignalSemaphore.Handle);
             }
 
             var waits = new NativeList<VkSemaphore>();
-            if (waitSemaphore != null)
+            if (waitSemaphores != null)
             {
-                foreach (var semaphore in waitSemaphore)
-                    waits.Add(semaphore.Handle);
+                foreach (var waitSem in waitSemaphores)
+                    waits.Add(waitSem.Handle);
             }
 
             var submitInfo = new VkSubmitInfo
@@ -606,15 +607,11 @@ namespace Tortuga.Graphics.API
                 pWaitDstStageMask = &waitStageMask
             };
 
-            VkFence waitFence = VkFence.Null;
-            if (fence != null)
-                waitFence = fence.Handle;
-
             if (VulkanNative.vkQueueSubmit(
                 queue,
                 1,
                 &submitInfo,
-                waitFence
+                commandBuffers[0].Fence.Handle
             ) != VkResult.Success)
                 throw new Exception("failed to submit commands to queue");
         }

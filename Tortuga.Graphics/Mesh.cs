@@ -90,7 +90,6 @@ namespace Tortuga.Graphics
             _vertexBufferStaging.SetData(Vertices);
             _indexBufferStaging.SetData(Indices);
 
-            var fence = new API.Fence(device);
             var command = module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Transfer,
                 CommandType.Primary
@@ -99,12 +98,8 @@ namespace Tortuga.Graphics
             command.CopyBuffer(_indexBufferStaging, _indexBuffer);
             command.CopyBuffer(_vertexBufferStaging, _vertexBuffer);
             command.End();
-            module.CommandBufferService.Submit(
-                command,
-                null, null,
-                fence
-            );
-            fence.Wait();
+            module.CommandBufferService.Submit(command);
+            command.Fence.Wait();
         });
 
         /// <summary>

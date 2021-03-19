@@ -244,7 +244,6 @@ namespace Tortuga.Graphics.API
 
             var module = Engine.Instance.GetModule<GraphicsModule>();
             var graphicsQueue = _device.GraphicsQueueFamily;
-            var fence = new Fence(_device);
             var command = module.CommandBufferService.GetNewCommand(
                 QueueFamilyType.Graphics,
                 CommandType.Primary
@@ -264,12 +263,8 @@ namespace Tortuga.Graphics.API
                 VkImageLayout.DepthStencilAttachmentOptimal
             );
             command.End();
-            module.CommandBufferService.Submit(
-                command,
-                null, null,
-                fence
-            );
-            fence.Wait();
+            module.CommandBufferService.Submit(command);
+            command.Fence.Wait();
 
             #endregion
         }

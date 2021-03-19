@@ -73,46 +73,30 @@ namespace Tortuga.Graphics
 
         public void Submit(
             CommandBuffer command,
-            List<Semaphore> signalSemaphores = null,
-            List<Semaphore> waitSemaphores = null,
-            Fence fence = null
+            List<Semaphore> waitSemaphores = null
         ) => Submit(
             new List<CommandBuffer> { command },
-            signalSemaphores,
-            waitSemaphores,
-            fence
+            waitSemaphores
         );
 
-        public async void Submit(
+        public void Submit(
             List<CommandBuffer> commands,
-            List<Semaphore> signalSemaphores = null,
-            List<Semaphore> waitSemaphores = null,
-            Fence fence = null
+            List<Semaphore> waitSemaphores = null
         )
         {
             //make sure atleast one command is passed
             if (commands.Count == 0) return;
 
-            //if no fence is provided, create one
-            if (fence == null)
-                fence = commands[0].Fence;
-
             //get a free device queue
             var queue = GetQueue(commands[0].CommandPool.QueueFamily);
 
             //submit command to queue
-            fence.Reset();
             CommandBuffer.SubmitCommands(
                 commands,
                 queue,
-                signalSemaphores,
                 waitSemaphores,
-                fence,
                 VkPipelineStageFlags.TopOfPipe
             );
-
-            //create a task to free queue when command is complete
-            await fence.WaitAsync();
         }
 
         public unsafe void Present(
