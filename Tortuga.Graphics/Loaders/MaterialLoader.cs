@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Text.Json;
 using Tortuga.Graphics.API;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Numerics;
 
 namespace Tortuga.Graphics
