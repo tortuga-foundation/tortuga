@@ -9,9 +9,14 @@
         "build",
         "${workspaceFolder}/Tortuga.Test/Tortuga.Test.csproj",
         "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
+        "/consoleloggerparameters:NoSummary",
+        "/p:DefineConstants=TORTUGA_PROFILER"
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
     },
     {
       "label": "restore",
@@ -28,8 +33,14 @@
         "-r",
         "${workspaceFolder}/Tortuga.Test/obj",
         "${workspaceFolder}/Tortuga.Test/bin",
-        "${workspaceFolder}/Tortuga/obj",
-        "${workspaceFolder}/Tortuga/bin"
+        "${workspaceFolder}/Tortuga.Core/obj",
+        "${workspaceFolder}/Tortuga.Core/bin",
+        "${workspaceFolder}/Tortuga.Input/obj",
+        "${workspaceFolder}/Tortuga.Input/bin",
+        "${workspaceFolder}/Tortuga.Audio/obj",
+        "${workspaceFolder}/Tortuga.Audio/bin",
+        "${workspaceFolder}/Tortuga.Graphics/obj",
+        "${workspaceFolder}/Tortuga.Graphics/bin"
       ],
       "problemMatcher": []
     },

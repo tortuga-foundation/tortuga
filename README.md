@@ -6,8 +6,6 @@ Tortua is an open source game engine built using C# dot net core 3.0
 
 ![IMG](https://raw.githubusercontent.com/tortuga-foundation/tortuga/master/Assets/Images/Render/Bricks.png)
 
-Roadmap: https://trello.com/b/McNszhI0/tortuga
-
 ## Prerequisites
 
 - Dot Net Core 3.0
@@ -17,7 +15,9 @@ Roadmap: https://trello.com/b/McNszhI0/tortuga
 - Open AL
 - Bullet Physics Library
 
-For linux you can use `./setup.sh` to download the prerequisites 
+```
+sudo apt install -y libopenal1 libsdl2-2.0-0 libvulkan1 glslang-tools libgdiplus
+```
 
 ## Using the package in your project
 
@@ -37,141 +37,66 @@ You can use nuget to install the package `TortugaEngine`
 
 #### Sample Code:
 ```c#
-// IMPORTANT: You must initialize the game engine before doing anything
-Engine.Init();
+//setup sdl input system
+Engine.Instance.AddModule<Input.InputModule>();
+//setup vulkan instance
+Engine.Instance.AddModule<Graphics.GraphicsModule>();
+//setup open al
+Engine.Instance.AddModule<Audio.AudioModule>();
 
 //create new scene
 var scene = new Core.Scene();
+Input.InputModule.OnApplicationClose += () => Engine.Instance.IsRunning = false;
 
 //camera
+Graphics.Camera mainCamera;
 {
     var entity = new Core.Entity();
-    entity.Name = "Camera";
-    var listener = await entity.AddComponent<Components.AudioListener>();
-    listener.Position = Vector3.Zero;
-    listener.Velocity = Vector3.Zero;
-    var camera = await entity.AddComponent<Components.Camera>();
-    camera.FieldOfView = 90;
+    mainCamera = await entity.AddComponent<Graphics.Camera>();
+    mainCamera.RenderTarget = Graphics.Camera.TypeOfRenderTarget.DeferredRendering;
     scene.AddEntity(entity);
 }
 
-//load obj model
-var sphereOBJ = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
-//load bricks material
-var bricksMaterial = await Graphics.Material.Load("Assets/Material/Bricks.json");
+//mesh
+{
+    var entity = new Core.Entity();
+    var transform = entity.GetComponent<Core.Transform>();
+    transform.Position = new Vector3(0, 0, -5);
+    var renderer = await entity.AddComponent<Graphics.Renderer>();
+    renderer.MeshData = await Graphics.Mesh.Load("Assets/Models/Sphere.obj");
+    renderer.MaterialData = await Graphics.Material.Load("Assets/Materials/Bricks.json");
+    scene.AddEntity(entity);
+}
 
 //light
 {
     var entity = new Core.Entity();
-    entity.Name = "Light";
-    var transform = await entity.AddComponent<Components.Transform>();
-    transform.Position = new Vector3(0, 0, -7);
-    transform.IsStatic = true;
-    //add light component
-    var light = await entity.AddComponent<Components.Light>();
-    light.Intensity = 200.0f;
-    light.Type = Components.Light.LightType.Point;
-    light.Color = System.Drawing.Color.White;
-    scene.AddEntity(entity);
-}
-
-//sphere 1
-{
-    var entity = new Core.Entity();
-    entity.Name = "sphere 1";
-    var source = await entity.AddComponent<Components.AudioSource>();
-    source.Position = Vector3.Zero;
-    source.Velocity = Vector3.Zero;
-    source.Is3D = true;
-    source.Loop = true;
-    source.Clip = await Audio.AudioClip.Load("Assets/Audio/Sample1.wav");
-    source.Play();
-    var transform = await entity.AddComponent<Components.Transform>();
-    transform.Position = new Vector3(0, 0, -10);
-    transform.IsStatic = false;
-    //add mesh component
-    var mesh = await entity.AddComponent<Components.RenderMesh>();
-    mesh.Material = bricksMaterial;
-    await mesh.SetMesh(sphereOBJ); //this operation is async and might not be done instantly
-
-    scene.AddEntity(entity);
-}
-
-//sphere 2
-{
-    var entity = new Core.Entity();
-    entity.Name = "sphere 2";
-    var transform = await entity.AddComponent<Components.Transform>();
-    transform.Position = new Vector3(3, 0, -10);
-    transform.IsStatic = false;
-    //add mesh component
-    var mesh = await entity.AddComponent<Components.RenderMesh>();
-    mesh.Material = bricksMaterial;
-    await mesh.SetMesh(sphereOBJ); //this operation is async and might not be done instantly
-
+    var light = await entity.AddComponent<Graphics.Light>();
     scene.AddEntity(entity);
 }
 
 //user interface
 {
-    //create a new ui block element and add it to the scene
-    var block = new Graphics.UI.UiBlock();
-    scene.AddUserInterface(block);
-
-    //setup block
-    block.PositionXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(310.0f);
-    block.PositionYConstraint = new Graphics.UI.PixelConstraint(10.0f);
-    block.ScaleXConstraint = new Graphics.UI.PixelConstraint(300.0f);
-    block.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
-    block.BorderRadius = 20;
-    block.Background = System.Drawing.Color.FromArgb(200, 5, 5, 5);
-
-    //create a vertical layout group
-    var layout = new Graphics.UI.UiVerticalLayout();
-    layout.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
-    layout.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-    layout.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(5.0f);
-    layout.ScaleYConstraint = new Graphics.UI.ContentAutoFitConstraint();
-    layout.Spacing = 0.0f;
-
-    //setup scroll rect
-    var scrollRect = new Graphics.UI.UiScrollRect();
-    scrollRect.PositionXConstraint = new Graphics.UI.PixelConstraint(0.0f);
-    scrollRect.PositionYConstraint = new Graphics.UI.PixelConstraint(20.0f);
-    scrollRect.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-    scrollRect.ScaleYConstraint = new Graphics.UI.PercentConstraint(1.0f / 3.0f);
-    scrollRect.Viewport = layout;
-    block.Add(scrollRect);
-
-    // create a button for each entity
-    for (int i = 0; i < scene.Entities.Count; i++)
-    {
-        int color = i % 2 == 0 ? 10 : 5;
-
-        var entity = scene.Entities[i];
-        var button = new Graphics.UI.UiButton();
-        button.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f);
-        button.ScaleYConstraint = new Graphics.UI.PixelConstraint(40);
-        button.BorderRadius = 0.0f;
-        button.Text.FontSize = 10.0f;
-        button.Text.HorizontalAlignment = Graphics.UI.UiHorizontalAlignment.Left;
-        button.Text.PositionXConstraint = new Graphics.UI.PixelConstraint(10.0f);
-        button.Text.ScaleXConstraint = new Graphics.UI.PercentConstraint(1.0f) - new Graphics.UI.PixelConstraint(20.0f);
-        button.Text.Text = entity.Name;
-        button.Text.TextColor = System.Drawing.Color.White;
-        button.NormalBackground = System.Drawing.Color.FromArgb(255, color, color, color);
-        button.HoverBackground = System.Drawing.Color.FromArgb(255, 50, 50, 50);
-        layout.Add(button);
-    }
+    var win = new UI.UiWindow();
+    win.Position = new Vector2(100, 100);
+    win.Scale = new Vector2(500, 500);
+    scene.AddUserInterface(win);
+    var windowContent = new UI.UiRenderable();
+    windowContent.RenderFromCamera = mainCamera;
+    windowContent.PositionXConstraint = new UI.PercentConstraint(0.0f);
+    windowContent.PositionYConstraint = new UI.PercentConstraint(0.0f);
+    windowContent.ScaleXConstraint = new UI.PercentConstraint(1.0f);
+    windowContent.ScaleYConstraint = new UI.PercentConstraint(1.0f);
+    win.Content.Add(windowContent);
 }
 
 //add systems to the scene
-scene.AddSystem<Systems.RenderingSystem>();
-scene.AddSystem<Systems.AudioSystem>();
+scene.AddSystem<Audio.AudioSystem>();
+scene.AddSystem<Graphics.RenderingSystem>();
 
-//set this scene as currently active
+//load scene
 Engine.Instance.LoadScene(scene);
-//start engine main loop
+//run main loop
 await Engine.Instance.Run();
 ```
 
@@ -179,52 +104,91 @@ await Engine.Instance.Run();
 ```json
 {
   "Type": "Material",
-  "IsInstanced": false,
-  "Shaders": {
-    "Vertex": "Assets/Shaders/Default/Default.vert",
-    "Fragment": "Assets/Shaders/Default/Default.frag"
-  },
-  "DescriptorSets": [
-    {
-      "Type": "UniformData",
-      "Name": "LIGHT"
-    },
-    {
-      "Type": "UniformData",
-      "Name": "Data",
-      "Bindings": [
-        {
-          "Values": [
+  "Value": {
+    "Shaders": [
+      {
+        "Type": "ShaderFile",
+        "Value": {
+          "ShaderType": "Vertex",
+          "Data": "Assets/Shaders/Default/MRT.vert"
+        }
+      },
+      {
+        "Type": "ShaderFile",
+        "Value": {
+          "ShaderType": "Fragment",
+          "Data": "Assets/Shaders/Default/MRT.frag"
+        }
+      }
+    ],
+    "DescriptorSets": [
+      {
+        "Type": "DescriptorSet",
+        "Value": {
+          "Name": "TEXTURES",
+          "Bindings": [
             {
-              "Type": "Int",
-              "Value": 0
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "CombinedImageSampler",
+                "Stage": "Fragment",
+                "Data": {
+                  "Type": "TexturePath",
+                  "Value": "Assets/Images/Bricks/Color.jpg"
+                }
+              }
+            },
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "CombinedImageSampler",
+                "Stage": "Fragment",
+                "Data": {
+                  "Type": "TexturePath",
+                  "Value": "Assets/Images/Bricks/Normal.jpg"
+                }
+              }
+            },
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "CombinedImageSampler",
+                "Stage": "Fragment",
+                "Data": {
+                  "Type": "TexturePathChannels",
+                  "Value": {
+                    "R": "Assets/Images/Bricks/Metal.jpg",
+                    "G": "Assets/Images/Bricks/Roughness.jpg",
+                    "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+                  }
+                }
+              }
             }
           ]
         }
-      ]
-    },
-    {
-      "Type": "SampledImage2D",
-      "Name": "Textures",
-      "Bindings": [
-        {
-          "Image": "Assets/Images/Bricks/Albedo.jpg",
-          "MipLevel": 1
-        },
-        {
-          "Image": "Assets/Images/Bricks/Normal.jpg",
-          "MipLevel": 1
-        },
-        {
-          "BuildImage": {
-            "R": "Assets/Images/Bricks/Metalness.jpg",
-            "G": "Assets/Images/Bricks/Roughness.jpg",
-            "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
-          },
-          "MipLevel": 1
+      },
+      {
+        "Type": "DescriptorSet",
+        "Value": {
+          "Name": "MATERIAL",
+          "Bindings": [
+            {
+              "Type": "DescriptorSetBinding",
+              "Value": {
+                "DescriptorType": "UniformBuffer",
+                "Stage": "Vertex",
+                "Data": {
+                  "Type": "Int32",
+                  "Value": [
+                    1
+                  ]
+                }
+              }
+            }
+          ]
         }
-      ]
-    }
-  ]
+      }
+    ]
+  }
 }
 ```
