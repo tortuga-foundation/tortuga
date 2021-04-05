@@ -42,6 +42,7 @@ namespace Tortuga.Graphics
         {
             _width = width;
             _height = height;
+            _pixels = new GraphicsColor[width * height];
         }
 
         /// <summary>
