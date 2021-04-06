@@ -11,7 +11,7 @@ namespace Tortuga.Graphics
     /// <summary>
     /// Responsible for mesh object io
     /// </summary>
-    public static class ObjLoader
+    public static partial class AssetLoader
     {
         /// <summary>
         /// Used to load obj files
@@ -36,13 +36,9 @@ namespace Tortuga.Graphics
         /// <summary>
         /// load a obj file into a mesh type object
         /// </summary>
-        /// <param name="mesh">mesh to load the obj into</param>
         /// <param name="file">path to the obj</param>
         /// <returns>Task</returns>
-        public static async Task LoadObj(
-            this Mesh mesh,
-            string file
-        )
+        public static async Task<Mesh> LoadObj(string file)
         {
             if (file.ToLower().EndsWith(".obj") == false)
                 throw new InvalidOperationException("file name does not end with '.obj'");
@@ -116,8 +112,9 @@ namespace Tortuga.Graphics
                     }
                 }
             }
-            
+
             //set indices and vertices to obj indices and vertices
+            var mesh = new Mesh();
             mesh.Indices = indices.Select((i, index) => (ushort)index).ToArray();
             mesh.Vertices = indices.Select(i => new Vertex
             {
@@ -130,6 +127,7 @@ namespace Tortuga.Graphics
             mesh.ReCalculateNormals();
             //update mesh buffers
             await mesh.UpdateBuffers();
+            return mesh;
         }
     }
 }
