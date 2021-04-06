@@ -105,6 +105,12 @@ await Engine.Instance.Run();
 {
   "Type": "Material",
   "Value": {
+    "Pipeline": {
+      "RenderPass": {
+        "Count": 4,
+        "IsDepthEnabled": true
+      }
+    },
     "Shaders": [
       {
         "Type": "ShaderFile",
