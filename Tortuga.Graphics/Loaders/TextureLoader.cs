@@ -5,19 +5,15 @@ using System.Threading.Tasks;
 namespace Tortuga.Graphics
 {
     /// <summary>
-    /// responsible for texture io
+    /// responsible loading files into memory
     /// </summary>
-    public static class TextureLoader
+    public static partial class AssetLoader
     {
         /// <summary>
         /// loads an image file into texture object
         /// </summary>
-        /// <param name="texture">the texture object to load the image file into</param>
         /// <param name="file">path of the file</param>
-        public static Task Load(
-            this Texture texture,
-            string file
-        ) => Task.Run(() =>
+        public static Task<Texture> LoadTexture(string file) => Task.Run(() =>
         {
             if (File.Exists(file) == false)
                 throw new FileNotFoundException();
@@ -34,8 +30,9 @@ namespace Tortuga.Graphics
                     );
                 }
             }
-            texture.Resize(bitmap.Width, bitmap.Height);
+            var texture = new Texture(bitmap.Width, bitmap.Height);
             texture.SetPixels(pixels);
+            return texture;
         });
     }
 }

@@ -80,13 +80,10 @@ namespace Tortuga.Test
                 var renderer = await entity.AddComponent<Graphics.MeshRenderer>();
 
                 //setup mesh
-                renderer.Mesh = new Graphics.Mesh();
-                await renderer.Mesh.LoadObj("Assets/Models/Sphere.obj");
+                renderer.Mesh = await AssetLoader.LoadObj("Assets/Models/Sphere.obj");
 
                 //setup material
-                renderer.Material = new Material();
-                await renderer.Material.Load("Assets/Materials/Bricks.json");
-
+                renderer.Material = await AssetLoader.LoadMaterial("Assets/Materials/Bricks.json");
                 scene.AddEntity(entity);
             }
 
@@ -96,7 +93,6 @@ namespace Tortuga.Test
 
                 //attach light
                 var light = await entity.AddComponent<Graphics.Light>();
-
                 scene.AddEntity(entity);
             }
 

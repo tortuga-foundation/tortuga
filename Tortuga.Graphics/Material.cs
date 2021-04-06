@@ -38,17 +38,10 @@ namespace Tortuga.Graphics
         /// <summary>
         /// set's the shaders being used for the pipeline
         /// </summary>
-        /// <param name="shadersPaths">path to shader files</param>
-        public void SetShaders(List<string> shadersPaths)
+        /// <param name="shaders">list of shader modules</param>
+        public void SetShaders(List<API.ShaderModule> shaders)
         {
-            _shaders = new List<ShaderModule>();
-            foreach (var shaderPath in shadersPaths)
-            {
-                _shaders.Add(new ShaderModule(
-                    _module.GraphicsService.PrimaryDevice,
-                    shaderPath
-                ));
-            }
+            _shaders = shaders;
             _isDirty = true;
         }
 
