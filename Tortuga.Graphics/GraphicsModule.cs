@@ -36,7 +36,6 @@ namespace Tortuga.Graphics
             _renderPasses = new Dictionary<string, RenderPass>();
             InitDescriptorLayouts();
             InitRenderPasses();
-            MaterialLoader.Init();
         }
 
         private void InitRenderPasses()
