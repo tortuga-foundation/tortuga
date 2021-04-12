@@ -3,9 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using Tortuga.Graphics;
 
-namespace Tortuga.UI
+namespace Tortuga.Graphics.UI
 {
     /// <summary>
     /// a renderable user interface element

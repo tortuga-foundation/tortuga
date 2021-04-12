@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Numerics;
 
-namespace Tortuga.UI
+namespace Tortuga.Graphics.UI
 {
     /// <summary>
     /// Main ui element
     /// </summary>
-    public class UiElement
+    public class UiElement : Core.BaseComponent
     {
         /// <summary>
         /// If false the ui will be skipped

@@ -1,4 +1,4 @@
-namespace Tortuga.UI
+namespace Tortuga.Graphics.UI
 {
     /// <summary>
     /// Type of horizontal alignment for the ui element

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Tortuga.UI
+namespace Tortuga.Graphics.UI
 {
     /// <summary>
     /// Constraint Types
