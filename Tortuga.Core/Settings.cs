@@ -10,6 +10,6 @@ namespace Tortuga
         /// 0 = No Limit
         /// Note: Can also use this to lock the FPS
         /// </summary>
-        public static float MaxLoopsPerSecond = 60.0f;
+        public static float MaxLoopsPerSecond = 0.0f;
     }
 }

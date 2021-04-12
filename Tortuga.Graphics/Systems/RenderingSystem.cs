@@ -55,8 +55,10 @@ namespace Tortuga.Graphics
             _renderCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
             _deferredCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
             _presentCommand.Begin(Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit);
+            var cameraTasks = new List<Task>();
             foreach (var camera in cameras)
             {
+
                 var window = camera.RenderTarget as Window;
                 if (window != null)
                 {
@@ -101,27 +103,31 @@ namespace Tortuga.Graphics
 
                 #region mesh draw commands
 
-                var secondaryDrawCommands = new List<API.CommandBuffer>();
+                var secondaryDrawCommands = new List<Task<API.CommandBuffer>>();
                 foreach (var meshRenderer in meshRenderers)
                 {
-                    // transfer material textures to the correct image layout
-                    transferCommands.Add(meshRenderer.Material.TransferImages());
-                    // update mesh render descriptor sets
-                    meshRenderer.UpdateDescriptorSet();
-
                     // setup mesh draw command
-                    secondaryDrawCommands.Add(meshRenderer.DrawCommand(
-                        camera.MrtFramebuffer,
-                        0,
-                        camera.ProjectionDescriptorSet,
-                        camera.ViewDescriptorSet,
-                        camera.Viewport,
-                        camera.Resolution
-                    ));
+                    secondaryDrawCommands.Add(Task.Run(() =>
+                    {
+                        // transfer material textures to the correct image layout
+                        transferCommands.Add(meshRenderer.Material.TransferImages());
+                        // update mesh render descriptor sets
+                        meshRenderer.UpdateDescriptorSet();
+
+                        return meshRenderer.DrawCommand(
+                            camera.MrtFramebuffer,
+                            0,
+                            camera.ProjectionDescriptorSet,
+                            camera.ViewDescriptorSet,
+                            camera.Viewport,
+                            camera.Resolution
+                        );
+                    }));
                 }
+                Task.WaitAll(secondaryDrawCommands.ToArray());
                 // execute all draw comands for meshes
                 if (secondaryDrawCommands.Count > 0)
-                    _renderCommand.ExecuteCommands(secondaryDrawCommands);
+                    _renderCommand.ExecuteCommands(secondaryDrawCommands.Select(s => s.Result).ToList());
 
                 _renderCommand.EndRenderPass();
 
@@ -256,5 +262,13 @@ namespace Tortuga.Graphics
 
             #endregion
         });
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public override async Task LateUpdate()
+        {
+            await _presentCommand.Fence.WaitAsync();
+        }
     }
 }

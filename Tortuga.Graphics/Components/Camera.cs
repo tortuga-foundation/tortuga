@@ -269,15 +269,20 @@ namespace Tortuga.Graphics
             _descriptorService.Handle["_LIGHT"].Set
         };
 
+        private byte[] _viewMatrixCache = null;
         /// <summary>
         /// updates camera's descriptor set objects
         /// </summary>
         public void UpdateDescriptorSets()
         {
-            if (this.IsStatic)
+            var viewMatrix = ViewMatrix.GetBytes();
+            if (_viewMatrixCache == viewMatrix)
+                return;
+            if (this.IsStatic && _viewMatrixCache != null)
                 return;
 
-            _descriptorService.BindBuffer("_VIEW", 0, ViewMatrix.GetBytes());
+            _viewMatrixCache = viewMatrix;
+            _descriptorService.BindBuffer("_VIEW", 0, _viewMatrixCache);
         }
 
         /// <summary>

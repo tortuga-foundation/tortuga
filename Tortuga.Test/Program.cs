@@ -9,31 +9,30 @@ namespace Tortuga.Test
     {
         public class RotatorSystem : Core.BaseSystem
         {
-            private float _rotation = 0.0f;
-            private Vector3 _position = new Vector3(0, 0, -5);
+
             public override Task Update()
             {
                 return Task.Run(() =>
                 {
-                    var meshes = MyScene.GetComponents<Graphics.MeshRenderer>();
+                    var meshes = MyScene.GetComponents<Graphics.Camera>();
                     foreach (var mesh in meshes)
                     {
                         var transform = mesh.MyEntity.GetComponent<Core.Transform>();
                         if (transform != null)
                         {
-                            transform.Rotation = Quaternion.CreateFromAxisAngle(new Vector3(0, 1, 0), _rotation);
-                            _rotation += Time.DeltaTime * 1.0f;
-                            transform.Position = _position;
+                            var position = transform.Position;
+
+                            if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
+                                position.Z += Time.DeltaTime * 2.0f;
+                            if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
+                                position.Z -= Time.DeltaTime * 2.0f;
+                            if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
+                                position.X -= Time.DeltaTime * 2.0f;
+                            if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
+                                position.X += Time.DeltaTime * 2.0f;
+                            transform.Position = position;
                         }
                     }
-                    if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
-                        _position.Z += Time.DeltaTime * 2.0f;
-                    if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
-                        _position.Z -= Time.DeltaTime * 2.0f;
-                    if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
-                        _position.X += Time.DeltaTime * 2.0f;
-                    if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
-                        _position.X -= Time.DeltaTime * 2.0f;
                 });
             }
         }
@@ -69,22 +68,28 @@ namespace Tortuga.Test
             }
 
             //mesh
+            var mesh = await AssetLoader.LoadObj("Assets/Models/Sphere.obj");
+            var material = await AssetLoader.LoadMaterial("Assets/Materials/Bricks.json");
+            for (int i = -3; i < 4; i++)
             {
-                var entity = new Core.Entity();
+                for (int j = -3; j < 4; j++)
+                {
+                    var entity = new Core.Entity();
 
-                //attach transform
-                var transform = entity.GetComponent<Core.Transform>();
-                transform.Position = new Vector3(0, 0, -5);
+                    //attach transform
+                    var transform = entity.GetComponent<Core.Transform>();
+                    transform.Position = new Vector3(i * 5, j * 5, -40);
 
-                //attach mesh renderer
-                var renderer = await entity.AddComponent<Graphics.MeshRenderer>();
+                    //attach mesh renderer
+                    var renderer = await entity.AddComponent<Graphics.MeshRenderer>();
 
-                //setup mesh
-                renderer.Mesh = await AssetLoader.LoadObj("Assets/Models/Sphere.obj");
+                    //setup mesh
+                    renderer.Mesh = mesh;
 
-                //setup material
-                renderer.Material = await AssetLoader.LoadMaterial("Assets/Materials/Bricks.json");
-                scene.AddEntity(entity);
+                    //setup material
+                    renderer.Material = material;
+                    scene.AddEntity(entity);
+                }
             }
 
             //light

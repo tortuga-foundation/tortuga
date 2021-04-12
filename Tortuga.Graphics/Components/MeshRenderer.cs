@@ -62,11 +62,11 @@ namespace Tortuga.Graphics
         /// </summary>
         public void UpdateDescriptorSet()
         {
-            if (IsStatic)
-                return;
-            
             var matrix = Matrix.GetBytes();
             if (_matrixCache == matrix)
+                return;
+
+            if (IsStatic && _matrixCache != null)
                 return;
 
             _matrixCache = matrix;

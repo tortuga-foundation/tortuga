@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 using System.Collections.Generic;
 using Tortuga.Graphics.API;
+using System.Threading;
 using Vulkan;
 using Tortuga.Utils;
 using System;
@@ -19,6 +20,7 @@ namespace Tortuga.Graphics
         private Dictionary<QueueFamilyType, QueueFamily> _queueFamilies;
         private Dictionary<QueueFamilyType, CommandPool> _commandPools;
         private int _queueCounter = 0;
+        private Mutex _lock = new Mutex();
 
         public CommandBufferService(Device device)
         {
@@ -60,6 +62,7 @@ namespace Tortuga.Graphics
 
         private VkQueue GetQueue(QueueFamily queueFamily)
         {
+            _lock.WaitOne();
             if (queueFamily.Queues.Count == 0)
                 throw new InvalidOperationException("queue family does not contain any queues");
 
@@ -68,12 +71,13 @@ namespace Tortuga.Graphics
 
             var queue = queueFamily.Queues[_queueCounter];
             _queueCounter++;
+            _lock.ReleaseMutex();
             return queue;
         }
 
         public void Submit(
             CommandBuffer command,
-            List<Semaphore> waitSemaphores = null
+            List<API.Semaphore> waitSemaphores = null
         ) => Submit(
             new List<CommandBuffer> { command },
             waitSemaphores
@@ -81,7 +85,7 @@ namespace Tortuga.Graphics
 
         public void Submit(
             List<CommandBuffer> commands,
-            List<Semaphore> waitSemaphores = null
+            List<API.Semaphore> waitSemaphores = null
         )
         {
             //make sure atleast one command is passed
@@ -102,7 +106,7 @@ namespace Tortuga.Graphics
         public unsafe void Present(
             Swapchain swapchain,
             uint imageIndex = 0,
-            List<Semaphore> waitSemaphores = null
+            List<API.Semaphore> waitSemaphores = null
         )
         {
             var semaphores = new NativeList<VkSemaphore>();

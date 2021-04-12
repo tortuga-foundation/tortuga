@@ -34,6 +34,7 @@ namespace Tortuga.Graphics
         /// </summary>
         protected Dictionary<string, DescriptorObject> _handle;
         private GraphicsModule _module;
+        private bool _imageNeedsTransfered = false;
 
         /// <summary>
         /// Constructor for descriptor service
@@ -253,6 +254,7 @@ namespace Tortuga.Graphics
             _module.CommandBufferService.Submit(
                 _handle[key].CommandBuffer[binding]
             );
+            _imageNeedsTransfered = true;
         }
 
         /// <summary>
@@ -300,6 +302,7 @@ namespace Tortuga.Graphics
             );
 
             TransferImageAndUpdateDescriptorSet(key, binding);
+            _imageNeedsTransfered = true;
         }
 
         /// <summary>
@@ -308,6 +311,9 @@ namespace Tortuga.Graphics
         /// </summary>
         public API.CommandBuffer TransferImages(Vulkan.VkImageLayout layout = VkImageLayout.ShaderReadOnlyOptimal)
         {
+            if (_imageNeedsTransfered == false)
+                return null;
+
             var transferCommand = _module.CommandBufferService.GetNewCommand(
                 API.QueueFamilyType.Graphics,
                 CommandType.Primary
@@ -330,6 +336,7 @@ namespace Tortuga.Graphics
                 }
             }
             transferCommand.End();
+            _imageNeedsTransfered = false;
             return transferCommand;
         }
 
