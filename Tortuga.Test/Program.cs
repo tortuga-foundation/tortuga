@@ -7,30 +7,26 @@ namespace Tortuga.Test
 {
     class Program
     {
-        public class RotatorSystem : Core.BaseSystem
+        public class CameraMovement : Core.BaseSystem
         {
-
-            public override Task Update()
+            public override Task EarlyUpdate()
             {
                 return Task.Run(() =>
                 {
-                    var meshes = MyScene.GetComponents<Graphics.Camera>();
-                    foreach (var mesh in meshes)
+                    var cameras = MyScene.GetComponents<Graphics.Camera>();
+                    foreach (var camera in cameras)
                     {
-                        var transform = mesh.MyEntity.GetComponent<Core.Transform>();
+                        var transform = camera.MyEntity.GetComponent<Core.Transform>();
                         if (transform != null)
                         {
-                            var position = transform.Position;
-
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
-                                position.Z += Time.DeltaTime * 2.0f;
+                                transform.Position.Z -= Time.DeltaTime * 2.0f;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
-                                position.Z -= Time.DeltaTime * 2.0f;
+                                transform.Position.Z += Time.DeltaTime * 2.0f;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
-                                position.X -= Time.DeltaTime * 2.0f;
+                                transform.Position.X += Time.DeltaTime * 2.0f;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
-                                position.X += Time.DeltaTime * 2.0f;
-                            transform.Position = position;
+                                transform.Position.X -= Time.DeltaTime * 2.0f;
                         }
                     }
                 });
@@ -118,7 +114,7 @@ namespace Tortuga.Test
 
             //scene.AddSystem<Audio.AudioSystem>();
             scene.AddSystem<Graphics.RenderingSystem>();
-            scene.AddSystem<RotatorSystem>();
+            scene.AddSystem<CameraMovement>();
 
             Engine.Instance.LoadScene(scene);
             await Engine.Instance.Run();
