@@ -311,9 +311,12 @@ namespace Tortuga.Graphics
             _instancedDrawCommand.BindVertexBuffers(
                 new List<API.Buffer>
                 {
-                    meshData.VertexBuffer,
-                    _instanceData[meshData].Buffer
+                    meshData.VertexBuffer
                 }
+            );
+            _instancedDrawCommand.BindVertexBuffers(
+                new List<API.Buffer> { _instanceData[meshData].Buffer },
+                1
             );
             _instancedDrawCommand.DrawIndexed(
                 Convert.ToUInt32(meshData.Indices.Length),

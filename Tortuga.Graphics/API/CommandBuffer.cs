@@ -466,7 +466,7 @@ namespace Tortuga.Graphics.API
             );
         }
 
-        public unsafe void BindVertexBuffers(List<Buffer> vertexBuffers)
+        public unsafe void BindVertexBuffers(List<Buffer> vertexBuffers, uint bindingStart = 0)
         {
             var buffers = new NativeList<VkBuffer>();
             var offsets = new NativeList<ulong>();
@@ -478,7 +478,7 @@ namespace Tortuga.Graphics.API
 
             VulkanNative.vkCmdBindVertexBuffers(
                 _handle,
-                0,
+                bindingStart,
                 buffers.Count,
                 (VkBuffer*)buffers.Data.ToPointer(),
                 (ulong*)offsets.Data.ToPointer()
