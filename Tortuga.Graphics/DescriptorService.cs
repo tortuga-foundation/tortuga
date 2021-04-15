@@ -57,6 +57,11 @@ namespace Tortuga.Graphics
         {
             if (_handle.ContainsKey(key))
                 return;
+            if (layout == null)
+            {
+                _handle[key] = new DescriptorObject();
+                return;
+            }
 
             var pool = new API.DescriptorPool(layout, 1);
             _handle[key] = new DescriptorObject

@@ -45,6 +45,36 @@ namespace Tortuga.Graphics
             _isDirty = true;
         }
 
+        private List<API.DescriptorLayout> InitDescriptorLayouts()
+        {
+            var descriptorLayouts = new List<API.DescriptorLayout>();
+            foreach (var o in _handle)
+            {
+                if (o.Key.StartsWith('_'))
+                {
+                    switch (o.Key)
+                    {
+                        case "_PROJECTION":
+                            descriptorLayouts.Add(_module.DescriptorLayouts["_PROJECTION"]);
+                            break;
+                        case "_VIEW":
+                            descriptorLayouts.Add(_module.DescriptorLayouts["_VIEW"]);
+                            break;
+                        case "_MODEL":
+                            descriptorLayouts.Add(_module.DescriptorLayouts["_MODEL"]);
+                            break;
+                        default:
+                            throw new NotSupportedException("this type of descriptor set is not supported");
+                    }
+                }
+                else
+                {
+                    descriptorLayouts.Add(o.Value.Layout);
+                }
+            }
+            return descriptorLayouts;
+        }
+
         /// <summary>
         /// Compiles the pipeline using shaders set by the user
         /// </summary>
@@ -56,13 +86,8 @@ namespace Tortuga.Graphics
             if (_shaders == null || _shaders.Count == 0)
                 throw new Exception("No Shaders has been set for this material");
 
-            var descriptorLayouts = new List<API.DescriptorLayout>();
-            descriptorLayouts.Add(_module.DescriptorLayouts["_PROJECTION"]);
-            descriptorLayouts.Add(_module.DescriptorLayouts["_VIEW"]);
-            descriptorLayouts.Add(_module.DescriptorLayouts["_MODEL"]);
-            foreach (var o in _handle)
-                descriptorLayouts.Add(o.Value.Layout);
 
+            var descriptorLayouts = InitDescriptorLayouts();
             _pipeline = new API.GraphicsPipeline(
                 _module.GraphicsService.PrimaryDevice,
                 _module.RenderPasses["_MRT"],

@@ -6,6 +6,15 @@
   ],
   "DescriptorSets": [
     {
+      "Name": "_PROJECTION"
+    },
+    {
+      "Name": "_VIEW"
+    },
+    {
+      "Name": "_MODEL"
+    },
+    {
       "Name": "TEXTURES",
       "Bindings": [
         {

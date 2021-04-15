@@ -145,6 +145,13 @@ namespace Tortuga.Graphics
             );
             foreach (var jsonDescriptor in jsonMaterial.DescriptorSets)
             {
+                // check if it is a pre-defined descriptor
+                if (jsonDescriptor.Name.StartsWith('_'))
+                {
+                    material.InsertKey(jsonDescriptor.Name, null);
+                    continue;
+                }
+
                 // setup descriptor layout
                 material.InsertKey(
                     jsonDescriptor.Name,

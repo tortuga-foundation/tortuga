@@ -77,35 +77,67 @@ namespace Tortuga.Graphics
             );
         }
 
+        private List<DescriptorSet> GetDescriptorSets(
+            DescriptorSet projection,
+            DescriptorSet view,
+            DescriptorSet model
+        )
+        {
+            var descriptors = new List<DescriptorSet>();
+            foreach (var o in _materialData.Handle)
+            {
+                if (o.Key.StartsWith('_'))
+                {
+                    switch (o.Key)
+                    {
+                        case "_PROJECTION":
+                            descriptors.Add(projection);
+                            break;
+                        case "_VIEW":
+                            descriptors.Add(view);
+                            break;
+                        case "_MODEL":
+                            descriptors.Add(model);
+                            break;
+                        default:
+                            throw new NotSupportedException("unknown type of descriptor set being used");
+                    }
+                }
+                else
+                {
+                    descriptors.Add(o.Value.Set);
+                }
+            }
+            return descriptors;
+        }
+
         /// <summary>
         /// Constructs the secondary render command (for object).
         /// Used by the primary draw command
         /// </summary>
         /// <param name="framebuffer">Framebuffer to use for the secondary command buffer</param>
         /// <param name="subPass">SubPass to use for the secondary command buffer</param>
-        /// <param name="ProjectionDescriptorSet">The projection matrix descriptor set</param>
-        /// <param name="ViewDescriptorSet">The view matrix descriptor set</param>
+        /// <param name="projectionDescriptorSet">The projection matrix descriptor set</param>
+        /// <param name="viewDescriptorSet">The view matrix descriptor set</param>
         /// <param name="viewport">The viewport where the objct should be rendered</param>
         /// <param name="resolution">The resolution of the rendering viewport</param>
         /// <returns>Secondary command buffer</returns>
         public API.CommandBuffer DrawCommand(
             API.Framebuffer framebuffer,
             uint subPass,
-            API.DescriptorSet ProjectionDescriptorSet,
-            API.DescriptorSet ViewDescriptorSet,
+            API.DescriptorSet projectionDescriptorSet,
+            API.DescriptorSet viewDescriptorSet,
             Vector4 viewport,
             Vector2 resolution
         )
         {
             _materialData.ReCompilePipeline();
 
-            //construct descriptor set list
-            var materialDescriptorSets = new List<DescriptorSet>();
-            materialDescriptorSets.Add(ProjectionDescriptorSet);
-            materialDescriptorSets.Add(ViewDescriptorSet);
-            materialDescriptorSets.Add(_descriptorService.Handle[MODEL_KEY].Set);
-            foreach (var o in _materialData.Handle.Values)
-                materialDescriptorSets.Add(o.Set);
+            var materialDescriptorSets = GetDescriptorSets(
+                projectionDescriptorSet,
+                viewDescriptorSet,
+                _descriptorService.Handle[MODEL_KEY].Set
+            );
 
             var viewportX = Convert.ToInt32(viewport.X * resolution.X);
             var viewportY = Convert.ToInt32(viewport.Y * resolution.Y);

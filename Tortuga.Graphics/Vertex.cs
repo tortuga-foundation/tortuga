@@ -1,5 +1,6 @@
 #pragma warning disable CS1591
 using System;
+using System.Linq;
 using System.Numerics;
 
 namespace Tortuga.Graphics
@@ -46,5 +47,33 @@ namespace Tortuga.Graphics
                 }
             }
         );
+
+        public static PipelineInputBuilder PipelineInstancedInput
+        {
+            get
+            {
+                var bindings = PipelineInput.Bindings.ToList();
+                bindings.Add(new PipelineInputBuilder.BindingElement
+                {
+                    Type = PipelineInputBuilder.BindingElement.BindingType.Instance,
+                    Elements = new PipelineInputBuilder.AttributeElement[]
+                    {
+                        // position
+                        new PipelineInputBuilder.AttributeElement(
+                            PipelineInputBuilder.AttributeElement.FormatType.Float3
+                        ),
+                        // rotation
+                        new PipelineInputBuilder.AttributeElement(
+                            PipelineInputBuilder.AttributeElement.FormatType.Float3
+                        ),
+                        // scale
+                        new PipelineInputBuilder.AttributeElement(
+                            PipelineInputBuilder.AttributeElement.FormatType.Float3
+                        )
+                    }
+                });
+                return new PipelineInputBuilder(bindings.ToArray());
+            }
+        }
     }
 }
