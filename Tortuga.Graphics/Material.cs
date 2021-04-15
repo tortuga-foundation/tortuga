@@ -118,13 +118,16 @@ namespace Tortuga.Graphics
                 throw new Exception("No Shaders has been set for this material");
 
 
+            var pipelineInput = Vertex.PipelineInput;
+            if (_instanced)
+                pipelineInput = Vertex.PipelineInstancedInput;
             var descriptorLayouts = InitDescriptorLayouts();
             _pipeline = new API.GraphicsPipeline(
                 _module.GraphicsService.PrimaryDevice,
                 _module.RenderPasses["_MRT"],
                 descriptorLayouts,
                 _shaders,
-                Vertex.PipelineInput
+                pipelineInput
             );
             _instancedDrawCommand = _module.CommandBufferService.GetNewCommand(
                 QueueFamilyType.Graphics,
@@ -222,23 +225,28 @@ namespace Tortuga.Graphics
 
             if (_instanceData.ContainsKey(meshData) == false)
             {
-                _instanceData[meshData].Cache = instancedData;
-                _instanceData[meshData].Staging = new API.Buffer(
-                    device,
-                    Convert.ToUInt32(sizeof(byte) * instancedData.Length),
-                    VkBufferUsageFlags.TransferSrc,
-                    VkMemoryPropertyFlags.HostCoherent | VkMemoryPropertyFlags.HostVisible
-                );
-                _instanceData[meshData].Buffer = new API.Buffer(
-                    device,
-                    Convert.ToUInt32(sizeof(byte) * instancedData.Length),
-                    VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst,
-                    VkMemoryPropertyFlags.DeviceLocal
-                );
-                _instanceData[meshData].TransferCommand = _module.CommandBufferService.GetNewCommand(
-                    QueueFamilyType.Graphics,
-                    CommandType.Primary
-                );
+                _instanceData[meshData] = new InstanceDataHelper
+                {
+                    Cache = instancedData,
+                    Staging = new API.Buffer(
+                        device,
+                        Convert.ToUInt32(sizeof(byte) * instancedData.Length),
+                        VkBufferUsageFlags.TransferSrc,
+                        VkMemoryPropertyFlags.HostCoherent | VkMemoryPropertyFlags.HostVisible
+                    ),
+                    Buffer = new API.Buffer(
+                        device,
+                        Convert.ToUInt32(sizeof(byte) * instancedData.Length),
+                        VkBufferUsageFlags.VertexBuffer | VkBufferUsageFlags.TransferDst,
+                        VkMemoryPropertyFlags.DeviceLocal
+                    ),
+                    TransferCommand = _module.CommandBufferService.GetNewCommand(
+                        QueueFamilyType.Graphics,
+                        CommandType.Primary
+                    )
+                };
+
+                // setup copy command
                 _instanceData[meshData].TransferCommand.Begin(
                     VkCommandBufferUsageFlags.SimultaneousUse
                 );
@@ -304,7 +312,7 @@ namespace Tortuga.Graphics
                 new List<API.Buffer>
                 {
                     meshData.VertexBuffer,
-
+                    _instanceData[meshData].Buffer
                 }
             );
             _instancedDrawCommand.DrawIndexed(

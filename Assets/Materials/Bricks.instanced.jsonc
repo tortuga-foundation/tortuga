@@ -1,0 +1,64 @@
+{
+  "Instanced": true,
+  "Pipeline": {},
+  "Shaders": [
+    "Assets/Shaders/Default/MRT.instanced.vert",
+    "Assets/Shaders/Default/MRT.instanced.frag"
+  ],
+  "DescriptorSets": [
+    // #region built-in descriptors
+    {
+      "Name": "_PROJECTION"
+    },
+    {
+      "Name": "_VIEW"
+    },
+    // #endregion
+    {
+      "Name": "TEXTURES",
+      "Bindings": [
+        {
+          "Type": "CombinedImageSampler",
+          "Stage": "Fragment",
+          "Data": {
+            "Type": "Texture",
+            "Value": "Assets/Images/Bricks/Color.jpg"
+          }
+        },
+        {
+          "Type": "CombinedImageSampler",
+          "Stage": "Fragment",
+          "Data": {
+            "Type": "Texture",
+            "Value": "Assets/Images/Bricks/Normal.jpg"
+          }
+        },
+        {
+          "Type": "CombinedImageSampler",
+          "Stage": "Fragment",
+          "Data": {
+            "Type": "TextureChannels",
+            "Value": {
+              "R": "Assets/Images/Bricks/Metal.jpg",
+              "G": "Assets/Images/Bricks/Roughness.jpg",
+              "B": "Assets/Images/Bricks/AmbientOclusion.jpg"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "Name": "MATERIAL",
+      "Bindings": [
+        {
+          "Type": "UniformBuffer",
+          "Stage": "Vertex",
+          "Data": {
+            "Type": "Int32",
+            "Value": [1]
+          }
+        }
+      ]
+    }
+  ]
+}

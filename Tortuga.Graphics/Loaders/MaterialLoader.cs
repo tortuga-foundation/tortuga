@@ -145,6 +145,7 @@ namespace Tortuga.Graphics
             var device = module.GraphicsService.PrimaryDevice;
 
             var material = new Material(jsonMaterial);
+            material.Instanced = jsonMaterial.Instanced;
             material.SetShaders(
                 jsonMaterial.Shaders.Select(
                     s => new ShaderModule(device, s)

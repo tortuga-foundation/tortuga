@@ -68,7 +68,7 @@ namespace Tortuga.Test
 
             //mesh
             var mesh = await AssetLoader.LoadObj("Assets/Models/Sphere.obj");
-            var material = await AssetLoader.LoadMaterial("Assets/Materials/Bricks.jsonc");
+            var material = await AssetLoader.LoadMaterial("Assets/Materials/Bricks.instanced.jsonc");
             for (int i = -3; i < 4; i++)
             {
                 for (int j = -3; j < 4; j++)
