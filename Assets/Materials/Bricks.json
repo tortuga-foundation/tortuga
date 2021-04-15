@@ -1,4 +1,5 @@
 {
+  "Instanced": false,
   "Pipeline": {},
   "Shaders": [
     "Assets/Shaders/Default/MRT.vert",

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Tortuga.Core
@@ -14,31 +15,56 @@ namespace Tortuga.Core
         /// <summary>
         /// Position of the entity
         /// </summary>
-        public Vector3 Position = new Vector3(0, 0, 0);
+        public Vector3 Position
+        {
+            get => _position;
+            set
+            {
+                if (_position == value)
+                    return;
+
+                _position = value;
+                RecalculateInstancedData();
+                RecalculateMatrix();
+            }
+        }
         /// <summary>
         /// Rotation of the entity
         /// </summary>
-        public Quaternion Rotation = Quaternion.Identity;
+        public Quaternion Rotation
+        {
+            get => _rotation;
+            set
+            {
+                if (_rotation == value)
+                    return;
+
+                _rotation = value;
+                RecalculateInstancedData();
+                RecalculateMatrix();
+            }
+        }
         /// <summary>
         /// Scale of the entity
         /// </summary>
-        public Vector3 Scale = new Vector3(1, 1, 1);
+        public Vector3 Scale
+        {
+            get => _scale;
+            set
+            {
+                if (_scale == value)
+                    return;
+
+                _scale = value;
+                RecalculateInstancedData();
+                RecalculateMatrix();
+            }
+        }
 
         /// <summary>
         /// Returns model matrix of the entity
         /// </summary>
-        public Matrix4x4 Matrix
-        {
-            get
-            {
-                var mat = Matrix4x4.Identity;
-                mat *= Matrix4x4.CreateScale(Scale);
-                mat *= Matrix4x4.CreateFromQuaternion(Rotation);
-                mat *= Matrix4x4.CreateTranslation(Position);
-                return mat;
-            }
-            set => Matrix4x4.Decompose(value, out Scale, out Rotation, out Position);
-        }
+        public Matrix4x4 Matrix => _matrix;
         /// <summary>
         /// Returns right vector of the entity
         /// </summary>
@@ -71,6 +97,39 @@ namespace Tortuga.Core
                 var mat = Matrix;
                 return Vector3.Normalize(new Vector3(mat.M31, mat.M32, mat.M33));
             }
+        }
+
+        /// <summary>
+        /// returns instanced data (position, rotation, scale) in a byte array
+        /// </summary>
+        public byte[] InstancedData => _instancedData;
+
+        private Vector3 _position = Vector3.Zero;
+        private Quaternion _rotation = Quaternion.Identity;
+        private Vector3 _scale = Vector3.One;
+        private byte[] _instancedData;
+        private Matrix4x4 _matrix;
+
+        private void RecalculateInstancedData()
+        {
+            var bytes = new List<byte>();
+            foreach (var b in Position.GetBytes())
+                bytes.Add(b);
+            foreach (var b in Rotation.ToEulerAngles().GetBytes())
+                bytes.Add(b);
+            foreach (var b in Scale.GetBytes())
+                bytes.Add(b);
+
+            _instancedData = bytes.ToArray();
+        }
+
+        private void RecalculateMatrix()
+        {
+            var mat = Matrix4x4.Identity;
+            mat *= Matrix4x4.CreateScale(Scale);
+            mat *= Matrix4x4.CreateFromQuaternion(Rotation);
+            mat *= Matrix4x4.CreateTranslation(Position);
+            _matrix = mat;
         }
     }
 }

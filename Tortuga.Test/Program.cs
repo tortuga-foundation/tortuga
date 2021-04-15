@@ -19,14 +19,17 @@ namespace Tortuga.Test
                         var transform = camera.MyEntity.GetComponent<Core.Transform>();
                         if (transform != null)
                         {
+                            var position = transform.Position;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.W))
-                                transform.Position.Z -= Time.DeltaTime * 2.0f;
+                                position.Z -= Time.DeltaTime * 2.0f;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.S))
-                                transform.Position.Z += Time.DeltaTime * 2.0f;
+                                position.Z += Time.DeltaTime * 2.0f;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.D))
-                                transform.Position.X += Time.DeltaTime * 2.0f;
+                                position.X += Time.DeltaTime * 2.0f;
                             if (Input.InputModule.IsKeyDown(Input.KeyCode.A))
-                                transform.Position.X -= Time.DeltaTime * 2.0f;
+                                position.X -= Time.DeltaTime * 2.0f;
+
+                            transform.Position = position;
                         }
                     }
                 });

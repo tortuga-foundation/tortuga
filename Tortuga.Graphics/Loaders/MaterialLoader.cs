@@ -31,6 +31,7 @@ namespace Tortuga.Graphics
 
         public class JsonMaterial
         {
+            public bool Instanced { get; set; }
             public JsonPipeline Pipeline { get; set; }
             public List<string> Shaders { get; set; }
             public List<JsonDescriptorSet> DescriptorSets { get; set; }
@@ -137,7 +138,7 @@ namespace Tortuga.Graphics
             var module = Engine.Instance.GetModule<GraphicsModule>();
             var device = module.GraphicsService.PrimaryDevice;
 
-            var material = new Material();
+            var material = new Material(jsonMaterial);
             material.SetShaders(
                 jsonMaterial.Shaders.Select(
                     s => new ShaderModule(device, s)

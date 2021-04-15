@@ -15,6 +15,7 @@ namespace Tortuga.Graphics
         private CommandBuffer _renderCommand;
         private CommandBuffer _deferredCommand;
         private CommandBuffer _presentCommand;
+        private Task<Dictionary<KeyValuePair<Material, Mesh>, List<MeshRenderer>>> _instancedMeshes;
 
         /// <summary>
         /// 
@@ -41,14 +42,49 @@ namespace Tortuga.Graphics
         /// <summary>
         /// 
         /// </summary>
+        public override Task EarlyUpdate()
+        => Task.Run(() =>
+        {
+            // get all instaned meshes
+            _instancedMeshes = Task.Run(() =>
+            {
+                var instanced = new Dictionary<KeyValuePair<Material, Mesh>, List<MeshRenderer>>();
+                foreach (var meshRenderer in MyScene.GetComponents<MeshRenderer>())
+                {
+                    if (meshRenderer.Material.Instanced == false)
+                        continue;
+
+                    var key = new KeyValuePair<Material, Mesh>(
+                        meshRenderer.Material,
+                        meshRenderer.Mesh
+                    );
+                    if (instanced.ContainsKey(key) == false)
+                        instanced[key] = new List<MeshRenderer>();
+
+                    instanced[key].Add(meshRenderer);
+                }
+                return instanced;
+            });
+        });
+
+        /// <summary>
+        /// 
+        /// </summary>
         public override Task Update()
         => Task.Run(() =>
         {
             var swapchainIndexes = new Dictionary<Window, Task<uint>>();
             var cameras = MyScene.GetComponents<Camera>();
             var lights = MyScene.GetComponents<Light>();
-            var meshRenderers = MyScene.GetComponents<MeshRenderer>();
             var transferCommands = new List<CommandBuffer>();
+
+            // fetch instanced and non-instanced meshes
+            var meshRenderers = (
+                MyScene.GetComponents<MeshRenderer>()
+                .Where(m => m.Material.Instanced == false)
+                .ToArray()
+            );
+            _instancedMeshes.Wait();
 
             #region record command buffers
 
@@ -104,6 +140,7 @@ namespace Tortuga.Graphics
                 #region mesh draw commands
 
                 var secondaryDrawCommands = new List<Task<API.CommandBuffer>>();
+                // non-instanced
                 foreach (var meshRenderer in meshRenderers)
                 {
                     // setup mesh draw command
@@ -115,6 +152,31 @@ namespace Tortuga.Graphics
                         meshRenderer.UpdateDescriptorSet();
 
                         return meshRenderer.DrawCommand(
+                            camera.MrtFramebuffer,
+                            0,
+                            camera.ProjectionDescriptorSet,
+                            camera.ViewDescriptorSet,
+                            camera.Viewport,
+                            camera.Resolution
+                        );
+                    }));
+                }
+                foreach (var mesh in _instancedMeshes.Result)
+                {
+                    secondaryDrawCommands.Add(Task.Run(() =>
+                    {   
+                        // transfer material textures to the correct image layout
+                        transferCommands.Add(mesh.Key.Key.TransferImages());
+
+                        // update instanced buffers
+                        transferCommands.Add(mesh.Key.Key.UpdateInstanceBuffers(
+                            mesh.Key.Value,
+                            mesh.Value
+                        ));
+
+                        return mesh.Key.Key.DrawInstanced(
+                            mesh.Key.Value,
+                            mesh.Value,
                             camera.MrtFramebuffer,
                             0,
                             camera.ProjectionDescriptorSet,
