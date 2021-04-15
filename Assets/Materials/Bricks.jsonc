@@ -6,6 +6,7 @@
     "Assets/Shaders/Default/MRT.frag"
   ],
   "DescriptorSets": [
+    // #region built-in descriptors
     {
       "Name": "_PROJECTION"
     },
@@ -15,6 +16,7 @@
     {
       "Name": "_MODEL"
     },
+    // #endregion
     {
       "Name": "TEXTURES",
       "Bindings": [

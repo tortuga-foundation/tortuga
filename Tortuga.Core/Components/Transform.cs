@@ -110,6 +110,15 @@ namespace Tortuga.Core
         private byte[] _instancedData;
         private Matrix4x4 _matrix;
 
+        /// <summary>
+        /// constructor for transform
+        /// </summary>
+        public Transform()
+        {
+            RecalculateInstancedData();
+            RecalculateMatrix();
+        }
+
         private void RecalculateInstancedData()
         {
             var bytes = new List<byte>();

@@ -134,7 +134,13 @@ namespace Tortuga.Graphics
                 throw new FileNotFoundException();
 
             var content = await File.ReadAllTextAsync(file);
-            var jsonMaterial = JsonSerializer.Deserialize<JsonMaterial>(content);
+            var jsonMaterial = JsonSerializer.Deserialize<JsonMaterial>(
+                content,
+                new JsonSerializerOptions
+                {
+                    ReadCommentHandling = JsonCommentHandling.Skip
+                }
+            );
             var module = Engine.Instance.GetModule<GraphicsModule>();
             var device = module.GraphicsService.PrimaryDevice;
 
