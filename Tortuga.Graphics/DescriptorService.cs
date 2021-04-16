@@ -99,7 +99,10 @@ namespace Tortuga.Graphics
                 CommandType.Primary
             );
             transferImageCommand.Begin(VkCommandBufferUsageFlags.OneTimeSubmit);
-            transferImageCommand.TransferImageLayout(_handle[key].Images[binding], VkImageLayout.ShaderReadOnlyOptimal);
+            transferImageCommand.TransferImageLayout(
+                _handle[key].Images[binding],
+                VkImageLayout.ShaderReadOnlyOptimal
+            );
             transferImageCommand.End();
             _module.CommandBufferService.Submit(transferImageCommand);
             transferImageCommand.Fence.Wait();
@@ -333,7 +336,7 @@ namespace Tortuga.Graphics
                 foreach (var image in o.Value.Images)
                 {
                     if (image == null) continue;
-                    if (image.Layout.Where(l => l != layout).Count() > 0) continue;
+                    //if (image.Layout.Where(l => l != layout).Count() == 0) continue;
 
                     transferCommand.TransferImageLayout(
                         image,

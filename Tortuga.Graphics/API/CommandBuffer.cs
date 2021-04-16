@@ -354,6 +354,14 @@ namespace Tortuga.Graphics.API
                 mipMapWidth = newMapWidth;
                 mipMapHeight = newMapHeight;
             }
+            TransferImageLayout(
+                image.Handle,
+                image.Format,
+                VkImageLayout.TransferDstOptimal,
+                VkImageLayout.TransferSrcOptimal,
+                image.MipLevel - 1
+            );
+            Array.Fill(image.Layout, VkImageLayout.TransferSrcOptimal);
         }
 
         public unsafe void CopyBufferToImage(

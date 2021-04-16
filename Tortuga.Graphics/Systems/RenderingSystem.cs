@@ -200,7 +200,7 @@ namespace Tortuga.Graphics
 
                 _deferredCommand.BeginRenderPass(
                     camera.DefferedFramebuffer,
-                    Vulkan.VkSubpassContents.SecondaryCommandBuffers
+                    Vulkan.VkSubpassContents.Inline
                 );
                 _deferredCommand.BindPipeline(Camera.DefferedPipeline);
                 _deferredCommand.BindDescriptorSets(
