@@ -290,7 +290,7 @@ namespace Tortuga.Graphics
             var viewportHeight = Convert.ToUInt32(viewport.W * resolution.Y);
 
             _instancedDrawCommand.Begin(
-                Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit,
+                Vulkan.VkCommandBufferUsageFlags.RenderPassContinue,
                 framebuffer.RenderPass,
                 framebuffer,
                 subpass
