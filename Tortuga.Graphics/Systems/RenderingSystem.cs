@@ -308,6 +308,10 @@ namespace Tortuga.Graphics
                     (int)window.Swapchain.SurfaceExtent.height,
                     0
                 );
+                _presentCommand.TransferImageLayout(
+                    window.Swapchain.Images[swapchainIndex],
+                    Vulkan.VkImageLayout.PresentSrcKHR
+                );
             }
 
             _presentCommand.End();
