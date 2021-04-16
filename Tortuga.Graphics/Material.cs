@@ -292,7 +292,8 @@ namespace Tortuga.Graphics
             _instancedDrawCommand.Begin(
                 Vulkan.VkCommandBufferUsageFlags.OneTimeSubmit,
                 framebuffer.RenderPass,
-                framebuffer
+                framebuffer,
+                subpass
             );
             _instancedDrawCommand.BindPipeline(_pipeline);
             _instancedDrawCommand.BindDescriptorSets(

@@ -48,7 +48,7 @@ namespace Tortuga.Graphics
                     RenderPassAttachment.Default,//normal
                     RenderPassAttachment.Default,//position
                     RenderPassAttachment.Default,//detail
-                    RenderPassAttachment.DefaultDepth
+                    RenderPassAttachment.DefaultDepth//depth
                 },
                 new List<RenderPassSubPass>
                 {

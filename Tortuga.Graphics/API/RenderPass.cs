@@ -150,7 +150,7 @@ namespace Tortuga.Graphics.API
                     });
                 }
                 colorAttachmentRefs.Add(colorAttachmentRef);
-                VkAttachmentReference? depthAttachmentPointer = null;
+                var depthAttachment = new NativeList<VkAttachmentReference>();
                 if (subpass.DepthAttachments != null)
                 {
                     var depthAttachmentRef = new VkAttachmentReference
@@ -159,7 +159,7 @@ namespace Tortuga.Graphics.API
                         layout = attachments[Convert.ToInt32(subpass.DepthAttachments)].FinalLayout
                     };
                     depthAttachmentRefs.Add(depthAttachmentRef);
-                    depthAttachmentPointer = depthAttachmentRef;
+                    depthAttachment.Add(depthAttachmentRef);
                 }
                 subPassInfo.Add(new VkSubpassDescription
                 {
@@ -167,9 +167,9 @@ namespace Tortuga.Graphics.API
                     colorAttachmentCount = colorAttachmentRef.Count,
                     pColorAttachments = (VkAttachmentReference*)colorAttachmentRef.Data.ToPointer(),
                     pDepthStencilAttachment = (
-                        depthAttachmentPointer == null ?
+                        depthAttachment.Count != 1 ?
                         null :
-                        (VkAttachmentReference*)&depthAttachmentPointer
+                        (VkAttachmentReference*)depthAttachment.Data.ToPointer()
                     )
                 });
                 dependencies.Add(new VkSubpassDependency

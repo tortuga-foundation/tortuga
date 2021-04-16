@@ -12,7 +12,7 @@ namespace Tortuga.Graphics.API
         public uint Height => _height;
         public uint MipLevel => _mipLevel;
         public VkFormat Format => _format;
-        public VkImageLayout Layout
+        public VkImageLayout[] Layout
         {
             get => _layout;
             set => _layout = value;
@@ -25,7 +25,7 @@ namespace Tortuga.Graphics.API
         private uint _height;
         private VkFormat _format;
         private uint _mipLevel;
-        private VkImageLayout _layout;
+        private VkImageLayout[] _layout;
         private VkImage _handle;
         private VkDeviceMemory _memoryHandle;
 
@@ -64,7 +64,8 @@ namespace Tortuga.Graphics.API
             _height = height;
             _format = format;
             _mipLevel = mipLevel;
-            _layout = VkImageLayout.Undefined;
+            _layout = new VkImageLayout[mipLevel];
+            Array.Fill(_layout, VkImageLayout.Undefined);
 
             var queueFamilyIndices = new NativeList<uint>();
             foreach (var queueFamily in device.QueueFamilies)
@@ -176,7 +177,7 @@ namespace Tortuga.Graphics.API
                 (VkDeviceMemory)memory :
                 VkDeviceMemory.Null
             ),
-            _layout = layout,
+            _layout = new VkImageLayout[] { VkImageLayout.Undefined },
             _mipLevel = mipLevel,
             _device = device
         };

@@ -130,14 +130,15 @@ namespace Tortuga.Graphics
                     );
                     attachmentCount++;
                 }
-                _renderCommand.BeginRenderPass(
-                    camera.MrtFramebuffer,
-                    Vulkan.VkSubpassContents.SecondaryCommandBuffers
-                );
 
                 #endregion
 
                 #region mesh draw commands
+
+                _renderCommand.BeginRenderPass(
+                    camera.MrtFramebuffer,
+                    Vulkan.VkSubpassContents.SecondaryCommandBuffers
+                );
 
                 var secondaryDrawCommands = new List<Task<API.CommandBuffer>>();
                 // non-instanced
@@ -164,7 +165,7 @@ namespace Tortuga.Graphics
                 foreach (var mesh in _instancedMeshes.Result)
                 {
                     secondaryDrawCommands.Add(Task.Run(() =>
-                    {   
+                    {
                         // transfer material textures to the correct image layout
                         transferCommands.Add(mesh.Key.Key.TransferImages());
 
@@ -235,12 +236,16 @@ namespace Tortuga.Graphics
                     );
                     // copy image from camera framebuffer to render target
                     _presentCommand.BlitImage(
-                        camera.DefferedFramebuffer.Images[0],
+                        camera.DefferedFramebuffer.Images[0].Handle,
+                        camera.DefferedFramebuffer.Images[0].Format,
+                        camera.DefferedFramebuffer.Images[0].Layout.First(),
                         0, 0,
                         (int)camera.DefferedFramebuffer.Width,
                         (int)camera.DefferedFramebuffer.Height,
                         0,
-                        camera.RenderTarget.RenderedImage,
+                        camera.RenderTarget.RenderedImage.Handle,
+                        camera.RenderTarget.RenderedImage.Format,
+                        camera.RenderTarget.RenderedImage.Layout.First(),
                         0, 0,
                         (int)camera.RenderTarget.RenderedImage.Width,
                         (int)camera.RenderTarget.RenderedImage.Height,
@@ -288,12 +293,16 @@ namespace Tortuga.Graphics
                     Vulkan.VkImageLayout.TransferDstOptimal
                 );
                 _presentCommand.BlitImage(
-                    window.RenderedImage,
+                    window.RenderedImage.Handle,
+                    window.RenderedImage.Format,
+                    window.RenderedImage.Layout.First(),
                     0, 0,
                     (int)window.RenderedImage.Width,
                     (int)window.RenderedImage.Height,
                     0,
-                    window.Swapchain.Images[swapchainIndex],
+                    window.Swapchain.Images[swapchainIndex].Handle,
+                    window.Swapchain.Images[swapchainIndex].Format,
+                    window.Swapchain.Images[swapchainIndex].Layout.First(),
                     0, 0,
                     (int)window.Swapchain.SurfaceExtent.width,
                     (int)window.Swapchain.SurfaceExtent.height,

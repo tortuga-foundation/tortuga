@@ -192,7 +192,7 @@ namespace Tortuga.Graphics.API
             );
             // update the layout for images
             for (int i = 0; i < framebuffer.Images.Count; i++)
-                framebuffer.Images[i].Layout = framebuffer.RenderPass.Attachments[i].FinalLayout;
+                Array.Fill(framebuffer.Images[i].Layout, framebuffer.RenderPass.Attachments[i].FinalLayout);
         }
 
         public unsafe void EndRenderPass()
@@ -241,11 +241,15 @@ namespace Tortuga.Graphics.API
         }
 
         public unsafe void BlitImage(
-            Image source,
+            VkImage source,
+            VkFormat sourceFormat,
+            VkImageLayout sourceLayout,
             int sourceX, int sourceY,
             int sourceWidth, int sourceHeight,
             uint sourceMipLevel,
-            Image destination,
+            VkImage destination,
+            VkFormat destinationFormat,
+            VkImageLayout destinationLayout,
             int destinationX, int destinationY,
             int destinationWidth, int destinationHeight,
             uint destinationMipLevel
@@ -268,9 +272,9 @@ namespace Tortuga.Graphics.API
                 srcSubresource = new VkImageSubresourceLayers
                 {
                     aspectMask = GetAspectFlags(
-                        source.Handle,
-                        source.Format,
-                        source.Layout
+                        source,
+                        sourceFormat,
+                        sourceLayout
                     ),
                     mipLevel = sourceMipLevel,
                     baseArrayLayer = 0,
@@ -291,9 +295,9 @@ namespace Tortuga.Graphics.API
                 dstSubresource = new VkImageSubresourceLayers
                 {
                     aspectMask = GetAspectFlags(
-                        destination.Handle,
-                        destination.Format,
-                        destination.Layout
+                        destination,
+                        destinationFormat,
+                        destinationLayout
                     ),
                     mipLevel = destinationMipLevel,
                     baseArrayLayer = 0,
@@ -302,10 +306,10 @@ namespace Tortuga.Graphics.API
             };
             VulkanNative.vkCmdBlitImage(
                 _handle,
-                source.Handle,
-                source.Layout,
-                destination.Handle,
-                destination.Layout,
+                source,
+                sourceLayout,
+                destination,
+                destinationLayout,
                 1,
                 &regionInfo,
                 VkFilter.Linear
@@ -319,8 +323,20 @@ namespace Tortuga.Graphics.API
             for (uint i = 1; i < image.MipLevel; i++)
             {
                 // transfer image layout
-                TransferImageLayout(image, VkImageLayout.TransferSrcOptimal, i - 1);
-                TransferImageLayout(image, VkImageLayout.TransferDstOptimal, i);
+                TransferImageLayout(
+                    image.Handle,
+                    image.Format,
+                    image.Layout[i - 1],
+                    VkImageLayout.TransferSrcOptimal,
+                    i - 1
+                );
+                TransferImageLayout(
+                    image.Handle,
+                    image.Format,
+                    image.Layout[i],
+                    VkImageLayout.TransferDstOptimal,
+                    i
+                );
 
                 // calculate mip map width and height
                 var newMapWidth = Math.Max(mipMapWidth / 2, 1);
@@ -328,8 +344,11 @@ namespace Tortuga.Graphics.API
 
                 // create mip map
                 BlitImage(
-                    image, 0, 0, (int)mipMapWidth, (int)mipMapHeight, i - 1,
-                    image, 0, 0, (int)newMapWidth, (int)newMapHeight, i
+                    image.Handle, image.Format, VkImageLayout.TransferSrcOptimal,
+                    0, 0, (int)mipMapWidth, (int)mipMapHeight, i - 1,
+
+                    image.Handle, image.Format, VkImageLayout.TransferDstOptimal,
+                    0, 0, (int)newMapWidth, (int)newMapHeight, i
                 );
 
                 mipMapWidth = newMapWidth;
@@ -365,7 +384,7 @@ namespace Tortuga.Graphics.API
                     aspectMask = GetAspectFlags(
                         image.Handle,
                         image.Format,
-                        image.Layout
+                        image.Layout[mipLevel]
                     ),
                     mipLevel = mipLevel,
                     baseArrayLayer = 0,
@@ -377,32 +396,36 @@ namespace Tortuga.Graphics.API
                 _handle,
                 buffer.Handle,
                 image.Handle,
-                image.Layout,
+                image.Layout[mipLevel],
                 1,
                 &region
             );
         }
 
-        public void TransferImageLayoutOnAllMipMaps(Image image, VkImageLayout layout)
+        public void TransferImageLayout(Image image, VkImageLayout newLayout)
         {
             for (uint i = 0; i < image.MipLevel; i++)
-                TransferImageLayout(image, layout, i);
+                TransferImageLayout(image.Handle, image.Format, image.Layout[i], newLayout, i);
+
+            Array.Fill(image.Layout, newLayout);
         }
 
         public unsafe void TransferImageLayout(
-            Image image,
+            VkImage image,
+            VkFormat format,
+            VkImageLayout oldLayout,
             VkImageLayout newLayout,
             uint mipLevel = 0
         )
         {
-            var aspect = GetAspectFlags(image.Handle, image.Format, newLayout);
-            var sourceFlags = GetImageTransferFlags(image.Layout);
+            var aspect = GetAspectFlags(image.Handle, format, newLayout);
+            var sourceFlags = GetImageTransferFlags(oldLayout);
             var destinationFlags = GetImageTransferFlags(newLayout);
 
             var barrier = new VkImageMemoryBarrier
             {
                 sType = VkStructureType.ImageMemoryBarrier,
-                oldLayout = image.Layout,
+                oldLayout = oldLayout,
                 newLayout = newLayout,
                 srcQueueFamilyIndex = VulkanNative.QueueFamilyIgnored,
                 dstQueueFamilyIndex = VulkanNative.QueueFamilyIgnored,
@@ -427,7 +450,6 @@ namespace Tortuga.Graphics.API
                 1,
                 &barrier
             );
-            image.Layout = newLayout;
         }
 
         public unsafe void SetScissor(int x, int y, uint width, uint height)
@@ -675,17 +697,10 @@ namespace Tortuga.Graphics.API
             VkImageLayout layout
         )
         {
-            VkImageAspectFlags aspect = 0;
             if (layout == VkImageLayout.DepthStencilAttachmentOptimal)
-            {
-                aspect = VkImageAspectFlags.Depth;
-                if (Image.HasStencil(format))
-                    aspect |= VkImageAspectFlags.Stencil;
-            }
+                return VkImageAspectFlags.Depth;
             else
-                aspect = VkImageAspectFlags.Color;
-
-            return aspect;
+                return VkImageAspectFlags.Color;
         }
     }
 }

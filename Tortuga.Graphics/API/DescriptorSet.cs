@@ -1,6 +1,7 @@
 #pragma warning disable CS1591
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Tortuga.Utils;
 using Vulkan;
 
@@ -127,7 +128,7 @@ namespace Tortuga.Graphics.API
                 var binding = _descriptorPool.Layout.Bindings[i];
                 var descriptorImageInfo = new VkDescriptorImageInfo
                 {
-                    imageLayout = views[i].Image.Layout,
+                    imageLayout = views[i].Image.Layout.First(),
                     imageView = views[i].Handle,
                     sampler = samplers[i].Handle
                 };
@@ -159,7 +160,7 @@ namespace Tortuga.Graphics.API
             var vulkanBinding = _descriptorPool.Layout.Bindings[binding];
             var descriptorImageInfo = new VkDescriptorImageInfo
             {
-                imageLayout = view.Image.Layout,
+                imageLayout = view.Image.Layout.First(),
                 imageView = view.Handle,
                 sampler = sampler.Handle
             };
