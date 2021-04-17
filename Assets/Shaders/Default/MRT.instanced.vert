@@ -21,9 +21,10 @@ layout(location = 3) in vec3 inTangent;
 layout(location = 4) in vec3 inBiTangent;
 
 // instanced attributes
-layout(location = 5) in vec3 inModelPos;
-layout(location = 6) in vec3 inModelRot;
-layout(location = 7) in vec3 inModelSca;
+layout(location = 5) in vec4 inModel1;
+layout(location = 6) in vec4 inModel2;
+layout(location = 7) in vec4 inModel3;
+layout(location = 8) in vec4 inModel4;
 
 // output attributes
 layout(location = 0) out vec3 outNormal;
@@ -39,56 +40,17 @@ vec2 positions[3] = vec2[](
     vec2(-0.5, 0.5)
 );
 
-mat4 constructMatrix(vec3 pos, vec3 rot, vec3 sca) {
-    mat4 mat;
-
-    // rotation
-    float s, c;
-    mat3 mx, my, mz;
-    // rotate around x
-    s = sin(rot.x);
-    c = cos(rot.x);
-    mx[0] = vec3(c, s, 0.);
-    mx[1] = vec3(-s, c, 0.);
-    mx[2] = vec3(0., 0., 1.);
-    // rotate around y
-    s = sin(rot.y);
-    c = cos(rot.y);
-    my[0] = vec3(c, 0., s);
-    my[1] = vec3(0., 1., 0.);
-    my[2] = vec3(-s, 0., c);
-    // rotate around z
-    s = sin(rot.z);
-    c = cos(rot.z);
-    my[0] = vec3(1., 0., 0.);
-    my[1] = vec3(0., c, s);
-    my[2] = vec3(0., -s, c);
-    mat3 rotMat = mz * my * mx;
-
-    mat[0] = vec4(rotMat[0], 0.);
-    mat[1] = vec4(rotMat[1], 0.);
-    mat[2] = vec4(rotMat[2], 0.);
-    mat[3] = vec4(0., 0., 0., 1.);
-
-    // scale
-    mat[0][0] *= sca.x;
-    mat[1][1] *= sca.y;
-    mat[2][2] *= sca.z;
-
-    // position
-    mat[0][3] = pos.x;
-    mat[1][3] = pos.y;
-    mat[2][3] = pos.z;
-    
-    return mat;
+mat4 getModel() {
+    mat4 model;
+    model[0] = inModel1;
+    model[1] = inModel2;
+    model[2] = inModel3;
+    model[3] = inModel4;
+    return model;
 }
 
 void main() {
-    mat4 model = constructMatrix(
-        inModelPos,
-        inModelRot,
-        inModelSca
-    );
+    mat4 model = getModel();
 
     vec4 worldPosition = model * vec4(inPosition, 1.0);
     gl_Position = projection * view * worldPosition;

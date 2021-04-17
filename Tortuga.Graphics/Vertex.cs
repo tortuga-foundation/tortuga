@@ -58,17 +58,18 @@ namespace Tortuga.Graphics
                     Type = PipelineInputBuilder.BindingElement.BindingType.Instance,
                     Elements = new PipelineInputBuilder.AttributeElement[]
                     {
-                        // position
+                        // transfer model matrix
                         new PipelineInputBuilder.AttributeElement(
-                            PipelineInputBuilder.AttributeElement.FormatType.Float3
+                            PipelineInputBuilder.AttributeElement.FormatType.Float4
                         ),
-                        // rotation
                         new PipelineInputBuilder.AttributeElement(
-                            PipelineInputBuilder.AttributeElement.FormatType.Float3
+                            PipelineInputBuilder.AttributeElement.FormatType.Float4
                         ),
-                        // scale
                         new PipelineInputBuilder.AttributeElement(
-                            PipelineInputBuilder.AttributeElement.FormatType.Float3
+                            PipelineInputBuilder.AttributeElement.FormatType.Float4
+                        ),
+                        new PipelineInputBuilder.AttributeElement(
+                            PipelineInputBuilder.AttributeElement.FormatType.Float4
                         )
                     }
                 });

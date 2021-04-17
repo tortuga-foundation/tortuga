@@ -24,8 +24,8 @@ namespace Tortuga.Core
                     return;
 
                 _position = value;
-                RecalculateInstancedData();
                 RecalculateMatrix();
+                RecalculateInstancedData();
             }
         }
         /// <summary>
@@ -40,8 +40,8 @@ namespace Tortuga.Core
                     return;
 
                 _rotation = value;
-                RecalculateInstancedData();
                 RecalculateMatrix();
+                RecalculateInstancedData();
             }
         }
         /// <summary>
@@ -56,8 +56,8 @@ namespace Tortuga.Core
                     return;
 
                 _scale = value;
-                RecalculateInstancedData();
                 RecalculateMatrix();
+                RecalculateInstancedData();
             }
         }
 
@@ -115,22 +115,18 @@ namespace Tortuga.Core
         /// </summary>
         public Transform()
         {
-            RecalculateInstancedData();
             RecalculateMatrix();
+            RecalculateInstancedData();
         }
+
+        /// <summary>
+        /// returns instanced data for entities that don't have transform
+        /// </summary>
+        public static byte[] StaticInstancedData
+        => Matrix4x4.Identity.GetBytes();
 
         private void RecalculateInstancedData()
-        {
-            var bytes = new List<byte>();
-            foreach (var b in Position.GetBytes())
-                bytes.Add(b);
-            foreach (var b in Rotation.ToEulerAngles().GetBytes())
-                bytes.Add(b);
-            foreach (var b in Scale.GetBytes())
-                bytes.Add(b);
-
-            _instancedData = bytes.ToArray();
-        }
+        => _instancedData = Matrix.GetBytes();
 
         private void RecalculateMatrix()
         {

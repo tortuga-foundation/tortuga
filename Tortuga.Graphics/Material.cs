@@ -193,15 +193,16 @@ namespace Tortuga.Graphics
         /// <returns>byte array instanced data</returns>
         public byte[] GetInstancedData(List<MeshRenderer> meshRenderers)
         {
+            var staticData = Core.Transform.StaticInstancedData;
+
             var bytes = new List<byte>();
             foreach (var mesh in meshRenderers)
             {
                 var transform = mesh.MyEntity.GetComponent<Core.Transform>();
                 if (transform == null)
                 {
-                    for (int i = 0; i < 3; i++)
-                        foreach (var b in Vector3.Zero.GetBytes())
-                            bytes.Add(b);
+                    foreach (var b in staticData)
+                        bytes.Add(b);
                     continue;
                 }
 
