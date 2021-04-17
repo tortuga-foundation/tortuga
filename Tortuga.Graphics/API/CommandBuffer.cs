@@ -1,7 +1,6 @@
 #pragma warning disable CS1591
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using Tortuga.Utils;
 using Vulkan;
 
@@ -12,14 +11,12 @@ namespace Tortuga.Graphics.API
         public CommandPool CommandPool => _commandPool;
         public VkCommandBufferLevel Level => _level;
         public Fence Fence => _fence;
-        public Semaphore SignalSemaphore => _signalSemaphore;
         public VkCommandBuffer Handle => _handle;
 
         private CommandPool _commandPool;
         private VkCommandBufferLevel _level;
         private VkCommandBuffer _handle;
         private Fence _fence;
-        private Semaphore _signalSemaphore;
 
         public unsafe CommandBuffer(
             CommandPool commandPool,
@@ -46,7 +43,6 @@ namespace Tortuga.Graphics.API
                 throw new Exception("failed to allocate command buffers");
             _handle = commandBuffer;
             _fence = new Fence(commandPool.Device, isFenceSignaled);
-            _signalSemaphore = new Semaphore(commandPool.Device);
         }
 
         public unsafe void Begin(VkCommandBufferUsageFlags commandBufferUsageFlag)
@@ -588,11 +584,13 @@ namespace Tortuga.Graphics.API
 
         internal unsafe void SubmitCommand(
             VkQueue queue,
+            List<Semaphore> signalSemaphores,
             List<Semaphore> waitSemaphores,
             VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe
         ) => SubmitCommands(
             new List<CommandBuffer> { this },
             queue,
+            signalSemaphores,
             waitSemaphores,
             waitStageMask
         );
@@ -600,6 +598,7 @@ namespace Tortuga.Graphics.API
         internal static unsafe void SubmitCommands(
             List<CommandBuffer> commandBuffers,
             VkQueue queue,
+            List<Semaphore> signalSemaphores = null,
             List<Semaphore> waitSemaphores = null,
             VkPipelineStageFlags waitStageMask = VkPipelineStageFlags.TopOfPipe
         )
@@ -612,10 +611,10 @@ namespace Tortuga.Graphics.API
                 commands.Add(cmd.Handle);
 
             var signals = new NativeList<VkSemaphore>();
-            foreach (var command in commandBuffers)
+            if (signalSemaphores != null)
             {
-                command.Fence.Reset();
-                signals.Add(command.SignalSemaphore.Handle);
+                foreach (var sigSem in signalSemaphores)
+                    signals.Add(sigSem.Handle);
             }
 
             var waits = new NativeList<VkSemaphore>();
@@ -624,6 +623,10 @@ namespace Tortuga.Graphics.API
                 foreach (var waitSem in waitSemaphores)
                     waits.Add(waitSem.Handle);
             }
+
+            // reset fences
+            foreach (var cb in commandBuffers)
+                cb.Fence.Reset();
 
             var submitInfo = new VkSubmitInfo
             {

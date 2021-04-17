@@ -15,6 +15,10 @@ namespace Tortuga.Graphics
         private CommandBuffer _renderCommand;
         private CommandBuffer _deferredCommand;
         private CommandBuffer _presentCommand;
+        private Semaphore _transferCommandSemaphore;
+        private Semaphore _renderCommandSemaphore;
+        private Semaphore _defferedCommandSemaphore;
+        private Semaphore _presentCommandSemaphore;
         private Task<Dictionary<KeyValuePair<Material, Mesh>, List<MeshRenderer>>> _instancedMeshes;
 
         /// <summary>
@@ -37,6 +41,12 @@ namespace Tortuga.Graphics
                 QueueFamilyType.Graphics,
                 CommandType.Primary
             );
+
+            // create semaphore for syncing commands
+            _transferCommandSemaphore = new Semaphore(_device);
+            _renderCommandSemaphore = new Semaphore(_device);
+            _defferedCommandSemaphore = new Semaphore(_device);
+            _presentCommandSemaphore = new Semaphore(_device);
         }
 
         /// <summary>
@@ -127,6 +137,12 @@ namespace Tortuga.Graphics
                     _deferredCommand.TransferImageLayout(
                         camera.MrtFramebuffer.Images[attachmentCount],
                         Vulkan.VkImageLayout.ShaderReadOnlyOptimal
+                    );
+                    // transfer image layout to color attachment optimal
+                    // used in deffered command
+                    _presentCommand.TransferImageLayout(
+                        camera.MrtFramebuffer.Images[attachmentCount],
+                        Vulkan.VkImageLayout.ColorAttachmentOptimal
                     );
                     attachmentCount++;
                 }
@@ -266,13 +282,24 @@ namespace Tortuga.Graphics
             transferCommands = transferCommands.Where(t => t != null).ToList();
             if (transferCommands.Count > 0)
             {
-                _module.CommandBufferService.Submit(transferCommands);
-                transformCommandSemaphores.Add(transferCommands[0].SignalSemaphore);
+                // submit transfer command
+                _module.CommandBufferService.Submit(
+                    transferCommands,
+                    new List<Semaphore> { _transferCommandSemaphore }
+                );
+                transformCommandSemaphores.Add(_transferCommandSemaphore);
             }
-            _module.CommandBufferService.Submit(_renderCommand, transformCommandSemaphores);
+            // submit render commnad
+            _module.CommandBufferService.Submit(
+                _renderCommand,
+                new List<Semaphore> { _renderCommandSemaphore },
+                transformCommandSemaphores
+            );
+            // submit deffered command
             _module.CommandBufferService.Submit(
                 _deferredCommand,
-                new List<Semaphore> { _renderCommand.SignalSemaphore }
+                new List<Semaphore> { _defferedCommandSemaphore },
+                new List<Semaphore> { _renderCommandSemaphore }
             );
 
             #endregion
@@ -318,7 +345,8 @@ namespace Tortuga.Graphics
 
             _module.CommandBufferService.Submit(
                 _presentCommand,
-                new List<Semaphore> { _deferredCommand.SignalSemaphore }
+                new List<Semaphore> { _presentCommandSemaphore },
+                new List<Semaphore> { _defferedCommandSemaphore }
             );
 
             #endregion
@@ -331,7 +359,7 @@ namespace Tortuga.Graphics
                 _module.CommandBufferService.Present(
                     window.Swapchain,
                     swapchain.Value.Result,
-                    new List<Semaphore> { _presentCommand.SignalSemaphore }
+                    new List<Semaphore> { _presentCommandSemaphore }
                 );
             }
 

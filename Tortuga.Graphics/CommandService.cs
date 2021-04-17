@@ -77,14 +77,17 @@ namespace Tortuga.Graphics
 
         public void Submit(
             CommandBuffer command,
+            List<API.Semaphore> signalSemaphores = null,
             List<API.Semaphore> waitSemaphores = null
         ) => Submit(
             new List<CommandBuffer> { command },
+            signalSemaphores,
             waitSemaphores
         );
 
         public void Submit(
             List<CommandBuffer> commands,
+            List<API.Semaphore> signalSemaphores = null,
             List<API.Semaphore> waitSemaphores = null
         )
         {
@@ -98,6 +101,7 @@ namespace Tortuga.Graphics
             CommandBuffer.SubmitCommands(
                 commands,
                 queue,
+                signalSemaphores,
                 waitSemaphores,
                 VkPipelineStageFlags.TopOfPipe
             );
