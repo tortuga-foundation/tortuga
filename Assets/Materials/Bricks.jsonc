@@ -1,6 +1,11 @@
 {
   "Instanced": false,
-  "Pipeline": {},
+  "Pipeline": {
+    "Topology": "TriangleList",
+    "PolygonMode": "Fill",
+    "CullMode": "Back",
+    "FrontFace": "Clockwise"
+  },
   "Shaders": [
     "Assets/Shaders/Default/MRT.vert",
     "Assets/Shaders/Default/MRT.frag"

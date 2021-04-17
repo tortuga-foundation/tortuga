@@ -53,6 +53,7 @@ namespace Tortuga.Graphics
         private AssetLoader.JsonMaterial _json;
         private API.CommandBuffer _instancedDrawCommand;
         private Dictionary<Mesh, InstanceDataHelper> _instanceData;
+        private PipelineOptions _options;
 
         /// <summary>
         /// Constructor for material
@@ -64,6 +65,7 @@ namespace Tortuga.Graphics
             _instanced = false;
             _module = Engine.Instance.GetModule<GraphicsModule>();
             _instanceData = new Dictionary<Mesh, InstanceDataHelper>();
+            _options = PipelineOptions.Default;
         }
 
         /// <summary>
@@ -73,6 +75,16 @@ namespace Tortuga.Graphics
         public void SetShaders(List<API.ShaderModule> shaders)
         {
             _shaders = shaders;
+            _isDirty = true;
+        }
+
+        /// <summary>
+        /// set's the pipeline rendering options
+        /// </summary>
+        /// <param name="options">rendering options to use on this pipeline</param>
+        public void SetPipelineOptions(PipelineOptions options)
+        {
+            _options = options;
             _isDirty = true;
         }
 
@@ -115,7 +127,7 @@ namespace Tortuga.Graphics
                 return;
 
             if (_shaders == null || _shaders.Count == 0)
-                throw new Exception("No Shaders has been set for this material");
+                throw new InvalidOperationException("No Shaders has been set for this material");
 
 
             var pipelineInput = Vertex.PipelineInput;
@@ -127,7 +139,9 @@ namespace Tortuga.Graphics
                 _module.RenderPasses["_MRT"],
                 descriptorLayouts,
                 _shaders,
-                pipelineInput
+                pipelineInput,
+                0,
+                _options
             );
             _instancedDrawCommand = _module.CommandBufferService.GetNewCommand(
                 QueueFamilyType.Graphics,

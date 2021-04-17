@@ -14,6 +14,10 @@ namespace Tortuga.Graphics
     {
         public class JsonPipeline
         {
+            public string Topology { get; set; }
+            public string PolygonMode { get; set; }
+            public string CullMode { get; set; }
+            public string FrontFace { get; set; }
         }
 
         public class JsonBindings
@@ -151,6 +155,15 @@ namespace Tortuga.Graphics
                     s => new ShaderModule(device, s)
                 ).ToList()
             );
+            material.SetPipelineOptions(
+                new PipelineOptions
+                {
+                    Topology = Enum.Parse<VkPrimitiveTopology>(jsonMaterial.Pipeline.Topology),
+                    PolygonMode = Enum.Parse<VkPolygonMode>(jsonMaterial.Pipeline.PolygonMode),
+                    CullMode = Enum.Parse<VkCullModeFlags>(jsonMaterial.Pipeline.CullMode),
+                    FrontFace = Enum.Parse<VkFrontFace>(jsonMaterial.Pipeline.FrontFace),
+                }
+            );
             foreach (var jsonDescriptor in jsonMaterial.DescriptorSets)
             {
                 // check if it is a pre-defined descriptor
@@ -163,18 +176,18 @@ namespace Tortuga.Graphics
                 // setup descriptor layout
                 material.InsertKey(
                     jsonDescriptor.Name,
-                    new DescriptorLayout(
-                        device,
-                        jsonDescriptor.Bindings.Select(
-                            (b, i) => new DescriptorBindingInfo(
-                                (uint)i,
-                                Enum.Parse<VkDescriptorType>(b.Type),
-                                1,
-                                Enum.Parse<VkShaderStageFlags>(b.Stage)
-                            )
-                        ).ToList()
-                    )
-                );
+                                new DescriptorLayout(
+                                    device,
+                                    jsonDescriptor.Bindings.Select(
+                                        (b, i) => new DescriptorBindingInfo(
+                                            (uint)i,
+                                            Enum.Parse<VkDescriptorType>(b.Type),
+                                            1,
+                                            Enum.Parse<VkShaderStageFlags>(b.Stage)
+                                        )
+                                    ).ToList()
+                                )
+                            );
 
                 // setup descriptors
                 for (int i = 0; i < jsonDescriptor.Bindings.Count; i++)

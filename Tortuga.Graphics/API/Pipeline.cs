@@ -54,6 +54,43 @@ namespace Tortuga.Graphics.API
         }
     }
 
+    /// <summary>
+    /// Pipeline options to use for creating a pipeline
+    /// </summary>
+    public class PipelineOptions
+    {
+        /// <summary>
+        /// Topology to use for rendering
+        /// </summary>
+        public VkPrimitiveTopology Topology;
+        /// <summary>
+        /// Polygon mode to use for rendering
+        /// </summary>
+        public VkPolygonMode PolygonMode;
+        /// <summary>
+        /// Culling mode to use
+        /// </summary>
+        public VkCullModeFlags CullMode;
+        /// <summary>
+        /// Specifies which faces are front for back face culling
+        /// </summary>
+        public VkFrontFace FrontFace;
+
+        /// <summary>
+        ///  default constructor
+        /// </summary>
+        public PipelineOptions()
+        {
+            Topology = VkPrimitiveTopology.TriangleList;
+            PolygonMode = VkPolygonMode.Fill;
+            CullMode = VkCullModeFlags.Back;
+            FrontFace = VkFrontFace.Clockwise;
+        }
+
+        public static PipelineOptions Default
+        => new PipelineOptions();
+    }
+
     internal class GraphicsPipeline : Pipeline
     {
         public unsafe GraphicsPipeline(
@@ -63,9 +100,12 @@ namespace Tortuga.Graphics.API
             List<ShaderModule> shaders,
             PipelineInputBuilder pipelineInputBuilder,
             uint subPass = 0,
-            VkPrimitiveTopology topology = VkPrimitiveTopology.TriangleList
+            PipelineOptions options = null
         ) : base(device, renderPass, VkPipelineLayout.Null, VkPipeline.Null)
         {
+            if (options == null)
+                options = PipelineOptions.Default;
+
             #region Pipeline Layout
 
             var setLayout = new NativeList<VkDescriptorSetLayout>();
@@ -106,7 +146,7 @@ namespace Tortuga.Graphics.API
             var inputAssemble = new VkPipelineInputAssemblyStateCreateInfo
             {
                 sType = VkStructureType.PipelineInputAssemblyStateCreateInfo,
-                topology = topology,
+                topology = options.Topology,
                 primitiveRestartEnable = VkBool32.False
             };
 
@@ -127,10 +167,10 @@ namespace Tortuga.Graphics.API
                 sType = VkStructureType.PipelineRasterizationStateCreateInfo,
                 depthClampEnable = false,
                 rasterizerDiscardEnable = VkBool32.False,
-                polygonMode = VkPolygonMode.Fill,
+                polygonMode = options.PolygonMode,
                 lineWidth = 1.0f,
-                cullMode = VkCullModeFlags.Back,
-                frontFace = VkFrontFace.Clockwise,
+                cullMode = options.CullMode,
+                frontFace = options.FrontFace,
                 depthBiasEnable = VkBool32.False
             };
 
