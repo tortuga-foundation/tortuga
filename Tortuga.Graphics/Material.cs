@@ -201,13 +201,10 @@ namespace Tortuga.Graphics
                 var transform = mesh.MyEntity.GetComponent<Core.Transform>();
                 if (transform == null)
                 {
-                    foreach (var b in staticData)
-                        bytes.Add(b);
+                    bytes.AddRange(staticData);
                     continue;
                 }
-
-                foreach (var b in transform.InstancedData)
-                    bytes.Add(b);
+                bytes.AddRange(transform.InstancedData);
             }
             return bytes.ToArray();
         }
